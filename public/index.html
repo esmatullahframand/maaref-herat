@@ -20,55 +20,94 @@
   button { width: 100%; padding: 14px; background: #0056b3; color: #fff; border: none;
            border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
   button:hover { background: #003d82; }
+  button:disabled { opacity: 0.7; cursor: wait; }
   .err { color: #dc2626; text-align: center; font-size: 13px; margin-top: 12px; min-height: 18px; }
+  .ok { color: #10b981; text-align: center; font-size: 13px; margin-top: 12px; }
   .hint { background: #fef3c7; border: 1px solid #fbbf24; color: #92400e;
           padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; line-height: 1.7; }
   code { background: #fff; padding: 1px 5px; border-radius: 3px; }
 </style>
 </head>
 <body>
-<form class="box" id="loginForm">
+<form class="box" id="loginForm" autocomplete="on">
   <h1>🏫 ریاست معارف ولایت هرات</h1>
   <div class="sub">سیستم دیجیتالی جمع‌آوری معلومات کارمندان</div>
 
   <div class="hint">
     🔑 <b>ادمین:</b> <code>admin</code> / <code>admin123</code><br>
-    🏫 <b>مکتب:</b> نام کاربری + رمزی که ادمین داده
+    🏫 <b>مکتب:</b> نام کاربری + رمز داده‌شده توسط ادمین
   </div>
 
-  <label>نام کاربری</label>
-  <input id="username" required autocomplete="username">
+  <label for="username">نام کاربری</label>
+  <input id="username" name="username" required autocomplete="username">
 
-  <label>رمز عبور</label>
-  <input id="password" type="password" required autocomplete="current-password">
+  <label for="password">رمز عبور</label>
+  <input id="password" name="password" type="password" required autocomplete="current-password">
 
-  <button type="submit">ورود</button>
+  <button type="submit" id="submitBtn">ورود</button>
   <div class="err" id="err"></div>
+  <div class="ok" id="ok"></div>
 </form>
 
 <script>
-document.getElementById('loginForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const btn = e.target.querySelector('button');
-  btn.disabled = true; btn.textContent = 'در حال ورود...';
-  try {
-    const r = await fetch('/api/auth/login', {
+(function() {
+  var form = document.getElementById('loginForm');
+  var btn = document.getElementById('submitBtn');
+  var errEl = document.getElementById('err');
+  var okEl = document.getElementById('ok');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    errEl.textContent = '';
+    okEl.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'در حال ورود...';
+
+    var username = document.getElementById('username').value.trim();
+    var password = document.getElementById('password').value;
+
+    console.log('🔄 تلاش برای ورود:', username);
+
+    fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        username: document.getElementById('username').value.trim(),
-        password: document.getElementById('password').value
-      })
+      body: JSON.stringify({ username: username, password: password })
+    })
+    .then(function(r) {
+      console.log('📡 پاسخ سرور:', r.status);
+      return r.json().then(function(data) {
+        return { ok: r.ok, status: r.status, data: data };
+      });
+    })
+    .then(function(res) {
+      if (!res.ok) {
+        throw new Error(res.data.error || 'خطا در ورود');
+      }
+      
+      console.log('✅ ورود موفق:', res.data.user);
+      okEl.textContent = '✅ ورود موفق — در حال انتقال...';
+      
+      // ذخیره توکن در localStorage
+      localStorage.setItem('hr_token', res.data.token);
+      localStorage.setItem('hr_user', JSON.stringify(res.data.user));
+      
+      // انتقال بر اساس نقش
+      setTimeout(function() {
+        if (res.data.user.role === 'admin') {
+          location.href = '/admin.html';
+        } else {
+          location.href = '/school.html';
+        }
+      }, 300);
+    })
+    .catch(function(err) {
+      console.error('❌ خطا:', err);
+      errEl.textContent = '❌ ' + err.message;
+      btn.disabled = false;
+      btn.textContent = 'ورود';
     });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'خطا');
-    location.href = data.user.role === 'admin' ? '/admin.html' : '/school.html';
-  } catch (err) {
-    document.getElementById('err').textContent = '❌ ' + err.message;
-    btn.disabled = false; btn.textContent = 'ورود';
-  }
-});
+  });
+})();
 </script>
 </body>
 </html>

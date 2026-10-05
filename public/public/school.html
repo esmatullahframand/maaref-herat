@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل مکتب</title>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Tahoma, sans-serif; background: #f0f4f8; margin: 0; padding: 15px; }
+  .topbar { background: #0056b3; color: #fff; padding: 15px 25px; border-radius: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1400px; margin: 0 auto 20px; flex-wrap: wrap; gap: 10px; }
+  .topbar h1 { font-size: 17px; margin: 0; }
+  .topbar .info { font-size: 13px; opacity: .9; }
+  .topbar button { background: rgba(255,255,255,.2); color: #fff; border: none;
+                   padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+  .container { max-width: 1400px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 12px; padding: 25px;
+          box-shadow: 0 4px 20px rgba(0,0,0,.08); margin-bottom: 20px; }
+  .card h2 { color: #0056b3; font-size: 16px; margin: 0 0 15px;
+             border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+  .stats-bar { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
+  .stat-box { background: linear-gradient(135deg, #eef6ff, #dbeafe);
+              border: 1px solid #bcd8f5; border-radius: 10px; padding: 12px 20px; font-size: 14px; }
+  .stat-box b { color: #0056b3; font-size: 18px; }
+  .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer;
+         font-weight: bold; font-size: 14px; color: #fff; }
+  .btn-green { background: #10b981; }
+  .btn-green:hover { background: #059669; }
+  .btn-blue { background: #0056b3; }
+  .btn-red { background: #dc2626; }
+  .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group label { font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 5px; }
+  .form-group input, .form-group select { padding: 9px; border: 1px solid #cbd5e1;
+      border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; }
+  .form-group input:focus, .form-group select:focus { border-color: #0056b3; outline: none; }
+  .section-title { grid-column: 1 / -1; color: #0056b3; font-size: 14px; font-weight: bold;
+                   margin-top: 15px; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
+  .section-title:first-child { margin-top: 0; border-top: none; padding-top: 0; }
+  .search-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+  .search-box input { flex: 1; min-width: 200px; padding: 10px 14px;
+      border: 2px solid #0056b3; border-radius: 8px; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center; white-space: nowrap; }
+  th { background: #f1f5f9; position: sticky; top: 0; }
+  .table-wrap { overflow-x: auto; max-height: 500px; border: 1px solid #cbd5e1; border-radius: 8px; }
+  .retired { background: #fee2e2; color: #b91c1c; font-weight: bold; }
+  .active { background: #dcfce7; color: #15803d; font-weight: bold; }
+  @media (max-width: 900px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>🏫 <span id="schoolLabel">...</span></h1>
+    <div class="info">📍 ولسوالی: <span id="districtLabel">...</span></div>
+  </div>
+  <button onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div class="stats-bar">
+      <div class="stat-box">📊 کل کارمندان: <b id="totalCount">0</b></div>
+      <div class="stat-box">🎖️ تقاعد: <b id="retiredCount">0</b></div>
+      <div class="stat-box">✅ فعال: <b id="activeCount">0</b></div>
+    </div>
+    <button class="btn btn-green" id="addBtn" onclick="toggleForm()">➕ اضافه کردن کارمند</button>
+  </div>
+
+  <div class="card" id="formCard" style="display:none">
+    <h2>📝 فرم ثبت کارمند</h2>
+    <div class="form-grid" id="formFields"></div>
+    <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap">
+      <button class="btn btn-green" onclick="saveRecord()">💾 ذخیره</button>
+      <button class="btn btn-red" onclick="toggleForm()">✖ انصراف</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 لیست کارمندان</h2>
+    <div class="search-box">
+      <input id="searchInput" placeholder="🔍 جستجو..." oninput="renderTable()">
+      <button class="btn btn-blue" onclick="exportToExcel()">📥 خروجی اکسل</button>
+    </div>
+    <div class="table-wrap" id="tableContainer"></div>
+  </div>
+</div>
+
+<script>
+let currentUser = null;
+let allRecords = [];
+
+async function api(url, opts={}) {
+  const r = await fetch(url, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) },
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  if (r.status === 401) { location.href = '/'; throw new Error('unauth'); }
+  const data = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(data.error || 'خطا');
+  return data;
+}
+
+async function init() {
+  currentUser = await api('/api/auth/me');
+  if (currentUser.role !== 'school') { location.href = '/admin.html'; return; }
+  document.getElementById('schoolLabel').textContent = currentUser.schoolName || currentUser.username;
+  document.getElementById('districtLabel').textContent = currentUser.district || '—';
+  buildForm();
+  await loadRecords();
+}
+
+const FIELDS = [
+  { key: 'jobCode', label: 'کُد بست', section: '۱. هویت' },
+  { key: 'jobTitle', label: 'عنوان بست', required: true },
+  { key: 'firstName', label: 'اسم', required: true },
+  { key: 'lastName', label: 'تخلص' },
+  { key: 'fatherName', label: 'ولد', required: true },
+  { key: 'grandfatherName', label: 'ولدیت', required: true },
+  { key: 'eTazkira', label: 'تذکره الکترونیکی' },
+  { key: 'paperTazkira', label: 'تذکره کاغذی' },
+  { key: 'tazkiraPage', label: 'صفحه' },
+  { key: 'tazkiraVolume', label: 'جلد' },
+  { key: 'ethnicity', label: 'قومیت', required: true },
+
+  { key: 'gender', label: 'جنسیت', type: 'select', options: ['', 'مرد', 'زن'], required: true, section: '۲. اطلاعات شخصی' },
+  { key: 'birthDate', label: 'تاریخ تولد (شمسی)', placeholder: '1360/02/22', required: true },
+  { key: 'birthPlace', label: 'محل تولد' },
+  { key: 'originAddress', label: 'سکونت اصلی', required: true },
+  { key: 'currentAddress', label: 'سکونت فعلی', required: true },
+  { key: 'firstAppointmentDate', label: 'تاریخ اولین تقرر' },
+  { key: 'phone', label: 'شماره تماس', required: true },
+  { key: 'disability', label: 'معلولیت', type: 'select', options: ['نخیر', 'بلی'] },
+  { key: 'positionType', label: 'موقف', type: 'select', options: ['', 'اصلی', 'سرپرستی'] },
+  { key: 'employmentType', label: 'نوع استخدام', type: 'select', options: ['', 'حکمی', 'رقابتی'] },
+
+  { key: 'bust', label: 'بست', section: '۳. معلومات وظیفوی' },
+  { key: 'grade', label: 'قدم' },
+  { key: 'currentPositionDate', label: 'تاریخ تقرر فعلی' },
+  { key: 'degree', label: 'درجه تحصیلی', placeholder: 'ماستر یا 18', required: true },
+  { key: 'major', label: 'رشته', required: true },
+  { key: 'eduInstitute', label: 'مرجع تحصیلی' },
+  { key: 'eduInstituteLocation', label: 'موقعیت مرجع' },
+  { key: 'enrollmentDate', label: 'تاریخ شمولیت' },
+  { key: 'graduationDate', label: 'تاریخ فراغت' },
+  { key: 'subjectTeaching', label: 'مضمون تدریس' }
+];
+
+function buildForm() {
+  const grid = document.getElementById('formFields');
+  let lastSection = '';
+  FIELDS.forEach(f => {
+    if (f.section && f.section !== lastSection) {
+      const t = document.createElement('div');
+      t.className = 'section-title';
+      t.textContent = f.section;
+      grid.appendChild(t);
+      lastSection = f.section;
+    }
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    const lbl = document.createElement('label');
+    lbl.textContent = f.label + (f.required ? ' *' : '');
+    div.appendChild(lbl);
+    let inp;
+    if (f.type === 'select') {
+      inp = document.createElement('select');
+      f.options.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o; opt.textContent = o || 'انتخاب';
+        inp.appendChild(opt);
+      });
+    } else {
+      inp = document.createElement('input');
+      inp.type = 'text';
+      if (f.placeholder) inp.placeholder = f.placeholder;
+    }
+    inp.id = 'f_' + f.key;
+    div.appendChild(inp);
+    grid.appendChild(div);
+  });
+}
+
+function toggleForm() {
+  const card = document.getElementById('formCard');
+  const isHidden = card.style.display === 'none';
+  card.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) {
+    FIELDS.forEach(f => { const el = document.getElementById('f_' + f.key); if (el) el.value = ''; });
+    card.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function normalizeDigits(str) {
+  if (!str) return '';
+  const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
+  return str.split('').map(ch => {
+    let i = p.indexOf(ch); if (i !== -1) return i;
+    i = a.indexOf(ch); if (i !== -1) return i;
+    return ch;
+  }).join('');
+}
+
+function parseShamsi(s) {
+  if (!s) return null;
+  const parts = normalizeDigits(s).replace(/[.\-]/g,'/').split('/').map(x => parseInt(x));
+  if (parts.length !== 3 || parts.some(isNaN)) return null;
+  let y, m, d;
+  if (parts[0] > 1000) { y = parts[0]; m = parts[1]; d = parts[2]; }
+  else { d = parts[0]; m = parts[1]; y = parts[2]; }
+  if (y < 1300 || y > 1408 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+  return { y, m, d };
+}
+
+function calcAge(birth) {
+  const p = parseShamsi(birth);
+  if (!p) return { age: '—', status: 'نامشخص', retired: false };
+  const now = new Date();
+  const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate();
+  const gdm = [0,31,59,90,120,151,181,212,243,273,304,334];
+  let jy = 979;
+  let y2 = gy - 1600;
+  const gy2 = (gm > 2) ? y2 + 1 : y2;
+  let days = 365*y2 + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100)
+           + Math.floor((gy2+399)/400) - 80 + gd + gdm[gm-1];
+  jy += 33 * Math.floor(days/12053); days %= 12053;
+  jy += 4 * Math.floor(days/1461);  days %= 1461;
+  if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
+  const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
+  const jd = 1 + ((days < 186) ? days%31 : (days-186)%30);
+  let age = jy - p.y;
+  if (jm < p.m || (jm === p.m && jd < p.d)) age--;
+  if (age < 0) return { age: '—', status: 'نامشخص', retired: false };
+  return { age, status: age >= 65 ? '🎖️ تقاعد' : '✅ فعال', retired: age >= 65 };
+}
+
+function normalizeDegree(d) {
+  if (!d) return '';
+  const map = { '18':'ماستر','16':'لیسانس','14':'فوق بکلوریا','12':'بکلوریا' };
+  const n = normalizeDigits(d.trim());
+  return map[n] || d.trim();
+}
+
+async function saveRecord() {
+  const rec = {};
+  for (const f of FIELDS) {
+    const el = document.getElementById('f_' + f.key);
+    const val = (el?.value || '').trim();
+    if (f.required && !val) { alert(`❌ "${f.label}" الزامی است`); el?.focus(); return; }
+    rec[f.key] = val;
+  }
+  if (!rec.eTazkira && !rec.paperTazkira) { alert('❌ حداقل یکی از تذکره‌ها الزامی است'); return; }
+  if (!parseShamsi(rec.birthDate)) { alert('❌ تاریخ تولد نامعتبر — نمونه: 1360/02/22'); return; }
+  rec.degree = normalizeDegree(rec.degree);
+  rec.schoolName = currentUser.schoolName || currentUser.username;
+  rec.district = currentUser.district || '';
+
+  try {
+    await api('/api/records', { method: 'POST', body: rec });
+    const st = calcAge(rec.birthDate);
+    alert(`✅ ذخیره شد\n👤 ${rec.firstName} ${rec.lastName}\n📅 سن: ${st.age} — ${st.status}`);
+    toggleForm();
+    await loadRecords();
+  } catch (e) { alert('❌ ' + e.message); }
+}
+
+const COLS = [
+  { key: 'firstName', label: 'اسم' },
+  { key: 'lastName', label: 'تخلص' },
+  { key: 'fatherName', label: 'ولد' },
+  { key: 'jobCode', label: 'کد بست' },
+  { key: 'degree', label: 'درجه' },
+  { key: 'birthDate', label: 'تاریخ تولد' },

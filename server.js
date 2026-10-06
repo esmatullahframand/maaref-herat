@@ -1,4 +1,4 @@
- const express = require('express');
+const express = require('express');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -96,11 +96,11 @@ app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
-    const user = result.rows[0];
+    const user = result.rows[0]; // اصلاح شد
     if (!user) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
     const token = sign(user);
-    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolName: user.schoolname, district: user.district } });
+    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolName: user.schoolName, district: user.district } }); // حروف کوچک فیکس شد
   } catch (e) {
     res.status(500).json({ error: 'خطای سرور' });
   }

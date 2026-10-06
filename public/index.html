@@ -4,25 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ریاست معارف ولایت هرات - سیستم مدیریت کارمندان</title>
-    <!-- استایل بومی و داخلی بدون وابستگی به اینترنت خارجی برای حل مشکل تو در تو شدن صفحه -->
     <style>
         * { box-sizing: border-box; transition: all 0.2s ease; }
         body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; color: #333; direction: rtl; }
         .d-none { display: none !important; }
-        
-        /* صفحه ورود */
-        .login-container { min-vh: 100vh; display: flex; align-items: center; justify-content: center; height: 100vh; padding: 15px; }
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; height: 100vh; padding: 15px; }
         .login-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 420px; text-align: center; }
         .login-card h2 { color: #0056b3; margin-bottom: 5px; font-size: 20px; }
         .login-card h4 { color: #666; margin-bottom: 25px; font-weight: normal; font-size: 14px; }
-        
-        /* فرم ها */
         .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
         .form-control:focus { border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,86,179,0.15); }
-        
-        /* دکمه ها */
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background-color: #0056b3; color: white; }
         .btn-primary:hover { background-color: #004085; }
@@ -31,30 +24,20 @@
         .btn-danger { background-color: #ef4444; color: white; }
         .btn-secondary { background-color: #6b7280; color: white; }
         .w-100 { width: 100%; }
-        
-        /* تاپ بار و منوها */
         .topbar { background: #0056b3; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .topbar h3 { margin: 0; font-size: 18px; }
         .main-container { padding: 25px; max-width: 1400px; margin: 0 auto; }
-        
-        /* کارت ها و چیدمان */
         .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; border: 1px solid #e2e8f0; }
         .row { display: flex; flex-wrap: wrap; gap: 15px; }
         .col-6 { flex: 1; min-width: 280px; }
-        
-        /* جدول واکنش گرا */
         .table-responsive { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: center; }
         th { background-color: #f8fafc; font-weight: bold; color: #334155; }
         tr:hover { background-color: #f1f5f9; }
-        
-        /* نشان وضعیت تایید */
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
         .badge-success { background-color: #dcfce7; color: #15803d; }
         .badge-warning { background-color: #fef3c7; color: #92400e; }
-        
-        /* پاپ آپ مودال اختصاصی */
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 9999; padding: 15px; }
         .custom-modal.active { display: flex; }
         .modal-content { background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
@@ -64,7 +47,7 @@
 </head>
 <body>
 
-    <!-- صفحه ورود کاربری -->
+    <!-- صفحه ورود -->
     <div id="loginSection" class="login-container">
         <div class="login-card">
             <h2>ریاست معارف ولایت هرات</h2>
@@ -83,7 +66,7 @@
         </div>
     </div>
 
-    <!-- داشبورد اصلی پس از ورود موفق -->
+    <!-- پنل داشبورد اصلی مدیریت -->
     <div id="dashboardSection" class="d-none">
         <div class="topbar">
             <h3>پنل مدیریتی معارف هرات</h3>
@@ -94,7 +77,6 @@
         </div>
 
         <div class="main-container">
-            <!-- ابزار جستجو و دکمه جدید -->
             <div class="card">
                 <div class="row">
                     <div class="col-6">
@@ -107,7 +89,6 @@
                 </div>
             </div>
 
-            <!-- جدول نمایش اطلاعات پرسنل -->
             <div class="card">
                 <h4 style="margin-top: 0; color: #0056b3;">📋 لیست پرسنل ثبت شده</h4>
                 <div class="table-responsive">
@@ -132,7 +113,7 @@
         </div>
     </div>
 
-    <!-- مۆدال اختصاصی و بومی ثبت و ویرایش کارمند -->
+    <!-- مۆدال پنجره‌ای ثبت و ویرایش معلومات -->
     <div id="recordModal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header" id="modalTitle">ثبت معلومات کارمند جدید</div>
@@ -180,3 +161,17 @@
                             <label>آمریت مربوطه / مرکز</label>
                             <input type="text" id="formDistrict" class="form-control" required>
                         </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeFormModal()">انصراف</button>
+                    <button type="submit" class="btn btn-success">💾 ذخیره معلومات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {

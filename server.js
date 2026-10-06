@@ -143,7 +143,7 @@ app.get('/api/records', authRequired, async (req, res) => {
       result = await pool.query(
         `SELECT r.*, u.schoolname as "userSchool", u.district as "userDistrict" 
          FROM records r LEFT JOIN users u ON r.userid = u.id 
-         WHERE r.schoolname ILIKE $1 OR r.district ILIKE $1 OR r.data ILIKE $1 OR r.status ILIKE $1
+         WHERE r.schoolname ILIKE $1 OR r.district ILIKE $1 OR CAST(r.data AS TEXT) ILIKE $1 OR r.status ILIKE $1
          ORDER BY r.id DESC`, 
         [`%${search}%`]
       );
@@ -154,7 +154,7 @@ app.get('/api/records', authRequired, async (req, res) => {
     if (search) {
       result = await pool.query(
         `SELECT * FROM records 
-         WHERE userid = $1 AND (schoolname ILIKE $2 OR district ILIKE $2 OR data ILIKE $2) 
+         WHERE userid = $1 AND (schoolname ILIKE $2 OR district ILIKE $2 OR CAST(data AS TEXT) ILIKE $2) 
          ORDER BY id DESC`, 
         [req.user.id, `%${search}%`]
       );
@@ -183,9 +183,12 @@ app.post('/api/records', authRequired, async (req, res) => {
   
   const job = String(body.job || body.وظیفه || body.position || '').trim();
   const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
+  
+  // بررسی دقیق عنوان وظیفه برای معافیت کارکنان خدماتی، ملازم و معتمد
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
-  if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null')) {
+  // بررسی جامع خالی بودن فیلد تحصیلات
+  if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null' || degree.replace(/\s/g, '') === '')) {
     return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
   }
 
@@ -195,22 +198,27 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 app.put('/api/records/:id', authRequired, async (req, res) => {
-  const result = await pool.query('SELECT * FROM records WHERE id = \$1', [req.params.id]);
-  const rec = result.rows[0];
-  if (!rec) return res.status(404).json({ error: 'یافت نشد' });
-  if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
-  
-  const body = req.body || {};
-  const job = String(body.job || body.وظیفه || body.position || '').trim();
-  const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
-  const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
-  
-  if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null')) {
-    return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
-  }
+  try {
+    const result = await pool.query('SELECT * FROM records WHERE id = \$1', [req.params.id]);
+    const rec = result.rows[0];
+    if (!rec) return res.status(404).json({ error: 'یافت نشد' });
+    if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
+    
+    const body = req.body || {};
+    const job = String(body.job || body.وظیفه || body.position || '').trim();
+    const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
+    
+    const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
+    
+    if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null' || degree.replace(/\s/g, '') === '')) {
+      return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
+    }
 
-  await pool.query('UPDATE records SET schoolname=\$1, district=\$2, data=\$3 WHERE id=\$4', [body.schoolName || rec.schoolname, body.district || rec.district, JSON.stringify(body), req.params.id]);
-  res.json({ ok: true });
+    await pool.query('UPDATE records SET schoolname=\$1, district=\$2, data=\$3 WHERE id=\$4', [body.schoolName || rec.schoolname, body.district || rec.district, JSON.stringify(body), req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'خطای سرور در ویرایش' });
+  }
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));

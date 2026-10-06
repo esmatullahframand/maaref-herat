@@ -47,10 +47,10 @@ async function initDB() {
     `);
 
     // بررسی و ساخت ادمین پیش‌فرض
-    const res = await client.query('SELECT * FROM users WHERE username = \$1', ['admin']);
+    const res = await client.query("SELECT * FROM users WHERE username = 'admin'");
     if (res.rows.length === 0) {
       const hash = bcrypt.hashSync('admin123', 10);
-      await client.query('INSERT INTO users (username, password, role) VALUES (\$1, \$2, \$3)', ['admin', hash, 'admin']);
+      await client.query("INSERT INTO users (username, password, role) VALUES ('admin', '" + hash + "', 'admin')");
       console.log('✅ ادمین ساخته شد: admin / admin123');
     }
   } catch (err) {
@@ -90,16 +90,19 @@ function authRequired(req, res, next) {
   }
 }
 
-// مسیر ورود به سیستم اصلاح شده با کروشه صفر برای پستگرس
+// مسیر ورود به سیستم کاملاً فیکس شده با ساختار دیتابیس پستگرس
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
     
-    const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
-    const user = result.rows[0]; // این بخش دقیقاً اصلاح شد
+    const result = await pool.query("SELECT * FROM users WHERE username = \$1", [username]);
     
-    if (!user) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'نام کاربری یافت نشد' });
+    }
+    
+    const user = result.rows[0]; // فیکس شد: خواندن دقیق سطر اول دیتابیس پستگرس
     
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: 'رمز عبور اشتباه' });
@@ -116,6 +119,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/logout', (req, res) => res.json({ ok: true }));
 app.get('/api/auth/me', authRequired, (req, res) => res.json(req.user));
 
+// سیستم جستجوی هوشمند و سریع متنی
 app.get('/api/records', authRequired, async (req, res) => {
   let result;
   const search = req.query.search || '';

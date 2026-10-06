@@ -167,6 +167,17 @@ app.post('/api/records', authRequired, async (req, res) => {
   const body = req.body || {};
   const schoolName = body.schoolName || req.user.schoolName || '';
   const district = body.district || req.user.district || '';
+  
+  // اعتبارسنجی فیلد تحصیلات بر اساس وظیفه فرد
+  const job = body.job || body.وظیفه || '';
+  const degree = body.degree || body.درجه_تحصیل || body.تحصیلات || '';
+  
+  const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
+  
+  if (!isServiceStaff && !degree.trim()) {
+    return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
+  }
+
   await pool.query('INSERT INTO records (userid, schoolname, district, data) VALUES (\$1, \$2, \$3, \$4)', [req.user.id, schoolName, district, JSON.stringify(body)]);
   res.json({ ok: true });
 });
@@ -176,7 +187,19 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
   const rec = result.rows[0];
   if (!rec) return res.status(404).json({ error: 'یافت نشد' });
   if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
+  
   const body = req.body || {};
+  
+  // اعتبارسنجی فیلد تحصیلات در هنگام ویرایش
+  const job = body.job || body.وظیفه || '';
+  const degree = body.degree || body.درجه_تحصیل || body.تحصیلات || '';
+  
+  const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
+  
+  if (!isServiceStaff && !degree.trim()) {
+    return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
+  }
+
   await pool.query('UPDATE records SET schoolname=\$1, district=\$2, data=\$3 WHERE id=\$4', [body.schoolName || rec.schoolname, body.district || rec.district, JSON.stringify(body), req.params.id]);
   res.json({ ok: true });
 });

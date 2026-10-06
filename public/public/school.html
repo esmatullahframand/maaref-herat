@@ -4,72 +4,120 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>پنل مکتب — معارف هرات</title>
-<!-- استفاده از استایل های استاندارد و شکیل برای حل مشکل تو در تو شدن صفحه -->
-<link href="https://jsdelivr.net" rel="stylesheet">
-<link href="https://cloudflare.com" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://jsdelivr.net"></script>
+<script src="https://jsdelivr.net"></script>
+<!-- طراحی اختصاصی و بومی بدون وابستگی به لینک‌های خارجی برای حل دائمی مشکل تو در تو شدن صفحه -->
 <style>
-  @import url('https://googleapis.com');
-  body { font-family: 'Vazirmatn', sans-serif; background-color: #f4f6f9; padding: 0; margin: 0; }
-  .topbar { background: #0056b3; color: #fff; padding: 15px 25px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-  .card-custom { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: none; margin-bottom: 25px; }
-  .stat-box { background: linear-gradient(135deg, #eef6ff, #dbeafe); border: 1px solid #bcd8f5; border-radius: 10px; padding: 15px; text-align: center; }
+  * { box-sizing: border-box; transition: all 0.2s ease; }
+  body { font-family: Tahoma, Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 0; direction: rtl; color: #333; }
+  .d-none { display: none !important; }
+  
+  /* تاپ بار اصلی */
+  .topbar { background: #0056b3; color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .topbar h1 { font-size: 18px; margin: 0; }
+  .topbar .info { font-size: 13px; opacity: .9; margin-top: 4px; }
+  .topbar button { background: rgba(255,255,255,.2); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+  .topbar button:hover { background: rgba(255,255,255,.3); }
+  
+  .container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
+  
+  /* کارت‌ها */
+  .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+  .card h2 { color: #0056b3; font-size: 16px; margin: 0 0 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  
+  /* بخش آمار */
+  .stats-bar { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 5px; }
+  .stat-box { background: linear-gradient(135deg, #eef6ff, #dbeafe); border: 1px solid #bcd8f5; border-radius: 10px; padding: 15px; font-size: 14px; flex: 1; min-width: 180px; text-align: center; }
   .stat-box b { color: #0056b3; font-size: 24px; display: block; margin-top: 5px; }
-  .status-badge { font-size: 12px; padding: 5px 10px; border-radius: 20px; }
-  .form-label { font-weight: bold; color: #4a5568; }
+  .stat-box.green { background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac; }
+  .stat-box.green b { color: #15803d; }
+  .stat-box.orange { background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fcd34d; }
+  .stat-box.orange b { color: #b45309; }
+  
+  /* دکمه‌ها */
+  .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+  .btn-green { background: #10b981; color: white; }
+  .btn-green:hover { background: #059669; }
+  .btn-blue { background: #0056b3; color: white; }
+  .btn-blue:hover { background: #004085; }
+  .btn-red { background: #dc2626; color: white; }
+  .btn-red:hover { background: #b91c1c; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
+  
+  /* فرم شبکه ای */
+  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+  .form-group { display: flex; flex-direction: column; text-align: right; }
+  .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
+  .form-group input, .form-group select { padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 14px; background: #fff; outline: none; }
+  .form-group input:focus { border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,86,179,.12); }
+  
+  /* جستجو و جدول */
+  .search-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; width: 100%; }
+  .search-box input { flex: 1; min-width: 250px; padding: 11px 14px; border: 2px solid #0056b3; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; }
+  .table-wrap { overflow-x: auto; background: white; border: 1px solid #cbd5e1; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #cbd5e1; }
+  th { background: #f1f5f9; font-weight: bold; color: #334155; position: sticky; top: 0; }
+  tbody tr:hover { background: #f8fafc; }
+  
+  /* نشان وضعیت */
+  .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-warning { background: #fef3c7; color: #92400e; }
+  
+  /* مۆدال پنجره‌ای کاملاً پویا */
+  .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
+  .custom-modal.active { display: flex; }
+  .modal-box { background: #fff; border-radius: 12px; padding: 25px; max-width: 850px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+  .modal-box h3 { margin: 0 0 15px; color: #0056b3; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; font-size: 18px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+  
+  @media (max-width: 768px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<div class="topbar d-flex justify-content-between align-items-center px-4 py-3 bg-primary text-white mb-4">
+<!-- تاپ بار شکیل پنل مکتب -->
+<div class="topbar">
   <div>
-    <h5 class="mb-0 fw-bold">🏫 مکتب: <span id="schoolLabel">...</span></h5>
-    <small class="opacity-75">📍 آمریت / ولسوالی: <span id="districtLabel">...</span></small>
+    <h1>🏫 مکتب: <span id="schoolLabel">...</span></h1>
+    <div class="info">📍 آمریت / ولسوالی: <span id="districtLabel">...</span></div>
   </div>
-  <button class="btn btn-light btn-sm fw-bold px-3 text-danger" onclick="logout()"><i class="fa-solid fa-power-off"></i> خروج</button>
+  <button onclick="logout()">🚪 خروج از پنل</button>
 </div>
 
-<div class="container-fluid px-4">
+<div class="container">
 
-  <!-- بخش آمار کارمندان مکتب -->
-  <div class="card card-custom">
-    <div class="row g-3 mb-3">
-      <div class="col-md-4">
-        <div class="stat-box">📊 کل کارمندان ثبت‌شده <b id="totalCount">0</b></div>
-      </div>
-      <div class="col-md-4">
-        <div class="stat-box" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;">✅ تأیید شده توسط معارف <b id="approvedCount" style="color: #15803d;">0</b></div>
-      </div>
-      <div class="col-md-4">
-        <div class="stat-box" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fcd34d;">⏳ در انتظار تأیید ادمین <b id="pendingCount" style="color: #b45309;">0</b></div>
-      </div>
+  <!-- خلاصه وضعیت و آمار زنده مکتب -->
+  <div class="card">
+    <div class="stats-bar">
+      <div class="stat-box">📊 کل کارمندان ثبت‌شده <b id="totalCount">0</b></div>
+      <div class="stat-box green">✅ تأیید شده معارف <b id="approvedCount">0</b></div>
+      <div class="stat-box orange">⏳ در انتظار تأیید <b id="pendingCount">0</b></div>
     </div>
-    <button class="btn btn-success fw-bold px-4" data-bs-toggle="modal" data-bs-target="#recordModal" onclick="clearForm()"><i class="fa-solid fa-user-plus"></i> اضافه کردن کارمند جدید</button>
+    <button class="btn btn-green" style="margin-top: 15px;" onclick="openFormModal()">➕ اضافه کردن کارمند جدید</button>
   </div>
 
-  <!-- لیست نهایی جدول کارمندان مکتب -->
-  <div class="card card-custom">
-    <h5 class="text-primary mb-3 fw-bold"><i class="fa-solid fa-list-check"></i> لیست پرسنل و کارمندان مکتب</h5>
-    <div class="row g-3 mb-3">
-      <div class="col-md-9">
-        <input id="searchInput" class="form-control" placeholder="🔍 جستجو در لیست کارمندان..." oninput="loadSchoolRecords()">
-      </div>
-      <div class="col-md-3">
-        <button class="btn btn-outline-primary w-100 fw-bold" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> خروجی اکسل مکتب</button>
-      </div>
+  <!-- بخش اصلی نمایش جدول پرسنل مکتب -->
+  <div class="card">
+    <h2>📋 لیست کارمندان و پرسنل رسمی مکتب</h2>
+    <div class="search-box">
+      <input id="searchInput" placeholder="🔍 جستجوی هوشمند در لیست کارمندان (نام، نام پدر، وظیفه)..." oninput="loadSchoolRecords()">
+      <button class="btn btn-blue" onclick="exportToExcel()">📥 خروجی اکسل مکتب</button>
     </div>
-    <div class="table-responsive">
-      <table class="table table-hover align-middle border">
-        <thead class="table-light">
+    <div class="table-wrap">
+      <table>
+        <thead>
           <tr>
             <th>آی‌دی</th>
             <th>نام کارمند</th>
             <th>نام پدر</th>
-            <th>وظیفه</th>
+            <th>وظیفه پرسنلی</th>
             <th>درجه تحصیل</th>
+            <th>رشته تحصیلی</th>
             <th>وضعیت تأیید معارف</th>
-            <th class="text-center">عملیات</th>
+            <th>عملیات مدیریت</th>
           </tr>
         </thead>
         <tbody id="schoolTableBody"></tbody>
@@ -79,62 +127,52 @@
 
 </div>
 
-<!-- مۆدال پنجره‌ای ثبت کارمند جدید برای مکاتب -->
-<div class="modal fade" id="recordModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content" style="border-radius:12px;">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="modalTitle">📝 ثبت معلومات کارمند جدید</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- مۆدال اختصاصی ثبت و ویرایش معلومات بدون تداخل ظاهری -->
+<div id="recordModal" class="custom-modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">📝 ثبت معلومات کارمند جدید</h3>
+    <form id="recordForm">
+      <input type="hidden" id="recordId">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>نام کارمند</label>
+          <input type="text" id="formName" required>
+        </div>
+        <div class="form-group">
+          <label>نام پدر</label>
+          <input type="text" id="formFatherName" required>
+        </div>
+        <div class="form-group">
+          <label>وظیفه فعلی</label>
+          <input type="text" id="formJob" required placeholder="معلم، مدیر، کارکن خدماتی...">
+        </div>
+        <div class="form-group">
+          <label>درجه تحصیلات</label>
+          <input type="text" id="formDegree" placeholder="برای معلمان و مدیران حتمی است">
+        </div>
+        <div class="form-group">
+          <label>رشته تحصیلی</label>
+          <input type="text" id="formField">
+        </div>
       </div>
-      <div class="modal-body p-4">
-        <form id="recordForm">
-          <input type="hidden" id="recordId">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">نام کارمند</label>
-              <input type="text" id="formName" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">نام پدر</label>
-              <input type="text" id="formFatherName" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">وظیفه</label>
-              <input type="text" id="formJob" class="form-control" required placeholder="مثال: معلم، مدیر، کارکن خدماتی">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">درجه تحصیل</label>
-              <input type="text" id="formDegree" class="form-control" placeholder="برای معلمان و مدیران حتمی است">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">رشته تحصیلی</label>
-              <input type="text" id="formField" class="form-control">
-            </div>
-          </div>
-          <div class="text-end mt-4">
-            <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">انصراف</button>
-            <button type="submit" class="btn btn-success px-4">💾 ذخیره معلومات</button>
-          </div>
-        </form>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-red" onclick="closeFormModal()">انصراف</button>
+        <button type="submit" class="btn btn-green">💾 ذخیره و ثبت معلومات</button>
       </div>
-    </div>
+    </form>
   </div>
 </div>
 
-<script src="https://jsdelivr.net"></script>
 <script>
   function getToken() { return localStorage.getItem('hr_token') || document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1"); }
   function getUser() {
     try { return JSON.parse(localStorage.getItem('hr_user') || 'null'); } catch { return null; }
   }
 
-  let currentUser = getUser() || { username: 'مکتب معارف', role: 'school', schoolName: 'مکتب مربوطه', district: 'مرکز هرات' };
+  let currentUser = getUser() || { username: 'کاربر مکتب', role: 'school', schoolName: 'مکتب مربوطه', district: 'ولسوالی هرات' };
   
   document.getElementById('schoolLabel').textContent = currentUser.schoolName || currentUser.username;
   document.getElementById('districtLabel').textContent = currentUser.district || '—';
-
-  const recordModal = new bootstrap.Modal(document.getElementById('recordModal'));
 
   async function loadSchoolRecords() {
     const search = document.getElementById('searchInput').value;
@@ -152,8 +190,8 @@
         
         const info = row.data || {};
         let statusBadge = row.status === 'approved' ? 
-          '<span class="badge bg-success status-badge">✅ تایید شده</span>' : 
-          '<span class="badge bg-warning text-dark status-badge">⏳ در انتظار تایید</span>';
+          '<span class="badge badge-green">✅ تایید شده</span>' : 
+          '<span class="badge badge-warning">⏳ در انتظار تایید</span>';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -162,53 +200,6 @@
           <td>${info.fatherName || '-'}</td>
           <td>${info.job || '-'}</td>
           <td>${info.degree || '-'}</td>
+          <td>${info.field || '-'}</td>
           <td>${statusBadge}</td>
-          <td class="text-center">
-            <button class="btn btn-sm btn-primary" onclick="openEditModal(${row.id}, ${JSON.stringify(row)})"><i class="fa-solid fa-pen-to-square"></i> ویرایش</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('totalCount').textContent = total;
-      document.getElementById('approvedCount').textContent = approved;
-      document.getElementById('pendingCount').textContent = pending;
-    } catch (err) { console.error(err); }
-  }
-
-  document.getElementById('recordForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('recordId').value;
-    const body = {
-      name: document.getElementById('formName').value,
-      fatherName: document.getElementById('formFatherName').value,
-      job: document.getElementById('formJob').value,
-      degree: document.getElementById('formDegree').value,
-      field: document.getElementById('formField').value,
-      schoolName: currentUser.schoolName,
-      district: currentUser.district
-    };
-
-    const url = id ? `/api/records/${id}` : '/api/records';
-    const method = id ? 'PUT' : 'POST';
-
-    const res = await fetch(url, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert('معلومات کارمند با موفقیت ثبت شد و به وضعیت در انتظار تأیید درآمد.');
-      recordModal.hide();
-      loadSchoolRecords();
-    } else { alert(data.error || 'خطا در ثبت اطلاعات'); }
-  });
-
-  function openEditModal(id, row) {
-    document.getElementById('modalTitle').innerText = '✏️ ویرایش معلومات کارمند';
-    document.getElementById('recordId').value = id;
-    document.getElementById('formName').value = row.data.name || '';
-    document.getElementById('formFatherName').value = row.data.fatherName || '';
-    document.getElementById('formJob').value = row.data.job || '';
-    document.getElementById('formDegree').value = row.data.degree || '';
+          <td>

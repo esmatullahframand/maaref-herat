@@ -4,67 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ریاست معارف ولایت هرات - سیستم مدیریت کارمندان</title>
-    <!-- لود مجدد استایل‌ها برای حل مشکل به هم ریختگی -->
     <link href="https://jsdelivr.net" rel="stylesheet">
     <link href="https://cloudflare.com" rel="stylesheet">
     <style>
         @import url('https://googleapis.com');
         body { font-family: 'Vazirmatn', sans-serif; background-color: #f4f6f9; }
-        .card-custom { box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: none; border-radius: 12px; }
-        .status-badge { font-size: 13px; padding: 4px 10px; border-radius: 20px; }
+        .card-custom { box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; border-radius: 12px; background: #fff; }
+        .status-badge { font-size: 13px; padding: 5px 12px; border-radius: 30px; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <!-- فرم ورود زیبا -->
+    <!-- فرم ورود کاملاً حرفه‌ای و امن -->
     <div id="loginSection" class="container min-vh-100 d-flex align-items-center justify-content-center">
-        <div class="card card-custom p-4 text-center" style="width: 100%; max-width: 420px;">
-            <h4 class="text-primary mb-3"><i class="fa-solid fa-building-columns"></i> ریاست معارف ولایت هرات</h4>
+        <div class="card card-custom p-4 text-center" style="width: 100%; max-width: 430px;">
+            <h4 class="text-primary mb-2"><i class="fa-solid fa-building-columns"></i> ریاست معارف ولایت هرات</h4>
             <h6 class="text-muted mb-4">سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h6>
             <form id="loginForm">
                 <div class="mb-3 text-start">
-                    <label class="form-label">نام کاربری</label>
-                    <input type="text" id="username" class="form-control" required placeholder="نام کاربری را وارد کنید">
+                    <label class="form-label fw-bold">نام کاربری</label>
+                    <input type="text" id="username" class="form-control py-2" required placeholder="نام کاربری را داخل کادر بنویسید">
                 </div>
                 <div class="mb-4 text-start">
-                    <label class="form-label">رمز عبور</label>
-                    <input type="password" id="password" class="form-control" required placeholder="رمز عبور را وارد کنید">
+                    <label class="form-label fw-bold">رمز عبور</label>
+                    <input type="password" id="password" class="form-control py-2" required placeholder="رمز عبور را داخل کادر بنویسید">
                 </div>
-                <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa-solid fa-right-to-bracket"></i> ورود به سیستم</button>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold"><i class="fa-solid fa-right-to-bracket"></i> ورود امن به سیستم</button>
             </form>
         </div>
     </div>
 
-    <!-- پنل اصلی داشبورد مدیریت -->
+    <!-- پنل اصلی سیستم پس از ورود موفقیت آمیز -->
     <div id="dashboardSection" class="d-none">
-        <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
-            <div class="container-fluid">
-                <span class="navbar-brand mb-0 h1"><i class="fa-solid fa-building-columns"></i> پنل مدیریتی معارف هرات</span>
+        <nav class="navbar navbar-dark bg-primary shadow mb-4">
+            <div class="container-fluid px-4">
+                <span class="navbar-brand mb-0 h1 fw-bold"><i class="fa-solid fa-building-columns"></i> پنل مدیریتی معارف هرات</span>
                 <div class="d-flex align-items-center gap-3">
-                    <span id="userInfo" class="text-white"></span>
-                    <button class="btn btn-light btn-sm" onclick="logout()"><i class="fa-solid fa-power-off text-danger"></i> خروج</button>
+                    <span id="userInfo" class="text-white fw-bold"></span>
+                    <button class="btn btn-danger btn-sm px-3" onclick="logout()"><i class="fa-solid fa-power-off"></i> خروج از حساب</button>
                 </div>
             </div>
         </nav>
 
         <div class="container-fluid px-4">
-            <!-- کادر جستجو و دکمه ها -->
+            <!-- کادر جستجو هوشمند و دکمه ثبت -->
             <div class="card card-custom p-3 mb-4">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-6">
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" id="searchInput" class="form-control" placeholder="جستجوی هوشمند (نام، وظیفه، مکتب...)" oninput="loadRecords()">
+                            <input type="text" id="searchInput" class="form-control" placeholder="جستجوی فوری کارمندان بر اساس نام، وظیفه، مکتب یا آمریت..." oninput="loadRecords()">
                         </div>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#recordModal" onclick="clearForm()"><i class="fa-solid fa-user-plus"></i> اضافه کردن فرد جدید</button>
-                        <button class="btn btn-outline-primary" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> خروجی اکسل</button>
+                        <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#recordModal" onclick="clearForm()"><i class="fa-solid fa-user-plus"></i> ثبت کارمند جدید</button>
+                        <button class="btn btn-outline-primary px-3" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> دانلود نسخه اکسل</button>
                     </div>
                 </div>
             </div>
 
-            <!-- جدول با ستون وضعیت تایید ادمین -->
+            <!-- جدول نمایش و لیست کارمندان معارف هرات -->
             <div class="card card-custom p-3">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -73,12 +72,12 @@
                                 <th>آی‌دی</th>
                                 <th>نام کارمند</th>
                                 <th>نام پدر</th>
-                                <th>وظیفه</th>
+                                <th>وظیفه پرسنلی</th>
                                 <th>درجه تحصیل</th>
                                 <th>محل وظیفه (مکتب)</th>
-                                <th>آمریت / مرکز</th>
-                                <th>وضعیت تایید</th>
-                                <th class="text-center">عملیات</th>
+                                <th>آمریت مربوطه</th>
+                                <th>وضعیت تأیید</th>
+                                <th class="text-center">عملیات مدیریت</th>
                             </tr>
                         </thead>
                         <tbody id="recordsTableBody"></tbody>
@@ -88,50 +87,50 @@
         </div>
     </div>
 
-    <!-- فرم پنجره‌ای ثبت و ویرایش کارمند (مۆدال) -->
+    <!-- مۆدال (پنجره پاپ آپ) اختصاصی ثبت معلومات کارمندان -->
     <div class="modal fade" id="recordModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px;">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="modalTitle">ثبت معلومات کارمند جدید</h5>
+                    <h5 class="modal-title" id="modalTitle">ثبت معلومات کارمند جدید معارف</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <form id="recordForm">
                         <input type="hidden" id="recordId">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label">نام کارمند</label>
+                                <label class="form-label fw-bold">نام کارمند</label>
                                 <input type="text" id="formName" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">نام پدر</label>
+                                <label class="form-label fw-bold">نام پدر</label>
                                 <input type="text" id="formFatherName" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">وظیفه</label>
-                                <input type="text" id="formJob" class="form-control" required placeholder="مثال: معلم، مدیر، کارکن خدماتی">
+                                <label class="form-label fw-bold">وظیفه فعلی</label>
+                                <input type="text" id="formJob" class="form-control" required placeholder="مثال: معلم، مدیر، کارکن خدماتی، معتمد">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">درجه تحصیل</label>
-                                <input type="text" id="formDegree" class="form-control" placeholder="برای معلمان و مدیران الزامی است">
+                                <label class="form-label fw-bold">درجه تحصیلات</label>
+                                <input type="text" id="formDegree" class="form-control" placeholder="برای معلمان و مدیران حتمی است">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">رشته تحصیل</label>
+                                <label class="form-label fw-bold">رشته تحصیلی</label>
                                 <input type="text" id="formField" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">محل وظیفه (مکتب)</label>
+                                <label class="form-label fw-bold">محل دقیق وظیفه (مکتب)</label>
                                 <input type="text" id="formSchool" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">آمریت مربوطه</label>
+                                <label class="form-label fw-bold">آمریت مربوطه / مرکز</label>
                                 <input type="text" id="formDistrict" class="form-control" required>
                             </div>
                         </div>
                         <div class="text-end mt-4">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                            <button type="submit" class="btn btn-success">💾 ذخیره معلومات</button>
+                            <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">انصراف</button>
+                            <button type="submit" class="btn btn-success px-4">💾 ذخیره و ثبت دائم</button>
                         </div>
                     </form>
                 </div>
@@ -159,10 +158,10 @@
                     currentUser = data.user;
                     document.getElementById('loginSection').classList.add('d-none');
                     document.getElementById('dashboardSection').classList.remove('d-none');
-                    document.getElementById('userInfo').innerText = `کاربر: \${currentUser.username}`;
+                    document.getElementById('userInfo').innerText = `کاربر سیستم: \${currentUser.username}`;
                     loadRecords();
-                } else { alert(data.error || 'خطا در ورود'); }
-            } catch (err) { alert('خطا در اتصال به سرور'); }
+                } else { alert(data.error || 'نام کاربری یا رمز عبور اشتباه است.'); }
+            } catch (err) { alert('خطا در اتصال به شبکه سرور'); }
         });
 
         async function loadRecords() {
@@ -173,8 +172,3 @@
                 const tbody = document.getElementById('recordsTableBody');
                 tbody.innerHTML = '';
                 records.forEach(row => {
-                    const info = row.data || {};
-                    let statusHtml = row.status === 'approved' ? 
-                        '<span class="badge bg-success status-badge">✅ تایید شده</span>' : 
-                        '<span class="badge bg-warning text-dark status-badge">⏳ در انتظار تایید</span>';
-                    

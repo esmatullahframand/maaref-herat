@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    <!-- داشبورد مدیریت -->
+    <!-- داشبورد اصلی -->
     <div id="dashboardSection" class="d-none">
         <div class="topbar">
             <h3>پنل مدیریتی معارف هرات (ادمین کل)</h3>
@@ -78,7 +78,7 @@
                 <button id="tabSchools" class="tab-btn" onclick="switchTab('schools')">🏫 مدیریت و اضافه کردن مکاتب</button>
             </div>
 
-            <!-- تب لیست کارمندان -->
+            <!-- بخش کارمندان -->
             <div id="sectionRecords">
                 <div class="card" style="border-radius: 0 12px 12px 12px;">
                     <div class="row">
@@ -109,7 +109,7 @@
                 </div>
             </div>
 
-            <!-- تب مدیریت حساب مکاتب هرات -->
+            <!-- بخش مکاتب -->
             <div id="sectionSchools" class="d-none">
                 <div class="card" style="border-radius: 0 12px 12px 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -137,7 +137,7 @@
         </div>
     </div>
 
-    <!-- مۆدال ساخت حساب مکتب جدید -->
+    <!-- مۆدال مکتب -->
     <div id="schoolModal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">➕ ساخت حساب کاربری مکتب جدید</div>
@@ -160,7 +160,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeSchoolModal()">انصراف</button>
-                    <button type="submit" class="btn btn-success">💾 ایجاد و فعال‌سازی اکانت</button>
+                    <button type="submit" class="btn btn-success"> Create اکانت</button>
                 </div>
             </form>
         </div>
@@ -174,3 +174,5 @@
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',

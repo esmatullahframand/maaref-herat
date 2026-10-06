@@ -3,108 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ریاست معارف ولایت هرات - پنل ادمین</title>
+    <title>ریاست معارف ولایت هرات - ورود به سیستم</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; direction: rtl; }
-        .d-none { display: none !important; }
-        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .login-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .form-control { width: 100%; padding: 10px; margin-bottom: 15px; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background-color: #0056b3; }
-        .topbar { background: #0056b3; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .main-container { padding: 25px; max-width: 1400px; margin: 0 auto; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
-        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; }
-        th { background-color: #f8fafc; }
-        .badge-success { background-color: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
-        .badge-warning { background-color: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 20px; font-size: 11px; }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; color: #333; direction: rtl; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .login-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 420px; text-align: center; }
+        .login-card h2 { color: #0056b3; margin-bottom: 5px; font-size: 20px; }
+        .login-card h4 { color: #666; margin-bottom: 25px; font-weight: normal; font-size: 14px; }
+        .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
+        .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
+        .form-control:focus { border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,86,179,0.15); }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; background-color: #0056b3; color: white; }
+        .btn:hover { background-color: #004085; }
     </style>
 </head>
 <body>
-    <div id="loginSection" class="login-container">
-        <div class="login-card">
-            <h2>معارف ولایت هرات</h2>
-            <form id="loginForm">
-                <input type="text" id="username" class="form-control" required placeholder="نام کاربری ادمین">
-                <input type="password" id="password" class="form-control" required placeholder="رمز عبور">
-                <button type="submit" class="btn" style="width: 100%;">ورود به پنل مدیریت کل</button>
-            </form>
-        </div>
-    </div>
 
-    <div id="dashboardSection" class="d-none">
-        <div class="topbar">
-            <h3>پنل مدیریتی معارف هرات (ادمین کل)</h3>
-            <button class="btn" onclick="logout()" style="background:#ef4444">خروج</button>
-        </div>
-        <div class="main-container">
-            <div class="card">
-                <input type="text" id="searchInput" class="form-control" placeholder="🔍 جستجوی کارمند..." oninput="loadRecords()">
+    <div class="login-card">
+        <h2>ریاست معارف ولایت هرات</h2>
+        <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>نام کاربری</label>
+                <input type="text" id="username" class="form-control" required placeholder="نام کاربری خود را وارد کنید">
             </div>
-            <div class="card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>آی‌دی</th>
-                            <th>نام کارمند</th>
-                            <th>نام پدر</th>
-                            <th>وظیفه</th>
-                            <th>تحصیلات</th>
-                            <th>مکتب مربوطه</th>
-                            <th>آمریت / ولسوالی</th>
-                            <th>وضعیت تایید</th>
-                            <th>عملیات ادمین</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsTableBody"></tbody>
-                </table>
+            <div class="form-group">
+                <label>رمز عبور</label>
+                <input type="password" id="password" class="form-control" required placeholder="رمز عبور خود را وارد کنید">
             </div>
-        </div>
+            <button type="submit" class="btn">ورود به پنل مدیریت</button>
+        </form>
     </div>
 
     <script>
-        let token = '';
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: document.getElementById('username').value, password: document.getElementById('password').value })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                token = data.token;
-                document.getElementById('loginSection').classList.add('d-none');
-                document.getElementById('dashboardSection').classList.remove('d-none');
-                loadRecords();
-            } else { alert(data.error); }
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    // ذخیره کامل اطلاعات ورود در سیستم مروگر
+                    localStorage.setItem('hr_token', data.token);
+                    localStorage.setItem('hr_user', JSON.stringify(data.user));
+                    
+                    // ریدایرکت اتوماتیک به صفحه مدیریت لوکس ادمین یا مدارس بر اساس پاسخ سرور
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.href = (data.user.role === 'admin') ? '/admin.html' : '/school.html';
+                    }
+                } else {
+                    alert(data.error || 'نام کاربری یا رمز عبور اشتباه است');
+                }
+            } catch (err) {
+                alert('خطا در اتصال به سرور معارف هرات');
+            }
         });
-
-        async function loadRecords() {
-            const res = await fetch(`/api/records?search=${document.getElementById('searchInput').value}`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const records = await res.json();
-            const tbody = document.getElementById('recordsTableBody');
-            tbody.innerHTML = '';
-            records.forEach(row => {
-                const info = row.data || {};
-                let statusHtml = row.status === 'approved' ? '<span class="badge-success">تایید شده</span>' : '<span class="badge-warning">در انتظار تایید</span>';
-                let approveBtn = row.status === 'pending' ? `<button class="btn" onclick="approveRecord('${row.id}')" style="background:#10b981; padding:4px 8px; font-size:11px">تایید رسمی</button>` : '';
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${row.id}</td><td><b>${info.name||'-'}</b></td><td>${info.fatherName||'-'}</td><td>${info.job||'-'}</td><td>${info.degree||'-'}</td><td>${row.schoolname}</td><td>${row.district}</td><td>${statusHtml}</td><td>${approveBtn}</td>`;
-                tbody.appendChild(tr);
-            });
-        }
-
-        async function approveRecord(id) {
-            await fetch(`/api/records/${id}/approve`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
-            alert('اطلاعات کارمند تایید شد');
-            loadRecords();
-        }
-        function logout() { location.reload(); }
     </script>
 </body>
 </html>

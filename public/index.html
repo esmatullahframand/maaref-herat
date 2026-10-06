@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ریاست معارف ولایت هرات - سیستم مدیریت کارمندان</title>
+    <title>پنل مدیریت معارف هرات</title>
     <style>
-        * { box-sizing: border-box; transition: all 0.2s ease; }
-        body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; color: #333; direction: rtl; }
+        * { box-sizing: border-box; }
+        body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; direction: rtl; color: #333; }
         .d-none { display: none !important; }
         .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; height: 100vh; padding: 15px; }
         .login-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 420px; text-align: center; }
-        .login-card h2 { color: #0056b3; margin-bottom: 5px; font-size: 20px; }
-        .login-card h4 { color: #666; margin-bottom: 25px; font-weight: normal; font-size: 14px; }
         .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
@@ -20,25 +18,19 @@
         .btn-success { background-color: #10b981; color: white; }
         .btn-danger { background-color: #ef4444; color: white; }
         .btn-secondary { background-color: #6b7280; color: white; }
-        .w-100 { width: 100%; }
-        .topbar { background: #0056b3; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .topbar h3 { margin: 0; font-size: 18px; }
+        .topbar { background: #0056b3; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
         .main-container { padding: 25px; max-width: 1400px; margin: 0 auto; }
         .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .row { display: flex; flex-wrap: wrap; gap: 15px; }
-        .col-6 { flex: 1; min-width: 280px; }
         .table-responsive { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: center; }
-        th { background-color: #f8fafc; font-weight: bold; color: #334155; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
+        th { background-color: #f8fafc; font-weight: bold; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .badge-success { background-color: #dcfce7; color: #15803d; }
         .badge-warning { background-color: #fef3c7; color: #92400e; }
-        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 9999; padding: 15px; }
+        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 9999; }
         .custom-modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .modal-header { font-size: 18px; font-weight: bold; color: #0056b3; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
-        .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+        .modal-content { background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 750px; }
     </style>
 </head>
 <body>
@@ -49,129 +41,100 @@
             <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
             <form id="loginForm">
                 <div class="form-group">
-                    <label>نام کاربری</label>
+                    <label>نام کاربری ادمین</label>
                     <input type="text" id="username" class="form-control" required placeholder="نام کاربری را وارد کنید">
                 </div>
                 <div class="form-group">
                     <label>رمز عبور</label>
                     <input type="password" id="password" class="form-control" required placeholder="رمز عبور را وارد کنید">
                 </div>
-                <button type="submit" class="btn btn-primary w-100">ورود به پنل مدیریت</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">ورود به پنل مدیریت کل</button>
             </form>
         </div>
     </div>
 
     <div id="dashboardSection" class="d-none">
         <div class="topbar">
-            <h3>پنل مدیریتی معارف هرات</h3>
+            <h3>پنل مدیریتی معارف هرات (ادمین کل)</h3>
             <div>
                 <span id="userInfo" style="margin-left: 15px; font-weight: bold;"></span>
-                <button class="btn btn-danger" onclick="logout()" style="padding: 6px 12px; font-size: 12px;">خروج از حساب</button>
+                <button class="btn btn-danger" onclick="logout()">خروج</button>
             </div>
         </div>
 
         <div class="main-container">
             <div class="card">
-                <div class="row">
-                    <div class="col-6">
-                        <input type="text" id="searchInput" class="form-control" placeholder="جستجوی هوشمند (نام، وظیفه، مکتب، آمریت...)" oninput="loadRecords()">
-                    </div>
-                    <div class="col-6" style="text-align: left; display: flex; gap: 10px; justify-content: flex-end;">
-                        <button class="btn btn-success" onclick="openFormModal()">➕ ثبت کارمند جدید</button>
-                        <button class="btn btn-primary" onclick="exportToExcel()">📥 خروجی اکسل</button>
-                    </div>
-                </div>
+                <input type="text" id="searchInput" class="form-control" placeholder="🔍 جستجوی هوشمند در کل معلومات دیتابیس..." oninput="loadRecords()">
             </div>
-
             <div class="card">
-                <h4 style="margin-top: 0; color: #0056b3;">📋 لیست پرسنل ثبت شده</h4>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>آی‌دی</th>
-                                <th>نام کارمند</th>
-                                <th>نام پدر</th>
-                                <th>وظیفه</th>
-                                <th>درجه تحصیل</th>
-                                <th>محل وظیفه (مکتب)</th>
-                                <th>آمریت / مرکز</th>
-                                <th>وضعیت تأیید</th>
-                                <th>عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordsTableBody"></tbody>
-                    </table>
-                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>آی‌دی</th>
+                            <th>نام کارمند</th>
+                            <th>نام پدر</th>
+                            <th>وظیفه</th>
+                            <th>تحصیلات</th>
+                            <th>مکتب</th>
+                            <th>آمریت</th>
+                            <th>وضعیت تایید</th>
+                            <th>عملیات ادمین</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody"></tbody>
+                </table>
             </div>
-        </div>
-    </div>
-
-    <div id="recordModal" class="custom-modal">
-        <div class="modal-content">
-            <div class="modal-header" id="modalTitle">ثبت معلومات کارمند جدید</div>
-            <form id="recordForm">
-                <input type="hidden" id="recordId">
-                <div class="row">
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label>نام کارمند</label>
-                            <input type="text" id="formName" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label>نام پدر</label>
-                            <input type="text" id="formFatherName" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label>وظیفه فعلی</label>
-                            <input type="text" id="formJob" class="form-control" required placeholder="معلم، مدیر، کارکن خدماتی...">
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label>درجه تحصیلات</label>
-                            <input type="text" id="formDegree" class="form-control" placeholder="برای معلمان و مدیران حتمی است">
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label>رشته تحصیلی</label>
-                            <input type="text" id="formField" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label>محل دقیق وظیفه (مکتب)</label>
-                            <input type="text" id="formSchool" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label>آمریت مربوطه / مرکز</label>
-                            <input type="text" id="formDistrict" class="form-control" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeFormModal()">انصراف</button>
-                    <button type="submit" class="btn btn-success">💾 ذخیره معلومات</button>
-                </div>
-            </form>
         </div>
     </div>
 
     <script>
-        let currentUser = null;
-
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            try {
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('hr_token', data.token);
+                localStorage.setItem('hr_user', JSON.stringify(data.user));
+                currentUser = data.user;
+                document.getElementById('loginSection').classList.add('d-none');
+                document.getElementById('dashboardSection').classList.remove('d-none');
+                document.getElementById('userInfo').innerText = `ادمین: ${currentUser.username}`;
+                loadRecords();
+            } else { alert(data.error); }
+        });
+
+        async function loadRecords() {
+            const search = document.getElementById('searchInput').value;
+            const token = localStorage.getItem('hr_token');
+            const res = await fetch(`/api/records?search=${encodeURIComponent(search)}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const records = await res.json();
+            const tbody = document.getElementById('recordsTableBody');
+            tbody.innerHTML = '';
+            records.forEach(row => {
+                const info = row.data || {};
+                let statusHtml = row.status === 'approved' ? '<span class="badge badge-success">تایید شده</span>' : '<span class="badge badge-warning">در انتظار تایید</span>';
+                let approveBtn = row.status === 'pending' ? `<button class="btn btn-success" onclick="approveRecord('${row.id}')" style="padding: 4px 8px; font-size: 11px;">تایید رسمی</button>` : '';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.id}</td><td>${info.name||'-'}</td><td>${info.fatherName||'-'}</td><td>${info.job||'-'}</td><td>${info.degree||'-'}</td><td>${row.schoolname}</td><td>${row.district}</td><td>${statusHtml}</td><td>${approveBtn}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function approveRecord(id) {
+            const token = localStorage.getItem('hr_token');
+            await fetch(`/api/records/${id}/approve`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+            alert('اطلاعات تایید شد');
+            loadRecords();
+        }
+        function logout() { localStorage.clear(); location.reload(); }
+    </script>
+</body>
+</html>

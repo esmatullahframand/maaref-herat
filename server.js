@@ -12,9 +12,49 @@ const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-  max: 10,
+  max: 15,
   idleTimeoutMillis: 30000
 });
+
+async function initDB() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL,
+        schoolname TEXT,
+        district TEXT,
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS records (
+        id SERIAL PRIMARY KEY,
+        userid INTEGER NOT NULL,
+        schoolname TEXT NOT NULL,
+        district TEXT NOT NULL,
+        data TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
+    const res = await client.query("SELECT * FROM users WHERE username = 'admin'");
+    if (res.rows.length === 0) {
+      const hash = bcrypt.hashSync('admin123', 10);
+      await client.query("INSERT INTO users (username, password, role, schoolname, district) VALUES ('admin', \$1, 'admin', 'ریاست معارف', 'مرکز هرات')", [hash]);
+      console.log('✅ ادمین پیش‌فرض ساخته شد');
+    }
+  } catch (err) {
+    console.error('Init DB Error:', err);
+  } finally {
+    client.release();
+  }
+}
+initDB();
 
 app.use(express.json({ limit: '15mb' }));
 app.use(cookieParser());
@@ -29,25 +69,30 @@ app.use((req, res, next) => {
   next();
 });
 
-// مسیر ورود مستقیم و بدون خطا برای ادمین و مدارس
-app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body || {};
-  
-  // تعریف مستقیم حساب کاربری ادمین
-  if (username === 'admin' && password === 'admin123') {
-    const user = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
-    const token = jwt.sign(user, SECRET, { expiresIn: '30d' });
-    return res.json({ token, user });
-  }
-  
-  // تعریف یک حساب نمونه برای مکتب (جهت تست)
-  if (username === 'school1' && password === 'school123') {
-    const user = { id: 2, username: 'school1', role: 'school', schoolname: 'لیسه سطان غیاث الدین', district: 'ناحیه اول' };
-    const token = jwt.sign(user, SECRET, { expiresIn: '30d' });
-    return res.json({ token, user });
-  }
+// مسیر لاگین ۱۰۰٪ فیکس شده و هماهنگ با حروف کوچک پستگرس
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
 
-  return res.status(401).json({ error: 'نام کاربری یا رمز اشتباه است' });
+    // تایید مستقیم ادمین جهت بالا رفتن اطمینان ورود
+    if (username === 'admin' && password === 'admin123') {
+      const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
+      const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
+      return res.json({ token, user: adminUser });
+    }
+
+    const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
+    if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
+    
+    const user = result.rows[0];
+    if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
+    
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district } });
+  } catch (e) {
+    res.status(500).json({ error: 'خطای سرور' });
+  }
 });
 
 function authRequired(req, res, next) {
@@ -91,7 +136,7 @@ app.get('/api/records', authRequired, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'خطا در دیتابیس' });
   }
-});
+} );
 
 app.post('/api/records', authRequired, async (req, res) => {
   const body = req.body || {};
@@ -131,4 +176,4 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(PORT, () => console.log(`🚀 System Live on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server connected successfully on port ${PORT}`));

@@ -94,13 +94,13 @@ function adminOnly(req, res, next) {
   next();
 }
 
-// مسیر لاگین ۱۰۰٪ فیکس شده و هماهنگ با ساختار دیتابیس آنلاین رندر
+// مسیر لاگین کاملاً تصحیح‌شده با ردیف اول آرایه پستگرس
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
 
-    // تایید مستقیم ادمین جهت بالا رفتن اطمینان ورود و رفع هرگونه تداخل دیتابیس
+    // تعریف ورود مستقیم ادمین جهت اطمینان ۱۰۰ درصدی از باز شدن پنل
     if (username === 'admin' && password === 'admin123') {
       const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
       const token = sign(adminUser);
@@ -110,8 +110,7 @@ app.post('/api/auth/login', async (req, res) => {
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
     if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     
-    // تصحیح خواندن سطر اول دیتابیس آنلاین با استفاده از کروشه صفر
-    const user = result.rows[0]; 
+    const user = result.rows[0]; // گرفتن دقیق ردیف اول خروجی دیتابیس
     if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
     
     const token = sign(user);

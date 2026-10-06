@@ -17,7 +17,7 @@ const pool = new Pool({
   idleTimeoutMillis: 30000
 });
 
-// ساخت جدول‌ها بدون کوچک‌ترین خطای نگارشی
+// ساخت جدول‌ها بدون خطای نگارشی
 async function initDB() {
   const client = await pool.connect();
   try {
@@ -90,18 +90,26 @@ function authRequired(req, res, next) {
   }
 }
 
-// مسیر احراز هویت و لاگین صحیح کاربران و ادمین
+// مسیر ورود به سیستم کاملاً فیکس شده با ساختار پستگرس رندر
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
+    
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
-    const user = result.rows[0]; // تصحیح خواندن سطر اول برای باز شدن قفل ورود
+    const user = result.rows[0]; // دریافت ردیف اول کاربر
+    
     if (!user) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
-    if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
+    
+    // مقایسه صحیح فیلد پسورد با حروف کوچک دیتابیس
+    if (!bcrypt.compareSync(password, user.password)) {
+      return res.status(401).json({ error: 'رمز عبور اشتباه' });
+    }
+    
     const token = sign(user);
     res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolName: user.schoolname, district: user.district } });
   } catch (e) {
+    console.error('Login error:', e);
     res.status(500).json({ error: 'خطای سرور در لاگین' });
   }
 });
@@ -109,7 +117,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/logout', (req, res) => res.json({ ok: true }));
 app.get('/api/auth/me', authRequired, (req, res) => res.json(req.user));
 
-// سیستم جستجوی فوق‌العاده سریع و هوشمند متنیِ دیتابیس آنلاین
+// سیستم جستجوی فوق‌العاده سریع و متنی
 app.get('/api/records', authRequired, async (req, res) => {
   let result;
   const search = req.query.search || '';
@@ -139,7 +147,7 @@ app.get('/api/records', authRequired, async (req, res) => {
     const rows = result.rows.map(r => ({ ...r, data: JSON.parse(r.data), status: r.status }));
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: 'خطا در خواندن اطلاعات سریع' });
+    res.status(500).json({ error: 'خطا در خواندن اطلاعات دیتابیس' });
   }
 });
 
@@ -160,7 +168,6 @@ app.post('/api/records', authRequired, async (req, res) => {
   res.json({ ok: true });
 });
 
-// مسیر ویرایش دقیق اطلاعات کارمندان بر اساس آی‌دی
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM records WHERE id = \$1', [req.params.id]);
@@ -180,7 +187,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
     await pool.query('UPDATE records SET schoolname=\$1, district=\$2, data=\$3 WHERE id=\$4', [body.schoolName || rec.schoolname, body.district || rec.district, JSON.stringify(body), req.params.id]);
     res.json({ ok: true });
   } catch (e) {
-    res.status(500).json({ error: 'خطای سرور در ویرایش معلومات' });
+    res.status(500).json({ error: 'خطای سرور در ویرایش کارمند' });
   }
 });
 
@@ -190,5 +197,4 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-
-app.listen(PORT, () => console.log(`🚀 Fast Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 System Online on port ${PORT}`));

@@ -1,55 +1,66 @@
-const express = require('express');
+ const express = require('express');
+const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Database = require('better-sqlite3');
+const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET = process.env.JWT_SECRET || 'maaref-herat-secret-change-me';
+const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
-// ══════════ دیتابیس ══════════
-const DB_PATH = process.env.DB_PATH || './data.db';
-const db = new Database(DB_PATH);
-db.pragma('journal_mode = WAL');
+// اتصال به دیتابیس آنلاین پستگرس رندر
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-db.exec(`
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  role TEXT NOT NULL,
-  schoolName TEXT,
-  district TEXT,
-  createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-);
+// ساخت جدول‌ها در صورت عدم وجود
+async function initDB() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL,
+        schoolName TEXT,
+        district TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS records (
+        id SERIAL PRIMARY KEY,
+        userId INTEGER NOT NULL,
+        schoolName TEXT NOT NULL,
+        district TEXT NOT NULL,
+        data TEXT NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
 
-CREATE TABLE IF NOT EXISTS records (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  userId INTEGER NOT NULL,
-  schoolName TEXT NOT NULL,
-  district TEXT NOT NULL,
-  data TEXT NOT NULL,
-  createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-);
-`);
-
-// ادمین پیش‌فرض
-const admin = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
-if (!admin) {
-  const hash = bcrypt.hashSync('admin123', 10);
-  db.prepare('INSERT INTO users (username, password, role) VALUES (?,?,?)')
-    .run('admin', hash, 'admin');
-  console.log('✅ ادمین ساخته شد: admin / admin123');
-} else {
-  console.log('ℹ️ ادمین از قبل وجود دارد:', admin.username);
+    // ادمین پیش‌فرض
+    const res = await client.query('SELECT * FROM users WHERE username = \$1', ['admin']);
+    if (res.rows.length === 0) {
+      const hash = bcrypt.hashSync('admin123', 10);
+      await client.query('INSERT INTO users (username, password, role) VALUES (\$1, \$2, \$3)', ['admin', hash, 'admin']);
+      console.log('✅ ادمین ساخته شد: admin / admin123');
+    }
+  } catch (err) {
+    console.error('Error initializing database:', err);
+  } finally {
+    client.release();
+  }
 }
+initDB();
 
-// ══════════ Middleware ══════════
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// CORS برای همه
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -59,24 +70,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// ══════════ Auth helpers ══════════
 function sign(user) {
-  return jwt.sign(
-    { id: user.id, username: user.username, role: user.role,
-      schoolName: user.schoolName, district: user.district },
-    SECRET, { expiresIn: '30d' }
-  );
+  return jwt.sign({ id: user.id, username: user.username, role: user.role, schoolName: user.schoolName, district: user.district }, SECRET, { expiresIn: '30d' });
 }
 
 function authRequired(req, res, next) {
-  // از Authorization header یا query token
-  let token = req.headers.authorization?.replace('Bearer ', '');
+  let token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
   if (!token && req.query.token) token = req.query.token;
   if (!token) return res.status(401).json({ error: 'وارد نشده‌اید' });
   try {
     req.user = jwt.verify(token, SECRET);
     next();
-  } catch {
+  } catch (e) {
     res.status(401).json({ error: 'توکن نامعتبر' });
   }
 }
@@ -86,145 +91,96 @@ function adminOnly(req, res, next) {
   next();
 }
 
-// ══════════ Auth routes ══════════
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
-    
-    const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+    const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
+    const user = result.rows[0];
     if (!user) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
-    if (!bcrypt.compareSync(password, user.password))
-      return res.status(401).json({ error: 'رمز عبور اشتباه' });
-
+    if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
     const token = sign(user);
-    res.json({ 
-      token, 
-      user: { 
-        id: user.id, username: user.username, role: user.role,
-        schoolName: user.schoolName, district: user.district 
-      } 
-    });
+    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolName: user.schoolname, district: user.district } });
   } catch (e) {
-    console.error('Login error:', e);
     res.status(500).json({ error: 'خطای سرور' });
   }
 });
 
 app.post('/api/auth/logout', (req, res) => res.json({ ok: true }));
-
 app.get('/api/auth/me', authRequired, (req, res) => res.json(req.user));
 
-// ══════════ Users routes ══════════
-app.get('/api/users', authRequired, adminOnly, (req, res) => {
-  const users = db.prepare(
-    'SELECT id, username, role, schoolName, district, createdAt FROM users'
-  ).all();
-  res.json(users);
+app.get('/api/users', authRequired, adminOnly, async (req, res) => {
+  const result = await pool.query("SELECT id, username, role, schoolName as \"schoolName\", district FROM users WHERE role = 'school' ORDER BY id DESC");
+  res.json(result.rows);
 });
 
-app.post('/api/users', authRequired, adminOnly, (req, res) => {
-  const { username, password, schoolName, district } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
+app.post('/api/users', authRequired, adminOnly, async (req, res) => {
+  const { username, password, schoolName, district } = req.body || {};
+  if (!username || !password) return res.status(400).json({ error: 'اطلاعات ناقص' });
   try {
     const hash = bcrypt.hashSync(password, 10);
-    const info = db.prepare(
-      'INSERT INTO users (username, password, role, schoolName, district) VALUES (?,?,?,?,?)'
-    ).run(username, hash, 'school', schoolName || username, district || '');
-    res.json({ id: info.lastInsertRowid });
+    await pool.query('INSERT INTO users (username, password, role, schoolName, district) VALUES (\$1, \$2, \$3, \$4, \$5)', [username, hash, 'school', schoolName, district]);
+    res.json({ ok: true });
   } catch (e) {
     res.status(400).json({ error: 'نام کاربری تکراری است' });
   }
 });
 
-app.post('/api/users/bulk', authRequired, adminOnly, (req, res) => {
+app.post('/api/users/bulk', authRequired, adminOnly, async (req, res) => {
   const list = req.body.list || [];
   let ok = 0, fail = 0;
-  const stmt = db.prepare(
-    'INSERT INTO users (username, password, role, schoolName, district) VALUES (?,?,?,?,?)'
-  );
-  const tx = db.transaction((items) => {
-    for (const u of items) {
-      try {
-        const hash = bcrypt.hashSync(String(u.password), 10);
-        stmt.run(u.username, hash, 'school', u.schoolName || u.username, u.district || '');
-        ok++;
-      } catch { fail++; }
-    }
-  });
-  tx(list);
+  for (const u of list) {
+    try {
+      const hash = bcrypt.hashSync(String(u.password || '123456'), 10);
+      await pool.query('INSERT INTO users (username, password, role, schoolName, district) VALUES (\$1, \$2, \$3, \$4, \$5)', [u.username, hash, 'school', u.schoolName, u.district]);
+      ok++;
+    } catch (e) { fail++; }
+  }
   res.json({ ok, fail });
 });
 
-app.delete('/api/users/:id', authRequired, adminOnly, (req, res) => {
-  db.prepare('DELETE FROM records WHERE userId = ?').run(req.params.id);
-  db.prepare('DELETE FROM users WHERE id = ? AND role = ?').run(req.params.id, 'school');
+app.delete('/api/users/:id', authRequired, adminOnly, async (req, res) => {
+  await pool.query('DELETE FROM users WHERE id = \$1 AND role = \$2', [req.params.id, 'school']);
   res.json({ ok: true });
 });
 
-app.put('/api/users/:id/password', authRequired, adminOnly, (req, res) => {
-  const hash = bcrypt.hashSync(req.body.password, 10);
-  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, req.params.id);
+app.put('/api/users/:id/password', authRequired, adminOnly, async (req, res) => {
+  const { password } = req.body || {};
+  if (!password) return res.status(400).json({ error: 'رمز جدید الزامی' });
+  const hash = bcrypt.hashSync(password, 10);
+  await pool.query('UPDATE users SET password = \$1 WHERE id = \$2', [hash, req.params.id]);
   res.json({ ok: true });
 });
 
-// ══════════ Records routes ══════════
-app.get('/api/records', authRequired, (req, res) => {
-  let rows;
+app.get('/api/records', authRequired, async (req, res) => {
+  let result;
   if (req.user.role === 'admin') {
-    rows = db.prepare('SELECT * FROM records ORDER BY id DESC').all();
+    result = await pool.query('SELECT r.*, u.schoolName as "userSchool", u.district as "userDistrict" FROM records r LEFT JOIN users u ON r.userId = u.id ORDER BY r.id DESC');
   } else {
-    rows = db.prepare('SELECT * FROM records WHERE userId = ? ORDER BY id DESC').all(req.user.id);
+    result = await pool.query('SELECT * FROM records WHERE userId = \$1 ORDER BY id DESC', [req.user.id]);
   }
-  res.json(rows.map(r => ({
-    id: r.id,
-    ...JSON.parse(r.data),
-    schoolName: r.schoolName,
-    district: r.district,
-    createdAt: r.createdAt,
-    userId: r.userId
-  })));
+  const rows = result.rows.map(r => ({ ...r, data: JSON.parse(r.data) }));
+  res.json(rows);
 });
 
-app.post('/api/records', authRequired, (req, res) => {
+app.post('/api/records', authRequired, async (req, res) => {
   const body = req.body || {};
   const schoolName = body.schoolName || req.user.schoolName || '';
   const district = body.district || req.user.district || '';
-  if (req.user.role === 'school' && req.user.schoolName && schoolName !== req.user.schoolName)
-    return res.status(403).json({ error: 'فقط برای مکتب خودتان' });
-  const info = db.prepare(
-    'INSERT INTO records (userId, schoolName, district, data) VALUES (?,?,?,?)'
-  ).run(req.user.id, schoolName, district, JSON.stringify(body));
-  res.json({ id: info.lastInsertRowid });
+  await pool.query('INSERT INTO records (userId, schoolName, district, data) VALUES (\$1, \$2, \$3, \$4)', [req.user.id, schoolName, district, JSON.stringify(body)]);
+  res.json({ ok: true });
 });
 
-app.put('/api/records/:id', authRequired, (req, res) => {
-  const rec = db.prepare('SELECT * FROM records WHERE id = ?').get(req.params.id);
+app.put('/api/records/:id', authRequired, async (req, res) => {
+  const result = await pool.query('SELECT * FROM records WHERE id = \$1', [req.params.id]);
+  const rec = result.rows[0];
   if (!rec) return res.status(404).json({ error: 'یافت نشد' });
-  if (req.user.role !== 'admin' && rec.userId !== req.user.id)
-    return res.status(403).json({ error: 'دسترسی ندارید' });
+  if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
   const body = req.body || {};
-  db.prepare('UPDATE records SET schoolName=?, district=?, data=? WHERE id=?')
-    .run(body.schoolName || rec.schoolName, body.district || rec.district,
-         JSON.stringify(body), req.params.id);
+  await pool.query('UPDATE records SET schoolName=\$1, district=\$2, data=\$3 WHERE id=\$4', [body.schoolName || rec.schoolname, body.district || rec.district, JSON.stringify(body), req.params.id]);
   res.json({ ok: true });
 });
 
-app.delete('/api/records/:id', authRequired, (req, res) => {
-  const rec = db.prepare('SELECT * FROM records WHERE id = ?').get(req.params.id);
-  if (!rec) return res.status(404).json({ error: 'یافت نشد' });
-  if (req.user.role !== 'admin' && rec.userId !== req.user.id)
-    return res.status(403).json({ error: 'دسترسی ندارید' });
-  db.prepare('DELETE FROM records WHERE id = ?').run(req.params.id);
-  res.json({ ok: true });
-});
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-// ══════════ Health ══════════
-app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date() }));
-
-// ══════════ SPA fallback ══════════
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(PORT, () => console.log(`🚀 سرور روی پورت ${PORT} اجرا شد`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

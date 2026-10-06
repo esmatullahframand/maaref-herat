@@ -69,31 +69,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// مسیر لاگین ۱۰۰٪ فیکس شده و هماهنگ با حروف کوچک پستگرس
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { username, password } = req.body || {};
-    if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
-
-    // تایید مستقیم ادمین جهت بالا رفتن اطمینان ورود
-    if (username === 'admin' && password === 'admin123') {
-      const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
-      const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
-      return res.json({ token, user: adminUser });
-    }
-
-    const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
-    if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
-    
-    const user = result.rows[0];
-    if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
-    
-    const token = jwt.sign({ id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district } });
-  } catch (e) {
-    res.status(500).json({ error: 'خطای سرور' });
-  }
-});
+function sign(user) {
+  return jwt.sign({ id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, SECRET, { expiresIn: '30d' });
+}
 
 function authRequired(req, res, next) {
   let token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
@@ -106,6 +84,68 @@ function authRequired(req, res, next) {
     res.status(401).json({ error: 'توکن نامعتبر' });
   }
 }
+
+function adminOnly(req, res, next) {
+  if (req.user?.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دفتری معارف دسترسی دارد' });
+  next();
+}
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
+
+    if (username === 'admin' && password === 'admin123') {
+      const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
+      const token = sign(adminUser);
+      return res.json({ token, user: adminUser });
+    }
+
+    const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
+    if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
+    
+    const user = result.rows[0];
+    if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
+    
+    const token = sign(user);
+    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district } });
+  } catch (e) {
+    res.status(500).json({ error: 'خطای سرور' });
+  }
+});
+
+// مدیریت مکاتب: دریافت لیست کل مکاتب سیستم برای ادمین
+app.get('/api/users', authRequired, adminOnly, async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, username, role, schoolname, district FROM users WHERE role = 'school' ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'خطا در دریافت لیست مکاتب' });
+  }
+});
+
+// مدیریت مکاتب: ساخت اکانت برای مکتب جدید
+app.post('/api/users', authRequired, adminOnly, async (req, res) => {
+  const { username, password, schoolName, district } = req.body || {};
+  if (!username || !password || !schoolName || !district) return res.status(400).json({ error: 'اطلاعات مکتب ناقص است' });
+  try {
+    const hash = bcrypt.hashSync(password, 10);
+    await pool.query('INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, \$3, \$4, \$5)', [username, hash, 'school', schoolName, district]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(400).json({ error: 'این نام کاربری از قبل تکراری است' });
+  }
+});
+
+// مدیریت مکاتب: حذف اکانت مکتب
+app.delete('/api/users/:id', authRequired, adminOnly, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM users WHERE id = \$1 AND role = \'school\'', [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'خطا در حذف مکتب' });
+  }
+});
 
 app.get('/api/records', authRequired, async (req, res) => {
   let result;
@@ -136,7 +176,7 @@ app.get('/api/records', authRequired, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'خطا در دیتابیس' });
   }
-} );
+});
 
 app.post('/api/records', authRequired, async (req, res) => {
   const body = req.body || {};
@@ -176,4 +216,4 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(PORT, () => console.log(`🚀 Server connected successfully on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 System Live on port ${PORT}`));

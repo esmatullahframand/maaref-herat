@@ -152,10 +152,9 @@ app.put('/api/users/:id/password', authRequired, adminOnly, async (req, res) => 
   res.json({ ok: true });
 });
 
-// مسیر دریافت اطلاعات همراه با قابلیت جستجوی هوشمند داخلی متون
 app.get('/api/records', authRequired, async (req, res) => {
   let result;
-  const search = req.query.search || ''; // متن جستجو شده از فرانت‌اند
+  const search = req.query.search || '';
 
   if (req.user.role === 'admin') {
     if (search) {
@@ -190,11 +189,13 @@ app.post('/api/records', authRequired, async (req, res) => {
   const schoolName = body.schoolName || req.user.schoolName || '';
   const district = body.district || req.user.district || '';
   
-  const job = body.job || body.وظیفه || '';
-  const degree = body.degree || body.درجه_تحصیل || body.تحصیلات || '';
+  // بررسی جامع تمام نام‌های احتمالی فیلد وظیفه و تحصیلات در سیستم شما
+  const job = String(body.job || body.وظیفه || body.position || '').trim();
+  const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
+  
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
-  if (!isServiceStaff && !degree.trim()) {
+  if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null')) {
     return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
   }
 
@@ -209,11 +210,12 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
   if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
   
   const body = req.body || {};
-  const job = body.job || body.وظیفه || '';
-  const degree = body.degree || body.درجه_تحصیل || body.تحصیلات || '';
+  const job = String(body.job || body.وظیفه || body.position || '').trim();
+  const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
+  
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
-  if (!isServiceStaff && !degree.trim()) {
+  if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null')) {
     return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
   }
 

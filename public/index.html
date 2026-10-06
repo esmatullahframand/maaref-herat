@@ -3,57 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ریاست معارف ولایت هرات - سیستم دیجیتالی جمع‌آوری معلومات کارمندان</title>
-    <!-- Bootstrap 5 CSS -->
+    <title>ریاست معارف ولایت هرات - سیستم مدیریت کارمندان</title>
+    <!-- لود مجدد استایل‌ها برای حل مشکل به هم ریختگی -->
     <link href="https://jsdelivr.net" rel="stylesheet">
-    <!-- Font Awesome Icons -->
     <link href="https://cloudflare.com" rel="stylesheet">
     <style>
         @import url('https://googleapis.com');
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            background-color: #f4f6f9;
-        }
-        .navbar-brand img {
-            max-height: 50px;
-        }
-        .card-custom {
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: none;
-            border-radius: 12px;
-        }
-        .status-badge {
-            font-size: 13px;
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f4f6f9; }
+        .card-custom { box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: none; border-radius: 12px; }
+        .status-badge { font-size: 13px; padding: 4px 10px; border-radius: 20px; }
     </style>
 </head>
 <body>
 
-    <!-- صفحه ورود (Login) -->
+    <!-- فرم ورود زیبا -->
     <div id="loginSection" class="container min-vh-100 d-flex align-items-center justify-content-center">
-        <div class="card card-custom p-4 text-center" style="width: 100%; max-width: 450px;">
+        <div class="card card-custom p-4 text-center" style="width: 100%; max-width: 420px;">
             <h4 class="text-primary mb-3"><i class="fa-solid fa-building-columns"></i> ریاست معارف ولایت هرات</h4>
             <h6 class="text-muted mb-4">سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h6>
-            
-            <!-- کادر زرد رنگ حاوی پسوردها برای امنیت بیشتر حذف گردید -->
-
             <form id="loginForm">
                 <div class="mb-3 text-start">
                     <label class="form-label">نام کاربری</label>
-                    <input type="text" id="username" class="form-control" placeholder="نام کاربری خود را وارد کنید" required>
+                    <input type="text" id="username" class="form-control" required placeholder="نام کاربری را وارد کنید">
                 </div>
                 <div class="mb-4 text-start">
                     <label class="form-label">رمز عبور</label>
-                    <input type="password" id="password" class="form-control" placeholder="رمز عبور خود را وارد کنید" required>
+                    <input type="password" id="password" class="form-control" required placeholder="رمز عبور را وارد کنید">
                 </div>
                 <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa-solid fa-right-to-bracket"></i> ورود به سیستم</button>
             </form>
         </div>
     </div>
 
-    <!-- داشبورد اصلی (Dashboard) -->
+    <!-- پنل اصلی داشبورد مدیریت -->
     <div id="dashboardSection" class="d-none">
         <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
             <div class="container-fluid">
@@ -66,23 +48,23 @@
         </nav>
 
         <div class="container-fluid px-4">
-            <!-- بخش ابزارها و جستجو -->
+            <!-- کادر جستجو و دکمه ها -->
             <div class="card card-custom p-3 mb-4">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-6">
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" id="searchInput" class="form-control" placeholder="جستجوی هوشمند کارمندان (نام، وظیفه، مکتب...)" oninput="loadRecords()">
+                            <input type="text" id="searchInput" class="form-control" placeholder="جستجوی هوشمند (نام، وظیفه، مکتب...)" oninput="loadRecords()">
                         </div>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <button class="btn btn-success me-2" onclick="openFormModal()"><i class="fa-solid fa-user-plus"></i> اضافه کردن فرد جدید</button>
+                        <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#recordModal" onclick="clearForm()"><i class="fa-solid fa-user-plus"></i> اضافه کردن فرد جدید</button>
                         <button class="btn btn-outline-primary" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> خروجی اکسل</button>
                     </div>
                 </div>
             </div>
 
-            <!-- جدول نمایش اطلاعات کارمندان -->
+            <!-- جدول با ستون وضعیت تایید ادمین -->
             <div class="card card-custom p-3">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -99,25 +81,73 @@
                                 <th class="text-center">عملیات</th>
                             </tr>
                         </thead>
-                        <tbody id="recordsTableBody">
-                            <!-- ردیف‌ها به صورت پویا توسط جاوااسکریپت پر می‌شوند -->
-                        </tbody>
+                        <tbody id="recordsTableBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- اسکریپت جاوااسکریپت منطق برنامه -->
+    <!-- فرم پنجره‌ای ثبت و ویرایش کارمند (مۆدال) -->
+    <div class="modal fade" id="recordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalTitle">ثبت معلومات کارمند جدید</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="recordForm">
+                        <input type="hidden" id="recordId">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">نام کارمند</label>
+                                <input type="text" id="formName" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">نام پدر</label>
+                                <input type="text" id="formFatherName" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">وظیفه</label>
+                                <input type="text" id="formJob" class="form-control" required placeholder="مثال: معلم، مدیر، کارکن خدماتی">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">درجه تحصیل</label>
+                                <input type="text" id="formDegree" class="form-control" placeholder="برای معلمان و مدیران الزامی است">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">رشته تحصیل</label>
+                                <input type="text" id="formField" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">محل وظیفه (مکتب)</label>
+                                <input type="text" id="formSchool" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">آمریت مربوطه</label>
+                                <input type="text" id="formDistrict" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                            <button type="submit" class="btn btn-success">💾 ذخیره معلومات</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://jsdelivr.net"></script>
     <script>
         let currentUser = null;
+        const recordModal = new bootstrap.Modal(document.getElementById('recordModal'));
 
-        // فرم لاگین
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-
             try {
                 const res = await fetch('/api/auth/login', {
                     method: 'POST',
@@ -129,76 +159,22 @@
                     currentUser = data.user;
                     document.getElementById('loginSection').classList.add('d-none');
                     document.getElementById('dashboardSection').classList.remove('d-none');
-                    document.getElementById('userInfo').innerText = `کاربر: \${currentUser.username} (\${currentUser.role === 'admin' ? 'ادمین کل' : 'مکتب'})`;
+                    document.getElementById('userInfo').innerText = `کاربر: \${currentUser.username}`;
                     loadRecords();
-                } else {
-                    alert(data.error || 'خطا در ورود');
-                }
-            } catch (err) {
-                alert('خطا در اتصال به سرور');
-            }
+                } else { alert(data.error || 'خطا در ورود'); }
+            } catch (err) { alert('خطا در اتصال به سرور'); }
         });
 
-        // دریافت لیست رکوردها همراه با سیستم جستجوی هوشمند دیتابیس آنلاین
         async function loadRecords() {
-            const searchValue = document.getElementById('searchInput').value;
+            const search = document.getElementById('searchInput').value;
             try {
-                const res = await fetch(`/api/records?search=\${encodeURIComponent(searchValue)}`);
+                const res = await fetch(`/api/records?search=\${encodeURIComponent(search)}`);
                 const records = await res.json();
                 const tbody = document.getElementById('recordsTableBody');
                 tbody.innerHTML = '';
-
                 records.forEach(row => {
                     const info = row.data || {};
+                    let statusHtml = row.status === 'approved' ? 
+                        '<span class="badge bg-success status-badge">✅ تایید شده</span>' : 
+                        '<span class="badge bg-warning text-dark status-badge">⏳ در انتظار تایید</span>';
                     
-                    // بررسی وضعیت تایید و تعریف استایل گرافیکی با نشان باکیفیت
-                    let statusHtml = '';
-                    let approveBtn = '';
-                    
-                    if (row.status === 'approved') {
-                        statusHtml = '<span class="badge bg-success status-badge"><i class="fa-solid fa-circle-check"></i> تایید شده</span>';
-                    } else {
-                        statusHtml = '<span class="badge bg-warning text-dark status-badge"><i class="fa-solid fa-clock"></i> در انتظار تایید</span>';
-                        
-                        // اضافه شدن دکمه گرافیکی تایید فقط مخصوص نقش ادمین
-                        if (currentUser && currentUser.role === 'admin') {
-                            approveBtn = `
-                                <button class="btn btn-sm btn-outline-success me-1" onclick="approveRecord(\${row.id})" title="تایید گرافیکی مشخصات">
-                                    <i class="fa-solid fa-check-double"></i> تایید ادمین
-                                </button>
-                            `;
-                        }
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>\${row.id}</td>
-                        <td><strong>\${info.name || info.نام || '-'}</strong></td>
-                        <td>\${info.fatherName || info.نام_پدر || '-'}</td>
-                        <td>\${info.job || info.وظیفه || '-'}</td>
-                        <td>\${info.degree || info.درجه_تحصیل || info.تحصیلات || '-'}</td>
-                        <td>\${row.schoolname}</td>
-                        <td>\${row.district}</td>
-                        <td>\${statusHtml}</td>
-                        <td class="text-center">
-                            <div class="d-inline-flex">
-                                \${approveBtn}
-                                <button class="btn btn-sm btn-primary me-1" onclick="editRecord(\${row.id})"><i class="fa-solid fa-pen-to-square"></i> ویرایش</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) {
-                console.error('Error fetching records:', err);
-            }
-        }
-
-        // تابع ارسال تایید گرافیکی ادمین به سرور
-        async function approveRecord(id) {
-            if (!confirm('آیا از تایید گرافیکی این ردیف کارمند اطمینان کامل دارید؟')) return;
-            try {
-                const res = await fetch(`/api/records/\${id}/approve`, { method: 'POST' });
-                const data = await res.json();
-                if (res.ok && data.ok) {
-                    alert('✅ ردیف کارمند با موفقیت تایید و دائمی شد.');

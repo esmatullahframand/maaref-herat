@@ -9,16 +9,26 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
+// اتصال به دیتابیس آنلاین پستگرس رندر
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 15,
-  idleTimeoutMillis: 30000
+  ssl: { rejectUnauthorized: false }
 });
 
 async function initDB() {
   const client = await pool.connect();
   try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL,
+        schoolname TEXT,
+        district TEXT,
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
     await client.query(`
       CREATE TABLE IF NOT EXISTS records (
         id SERIAL PRIMARY KEY,
@@ -27,7 +37,8 @@ async function initDB() {
         district TEXT NOT NULL,
         data TEXT NOT NULL,
         status TEXT DEFAULT 'pending',
-        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
       );
     `);
   } catch (err) {
@@ -51,20 +62,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// ورود مستقیم بدون خطای دیتابیس برای حل مشکل لاگین
+// مسیر لاگین مستقیم و تضمینی با هدایت اتوماتیک به فایل های شما
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body || {};
   
   if (username === 'admin' && password === 'admin123') {
     const user = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
     const token = jwt.sign(user, SECRET, { expiresIn: '30d' });
-    return res.json({ token, user });
+    return res.json({ token, user, redirect: '/admin.html' });
   }
   
   if (username === 'school1' && password === 'school123') {
-    const user = { id: 2, username: 'school1', role: 'school', schoolname: 'لیسه غیاث الدین غوری', district: 'ناحیه اول' };
+    const user = { id: 2, username: 'school1', role: 'school', schoolname: 'لیسه عالی هرات', district: 'هرات' };
     const token = jwt.sign(user, SECRET, { expiresIn: '30d' });
-    return res.json({ token, user });
+    return res.json({ token, user, redirect: '/school.html' });
   }
 
   return res.status(401).json({ error: 'نام کاربری یا رمز اشتباه است' });
@@ -110,8 +121,8 @@ app.post('/api/records', authRequired, async (req, res) => {
   const body = req.body || {};
   const schoolName = body.schoolName || req.user.schoolname || '';
   const district = body.district || req.user.district || '';
-  const job = String(body.job || '').trim();
-  const degree = String(body.degree || '').trim();
+  const job = String(body.job || body.وظیفه || '').trim();
+  const degree = String(body.degree || body.درجه_تحصیل || '').trim();
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
   if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
@@ -126,5 +137,23 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   res.json({ ok: true });
 });
 
+// اضافه شدن مسیرهای مدیریت کاربران مکاتب
+app.get('/api/users', authRequired, async (req, res) => {
+  const result = await pool.query("SELECT id, username, schoolname, district FROM users WHERE role = 'school' ORDER BY id DESC");
+  res.json(result.rows);
+});
+
+app.post('/api/users', authRequired, async (req, res) => {
+  const { username, password, schoolName, district } = req.body;
+  const hash = bcrypt.hashSync(password, 10);
+  await pool.query("INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, 'school', \$3, \$4)", [username, hash, schoolName, district]);
+  res.json({ ok: true });
+});
+
+app.delete('/api/users/:id', authRequired, async (req, res) => {
+  await pool.query("DELETE FROM users WHERE id = \$1", [req.params.id]);
+  res.json({ ok: true });
+});
+
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(PORT, () => console.log(`🚀 Server Online`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

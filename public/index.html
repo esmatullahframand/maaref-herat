@@ -13,7 +13,7 @@
         .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background-color: #0056b3; color: white; }
         .btn-success { background-color: #10b981; color: white; }
         .btn-danger { background-color: #ef4444; color: white; }
@@ -32,22 +32,17 @@
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
         .badge-success { background-color: #dcfce7; color: #15803d; }
         .badge-warning { background-color: #fef3c7; color: #92400e; }
-        
-        /* مۆدال پنجره‌ای */
         .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 9999; padding: 15px; }
         .custom-modal.active { display: flex; }
         .modal-content { background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-header { font-size: 18px; font-weight: bold; color: #0056b3; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
         .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-        
-        /* تب‌ها */
-        .tab-btn { padding: 10px 20px; border: none; background: #e2e8f0; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; }
+        .tab-btn { padding: 10px 20px; border: none; background: #e2e8f0; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; margin-left: 5px; }
         .tab-btn.active { background: #0056b3; color: white; }
     </style>
 </head>
 <body>
 
-    <!-- صفحه ورود -->
     <div id="loginSection" class="login-container">
         <div class="login-card">
             <h2>ریاست معارف ولایت هرات</h2>
@@ -66,7 +61,6 @@
         </div>
     </div>
 
-    <!-- پنل اصلی داشبورد ادمین کل -->
     <div id="dashboardSection" class="d-none">
         <div class="topbar">
             <h3>پنل مدیریتی معارف هرات (ادمین کل)</h3>
@@ -77,21 +71,16 @@
         </div>
 
         <div class="main-container">
-            <!-- منوی سوئیچ بین لیست کارمندان و مدیریت مکاتب -->
-            <div style="margin-bottom: 0; display: flex; gap: 5px;">
+            <div style="margin-bottom: 0; display: flex;">
                 <button id="tabRecords" class="tab-btn active" onclick="switchTab('records')">📋 لیست کل کارمندان</button>
                 <button id="tabSchools" class="tab-btn" onclick="switchTab('schools')">🏫 مدیریت و اضافه کردن مکاتب</button>
             </div>
 
-            <!-- بخش اول: مدیریت و لیست کارمندان معارف هرات -->
             <div id="sectionRecords">
                 <div class="card" style="border-radius: 0 12px 12px 12px;">
                     <div class="row">
                         <div class="col-6">
                             <input type="text" id="searchInput" class="form-control" placeholder="🔍 جستجوی هوشمند در کل معلومات دیتابیس..." oninput="loadRecords()">
-                        </div>
-                        <div class="col-6" style="text-align: left; display: flex; justify-content: flex-end;">
-                            <button class="btn btn-primary" onclick="alert('در حال خروجی گرفتن اکسل...')">📥 خروجی اکسل کل سیستم</button>
                         </div>
                     </div>
                 </div>
@@ -117,7 +106,6 @@
                 </div>
             </div>
 
-            <!-- بخش دوم: مدیریت، لیست و دکمه اضافه کردن مکاتب جدید -->
             <div id="sectionSchools" class="d-none">
                 <div class="card" style="border-radius: 0 12px 12px 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -142,29 +130,47 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- مۆدال اختصاصی ساخت حساب مکتب جدید -->
     <div id="schoolModal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">➕ ساخت حساب کاربری مکتب جدید</div>
             <form id="schoolForm">
                 <div class="form-group">
                     <label>نام رسمی مکتب</label>
-                    <input type="text" id="schoolNameField" class="form-control" required placeholder="مثال: لیسه غیاث الدین غوری">
+                    <input type="text" id="schoolNameField" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label>آمریت مربوطه / ولسوالی</label>
-                    <input type="text" id="schoolDistrictField" class="form-control" required placeholder="مثال: ناحیه اول، گذره، رباط سنگی">
+                    <input type="text" id="schoolDistrictField" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label>نام کاربری ورود (به انگلیسی)</label>
-                    <input type="text" id="schoolUsernameField" class="form-control" required placeholder="مثال: ghias_school">
+                    <input type="text" id="schoolUsernameField" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label>رمز عبور مکتب</label>
-                    <input type="text" id="schoolPasswordField" class="form-control" required placeholder="یک رمز عبور مطمئن بنویسید">
+                    <input type="text" id="schoolPasswordField" class="form-control" required>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSchoolModal()">انصراف</button>
+                    <button type="submit" class="btn btn-success"> Create اکانت</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('hr_token') || '';
+        let currentUser = null;
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });

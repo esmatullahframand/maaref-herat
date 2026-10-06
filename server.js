@@ -30,6 +30,8 @@ async function initDB() {
         createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    
+    // اضافه کردن ستون status به جدول records برای مدیریت تایید ادمین
     await client.query(`
       CREATE TABLE IF NOT EXISTS records (
         id SERIAL PRIMARY KEY,
@@ -37,6 +39,7 @@ async function initDB() {
         schoolname TEXT NOT NULL,
         district TEXT NOT NULL,
         data TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
         createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
       );
@@ -126,29 +129,8 @@ app.post('/api/users', authRequired, adminOnly, async (req, res) => {
   }
 });
 
-app.post('/api/users/bulk', authRequired, adminOnly, async (req, res) => {
-  const list = req.body.list || [];
-  let ok = 0, fail = 0;
-  for (const u of list) {
-    try {
-      const hash = bcrypt.hashSync(String(u.password || '123456'), 10);
-      await pool.query('INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, \$3, \$4, \$5)', [u.username, hash, 'school', u.schoolName, u.district]);
-      ok++;
-    } catch (e) { fail++; }
-  }
-  res.json({ ok, fail });
-});
-
 app.delete('/api/users/:id', authRequired, adminOnly, async (req, res) => {
   await pool.query('DELETE FROM users WHERE id = \$1 AND role = \$2', [req.params.id, 'school']);
-  res.json({ ok: true });
-});
-
-app.put('/api/users/:id/password', authRequired, adminOnly, async (req, res) => {
-  const { password } = req.body || {};
-  if (!password) return res.status(400).json({ error: 'رمز جدید الزامی' });
-  const hash = bcrypt.hashSync(password, 10);
-  await pool.query('UPDATE users SET password = \$1 WHERE id = \$2', [hash, req.params.id]);
   res.json({ ok: true });
 });
 
@@ -161,7 +143,7 @@ app.get('/api/records', authRequired, async (req, res) => {
       result = await pool.query(
         `SELECT r.*, u.schoolname as "userSchool", u.district as "userDistrict" 
          FROM records r LEFT JOIN users u ON r.userid = u.id 
-         WHERE r.schoolname ILIKE $1 OR r.district ILIKE $1 OR r.data ILIKE $1 
+         WHERE r.schoolname ILIKE $1 OR r.district ILIKE $1 OR r.data ILIKE $1 OR r.status ILIKE $1
          ORDER BY r.id DESC`, 
         [`%${search}%`]
       );
@@ -180,8 +162,18 @@ app.get('/api/records', authRequired, async (req, res) => {
       result = await pool.query('SELECT * FROM records WHERE userid = \$1 ORDER BY id DESC', [req.user.id]);
     }
   }
-  const rows = result.rows.map(r => ({ ...r, data: JSON.parse(r.data) }));
+  const rows = result.rows.map(r => ({ ...r, data: JSON.parse(r.data), status: r.status }));
   res.json(rows);
+});
+
+// تایید رکورد توسط ادمین
+app.post('/api/records/:id/approve', authRequired, adminOnly, async (req, res) => {
+  try {
+    await pool.query("UPDATE records SET status = 'approved' WHERE id = \$1", [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'خطا در تایید اطلاعات' });
+  }
 });
 
 app.post('/api/records', authRequired, async (req, res) => {
@@ -189,17 +181,16 @@ app.post('/api/records', authRequired, async (req, res) => {
   const schoolName = body.schoolName || req.user.schoolName || '';
   const district = body.district || req.user.district || '';
   
-  // بررسی جامع تمام نام‌های احتمالی فیلد وظیفه و تحصیلات در سیستم شما
   const job = String(body.job || body.وظیفه || body.position || '').trim();
   const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
-  
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
   if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null')) {
     return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
   }
 
-  await pool.query('INSERT INTO records (userid, schoolname, district, data) VALUES (\$1, \$2, \$3, \$4)', [req.user.id, schoolName, district, JSON.stringify(body)]);
+  // ثبت اولیه با وضعیت pending (در انتظار تایید)
+  await pool.query('INSERT INTO records (userid, schoolname, district, data, status) VALUES (\$1, \$2, \$3, \$4, \'pending\')', [req.user.id, schoolName, district, JSON.stringify(body)]);
   res.json({ ok: true });
 });
 
@@ -212,7 +203,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
   const body = req.body || {};
   const job = String(body.job || body.وظیفه || body.position || '').trim();
   const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
-  
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
   if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null')) {

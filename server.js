@@ -17,7 +17,7 @@ const pool = new Pool({
   idleTimeoutMillis: 30000
 });
 
-// ساخت جدول‌ها بدون کوچک‌ترین خطای نگارشی
+// ساخت جدول‌ها به صورت کاملاً هماهنگ با فرانت‌هند
 async function initDB() {
   const client = await pool.connect();
   try {
@@ -46,15 +46,15 @@ async function initDB() {
       );
     `);
 
-    // بررسی و ساخت ادمین پیش‌فرض (علامت‌های فرار تصحیح شدند)
+    // بررسی و ساخت ادمین اصلی
     const res = await client.query('SELECT * FROM users WHERE username = \$1', ['admin']);
     if (res.rows.length === 0) {
       const hash = bcrypt.hashSync('admin123', 10);
       await client.query('INSERT INTO users (username, password, role) VALUES (\$1, \$2, \$3)', ['admin', hash, 'admin']);
-      console.log('✅ ادمین اصلی سیستم آماده شد');
+      console.log('✅ ادمین اصلی سیستم با موفقیت ایجاد شد');
     }
   } catch (err) {
-    console.error('Database Initialization Error:', err);
+    console.error('Database Init Error:', err);
   } finally {
     client.release();
   }
@@ -95,20 +95,20 @@ app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
-    const user = result.rows[0]; // تصحیح به سطر اول آرایه
+    const user = result.rows[0]; 
     if (!user) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
     const token = sign(user);
     res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolName: user.schoolname, district: user.district } });
   } catch (e) {
-    res.status(500).json({ error: 'خطای سرور' });
+    res.status(500).json({ error: 'خطای سرور در لاگین' });
   }
 });
 
 app.post('/api/auth/logout', (req, res) => res.json({ ok: true }));
 app.get('/api/auth/me', authRequired, (req, res) => res.json(req.user));
 
-// سیستم جستجوی هوشمند سبک متنیِ دیتابیس آنلاین
+// سیستم جستجوی فوق‌العاده سریع و هوشمند متنی
 app.get('/api/records', authRequired, async (req, res) => {
   let result;
   const search = req.query.search || '';
@@ -116,29 +116,29 @@ app.get('/api/records', authRequired, async (req, res) => {
     if (req.user.role === 'admin') {
       if (search) {
         result = await pool.query(
-          `SELECT r.id, r.userid, r.schoolname, r.district, r.status, r.data 
+          `SELECT r.*, u.schoolname as "userSchool", u.district as "userDistrict" 
            FROM records r LEFT JOIN users u ON r.userid = u.id 
-           WHERE r.schoolname ILIKE $1 OR r.district ILIKE $1 OR r.data ILIKE $1 OR r.status ILIKE $1
+           WHERE r.schoolname ILIKE $1 OR r.district ILIKE $1 OR CAST(r.data AS TEXT) ILIKE $1 OR r.status ILIKE $1
            ORDER BY r.id DESC`, [`%${search}%`]
         );
       } else {
-        result = await pool.query('SELECT id, userid, schoolname, district, status, data FROM records ORDER BY id DESC');
+        result = await pool.query('SELECT r.*, u.schoolname as "userSchool", u.district as "userDistrict" FROM records r LEFT JOIN users u ON r.userid = u.id ORDER BY r.id DESC');
       }
     } else {
       if (search) {
         result = await pool.query(
-          `SELECT id, userid, schoolname, district, status, data FROM records 
-           WHERE userid = $1 AND (schoolname ILIKE $2 OR district ILIKE $2 OR data ILIKE $2) 
+          `SELECT * FROM records 
+           WHERE userid = $1 AND (schoolname ILIKE $2 OR district ILIKE $2 OR CAST(data AS TEXT) ILIKE $2) 
            ORDER BY id DESC`, [req.user.id, `%${search}%`]
         );
       } else {
-        result = await pool.query('SELECT id, userid, schoolname, district, status, data FROM records WHERE userid = \$1 ORDER BY id DESC', [req.user.id]);
+        result = await pool.query('SELECT * FROM records WHERE userid = \$1 ORDER BY id DESC', [req.user.id]);
       }
     }
     const rows = result.rows.map(r => ({ ...r, data: JSON.parse(r.data), status: r.status }));
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: 'خطا در خواندن اطلاعات' });
+    res.status(500).json({ error: 'خطا در خواندن اطلاعات دیتابیس' });
   }
 });
 
@@ -164,6 +164,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
     const result = await pool.query('SELECT * FROM records WHERE id = \$1', [req.params.id]);
     const rec = result.rows[0];
     if (!rec) return res.status(404).json({ error: 'یافت نشد' });
+    if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
     
     const body = req.body || {};
     const job = String(body.job || '').trim();
@@ -177,7 +178,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
     await pool.query('UPDATE records SET schoolname=\$1, district=\$2, data=\$3 WHERE id=\$4', [body.schoolName || rec.schoolname, body.district || rec.district, JSON.stringify(body), req.params.id]);
     res.json({ ok: true });
   } catch (e) {
-    res.status(500).json({ error: 'خطای سرور در ویرایش' });
+    res.status(500).json({ error: 'خطای سرور در ویرایش کارمند' });
   }
 });
 
@@ -187,5 +188,4 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-
-app.listen(PORT, () => console.log(`🚀 Fast Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 System Online on port ${PORT}`));

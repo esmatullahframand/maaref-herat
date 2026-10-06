@@ -9,10 +9,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
-// اتصال به دیتابیس آنلاین پستگرس رندر
+// اتصال استاندارد و بهینه به دیتابیس آنلاین پستگرس رندر
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
+  max: 15,
+  idleTimeoutMillis: 30000
 });
 
 async function initDB() {
@@ -42,7 +44,7 @@ async function initDB() {
       );
     `);
   } catch (err) {
-    console.error(err);
+    console.error('Init DB Error:', err);
   } finally {
     client.release();
   }
@@ -62,23 +64,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// مسیر لاگین مستقیم و تضمینی با هدایت اتوماتیک به فایل های شما
-app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body || {};
-  
-  if (username === 'admin' && password === 'admin123') {
-    const user = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
-    const token = jwt.sign(user, SECRET, { expiresIn: '30d' });
-    return res.json({ token, user, redirect: '/admin.html' });
-  }
-  
-  if (username === 'school1' && password === 'school123') {
-    const user = { id: 2, username: 'school1', role: 'school', schoolname: 'لیسه عالی هرات', district: 'هرات' };
-    const token = jwt.sign(user, SECRET, { expiresIn: '30d' });
-    return res.json({ token, user, redirect: '/school.html' });
-  }
+// مسیر لاگین فیکس شده همراه با ارسال آدرس ریدایرکت مشخص برای فرانت‌اند
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
 
-  return res.status(401).json({ error: 'نام کاربری یا رمز اشتباه است' });
+    if (username === 'admin' && password === 'admin123') {
+      const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
+      const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
+      return res.json({ token, user: adminUser, redirect: '/admin.html' });
+    }
+
+    const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
+    if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
+    
+    const user = result.rows[0];
+    if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
+    
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, redirect: '/school.html' });
+  } catch (e) {
+    res.status(500).json({ error: 'خطای سرور در لاگین' });
+  }
 });
 
 function authRequired(req, res, next) {
@@ -121,8 +129,8 @@ app.post('/api/records', authRequired, async (req, res) => {
   const body = req.body || {};
   const schoolName = body.schoolName || req.user.schoolname || '';
   const district = body.district || req.user.district || '';
-  const job = String(body.job || body.وظیفه || '').trim();
-  const degree = String(body.degree || body.درجه_تحصیل || '').trim();
+  const job = String(body.job || '').trim();
+  const degree = String(body.degree || '').trim();
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
   if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
@@ -137,7 +145,6 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   res.json({ ok: true });
 });
 
-// اضافه شدن مسیرهای مدیریت کاربران مکاتب
 app.get('/api/users', authRequired, async (req, res) => {
   const result = await pool.query("SELECT id, username, schoolname, district FROM users WHERE role = 'school' ORDER BY id DESC");
   res.json(result.rows);
@@ -156,4 +163,4 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Fast Server online on port ${PORT}`));

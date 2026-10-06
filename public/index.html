@@ -15,12 +15,9 @@
         .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
-        .form-control:focus { border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,86,179,0.15); }
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background-color: #0056b3; color: white; }
-        .btn-primary:hover { background-color: #004085; }
         .btn-success { background-color: #10b981; color: white; }
-        .btn-success:hover { background-color: #059669; }
         .btn-danger { background-color: #ef4444; color: white; }
         .btn-secondary { background-color: #6b7280; color: white; }
         .w-100 { width: 100%; }
@@ -34,7 +31,6 @@
         table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: center; }
         th { background-color: #f8fafc; font-weight: bold; color: #334155; }
-        tr:hover { background-color: #f1f5f9; }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
         .badge-success { background-color: #dcfce7; color: #15803d; }
         .badge-warning { background-color: #fef3c7; color: #92400e; }
@@ -47,7 +43,6 @@
 </head>
 <body>
 
-    <!-- صفحه ورود -->
     <div id="loginSection" class="login-container">
         <div class="login-card">
             <h2>ریاست معارف ولایت هرات</h2>
@@ -66,7 +61,6 @@
         </div>
     </div>
 
-    <!-- پنل داشبورد اصلی مدیریت -->
     <div id="dashboardSection" class="d-none">
         <div class="topbar">
             <h3>پنل مدیریتی معارف هرات</h3>
@@ -113,7 +107,6 @@
         </div>
     </div>
 
-    <!-- مۆدال پنجره‌ای ثبت و ویرایش معلومات -->
     <div id="recordModal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header" id="modalTitle">ثبت معلومات کارمند جدید</div>
@@ -175,3 +168,10 @@
         let currentUser = null;
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },

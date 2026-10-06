@@ -1,1 +1,190 @@
-<script>location.href = '/';</script>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل ادمین — معارف هرات</title>
+<!-- استفاده از کدهای بومی استایل برای حل کامل مشکل تو در تو شدن صفحه موبایل و دسکتاپ -->
+<link href="https://jsdelivr.net" rel="stylesheet">
+<link href="https://cloudflare.com" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<style>
+  @import url('https://googleapis.com');
+  body { font-family: 'Vazirmatn', sans-serif; background: #f0f4f8; margin: 0; padding: 0; }
+  .topbar { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; padding: 15px 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+  .card-custom { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,.04); border: none; margin-bottom: 25px; }
+  .stat-card { background: linear-gradient(135deg, #eef6ff, #dbeafe); border: 1px solid #bcd8f5; border-radius: 10px; padding: 15px; text-align: center; }
+  .stat-card .value { font-size: 24px; font-weight: bold; color: #0056b3; margin-top: 5px; }
+</style>
+</head>
+<body>
+
+<div class="topbar d-flex justify-content-between align-items-center text-white px-4 py-3 mb-4">
+  <div>
+    <h5 class="mb-0 fw-bold">🎛️ پنل ادمین — ریاست معارف ولایت هرات</h5>
+    <small class="opacity-75">مدیریت مکاتب، کارمندان و گزارش‌ها</small>
+  </div>
+  <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="container-fluid px-4">
+
+  <!-- بخش آمار کلی سیستم -->
+  <div class="card card-custom">
+    <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-chart-pie"></i> آمار کلی سیستم معارف</h5>
+    <div class="row g-3">
+      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;"><div class="label text-muted">🏫 تعداد مکاتب</div><div class="value text-purple" id="sSchools">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card"><div class="label text-muted">👥 کل کارمندان</div><div class="value" id="sTotal">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;"><div class="label text-muted">✅ فعال</div><div class="value text-success" id="sActive">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #fee2e2, #fecaca); border-color: #fca5a5;"><div class="label text-muted">🎖️ تقاعد</div><div class="value text-danger" id="sRetired">0</div></div></div>
+    </div>
+  </div>
+
+  <!-- بخش مدیریت و اضافه کردن حساب مکتب جدید -->
+  <div class="card card-custom">
+    <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-school-flag"></i> مدیریت و افزودن مکاتب جدید</h5>
+    <div class="row g-2 mb-3">
+      <div class="col-md-3"><input id="uUsername" class="form-control" placeholder="نام کاربری انگلیسی" required></div>
+      <div class="col-md-3"><input id="uPassword" class="form-control" placeholder="رمز عبور" required></div>
+      <div class="col-md-3"><input id="uSchoolName" class="form-control" placeholder="نام مکتب (فارسی)"></div>
+      <div class="col-md-2"><input id="uDistrict" class="form-control" placeholder="ولسوالی / مرکز"></div>
+      <div class="col-md-1"><button class="btn btn-purple text-white w-100 fw-bold" onclick="addUser()" style="background:#7c3aed">➕ افزودن</button></div>
+    </div>
+    
+    <div class="table-responsive border rounded">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th><th>نام کاربری</th><th>نام مکتب</th><th>ولسوالی</th><th>عملیات</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- بخش نمایش تمام کارمندان معارف هرات همراه با فیلتر جستجو -->
+  <div class="card card-custom">
+    <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-users-gear"></i> همه کارمندان و پرسنل</h5>
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <input class="form-control border-primary" id="searchInput" placeholder="🔍 جستجوی هوشمند کارمندان (نام، وظیفه، مکتب)..." oninput="loadAllRecords()">
+      </div>
+    </div>
+    
+    <div class="table-responsive border rounded">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>آی‌دی</th><th>مکتب مربوطه</th><th>ولسوالی</th><th>نام کارمند</th><th>نام پدر</th><th>وظیفه</th><th>تحصیلات</th><th>وضعیت تأیید</th><th>عملیات تأیید</th>
+          </tr>
+        </thead>
+        <tbody id="allTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://jsdelivr.net"></script>
+<script>
+  const token = localStorage.getItem('hr_token');
+  if (!token) { location.href = '/'; }
+
+  async function loadAllRecords() {
+    const search = document.getElementById('searchInput').value;
+    try {
+      const res = await fetch(`/api/records?search=${encodeURIComponent(search)}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const records = await res.json();
+      const tbody = document.getElementById('allTableBody');
+      tbody.innerHTML = '';
+      
+      let total = 0, active = 0, retired = 0;
+
+      records.forEach(row => {
+        total++;
+        const info = row.data || {};
+        if (info.job && info.job.includes('تقاعد')) retired++; else active++;
+
+        let statusHtml = row.status === 'approved' ? 
+          '<span class="badge bg-success">✅ تایید شده</span>' : 
+          '<span class="badge bg-warning text-dark">⏳ در انتظار تایید</span>';
+        
+        let approveBtn = row.status === 'pending' ? 
+          `<button class="btn btn-sm btn-success fw-bold" onclick="approveRecord(${row.id})">✔️ تایید ادمین</button>` : '—';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td><strong>${row.schoolname || info.schoolName || '-'}</strong></td>
+          <td>${row.district || info.district || '-'}</td>
+          <td>${info.name || '-'}</td>
+          <td>${info.fatherName || '-'}</td>
+          <td>${info.job || '-'}</td>
+          <td>${info.degree || '-'}</td>
+          <td>${statusHtml}</td>
+          <td>${approveBtn}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('sTotal').textContent = total;
+      document.getElementById('sActive').textContent = active;
+      document.getElementById('sRetired').textContent = retired;
+    } catch(e) { console.error(e); }
+  }
+
+  async function loadSchoolsList() {
+    const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
+    const schools = await res.json();
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '';
+    document.getElementById('sSchools').textContent = schools.length;
+
+    schools.forEach((sch, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${idx+1}</td><td><code>${sch.username}</code></td><td><strong>${sch.schoolname}</strong></td><td>${sch.district}</td><td><button class="btn btn-sm btn-danger px-2 py-1" onclick="deleteSchool(${sch.id})">❌ حذف</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function addUser() {
+    const body = {
+      username: document.getElementById('uUsername').value,
+      password: document.getElementById('uPassword').value,
+      schoolName: document.getElementById('uSchoolName').value,
+      district: document.getElementById('uDistrict').value
+    };
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      alert('🏫 مکتب جدید با موفقیت اضافه شد.');
+      loadSchoolsList();
+    }
+  }
+
+  async function approveRecord(id) {
+    if (!confirm('آیا از تایید رسمی مشخصات این کارمند اطمینان دارید؟')) return;
+    const res = await fetch(`/api/records/${id}/approve`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+    if (res.ok) { alert('تایید شد.'); loadAllRecords(); }
+  }
+
+  async function deleteSchool(id) {
+    if (!confirm('آیا از حذف اکانت این مکتب اطمینان دارید؟')) return;
+    await fetch(`/api/users/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+    loadSchoolsList();
+  }
+
+  function logout() { localStorage.clear(); location.href = '/'; }
+  
+  function loadAll() { loadAllRecords(); loadSchoolsList(); }
+  loadAll();
+</script>
+</body>
+</html>

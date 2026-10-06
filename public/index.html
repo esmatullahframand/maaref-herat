@@ -1,688 +1,204 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>معارف هرات</title>
-<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/file-saver.min.js"></script>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: Tahoma, sans-serif; background: #f0f4f8; margin: 0; padding: 15px; }
-  .hidden { display: none !important; }
-  
-  /* لاگین */
-  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center;
-                background: linear-gradient(135deg, #0056b3, #003d82); padding: 20px; }
-  .login-box { background: #fff; padding: 40px 35px; border-radius: 16px; width: 100%;
-               max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
-  .login-box h1 { color: #0056b3; text-align: center; font-size: 20px; margin: 0 0 8px; }
-  .login-box .sub { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 25px; }
-  .login-box label { display: block; font-size: 13px; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
-  .login-box input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px;
-                     margin-bottom: 16px; font-size: 14px; font-family: inherit; }
-  .login-box input:focus { border-color: #0056b3; outline: none; }
-  .login-box button { width: 100%; padding: 14px; background: #0056b3; color: #fff; border: none;
-                      border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-  .login-box button:hover { background: #003d82; }
-  .login-box button:disabled { opacity: 0.7; }
-  .login-box .err { color: #dc2626; text-align: center; font-size: 13px; margin-top: 12px; min-height: 18px; }
-  .login-box .hint { background: #fef3c7; border: 1px solid #fbbf24; color: #92400e;
-                     padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; }
-  
-  /* پنل */
-  .app { max-width: 1400px; margin: 0 auto; }
-  .topbar { background: #0056b3; color: #fff; padding: 15px 25px; border-radius: 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-  .topbar.admin { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
-  .topbar h1 { font-size: 17px; margin: 0; }
-  .topbar button { background: rgba(255,255,255,.2); color: #fff; border: none;
-                   padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-  .card { background: #fff; border-radius: 12px; padding: 25px;
-          box-shadow: 0 4px 20px rgba(0,0,0,.08); margin-bottom: 20px; }
-  .card h2 { color: #0056b3; font-size: 16px; margin: 0 0 15px;
-             border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;
-             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-  .topbar.admin ~ .app .card h2, .app.admin h2 { color: #7c3aed; }
-  .stats-bar { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
-  .stat-box { background: linear-gradient(135deg, #eef6ff, #dbeafe);
-              border: 1px solid #bcd8f5; border-radius: 10px; padding: 12px 20px;
-              font-size: 14px; flex: 1; min-width: 150px; }
-  .stat-box b { color: #0056b3; font-size: 20px; display: block; margin-top: 4px; }
-  .stat-box.green { background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac; }
-  .stat-box.green b { color: #15803d; }
-  .stat-box.red { background: linear-gradient(135deg, #fee2e2, #fecaca); border-color: #fca5a5; }
-  .stat-box.red b { color: #b91c1c; }
-  .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer;
-         font-weight: bold; font-size: 14px; color: #fff; }
-  .btn-green { background: #10b981; }
-  .btn-blue { background: #0056b3; }
-  .btn-red { background: #dc2626; }
-  .btn-orange { background: #f59e0b; }
-  .btn-purple { background: #7c3aed; }
-  .btn-sm { padding: 6px 12px; font-size: 12px; }
-  .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .form-group { display: flex; flex-direction: column; }
-  .form-group label { font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 5px; }
-  .form-group input, .form-group select { padding: 9px 12px; border: 1.5px solid #cbd5e1;
-      border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff; }
-  .form-group input:focus, .form-group select:focus {
-      border-color: #0056b3; outline: none; box-shadow: 0 0 0 3px rgba(0,86,179,.12); }
-  .section-title { grid-column: 1 / -1; color: #0056b3; font-size: 14px;
-                   font-weight: bold; margin-top: 15px; padding: 10px 12px;
-                   background: #eef6ff; border-radius: 6px;
-                   border-right: 4px solid #0056b3; }
-  .section-title:first-child { margin-top: 0; }
-  .search-box { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-  .search-box input { flex: 1; min-width: 200px; padding: 10px 14px;
-      border: 2px solid #0056b3; border-radius: 8px; font-size: 14px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th, td { border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center; white-space: nowrap; }
-  th { background: #f1f5f9; font-weight: bold; }
-  .table-wrap { overflow-x: auto; max-height: 500px; border: 1px solid #cbd5e1; border-radius: 8px; }
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px;
-           font-size: 11px; font-weight: bold; }
-  .badge-green { background: #dcfce7; color: #15803d; }
-  .badge-red { background: #fee2e2; color: #b91c1c; }
-  .badge-blue { background: #dbeafe; color: #1e40af; }
-  .form-row { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr auto; gap: 10px; align-items: end; margin-bottom: 15px; }
-  .form-row input { padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-family: inherit; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ریاست معارف ولایت هرات - سیستم دیجیتالی جمع‌آوری معلومات کارمندان</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cloudflare.com" rel="stylesheet">
+    <style>
+        @import url('https://googleapis.com');
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f4f6f9;
+        }
+        .navbar-brand img {
+            max-height: 50px;
+        }
+        .card-custom {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: none;
+            border-radius: 12px;
+        }
+        .status-badge {
+            font-size: 13px;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+    </style>
 </head>
 <body>
 
-<!-- ═══════════ صفحه لاگین ═══════════ -->
-<div id="loginPage" class="login-wrap">
-  <div class="login-box">
-    <h1>🏫 ریاست معارف ولایت هرات</h1>
-    <div class="sub">سیستم دیجیتالی جمع‌آوری معلومات کارمندان</div>
-    <label for="username">نام کاربری</label>
-    <input id="username" autocomplete="username">
-    <label for="password">رمز عبور</label>
-    <input id="password" type="password" autocomplete="current-password">
-    <button type="button" id="loginBtn">ورود</button>
-    <div class="err" id="loginErr"></div>
-  </div>
-</div>
+    <!-- صفحه ورود (Login) -->
+    <div id="loginSection" class="container min-vh-100 d-flex align-items-center justify-content-center">
+        <div class="card card-custom p-4 text-center" style="width: 100%; max-width: 450px;">
+            <h4 class="text-primary mb-3"><i class="fa-solid fa-building-columns"></i> ریاست معارف ولایت هرات</h4>
+            <h6 class="text-muted mb-4">سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h6>
+            
+            <!-- کادر زرد رنگ حاوی پسوردها برای امنیت بیشتر حذف گردید -->
 
-<!-- ═══════════ پنل ادمین ═══════════ -->
-<div id="adminPage" class="app hidden">
-  <div class="topbar admin">
-    <div>
-      <h1>🎛️ پنل ادمین — معارف هرات</h1>
+            <form id="loginForm">
+                <div class="mb-3 text-start">
+                    <label class="form-label">نام کاربری</label>
+                    <input type="text" id="username" class="form-control" placeholder="نام کاربری خود را وارد کنید" required>
+                </div>
+                <div class="mb-4 text-start">
+                    <label class="form-label">رمز عبور</label>
+                    <input type="password" id="password" class="form-control" placeholder="رمز عبور خود را وارد کنید" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2"><i class="fa-solid fa-right-to-bracket"></i> ورود به سیستم</button>
+            </form>
+        </div>
     </div>
-    <button onclick="logout()">🚪 خروج</button>
-  </div>
 
-  <div class="card">
-    <h2>📊 آمار کلی <button class="btn btn-blue btn-sm" onclick="adminLoad()">🔄 به‌روزرسانی</button></h2>
-    <div class="stats-bar">
-      <div class="stat-box">🏫 مکاتب <b id="aSchools">0</b></div>
-      <div class="stat-box">👥 کارمندان <b id="aTotal">0</b></div>
-      <div class="stat-box green">✅ فعال <b id="aActive">0</b></div>
-      <div class="stat-box red">🎖️ تقاعد <b id="aRetired">0</b></div>
+    <!-- داشبورد اصلی (Dashboard) -->
+    <div id="dashboardSection" class="d-none">
+        <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1"><i class="fa-solid fa-building-columns"></i> پنل مدیریتی معارف هرات</span>
+                <div class="d-flex align-items-center gap-3">
+                    <span id="userInfo" class="text-white"></span>
+                    <button class="btn btn-light btn-sm" onclick="logout()"><i class="fa-solid fa-power-off text-danger"></i> خروج</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid px-4">
+            <!-- بخش ابزارها و جستجو -->
+            <div class="card card-custom p-3 mb-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" id="searchInput" class="form-control" placeholder="جستجوی هوشمند کارمندان (نام، وظیفه، مکتب...)" oninput="loadRecords()">
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <button class="btn btn-success me-2" onclick="openFormModal()"><i class="fa-solid fa-user-plus"></i> اضافه کردن فرد جدید</button>
+                        <button class="btn btn-outline-primary" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> خروجی اکسل</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول نمایش اطلاعات کارمندان -->
+            <div class="card card-custom p-3">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>آی‌دی</th>
+                                <th>نام کارمند</th>
+                                <th>نام پدر</th>
+                                <th>وظیفه</th>
+                                <th>درجه تحصیل</th>
+                                <th>محل وظیفه (مکتب)</th>
+                                <th>آمریت / مرکز</th>
+                                <th>وضعیت تایید</th>
+                                <th class="text-center">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody">
+                            <!-- ردیف‌ها به صورت پویا توسط جاوااسکریپت پر می‌شوند -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="card">
-    <h2>👥 مدیریت مکاتب</h2>
-    <div class="form-row">
-      <input id="uUsername" placeholder="نام کاربری انگلیسی">
-      <input id="uPassword" placeholder="رمز عبور">
-      <input id="uSchoolName" placeholder="نام مکتب">
-      <input id="uDistrict" placeholder="ولسوالی">
-      <button class="btn btn-purple" onclick="addUser()">➕ افزودن</button>
-    </div>
-    <div class="table-wrap">
-      <table id="usersTable">
-        <thead><tr><th>#</th><th>نام کاربری</th><th>مکتب</th><th>ولسوالی</th><th>تعداد</th><th>عملیات</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+    <!-- اسکریپت جاوااسکریپت منطق برنامه -->
+    <script>
+        let currentUser = null;
 
-  <div class="card">
-    <h2>📋 همه کارمندان <button class="btn btn-green btn-sm" onclick="exportAll()">📥 خروجی اکسل</button></h2>
-    <input class="search-box" id="aSearch" placeholder="🔍 جستجو..." oninput="renderAllRecords()" style="width:100%;max-width:400px;padding:10px;border:2px solid #7c3aed;border-radius:8px;margin-bottom:15px">
-    <div class="table-wrap">
-      <table id="allTable">
-        <thead><tr><th>#</th><th>مکتب</th><th>اسم</th><th>تخلص</th><th>ولد</th><th>کد بست</th><th>درجه</th><th>تاریخ تولد</th><th>سن</th><th>وضعیت</th><th>عملیات</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</div>
+        // فرم لاگین
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-<!-- ═══════════ پنل مکتب ═══════════ -->
-<div id="schoolPage" class="app hidden">
-  <div class="topbar">
-    <div>
-      <h1>🏫 <span id="sSchoolName">...</span></h1>
-      <div style="font-size:13px;opacity:.9;margin-top:4px">📍 ولسوالی: <span id="sDistrict">...</span></div>
-    </div>
-    <button onclick="logout()">🚪 خروج</button>
-  </div>
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    currentUser = data.user;
+                    document.getElementById('loginSection').classList.add('d-none');
+                    document.getElementById('dashboardSection').classList.remove('d-none');
+                    document.getElementById('userInfo').innerText = `کاربر: \${currentUser.username} (\${currentUser.role === 'admin' ? 'ادمین کل' : 'مکتب'})`;
+                    loadRecords();
+                } else {
+                    alert(data.error || 'خطا در ورود');
+                }
+            } catch (err) {
+                alert('خطا در اتصال به سرور');
+            }
+        });
 
-  <div class="card">
-    <div class="stats-bar">
-      <div class="stat-box">📊 کل کارمندان <b id="sTotal">0</b></div>
-      <div class="stat-box green">✅ فعال <b id="sActive">0</b></div>
-      <div class="stat-box red">🎖️ تقاعد <b id="sRetired">0</b></div>
-    </div>
-    <button class="btn btn-green" onclick="toggleForm()">➕ اضافه کردن کارمند</button>
-  </div>
+        // دریافت لیست رکوردها همراه با سیستم جستجوی هوشمند دیتابیس آنلاین
+        async function loadRecords() {
+            const searchValue = document.getElementById('searchInput').value;
+            try {
+                const res = await fetch(`/api/records?search=\${encodeURIComponent(searchValue)}`);
+                const records = await res.json();
+                const tbody = document.getElementById('recordsTableBody');
+                tbody.innerHTML = '';
 
-  <div class="card hidden" id="formCard">
-    <h2>📝 فرم ثبت کارمند جدید <button class="btn btn-red btn-sm" onclick="toggleForm()">✖ انصراف</button></h2>
-    <div class="form-grid" id="formFields"></div>
-    <div style="margin-top:20px">
-      <button class="btn btn-green" onclick="saveRecord()">💾 ذخیره</button>
-      <button class="btn btn-red" onclick="toggleForm()">✖ انصراف</button>
-    </div>
-  </div>
+                records.forEach(row => {
+                    const info = row.data || {};
+                    
+                    // بررسی وضعیت تایید و تعریف استایل گرافیکی با نشان باکیفیت
+                    let statusHtml = '';
+                    let approveBtn = '';
+                    
+                    if (row.status === 'approved') {
+                        statusHtml = '<span class="badge bg-success status-badge"><i class="fa-solid fa-circle-check"></i> تایید شده</span>';
+                    } else {
+                        statusHtml = '<span class="badge bg-warning text-dark status-badge"><i class="fa-solid fa-clock"></i> در انتظار تایید</span>';
+                        
+                        // اضافه شدن دکمه گرافیکی تایید فقط مخصوص نقش ادمین
+                        if (currentUser && currentUser.role === 'admin') {
+                            approveBtn = `
+                                <button class="btn btn-sm btn-outline-success me-1" onclick="approveRecord(\${row.id})" title="تایید گرافیکی مشخصات">
+                                    <i class="fa-solid fa-check-double"></i> تایید ادمین
+                                </button>
+                            `;
+                        }
+                    }
 
-  <div class="card">
-    <h2>📋 لیست کارمندان <button class="btn btn-blue btn-sm" onclick="exportSchool()">📥 خروجی اکسل</button></h2>
-    <input id="sSearch" placeholder="🔍 جستجو..." oninput="renderSchoolRecords()" style="width:100%;max-width:400px;padding:10px;border:2px solid #0056b3;border-radius:8px;margin-bottom:15px">
-    <div class="table-wrap" id="schoolTableContainer"></div>
-  </div>
-</div>
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>\${row.id}</td>
+                        <td><strong>\${info.name || info.نام || '-'}</strong></td>
+                        <td>\${info.fatherName || info.نام_پدر || '-'}</td>
+                        <td>\${info.job || info.وظیفه || '-'}</td>
+                        <td>\${info.degree || info.درجه_تحصیل || info.تحصیلات || '-'}</td>
+                        <td>\${row.schoolname}</td>
+                        <td>\${row.district}</td>
+                        <td>\${statusHtml}</td>
+                        <td class="text-center">
+                            <div class="d-inline-flex">
+                                \${approveBtn}
+                                <button class="btn btn-sm btn-primary me-1" onclick="editRecord(\${row.id})"><i class="fa-solid fa-pen-to-square"></i> ویرایش</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error('Error fetching records:', err);
+            }
+        }
 
-<script>
-// ═══════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════
-let currentUser = null;
-let allRecords = [];
-let allUsers = [];
-
-// ═══════════════════════════════════════════════
-//  API
-// ═══════════════════════════════════════════════
-async function api(url, opts={}) {
-  const token = localStorage.getItem('hr_token');
-  const headers = { 'Content-Type': 'application/json', ...(opts.headers||{}) };
-  if (token) headers['Authorization'] = 'Bearer ' + token;
-  const r = await fetch(url, { ...opts, headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
-  if (r.status === 401) { logout(); throw new Error('unauth'); }
-  const data = await r.json().catch(()=>({}));
-  if (!r.ok) throw new Error(data.error || 'خطا');
-  return data;
-}
-
-// ═══════════════════════════════════════════════
-//  لاگین
-// ═══════════════════════════════════════════════
-document.getElementById('loginBtn').addEventListener('click', doLogin);
-document.getElementById('password').addEventListener('keypress', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-async function doLogin() {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value;
-  const errEl = document.getElementById('loginErr');
-  const btn = document.getElementById('loginBtn');
-  
-  errEl.textContent = '';
-  btn.disabled = true;
-  btn.textContent = 'در حال ورود...';
-  
-  try {
-    const r = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await r.json();
-    
-    if (!r.ok) throw new Error(data.error || 'خطا');
-    
-    // ذخیره در localStorage
-    localStorage.setItem('hr_token', data.token);
-    localStorage.setItem('hr_user', JSON.stringify(data.user));
-    
-    currentUser = data.user;
-    console.log('✅ ورود موفق:', currentUser);
-    
-    showPanel();
-  } catch (e) {
-    errEl.textContent = '❌ ' + e.message;
-    btn.disabled = false;
-    btn.textContent = 'ورود';
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  نمایش پنل مناسب
-// ═══════════════════════════════════════════════
-function showPanel() {
-  document.getElementById('loginPage').classList.add('hidden');
-  document.getElementById('adminPage').classList.add('hidden');
-  document.getElementById('schoolPage').classList.add('hidden');
-  
-  if (currentUser.role === 'admin') {
-    document.getElementById('adminPage').classList.remove('hidden');
-    adminLoad();
-  } else {
-    document.getElementById('schoolPage').classList.remove('hidden');
-    document.getElementById('sSchoolName').textContent = currentUser.schoolName || currentUser.username;
-    document.getElementById('sDistrict').textContent = currentUser.district || '—';
-    schoolLoad();
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  چک اولیه — اگر توکن داریم، مستقیم برو به پنل
-// ═══════════════════════════════════════════════
-async function checkAuth() {
-  const token = localStorage.getItem('hr_token');
-  const user = localStorage.getItem('hr_user');
-  
-  if (!token || !user) {
-    console.log('❌ توکن نیست — نمایش لاگین');
-    return;
-  }
-  
-  try {
-    currentUser = JSON.parse(user);
-    console.log('✅ توکن موجود — بررسی با سرور...');
-    
-    // تست توکن با سرور
-    const me = await api('/api/auth/me');
-    currentUser = me;
-    console.log('✅ توکن معتبر:', me);
-    showPanel();
-  } catch (e) {
-    console.log('❌ توکن نامعتبر:', e.message);
-    logout();
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  خروج
-// ═══════════════════════════════════════════════
-function logout() {
-  localStorage.removeItem('hr_token');
-  localStorage.removeItem('hr_user');
-  currentUser = null;
-  document.getElementById('loginPage').classList.remove('hidden');
-  document.getElementById('adminPage').classList.add('hidden');
-  document.getElementById('schoolPage').classList.add('hidden');
-  document.getElementById('username').value = '';
-  document.getElementById('password').value = '';
-  document.getElementById('loginErr').textContent = '';
-  document.getElementById('loginBtn').disabled = false;
-  document.getElementById('loginBtn').textContent = 'ورود';
-}
-
-// ═══════════════════════════════════════════════
-//  توابع کمکی سن
-// ═══════════════════════════════════════════════
-function normalizeDigits(str) {
-  if (!str) return '';
-  const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
-  return str.split('').map(ch => {
-    let i = p.indexOf(ch); if (i !== -1) return i;
-    i = a.indexOf(ch); if (i !== -1) return i;
-    return ch;
-  }).join('');
-}
-
-function parseShamsi(s) {
-  if (!s) return null;
-  const parts = normalizeDigits(s).replace(/[.\-]/g,'/').split('/').map(x => parseInt(x));
-  if (parts.length !== 3 || parts.some(isNaN)) return null;
-  let y, m, d;
-  if (parts[0] > 1000) { y = parts[0]; m = parts[1]; d = parts[2]; }
-  else { d = parts[0]; m = parts[1]; y = parts[2]; }
-  if (y < 1300 || y > 1408 || m < 1 || m > 12 || d < 1 || d > 31) return null;
-  return { y, m, d };
-}
-
-function calcAge(birth) {
-  const p = parseShamsi(birth);
-  if (!p) return { age: '—', status: 'نامشخص', retired: false };
-  const now = new Date();
-  const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate();
-  const gdm = [0,31,59,90,120,151,181,212,243,273,304,334];
-  let jy = 979;
-  let y2 = gy - 1600;
-  const gy2 = (gm > 2) ? y2 + 1 : y2;
-  let days = 365*y2 + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100)
-           + Math.floor((gy2+399)/400) - 80 + gd + gdm[gm-1];
-  jy += 33 * Math.floor(days/12053); days %= 12053;
-  jy += 4 * Math.floor(days/1461);  days %= 1461;
-  if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
-  const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
-  const jd = 1 + ((days < 186) ? days%31 : (days-186)%30);
-  let age = jy - p.y;
-  if (jm < p.m || (jm === p.m && jd < p.d)) age--;
-  if (age < 0) return { age: '—', status: 'نامشخص', retired: false };
-  return { age, status: age >= 65 ? '🎖️ تقاعد' : '✅ فعال', retired: age >= 65 };
-}
-
-function normalizeDegree(d) {
-  if (!d) return '';
-  const map = {'18':'ماستر','16':'لیسانس','14':'فوق بکلوریا','12':'بکلوریا'};
-  const n = normalizeDigits(d.trim());
-  return map[n] || d.trim();
-}
-
-// ═══════════════════════════════════════════════
-//  پنل ادمین
-// ═══════════════════════════════════════════════
-async function adminLoad() {
-  try {
-    allUsers = await api('/api/users');
-    allRecords = await api('/api/records');
-    
-    const schools = allUsers.filter(u => u.role === 'school');
-    document.getElementById('aSchools').textContent = schools.length;
-    document.getElementById('aTotal').textContent = allRecords.length;
-    let retired = 0, active = 0;
-    allRecords.forEach(r => {
-      const s = calcAge(r.birthDate);
-      if (s.retired) retired++;
-      else if (s.age !== '—') active++;
-    });
-    document.getElementById('aRetired').textContent = retired;
-    document.getElementById('aActive').textContent = active;
-    
-    renderUsers();
-    renderAllRecords();
-  } catch (e) { console.error(e); }
-}
-
-function renderUsers() {
-  const schools = allUsers.filter(u => u.role === 'school');
-  const tbody = document.querySelector('#usersTable tbody');
-  if (schools.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="padding:30px;color:#64748b">هیچ مکتبی نیست</td></tr>';
-    return;
-  }
-  tbody.innerHTML = schools.map((u, i) => {
-    const cnt = allRecords.filter(r => r.userId === u.id).length;
-    return `<tr>
-      <td>${i+1}</td>
-      <td><b>${u.username}</b></td>
-      <td>${u.schoolName || '—'}</td>
-      <td>${u.district || '—'}</td>
-      <td><span class="badge badge-blue">${cnt}</span></td>
-      <td>
-        <button class="btn btn-orange btn-sm" onclick="changePass(${u.id})">🔑</button>
-        <button class="btn btn-red btn-sm" onclick="delUser(${u.id}, '${(u.schoolName||u.username).replace(/'/g,"\\'")}')">🗑️</button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function renderAllRecords() {
-  const q = (document.getElementById('aSearch').value || '').toLowerCase();
-  const list = allRecords.filter(r => !q || JSON.stringify(r).toLowerCase().includes(q));
-  const tbody = document.querySelector('#allTable tbody');
-  if (list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="padding:30px;color:#64748b">رکوردی نیست</td></tr>';
-    return;
-  }
-  tbody.innerHTML = list.map((r, i) => {
-    const s = calcAge(r.birthDate);
-    const badge = s.retired ? '<span class="badge badge-red">🎖️ تقاعد</span>' : '<span class="badge badge-green">✅ فعال</span>';
-    return `<tr>
-      <td>${i+1}</td>
-      <td><b>${r.schoolName || '—'}</b></td>
-      <td>${r.firstName || ''}</td>
-      <td>${r.lastName || ''}</td>
-      <td>${r.fatherName || ''}</td>
-      <td>${r.jobCode || ''}</td>
-      <td>${r.degree || ''}</td>
-      <td>${r.birthDate || ''}</td>
-      <td><b>${s.age}</b></td>
-      <td>${badge}</td>
-      <td><button class="btn btn-red btn-sm" onclick="delRecord(${r.id})">🗑️</button></td>
-    </tr>`;
-  }).join('');
-}
-
-async function addUser() {
-  const username = document.getElementById('uUsername').value.trim();
-  const password = document.getElementById('uPassword').value.trim();
-  const schoolName = document.getElementById('uSchoolName').value.trim();
-  const district = document.getElementById('uDistrict').value.trim();
-  if (!username || !password) { alert('نام کاربری و رمز الزامی'); return; }
-  try {
-    await api('/api/users', { method: 'POST', body: { username, password, schoolName: schoolName || username, district }});
-    document.getElementById('uUsername').value = '';
-    document.getElementById('uPassword').value = '';
-    document.getElementById('uSchoolName').value = '';
-    document.getElementById('uDistrict').value = '';
-    await adminLoad();
-    alert('✅ مکتب اضافه شد');
-  } catch (e) { alert('❌ ' + e.message); }
-}
-
-async function delUser(id, name) {
-  if (!confirm(`مکتب "${name}" حذف شود؟`)) return;
-  try { await api(`/api/users/${id}`, { method: 'DELETE' }); await adminLoad(); }
-  catch (e) { alert('❌ ' + e.message); }
-}
-
-async function changePass(id) {
-  const p = prompt('رمز جدید:');
-  if (!p) return;
-  try { await api(`/api/users/${id}/password`, { method: 'PUT', body: { password: p }}); alert('✅ تغییر کرد'); }
-  catch (e) { alert('❌ ' + e.message); }
-}
-
-async function delRecord(id) {
-  if (!confirm('حذف شود؟')) return;
-  try { await api(`/api/records/${id}`, { method: 'DELETE' }); await adminLoad(); }
-  catch (e) { alert('❌ ' + e.message); }
-}
-
-async function exportAll() {
-  if (allRecords.length === 0) { alert('رکوردی نیست'); return; }
-  const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet('کارمندان', { views: [{ rightToLeft: true }] });
-  ws.addRow(['#','مکتب','اسم','تخلص','ولد','کد بست','درجه','تاریخ تولد','سن','وضعیت','تماس']);
-  ws.getRow(1).eachCell(c => {
-    c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FF7C3AED' } };
-    c.font = { color:{argb:'FFFFFFFF'}, bold:true, name:'B Nazanin' };
-  });
-  allRecords.forEach((r, i) => {
-    const s = calcAge(r.birthDate);
-    ws.addRow([i+1, r.schoolName||'', r.firstName||'', r.lastName||'', r.fatherName||'',
-      r.jobCode||'', r.degree||'', r.birthDate||'', s.age, s.status, r.phone||'']);
-  });
-  ws.columns.forEach((c,i) => c.width = i===0 ? 5 : 16);
-  const buf = await wb.xlsx.writeBuffer();
-  saveAs(new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-    `معارف_هرات_${new Date().toISOString().substring(0,10)}.xlsx`);
-}
-
-// ═══════════════════════════════════════════════
-//  پنل مکتب
-// ═══════════════════════════════════════════════
-const FIELDS = [
-  { key: 'jobCode', label: 'کُد بست', section: '۱. هویت' },
-  { key: 'jobTitle', label: 'عنوان بست', required: true },
-  { key: 'firstName', label: 'اسم', required: true },
-  { key: 'lastName', label: 'تخلص' },
-  { key: 'fatherName', label: 'ولد', required: true },
-  { key: 'grandfatherName', label: 'ولدیت', required: true },
-  { key: 'eTazkira', label: 'تذکره الکترونیکی' },
-  { key: 'paperTazkira', label: 'تذکره کاغذی' },
-  { key: 'tazkiraPage', label: 'صفحه' },
-  { key: 'tazkiraVolume', label: 'جلد' },
-  { key: 'ethnicity', label: 'قومیت', required: true },
-  { key: 'gender', label: 'جنسیت', type: 'select', options: ['', 'مرد', 'زن'], required: true, section: '۲. شخصی' },
-  { key: 'birthDate', label: 'تاریخ تولد', placeholder: '1360/02/22', required: true },
-  { key: 'birthPlace', label: 'محل تولد' },
-  { key: 'originAddress', label: 'سکونت اصلی', required: true },
-  { key: 'currentAddress', label: 'سکونت فعلی', required: true },
-  { key: 'firstAppointmentDate', label: 'اولین تقرر' },
-  { key: 'phone', label: 'تماس', required: true },
-  { key: 'disability', label: 'معلولیت', type: 'select', options: ['نخیر', 'بلی'] },
-  { key: 'positionType', label: 'موقف', type: 'select', options: ['', 'اصلی', 'سرپرستی'] },
-  { key: 'employmentType', label: 'نوع استخدام', type: 'select', options: ['', 'حکمی', 'رقابتی'] },
-  { key: 'bust', label: 'بست', section: '۳. تحصیلی' },
-  { key: 'grade', label: 'قدم' },
-  { key: 'currentPositionDate', label: 'تقرر فعلی' },
-  { key: 'degree', label: 'درجه', placeholder: 'ماستر یا 18', required: true },
-  { key: 'major', label: 'رشته', required: true },
-  { key: 'eduInstitute', label: 'مرجع' },
-  { key: 'eduInstituteLocation', label: 'موقعیت مرجع' },
-  { key: 'enrollmentDate', label: 'شمولیت' },
-  { key: 'graduationDate', label: 'فراغت' },
-  { key: 'subjectTeaching', label: 'مضمون تدریس' }
-];
-
-function buildForm(containerId, record) {
-  record = record || {};
-  const grid = document.getElementById(containerId);
-  grid.innerHTML = '';
-  let lastSection = '';
-  FIELDS.forEach(f => {
-    if (f.section && f.section !== lastSection) {
-      const t = document.createElement('div');
-      t.className = 'section-title';
-      t.textContent = f.section;
-      grid.appendChild(t);
-      lastSection = f.section;
-    }
-    const div = document.createElement('div');
-    div.className = 'form-group';
-    const lbl = document.createElement('label');
-    lbl.textContent = f.label + (f.required ? ' *' : '');
-    div.appendChild(lbl);
-    let inp;
-    if (f.type === 'select') {
-      inp = document.createElement('select');
-      f.options.forEach(o => {
-        const opt = document.createElement('option');
-        opt.value = o; opt.textContent = o || 'انتخاب';
-        if (record[f.key] === o) opt.selected = true;
-        inp.appendChild(opt);
-      });
-    } else {
-      inp = document.createElement('input');
-      inp.type = 'text';
-      if (f.placeholder) inp.placeholder = f.placeholder;
-      if (record[f.key]) inp.value = record[f.key];
-    }
-    inp.id = containerId + '_' + f.key;
-    div.appendChild(inp);
-    grid.appendChild(div);
-  });
-}
-
-function toggleForm() {
-  const card = document.getElementById('formCard');
-  const isHidden = card.classList.contains('hidden');
-  if (isHidden) {
-    buildForm('formFields');
-    card.classList.remove('hidden');
-  } else {
-    card.classList.add('hidden');
-  }
-}
-
-async function schoolLoad() {
-  try {
-    allRecords = await api('/api/records');
-    let retired = 0, active = 0;
-    allRecords.forEach(r => {
-      const s = calcAge(r.birthDate);
-      if (s.retired) retired++;
-      else if (s.age !== '—') active++;
-    });
-    document.getElementById('sTotal').textContent = allRecords.length;
-    document.getElementById('sActive').textContent = active;
-    document.getElementById('sRetired').textContent = retired;
-    renderSchoolRecords();
-  } catch (e) { console.error(e); }
-}
-
-const COLS = [
-  { key: 'firstName', label: 'اسم' },
-  { key: 'lastName', label: 'تخلص' },
-  { key: 'fatherName', label: 'ولد' },
-  { key: 'jobCode', label: 'کد بست' },
-  { key: 'degree', label: 'درجه' },
-  { key: 'birthDate', label: 'تاریخ تولد' },
-  { key: 'phone', label: 'تماس' }
-];
-
-function renderSchoolRecords() {
-  const q = (document.getElementById('sSearch').value || '').toLowerCase();
-  const list = allRecords.filter(r => !q || JSON.stringify(r).toLowerCase().includes(q));
-  const container = document.getElementById('schoolTableContainer');
-  if (list.length === 0) {
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b">📭 هیچ کارمندی نیست</div>';
-    return;
-  }
-  let html = '<table><thead><tr><th>#</th>';
-  COLS.forEach(c => html += `<th>${c.label}</th>`);
-  html += '<th>سن</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody>';
-  list.forEach((r, i) => {
-    const st = calcAge(r.birthDate);
-    const badge = st.retired ? '<span class="badge badge-red">🎖️ تقاعد</span>' : '<span class="badge badge-green">✅ فعال</span>';
-    html += `<tr>
-      <td>${i+1}</td>
-      ${COLS.map(c => `<td>${r[c.key] || ''}</td>`).join('')}
-      <td><b>${st.age}</b></td>
-      <td>${badge}</td>
-      <td><button class="btn btn-red btn-sm" onclick="delRecord(${r.id})">🗑️</button></td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  container.innerHTML = html;
-}
-
-async function saveRecord() {
-  const rec = {};
-  for (const f of FIELDS) {
-    const el = document.getElementById('formFields_' + f.key);
-    const val = (el?.value || '').trim();
-    if (f.required && !val) { alert(`❌ ${f.label} الزامی`); el?.focus(); return; }
-    rec[f.key] = val;
-  }
-  if (!rec.eTazkira && !rec.paperTazkira) { alert('❌ حداقل یکی از تذکره‌ها'); return; }
-  if (!parseShamsi(rec.birthDate)) { alert('❌ تاریخ تولد نامعتبر'); return; }
-  rec.degree = normalizeDegree(rec.degree);
-  try {
-    await api('/api/records', { method: 'POST', body: rec });
-    alert('✅ ذخیره شد');
-    toggleForm();
-    await schoolLoad();
-  } catch (e) { alert('❌ ' + e.message); }
-}
-
-async function exportSchool() {
-  if (allRecords.length === 0) { alert('رکوردی نیست'); return; }
-  const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet('کارمندان', { views: [{ rightToLeft: true }] });
-  ws.addRow(['#','اسم','تخلص','ولد','کد بست','درجه','تاریخ تولد','سن','وضعیت','تماس']);
-  ws.getRow(1).eachCell(c => {
-    c.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FF0056B3' } };
-    c.font = { color:{argb:'FFFFFFFF'}, bold:true, name:'B Nazanin' };
-  });
-  allRecords.forEach((r, i) => {
-    const st = calcAge(r.birthDate);
-    ws.addRow([i+1, r.firstName||'', r.lastName||'', r.fatherName||'', r.jobCode||'',
-      r.degree||'', r.birthDate||'', st.age, st.status, r.phone||'']);
-  });
-  ws.columns.forEach((c,i) => c.width = i===0 ? 5 : 16);
-  const buf = await wb.xlsx.writeBuffer();
-  saveAs(new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-    `کارمندان_${(currentUser.schoolName||'school').replace(/[\\\/]/g,'_')}_${new Date().toISOString().substring(0,10)}.xlsx`);
-}
-
-// ═══════════════════════════════════════════════
-//  شروع
-// ═══════════════════════════════════════════════
-checkAuth();
-</script>
-</body>
-</html>
+        // تابع ارسال تایید گرافیکی ادمین به سرور
+        async function approveRecord(id) {
+            if (!confirm('آیا از تایید گرافیکی این ردیف کارمند اطمینان کامل دارید؟')) return;
+            try {
+                const res = await fetch(`/api/records/\${id}/approve`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok && data.ok) {
+                    alert('✅ ردیف کارمند با موفقیت تایید و دائمی شد.');

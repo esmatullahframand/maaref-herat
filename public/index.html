@@ -3,38 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پنل مدیریت معارف هرات</title>
+    <title>ریاست معارف ولایت هرات - پنل ادمین کل</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; direction: rtl; color: #333; }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; color: #333; direction: rtl; }
         .d-none { display: none !important; }
         .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; height: 100vh; padding: 15px; }
         .login-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 420px; text-align: center; }
         .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
         .btn-primary { background-color: #0056b3; color: white; }
         .btn-success { background-color: #10b981; color: white; }
         .btn-danger { background-color: #ef4444; color: white; }
         .btn-secondary { background-color: #6b7280; color: white; }
-        .topbar { background: #0056b3; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar { background: #0056b3; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .topbar h3 { margin: 0; font-size: 18px; }
         .main-container { padding: 25px; max-width: 1400px; margin: 0 auto; }
         .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .row { display: flex; flex-wrap: wrap; gap: 15px; }
+        .col-6 { flex: 1; min-width: 280px; }
         .table-responsive { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: center; }
         th { background-color: #f8fafc; font-weight: bold; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        tr:hover { background-color: #f1f5f9; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
         .badge-success { background-color: #dcfce7; color: #15803d; }
         .badge-warning { background-color: #fef3c7; color: #92400e; }
-        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 9999; }
+        
+        /* مۆدال پنجره‌ای */
+        .custom-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 9999; padding: 15px; }
         .custom-modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 750px; }
+        .modal-content { background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { font-size: 18px; font-weight: bold; color: #0056b3; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+        .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+        
+        /* تب‌ها */
+        .tab-btn { padding: 10px 20px; border: none; background: #e2e8f0; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; }
+        .tab-btn.active { background: #0056b3; color: white; }
     </style>
 </head>
 <body>
 
+    <!-- صفحه ورود -->
     <div id="loginSection" class="login-container">
         <div class="login-card">
             <h2>ریاست معارف ولایت هرات</h2>
@@ -53,88 +66,105 @@
         </div>
     </div>
 
+    <!-- پنل اصلی داشبورد ادمین کل -->
     <div id="dashboardSection" class="d-none">
         <div class="topbar">
             <h3>پنل مدیریتی معارف هرات (ادمین کل)</h3>
             <div>
                 <span id="userInfo" style="margin-left: 15px; font-weight: bold;"></span>
-                <button class="btn btn-danger" onclick="logout()">خروج</button>
+                <button class="btn btn-danger" onclick="logout()" style="padding: 6px 12px; font-size: 12px;">خروج</button>
             </div>
         </div>
 
         <div class="main-container">
-            <div class="card">
-                <input type="text" id="searchInput" class="form-control" placeholder="🔍 جستجوی هوشمند در کل معلومات دیتابیس..." oninput="loadRecords()">
+            <!-- منوی سوئیچ بین لیست کارمندان و مدیریت مکاتب -->
+            <div style="margin-bottom: 0; display: flex; gap: 5px;">
+                <button id="tabRecords" class="tab-btn active" onclick="switchTab('records')">📋 لیست کل کارمندان</button>
+                <button id="tabSchools" class="tab-btn" onclick="switchTab('schools')">🏫 مدیریت و اضافه کردن مکاتب</button>
             </div>
-            <div class="card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>آی‌دی</th>
-                            <th>نام کارمند</th>
-                            <th>نام پدر</th>
-                            <th>وظیفه</th>
-                            <th>تحصیلات</th>
-                            <th>مکتب</th>
-                            <th>آمریت</th>
-                            <th>وضعیت تایید</th>
-                            <th>عملیات ادمین</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsTableBody"></tbody>
-                </table>
+
+            <!-- بخش اول: مدیریت و لیست کارمندان معارف هرات -->
+            <div id="sectionRecords">
+                <div class="card" style="border-radius: 0 12px 12px 12px;">
+                    <div class="row">
+                        <div class="col-6">
+                            <input type="text" id="searchInput" class="form-control" placeholder="🔍 جستجوی هوشمند در کل معلومات دیتابیس..." oninput="loadRecords()">
+                        </div>
+                        <div class="col-6" style="text-align: left; display: flex; justify-content: flex-end;">
+                            <button class="btn btn-primary" onclick="alert('در حال خروجی گرفتن اکسل...')">📥 خروجی اکسل کل سیستم</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>آی‌دی</th>
+                                    <th>نام کارمند</th>
+                                    <th>نام پدر</th>
+                                    <th>وظیفه</th>
+                                    <th>تحصیلات</th>
+                                    <th>مکتب مربوطه</th>
+                                    <th>آمریت / ولسوالی</th>
+                                    <th>وضعیت تایید</th>
+                                    <th>عملیات ادمین</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
+
+            <!-- بخش دوم: مدیریت، لیست و دکمه اضافه کردن مکاتب جدید -->
+            <div id="sectionSchools" class="d-none">
+                <div class="card" style="border-radius: 0 12px 12px 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0; color: #0056b3;">🏫 لیست اکانت‌های فعال مکاتب هرات</h4>
+                        <button class="btn btn-success" onclick="openSchoolModal()">➕ اضافه کردن مکتب جدید</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>آی‌دی مکتب</th>
+                                    <th>نام کاربری ورود</th>
+                                    <th>نام رسمی مکتب</th>
+                                    <th>آمریت / ولسوالی</th>
+                                    <th>عملیات مدیریت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schoolsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem('hr_token', data.token);
-                localStorage.setItem('hr_user', JSON.stringify(data.user));
-                currentUser = data.user;
-                document.getElementById('loginSection').classList.add('d-none');
-                document.getElementById('dashboardSection').classList.remove('d-none');
-                document.getElementById('userInfo').innerText = `ادمین: ${currentUser.username}`;
-                loadRecords();
-            } else { alert(data.error); }
-        });
-
-        async function loadRecords() {
-            const search = document.getElementById('searchInput').value;
-            const token = localStorage.getItem('hr_token');
-            const res = await fetch(`/api/records?search=${encodeURIComponent(search)}`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const records = await res.json();
-            const tbody = document.getElementById('recordsTableBody');
-            tbody.innerHTML = '';
-            records.forEach(row => {
-                const info = row.data || {};
-                let statusHtml = row.status === 'approved' ? '<span class="badge badge-success">تایید شده</span>' : '<span class="badge badge-warning">در انتظار تایید</span>';
-                let approveBtn = row.status === 'pending' ? `<button class="btn btn-success" onclick="approveRecord('${row.id}')" style="padding: 4px 8px; font-size: 11px;">تایید رسمی</button>` : '';
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${row.id}</td><td>${info.name||'-'}</td><td>${info.fatherName||'-'}</td><td>${info.job||'-'}</td><td>${info.degree||'-'}</td><td>${row.schoolname}</td><td>${row.district}</td><td>${statusHtml}</td><td>${approveBtn}</td>`;
-                tbody.appendChild(tr);
-            });
-        }
-
-        async function approveRecord(id) {
-            const token = localStorage.getItem('hr_token');
-            await fetch(`/api/records/${id}/approve`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
-            alert('اطلاعات تایید شد');
-            loadRecords();
-        }
-        function logout() { localStorage.clear(); location.reload(); }
-    </script>
-</body>
-</html>
+    <!-- مۆدال اختصاصی ساخت حساب مکتب جدید -->
+    <div id="schoolModal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">➕ ساخت حساب کاربری مکتب جدید</div>
+            <form id="schoolForm">
+                <div class="form-group">
+                    <label>نام رسمی مکتب</label>
+                    <input type="text" id="schoolNameField" class="form-control" required placeholder="مثال: لیسه غیاث الدین غوری">
+                </div>
+                <div class="form-group">
+                    <label>آمریت مربوطه / ولسوالی</label>
+                    <input type="text" id="schoolDistrictField" class="form-control" required placeholder="مثال: ناحیه اول، گذره، رباط سنگی">
+                </div>
+                <div class="form-group">
+                    <label>نام کاربری ورود (به انگلیسی)</label>
+                    <input type="text" id="schoolUsernameField" class="form-control" required placeholder="مثال: ghias_school">
+                </div>
+                <div class="form-group">
+                    <label>رمز عبور مکتب</label>
+                    <input type="text" id="schoolPasswordField" class="form-control" required placeholder="یک رمز عبور مطمئن بنویسید">
+                </div>
+                <div class="modal-footer">

@@ -9,13 +9,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
-// اتصال به دیتابیس آنلاین پستگرس رندر
+// اتصال استاندارد به دیتابیس آنلاین پستگرس رندر
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-// ساخت جدول‌ها در صورت عدم وجود
+// ساخت جدول‌ها بدون کوچک‌ترین خطای نگارشی
 async function initDB() {
   const client = await pool.connect();
   try {
@@ -31,7 +31,6 @@ async function initDB() {
       );
     `);
     
-    // اضافه کردن ستون status به جدول records برای مدیریت تایید ادمین
     await client.query(`
       CREATE TABLE IF NOT EXISTS records (
         id SERIAL PRIMARY KEY,
@@ -45,15 +44,15 @@ async function initDB() {
       );
     `);
 
-    // ادمین پیش‌فرض
+    // بررسی و ساخت ادمین پیش‌فرض
     const res = await client.query('SELECT * FROM users WHERE username = \$1', ['admin']);
     if (res.rows.length === 0) {
       const hash = bcrypt.hashSync('admin123', 10);
       await client.query('INSERT INTO users (username, password, role) VALUES (\$1, \$2, \$3)', ['admin', hash, 'admin']);
-      console.log('✅ ادمین ساخته شد: admin / admin123');
+      console.log('✅ ادمین اصلی سیستم آماده شد');
     }
   } catch (err) {
-    console.error('Error initializing database:', err);
+    console.error('Database Initialization Error:', err);
   } finally {
     client.release();
   }
@@ -90,7 +89,7 @@ function authRequired(req, res, next) {
 }
 
 function adminOnly(req, res, next) {
-  if (req.user?.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
+  if (req.user?.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دفتری معارف' });
   next();
 }
 
@@ -134,6 +133,7 @@ app.delete('/api/users/:id', authRequired, adminOnly, async (req, res) => {
   res.json({ ok: true });
 });
 
+// سیستم جستجوی هوشمند متنیِ دیتابیس آنلاین
 app.get('/api/records', authRequired, async (req, res) => {
   let result;
   const search = req.query.search || '';
@@ -166,7 +166,7 @@ app.get('/api/records', authRequired, async (req, res) => {
   res.json(rows);
 });
 
-// تایید رکورد توسط ادمین
+// مسیر تایید رسمی رکوردها توسط ادمین معارف
 app.post('/api/records/:id/approve', authRequired, adminOnly, async (req, res) => {
   try {
     await pool.query("UPDATE records SET status = 'approved' WHERE id = \$1", [req.params.id]);
@@ -181,18 +181,15 @@ app.post('/api/records', authRequired, async (req, res) => {
   const schoolName = body.schoolName || req.user.schoolName || '';
   const district = body.district || req.user.district || '';
   
-  const job = String(body.job || body.وظیفه || body.position || '').trim();
-  const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
+  const job = String(body.job || '').trim();
+  const degree = String(body.degree || '').trim();
   
-  // بررسی دقیق عنوان وظیفه برای معافیت کارکنان خدماتی، ملازم و معتمد
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
-  // بررسی جامع خالی بودن فیلد تحصیلات
-  if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null' || degree.replace(/\s/g, '') === '')) {
+  if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
     return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
   }
 
-  // ثبت اولیه با وضعیت pending (در انتظار تایید)
   await pool.query('INSERT INTO records (userid, schoolname, district, data, status) VALUES (\$1, \$2, \$3, \$4, \'pending\')', [req.user.id, schoolName, district, JSON.stringify(body)]);
   res.json({ ok: true });
 });
@@ -205,12 +202,12 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
     if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
     
     const body = req.body || {};
-    const job = String(body.job || body.وظیفه || body.position || '').trim();
-    const degree = String(body.degree || body.درجه_تحصیل || body.درجه_تحصیلی || body.تحصیلات || body.رشته_تحصیل || '').trim();
+    const job = String(body.job || '').trim();
+    const degree = String(body.degree || '').trim();
     
     const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
     
-    if (!isServiceStaff && (!degree || degree === 'undefined' || degree === 'null' || degree.replace(/\s/g, '') === '')) {
+    if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
       return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
     }
 
@@ -223,4 +220,4 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server connected to Postgres on port ${PORT}`));

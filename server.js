@@ -25,20 +25,20 @@ async function initDB() {
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         role TEXT NOT NULL,
-        schoolName TEXT,
+        schoolname TEXT,
         district TEXT,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     await client.query(`
       CREATE TABLE IF NOT EXISTS records (
         id SERIAL PRIMARY KEY,
-        userId INTEGER NOT NULL,
-        schoolName TEXT NOT NULL,
+        userid INTEGER NOT NULL,
+        schoolname TEXT NOT NULL,
         district TEXT NOT NULL,
         data TEXT NOT NULL,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
       );
     `);
 
@@ -71,7 +71,7 @@ app.use((req, res, next) => {
 });
 
 function sign(user) {
-  return jwt.sign({ id: user.id, username: user.username, role: user.role, schoolName: user.schoolName, district: user.district }, SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id: user.id, username: user.username, role: user.role, schoolName: user.schoolname, district: user.district }, SECRET, { expiresIn: '30d' });
 }
 
 function authRequired(req, res, next) {
@@ -100,7 +100,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
     const token = sign(user);
-    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolName: user.schoolName, district: user.district } });
+    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolName: user.schoolname, district: user.district } });
   } catch (e) {
     res.status(500).json({ error: 'خطای سرور' });
   }
@@ -110,7 +110,7 @@ app.post('/api/auth/logout', (req, res) => res.json({ ok: true }));
 app.get('/api/auth/me', authRequired, (req, res) => res.json(req.user));
 
 app.get('/api/users', authRequired, adminOnly, async (req, res) => {
-  const result = await pool.query("SELECT id, username, role, schoolName as \"schoolName\", district FROM users WHERE role = 'school' ORDER BY id DESC");
+  const result = await pool.query("SELECT id, username, role, schoolname as \"schoolName\", district FROM users WHERE role = 'school' ORDER BY id DESC");
   res.json(result.rows);
 });
 
@@ -119,7 +119,7 @@ app.post('/api/users', authRequired, adminOnly, async (req, res) => {
   if (!username || !password) return res.status(400).json({ error: 'اطلاعات ناقص' });
   try {
     const hash = bcrypt.hashSync(password, 10);
-    await pool.query('INSERT INTO users (username, password, role, schoolName, district) VALUES (\$1, \$2, \$3, \$4, \$5)', [username, hash, 'school', schoolName, district]);
+    await pool.query('INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, \$3, \$4, \$5)', [username, hash, 'school', schoolName, district]);
     res.json({ ok: true });
   } catch (e) {
     res.status(400).json({ error: 'نام کاربری تکراری است' });
@@ -132,7 +132,7 @@ app.post('/api/users/bulk', authRequired, adminOnly, async (req, res) => {
   for (const u of list) {
     try {
       const hash = bcrypt.hashSync(String(u.password || '123456'), 10);
-      await pool.query('INSERT INTO users (username, password, role, schoolName, district) VALUES (\$1, \$2, \$3, \$4, \$5)', [u.username, hash, 'school', u.schoolName, u.district]);
+      await pool.query('INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, \$3, \$4, \$5)', [u.username, hash, 'school', u.schoolName, u.district]);
       ok++;
     } catch (e) { fail++; }
   }
@@ -155,9 +155,9 @@ app.put('/api/users/:id/password', authRequired, adminOnly, async (req, res) => 
 app.get('/api/records', authRequired, async (req, res) => {
   let result;
   if (req.user.role === 'admin') {
-    result = await pool.query('SELECT r.*, u.schoolName as "userSchool", u.district as "userDistrict" FROM records r LEFT JOIN users u ON r.userId = u.id ORDER BY r.id DESC');
+    result = await pool.query('SELECT r.*, u.schoolname as "userSchool", u.district as "userDistrict" FROM records r LEFT JOIN users u ON r.userid = u.id ORDER BY r.id DESC');
   } else {
-    result = await pool.query('SELECT * FROM records WHERE userId = \$1 ORDER BY id DESC', [req.user.id]);
+    result = await pool.query('SELECT * FROM records WHERE userid = \$1 ORDER BY id DESC', [req.user.id]);
   }
   const rows = result.rows.map(r => ({ ...r, data: JSON.parse(r.data) }));
   res.json(rows);
@@ -167,7 +167,7 @@ app.post('/api/records', authRequired, async (req, res) => {
   const body = req.body || {};
   const schoolName = body.schoolName || req.user.schoolName || '';
   const district = body.district || req.user.district || '';
-  await pool.query('INSERT INTO records (userId, schoolName, district, data) VALUES (\$1, \$2, \$3, \$4)', [req.user.id, schoolName, district, JSON.stringify(body)]);
+  await pool.query('INSERT INTO records (userid, schoolname, district, data) VALUES (\$1, \$2, \$3, \$4)', [req.user.id, schoolName, district, JSON.stringify(body)]);
   res.json({ ok: true });
 });
 
@@ -177,7 +177,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
   if (!rec) return res.status(404).json({ error: 'یافت نشد' });
   if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
   const body = req.body || {};
-  await pool.query('UPDATE records SET schoolName=\$1, district=\$2, data=\$3 WHERE id=\$4', [body.schoolName || rec.schoolname, body.district || rec.district, JSON.stringify(body), req.params.id]);
+  await pool.query('UPDATE records SET schoolname=\$1, district=\$2, data=\$3 WHERE id=\$4', [body.schoolName || rec.schoolname, body.district || rec.district, JSON.stringify(body), req.params.id]);
   res.json({ ok: true });
 });
 

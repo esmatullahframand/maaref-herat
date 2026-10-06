@@ -152,12 +152,34 @@ app.put('/api/users/:id/password', authRequired, adminOnly, async (req, res) => 
   res.json({ ok: true });
 });
 
+// مسیر دریافت اطلاعات همراه با قابلیت جستجوی هوشمند داخلی متون
 app.get('/api/records', authRequired, async (req, res) => {
   let result;
+  const search = req.query.search || ''; // متن جستجو شده از فرانت‌اند
+
   if (req.user.role === 'admin') {
-    result = await pool.query('SELECT r.*, u.schoolname as "userSchool", u.district as "userDistrict" FROM records r LEFT JOIN users u ON r.userid = u.id ORDER BY r.id DESC');
+    if (search) {
+      result = await pool.query(
+        `SELECT r.*, u.schoolname as "userSchool", u.district as "userDistrict" 
+         FROM records r LEFT JOIN users u ON r.userid = u.id 
+         WHERE r.schoolname ILIKE $1 OR r.district ILIKE $1 OR r.data ILIKE $1 
+         ORDER BY r.id DESC`, 
+        [`%${search}%`]
+      );
+    } else {
+      result = await pool.query('SELECT r.*, u.schoolname as "userSchool", u.district as "userDistrict" FROM records r LEFT JOIN users u ON r.userid = u.id ORDER BY r.id DESC');
+    }
   } else {
-    result = await pool.query('SELECT * FROM records WHERE userid = \$1 ORDER BY id DESC', [req.user.id]);
+    if (search) {
+      result = await pool.query(
+        `SELECT * FROM records 
+         WHERE userid = $1 AND (schoolname ILIKE $2 OR district ILIKE $2 OR data ILIKE $2) 
+         ORDER BY id DESC`, 
+        [req.user.id, `%${search}%`]
+      );
+    } else {
+      result = await pool.query('SELECT * FROM records WHERE userid = \$1 ORDER BY id DESC', [req.user.id]);
+    }
   }
   const rows = result.rows.map(r => ({ ...r, data: JSON.parse(r.data) }));
   res.json(rows);
@@ -168,10 +190,8 @@ app.post('/api/records', authRequired, async (req, res) => {
   const schoolName = body.schoolName || req.user.schoolName || '';
   const district = body.district || req.user.district || '';
   
-  // اعتبارسنجی فیلد تحصیلات بر اساس وظیفه فرد
   const job = body.job || body.وظیفه || '';
   const degree = body.degree || body.درجه_تحصیل || body.تحصیلات || '';
-  
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
   if (!isServiceStaff && !degree.trim()) {
@@ -189,11 +209,8 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
   if (req.user.role !== 'admin' && rec.userid !== req.user.id) return res.status(403).json({ error: 'دسترسی ندارید' });
   
   const body = req.body || {};
-  
-  // اعتبارسنجی فیلد تحصیلات در هنگام ویرایش
   const job = body.job || body.وظیفه || '';
   const degree = body.degree || body.درجه_تحصیل || body.تحصیلات || '';
-  
   const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
   
   if (!isServiceStaff && !degree.trim()) {

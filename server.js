@@ -62,14 +62,8 @@ initDB();
 app.use(express.json({ limit: '15mb' }));
 app.use(cookieParser());
 
-// حل مشکل به‌هم‌ریختگی ظاهر صفحات: اسکن تمام مسیرها و پوشه‌های تو در تو برای لود درست فایل‌های CSS
-const frontendPaths = [
-  path.join(__dirname, 'public/public/public'),
-  path.join(__dirname, 'public/public'),
-  path.join(__dirname, 'public'),
-  __dirname
-];
-frontendPaths.forEach(pDir => app.use(express.static(pDir)));
+// لود استاندارد پوشه پابلیک تک لایه
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -80,24 +74,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// 🔑 مسیر لاگین فیکس شده و بدون ارور (حل مشکل قفل شدن دکمه ورود)
+// 🔑 مسیر لاگین بدون ارور
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
 
-    // لاگین مستقیم ادمین معارف بدون نیاز به دیتابیس
+    // لاگین مستقیم ادمین معارف
     if (username === 'admin' && password === 'admin123') {
       const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
       const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
       return res.json({ token, user: adminUser, redirect: '/admin.html' });
     }
 
-    // بررسی ورود حساب مکاتب از دیتابیس پستگرس (بک‌اسلش‌های مخرب کاملاً پاک شدند)
+    // بررسی ورود حساب مکاتب از دیتابیس (بک‌اسلش‌های مخرب کلاً پاک شدند)
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
     if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     
-    // فیکس قطعی باگ: دریافت ردیف اول آرایه به صورت شیء مشخص [0]
     const user = result.rows[0]; 
     if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه است' });
     
@@ -146,7 +139,7 @@ app.get('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ارسال مشخصات کارمند جدید از مکتب به دیتابیس Supabase
+// ارسال مشخصات کارمند جدید از مکتب
 app.post('/api/records', authRequired, async (req, res) => {
   try {
     const body = req.body || {};
@@ -174,7 +167,7 @@ app.post('/api/users', authRequired, async (req, res) => {
       return res.status(400).json({ error: 'پر کردن فیلدهای اصلی الزامی است' });
     }
     const hash = bcrypt.hashSync(password, 10);
-    // اصلاح قطعی: حذف کامل تمام بک‌اسلش‌های اشتباه از کوئری افزودن کاربر
+    // اصلاح قطعی کوئری
     await pool.query('INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, \'school\', \$3, \$4)', [username, hash, schoolName, district]);
     res.json({ ok: true });
   } catch (err) {
@@ -183,7 +176,6 @@ app.post('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// دریافت لیست کل مکاتب جهت نمایش در جدول ادمین
 app.get('/api/users', authRequired, async (req, res) => {
   try {
     const result = await pool.query("SELECT id, username, schoolname, district FROM users WHERE role = 'school' ORDER BY id DESC");
@@ -193,7 +185,6 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// تایید مدارک کارمند مکتب توسط ادمین معارف
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
     await pool.query("UPDATE records SET status = 'approved' WHERE id = \$1", [req.params.id]);
@@ -203,7 +194,6 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   }
 });
 
-// حذف حساب مکتب از دیتابیس Supabase
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     await pool.query("DELETE FROM users WHERE id = \$1", [req.params.id]);
@@ -213,13 +203,8 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   }
 });
 
-// لود اتوماتیک فرانت‌اَند تحت هر شرایطی
 app.get('*', (req, res) => {
-  for (const dir of frontendPaths) {
-    const p = path.join(dir, 'index.html');
-    if (fs.existsSync(p)) return res.sendFile(p);
-  }
-  res.status(404).send('فایل index.html یافت نشد.');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => console.log(`🚀 Server fully live on port ${PORT}`));

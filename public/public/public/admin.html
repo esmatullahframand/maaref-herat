@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>پنل ادمین — معارف هرات</title>
-<!-- تزریق ملزومات فریم‌ورک استایل برای هماهنگی کلاس‌های داخلی پروژه -->
+<!-- اصلاح لینک‌های سی‌دی‌ان برای لود صحیح ظاهر پنل و آیکون‌ها -->
 <link href="https://jsdelivr.net" rel="stylesheet">
 <link href="https://cloudflare.com" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
@@ -25,7 +25,7 @@
 <div class="topbar d-flex justify-content-between align-items-center text-white px-4 py-3 mb-4">
   <div>
     <h5 class="mb-0 fw-bold">🎛️ پنل ادمین — ریاست معارف ولایت هرات</h5>
-    <small class="opacity-75">مدیریت مکاتب، کارمندان و گزارش‌ها (اتصال دائمی Supabase)</small>
+    <small class="opacity-75">مدیریت مکاتب, کارمندان و گزارش‌ها (اتصال دائمی Supabase)</small>
   </div>
   <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج از سیستم</button>
 </div>
@@ -97,7 +97,7 @@
   const token = localStorage.getItem('hr_token');
   if (!token) { location.href = '/'; }
 
-  // لود پرونده‌های ثبت‌شده کل مکاتب از Supabase
+  // لود پرونده‌های ثبت‌شده کل مکاتب از دیتابیس پستگرس
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value;
     try {
@@ -141,7 +141,6 @@
       document.getElementById('sActive').textContent = active;
       document.getElementById('sRetired').textContent = retired;
       
-      // ذخیره گلوبال برای بخش اکسل
       window.loadedRecordsCache = records;
     } catch(e) { console.error(e); }
   }
@@ -157,7 +156,13 @@
 
         schools.forEach((sch, idx) => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${idx+1}</td><td><code>${sch.username}</code></td><td><strong>${sch.schoolname}</strong></td><td>${sch.district}</td><td><button class="btn btn-sm btn-danger px-2 py-1" onclick="deleteSchool(${sch.id})"><i class="fa-solid fa-trash"></i> حذف مکتب</button></td>`;
+          tr.innerHTML = `
+            <td>${idx+1}</td>
+            <td><code>${sch.username}</code></td>
+            <td><strong>${sch.schoolname}</strong></td>
+            <td>${sch.district}</td>
+            <td><button class="btn btn-sm btn-danger px-2 py-1" onclick="deleteSchool(${sch.id})"><i class="fa-solid fa-trash"></i> حذف مکتب</button></td>
+          `;
           tbody.appendChild(tr);
         });
     } catch (e) { console.error(e); }
@@ -188,7 +193,7 @@
     }
   }
 
-  // تایید و امضای رسمی مشخصات کارمند توسط وزارت/ریاست معارف
+  // تایید مشخصات کارمند توسط معارف
   async function approveRecord(id) {
     if (!confirm('آیا از تایید رسمی مشخصات این کارمند معارف اطمینان دارید؟')) return;
     try {

@@ -26,7 +26,6 @@
         <h2>ریاست معارف ولایت هرات</h2>
         <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
         
-        <!-- کادر نمایش خطا -->
         <div id="errorBox" class="error-box"></div>
 
         <form id="loginForm">
@@ -50,12 +49,11 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // مخفی کردن خطاهای قبلی و فعال کردن حالت لودینگ دکمه
             errorBox.style.display = 'none';
             submitBtn.disabled = true;
             submitBtn.innerText = 'در حال بررسی اطلاعات...';
 
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
 
             try {
@@ -68,11 +66,9 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    // ذخیره کامل اطلاعات ورود در سیستم مرورگر
                     localStorage.setItem('hr_token', data.token);
                     localStorage.setItem('hr_user', JSON.stringify(data.user));
                     
-                    // ریدایرکت اتوماتیک به صفحه مدیریت بر اساس پاسخ سرور
                     if (data.redirect) {
                         window.location.href = data.redirect;
                     } else {
@@ -82,13 +78,7 @@
                     showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
                 }
             } catch (err) {
-                showError('خطا در اتصال به سرور معارف هرات. لطفاً شبکه خود را بررسی کنید.');
-            } finally {
-                // خارج کردن دکمه از حالت لودینگ در صورت بروز خطا
-                if (submitBtn.disabled && window.location.href.includes('index.html')) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'ورود به پنل مدیریت';
-                }
+                showError('خطا در ارتباط با سرور. لطفاً وضعیت دپلوی رندر یا اینترنت خود را چک کنید.');
             }
         });
 

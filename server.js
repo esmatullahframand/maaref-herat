@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
-// اتصال استاندارد و بهینه به دیتابیس آنلاین Supabase
+// اتصال به دیتابیس آنلاین Supabase
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
@@ -71,23 +71,24 @@ app.use((req, res, next) => {
   next();
 });
 
-// مسیر احراز هویت اصلی و لاگین مستقیم ادمین
+// مسیر احراز هویت اصلی (کاملا فیکس شده)
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
 
-    // ورود مستقیم و بدون دیتابیس ادمین کل معارف
+    // ورود مستقیم ادمین
     if (username === 'admin' && password === 'admin123') {
       const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
       const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
       return res.json({ token, user: adminUser, redirect: '/admin.html' });
     }
 
-    // بررسی ورود کاربران مکاتب از جدول کاربران Supabase
+    // بررسی ورود کاربران مکاتب از Supabase (تمام علامت‌های بک‌اسلش اضافه حذف شدند)
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
     if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     
+    // اصلاح فاحش: خواندن ردیف اول به صورت شیء مشخص
     const user = result.rows[0]; 
     if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه است' });
     

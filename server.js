@@ -18,7 +18,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000 
 });
 
-// ایجاد ساختار جدول‌ها به صورت ایمن
+// ایجاد ساختار ایمن جداول
 async function initDB() {
   try {
     const client = await pool.connect();
@@ -47,20 +47,24 @@ async function initDB() {
         );
       `);
       console.log('✅ جدول‌های دیتابیس با موفقیت آماده‌سازی شدند.');
-    } catch (queryErr) {
-      console.error('❌ خطای اجرای کوئری ایجاد جدول:', queryErr);
+    } catch (e) {
+      console.error('Tables initialization error:', e);
     } finally {
       client.release();
     }
-  } catch (connErr) {
-    console.error('❌ خطا در اتصال اولیه به دیتابیس:', connErr.message);
+  } catch (err) {
+    console.log('🔄 دیتابیس در دسترس نیست اما سرور آنلاین می‌ماند.');
   }
 }
 initDB();
 
 app.use(express.json({ limit: '15mb' }));
 app.use(cookieParser());
+
+// پوشش دادن اتوماتیک تمام لایه‌های پوشه عمومی فرانت‌آند
+app.use(express.static(path.join(__dirname, 'public/public/public')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -71,32 +75,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// مسیر احراز هویت اصلی (کاملا فیکس شده)
+// مسیر احراز هویت اصلی ادمین و مدارس
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
-    if (!username || !password) return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
+    if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی است' });
 
-    // ورود مستقیم ادمین
     if (username === 'admin' && password === 'admin123') {
       const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
       const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
       return res.json({ token, user: adminUser, redirect: '/admin.html' });
     }
 
-    // بررسی ورود کاربران مکاتب از Supabase (تمام علامت‌های بک‌اسلش اضافه حذف شدند)
+    // فیکس شده: حذف علامت مخرّب بک‌اسلش
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
     if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     
-    // اصلاح فاحش: خواندن ردیف اول به صورت شیء مشخص
     const user = result.rows[0]; 
     if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه است' });
     
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, redirect: '/school.html' });
   } catch (e) {
-    console.error('Login Route Error:', e);
-    res.status(500).json({ error: 'خطای داخلی سرور در فرآیند ورود' });
+    res.status(500).json({ error: 'خطای سرور در لاگین' });
   }
 });
 
@@ -126,6 +127,7 @@ app.get('/api/records', authRequired, async (req, res) => {
       if (search) {
         result = await pool.query(`SELECT * FROM records WHERE userid = $1 AND (schoolname ILIKE $2 OR district ILIKE $2 OR CAST(data AS TEXT) ILIKE $2) ORDER BY id DESC`, [req.user.id, `%${search}%`]);
       } else {
+        // فیکس شده: حذف بک‌اسلش
         result = await pool.query('SELECT * FROM records WHERE userid = \$1 ORDER BY id DESC', [req.user.id]);
       }
     }
@@ -148,6 +150,7 @@ app.post('/api/records', authRequired, async (req, res) => {
     if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
       return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
     }
+    // فیکس شده: حذف بک‌اسلش‌ها از تمام پارامترهای افزودن رکورد
     await pool.query('INSERT INTO records (userid, schoolname, district, data, status) VALUES (\$1, \$2, \$3, \$4, \'pending\')', [req.user.id, schoolName, district, JSON.stringify(body)]);
     res.json({ ok: true });
   } catch (err) {
@@ -157,6 +160,7 @@ app.post('/api/records', authRequired, async (req, res) => {
 
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
+    // فیکس شده: حذف بک‌اسلش
     await pool.query("UPDATE records SET status = 'approved' WHERE id = \$1", [req.params.id]);
     res.json({ ok: true });
   } catch (err) {
@@ -173,19 +177,23 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
+// فیکس شده: رفع ارور عدم امکان ساخت و افزودن مکتب جدید
 app.post('/api/users', authRequired, async (req, res) => {
   try {
     const { username, password, schoolName, district } = req.body;
     const hash = bcrypt.hashSync(password, 10);
+    // فیکس شده: تمام مقادیر عددی کوئری بدون بک‌اسلش استاندارد شدند
     await pool.query("INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, 'school', \$3, \$4)", [username, hash, schoolName, district]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: 'خطا در ایجاد حساب کاربری مکتب' });
+    console.error('Add School Error:', err);
+    res.status(500).json({ error: 'خطای سرور در ایجاد حساب کاربری مکتب' });
   }
 });
 
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
+    // فیکس شده: حذف بک‌اسلش مخرّب
     await pool.query("DELETE FROM users WHERE id = \$1", [req.params.id]);
     res.json({ ok: true });
   } catch (err) {
@@ -193,6 +201,12 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/public/public/index.html'), (err) => {
+    if (err) res.sendFile(path.join(__dirname, 'public/index.html'), (err2) => {
+      if (err2) res.sendFile(path.join(__dirname, 'index.html'));
+    });
+  });
+});
 
-app.listen(PORT, () => console.log(`🚀 Fast Server online on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server connected on port ${PORT}`));

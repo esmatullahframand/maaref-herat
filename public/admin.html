@@ -4,44 +4,100 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>پنل ادمین — معارف هرات</title>
-<!-- اتصال به سی‌دی‌ان‌های پایدار برای فیکس کردن قطعی ظاهر پنل -->
-<link href="https://jsdelivr.net" rel="stylesheet">
-<link href="https://cloudflare.com" rel="stylesheet">
-<script src="https://jsdelivr.net"></script>
-<script src="https://jsdelivr.net"></script>
+
+<!-- Bootstrap RTL -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
+
 <style>
-  body { font-family: Tahoma, Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 0; direction: rtl; }
-  .topbar { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; padding: 15px 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-  .card-custom { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,.04); border: none; margin-bottom: 25px; }
-  .stat-card { background: linear-gradient(135deg, #eef6ff, #dbeafe); border: 1px solid #bcd8f5; border-radius: 10px; padding: 15px; text-align: center; }
-  .stat-card .value { font-size: 24px; font-weight: bold; color: #0056b3; margin-top: 5px; }
+  body {
+    font-family: Tahoma, Arial, sans-serif;
+    background: #f0f4f8;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+  }
+  .topbar {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    color: #fff;
+    padding: 15px 25px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .card-custom {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,.04);
+    border: none;
+    margin-bottom: 25px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, #eef6ff, #dbeafe);
+    border: 1px solid #bcd8f5;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+  }
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0056b3;
+    margin-top: 5px;
+  }
   .text-purple { color: #7c3aed !important; }
   .btn-purple { background-color: #7c3aed; color: white; border: none; }
   .btn-purple:hover { background-color: #6d28d9; color: white; }
   .form-control, .table { font-size: 14px; }
   th { background-color: #f8fafc !important; color: #475569; }
+  .loading { text-align: center; padding: 20px; color: #888; }
 </style>
 </head>
 <body>
 
-<div class="topbar d-flex justify-content-between align-items-center text-white px-4 py-3 mb-4">
+<div class="topbar">
   <div>
     <h5 class="mb-0 fw-bold">🎛️ پنل ادمین — ریاست معارف ولایت هرات</h5>
-    <small class="opacity-75">مدیریت مکاتب، کارمندان و گزارش‌ها (اتصال دائمی Supabase)</small>
+    <small class="opacity-75">مدیریت مکاتب، کارمندان و گزارش‌ها</small>
   </div>
   <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج از سیستم</button>
 </div>
 
 <div class="container-fluid px-4">
 
-  <!-- آمار کلی سیستم -->
+  <!-- آمار کلی -->
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-chart-pie"></i> آمار کلی سیستم معارف</h5>
     <div class="row g-3">
-      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;"><div class="label text-muted">🏫 تعداد مکاتب فعال</div><div class="value text-purple" id="sSchools">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card"><div class="label text-muted">👥 کل کارمندان ثبت‌شده</div><div class="value" id="sTotal">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;"><div class="label text-muted">✅ پرسنل برحال</div><div class="value text-success" id="sActive">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #fee2e2, #fecaca); border-color: #fca5a5;"><div class="label text-muted">🎖️ متقاعدین</div><div class="value text-danger" id="sRetired">0</div></div></div>
+      <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;">
+          <div class="label text-muted">🏫 تعداد مکاتب فعال</div>
+          <div class="value text-purple" id="sSchools">0</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="label text-muted">👥 کل کارمندان ثبت‌شده</div>
+          <div class="value" id="sTotal">0</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;">
+          <div class="label text-muted">✅ پرسنل برحال</div>
+          <div class="value text-success" id="sActive">0</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #fee2e2, #fecaca); border-color: #fca5a5;">
+          <div class="label text-muted">🎖️ متقاعدین</div>
+          <div class="value text-danger" id="sRetired">0</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -49,45 +105,63 @@
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-school-flag"></i> مدیریت و افزودن مکاتب جدید</h5>
     <div class="row g-2 mb-3">
-      <div class="col-md-3"><input id="uUsername" class="form-control" placeholder="نام کاربری انگلیسی مکتب" required></div>
-      <div class="col-md-3"><input id="uPassword" class="form-control" type="password" placeholder="رمز عبور ورود مکتب" required></div>
-      <div class="col-md-3"><input id="uSchoolName" class="form-control" placeholder="نام مکتب / لیسه (فارسی)" required></div>
+      <div class="col-md-3"><input id="uUsername" class="form-control" placeholder="نام کاربری انگلیسی مکتب"></div>
+      <div class="col-md-3"><input id="uPassword" class="form-control" type="password" placeholder="رمز عبور ورود مکتب"></div>
+      <div class="col-md-3"><input id="uSchoolName" class="form-control" placeholder="نام مکتب / لیسه (فارسی)"></div>
       <div class="col-md-2"><input id="uDistrict" class="form-control" placeholder="ولسوالی مربوطه"></div>
-      <div class="col-md-1"><button class="btn btn-purple w-100 fw-bold" onclick="addUser()">➕ افزودن</button></div>
+      <div class="col-md-1"><button class="btn btn-purple w-100 fw-bold" onclick="addUser()">➕</button></div>
     </div>
-    
+
     <div class="table-responsive border rounded">
       <table class="table table-hover align-middle mb-0 text-center">
         <thead class="table-light">
           <tr>
-            <th>#</th><th>نام کاربری مکتب</th><th>نام مکتب</th><th>حوزه / ولسوالی</th><th>عملیات مدیریت</th>
+            <th>#</th>
+            <th>نام کاربری مکتب</th>
+            <th>نام مکتب</th>
+            <th>حوزه / ولسوالی</th>
+            <th>عملیات</th>
           </tr>
         </thead>
-        <tbody id="usersTableBody"></tbody>
+        <tbody id="usersTableBody">
+          <tr><td colspan="5" class="loading">در حال بارگذاری...</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
 
-  <!-- لیست کل کارمندان -->
+  <!-- لیست کارمندان -->
   <div class="card card-custom">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap g-2">
-        <h5 class="text-purple m-0 fw-bold"><i class="fa-solid fa-users-gear"></i> همه کارمندان و پرسنل ولایت هرات</h5>
-        <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> 📊 خروجی اکسل نهایی ده ساله</button>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h5 class="text-purple m-0 fw-bold"><i class="fa-solid fa-users-gear"></i> همه کارمندان و پرسنل ولایت هرات</h5>
+      <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> 📊 خروجی CSV
+      </button>
     </div>
     <div class="row g-3 mb-3">
       <div class="col-md-6">
-        <input class="form-control border-primary" id="searchInput" placeholder="🔍 جستجوی هوشمند کارمندان (نام، وظیفه، لیسه)..." oninput="loadAllRecords()">
+        <input class="form-control border-primary" id="searchInput" placeholder="🔍 جستجوی هوشمند (نام، وظیفه، لیسه)..." oninput="debouncedLoad()">
       </div>
     </div>
-    
+
     <div class="table-responsive border rounded">
       <table class="table table-hover align-middle mb-0 text-center">
         <thead class="table-light">
           <tr>
-            <th>آی‌دی</th><th>مکتب مربوطه</th><th>ولسوالی</th><th>نام کارمند</th><th>نام پدر</th><th>وظیفه</th><th>تحصیلات</th><th>وضعیت تأیید</th><th>عملیات تأیید</th>
+            <th>آی‌دی</th>
+            <th>مکتب مربوطه</th>
+            <th>ولسوالی</th>
+            <th>نام کارمند</th>
+            <th>نام پدر</th>
+            <th>وظیفه</th>
+            <th>تحصیلات</th>
+            <th>وضعیت</th>
+            <th>عملیات</th>
           </tr>
         </thead>
-        <tbody id="allTableBody"></tbody>
+        <tbody id="allTableBody">
+          <tr><td colspan="9" class="loading">در حال بارگذاری...</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
@@ -96,81 +170,136 @@
 
 <script>
   const token = localStorage.getItem('hr_token');
-  if (!token) { location.href = '/'; }
+  const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
+  if (!token) {
+    location.href = '/';
+  }
+  if (currentUser.role !== 'admin') {
+    alert('دسترسی فقط برای ادمین مجاز است');
+    location.href = '/school.html';
+  }
+
+  window.loadedRecordsCache = [];
+
+  // ===== Debounce برای جستجو =====
+  let searchTimer = null;
+  function debouncedLoad() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(loadAllRecords, 300);
+  }
+
+  // ===== لود رکوردها =====
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value;
     try {
       const res = await fetch(`/api/records?search=${encodeURIComponent(search)}`, {
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: { Authorization: 'Bearer ' + token }
       });
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+
       const records = await res.json();
       const tbody = document.getElementById('allTableBody');
       tbody.innerHTML = '';
-      
+
       let total = 0, active = 0, retired = 0;
 
-      if(Array.isArray(records)) {
-          records.forEach(row => {
-            total++;
-            const info = row.data || {};
-            if (info.job && (info.job.includes('تقاعد') || info.job.includes('بازنشسته'))) retired++; else active++;
+      if (Array.isArray(records) && records.length > 0) {
+        records.forEach((row) => {
+          total++;
+          const info = row.data || {};
+          const job = String(info.job || '');
+          if (job.includes('تقاعد') || job.includes('بازنشسته')) retired++;
+          else active++;
 
-            let statusHtml = row.status === 'approved' ? 
-              '<span class="badge bg-success-subtle text-success p-2">✅ تایید شده</span>' : 
-              '<span class="badge bg-warning-subtle text-warning p-2">⏳ در انتظار بررسی</span>';
-            
-            let approveBtn = row.status === 'pending' ? 
-              `<button class="btn btn-sm btn-success fw-bold" onclick="approveRecord(${row.id})">✔️ تایید معارف</button>` : '—';
+          const statusHtml =
+            row.status === 'approved'
+              ? '<span class="badge bg-success-subtle text-success p-2">✅ تایید شده</span>'
+              : '<span class="badge bg-warning-subtle text-warning p-2">⏳ در انتظار بررسی</span>';
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${row.id}</td>
-              <td><strong>${row.schoolname || info.schoolName || '-'}</strong></td>
-              <td>${row.district || info.district || '-'}</td>
-              <td>${info.name || '-'}</td>
-              <td>${info.fatherName || '-'}</td>
-              <td><span class="badge bg-light text-dark">${info.job || '-'}</span></td>
-              <td>${info.degree || '-'}</td>
-              <td>${statusHtml}</td>
-              <td>${approveBtn}</td>
-            `;
-            tbody.appendChild(tr);
-          });
+          const approveBtn =
+            row.status === 'pending'
+              ? `<button class="btn btn-sm btn-success fw-bold" onclick="approveRecord(${row.id})">✔️ تایید</button>`
+              : '—';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${row.id}</td>
+            <td><strong>${escapeHtml(row.schoolname || info.schoolName || '-')}</strong></td>
+            <td>${escapeHtml(row.district || info.district || '-')}</td>
+            <td>${escapeHtml(info.name || '-')}</td>
+            <td>${escapeHtml(info.fatherName || '-')}</td>
+            <td><span class="badge bg-light text-dark">${escapeHtml(info.job || '-')}</span></td>
+            <td>${escapeHtml(info.degree || '-')}</td>
+            <td>${statusHtml}</td>
+            <td>${approveBtn}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="9" class="loading">هیچ رکوردی یافت نشد.</td></tr>';
       }
 
       document.getElementById('sTotal').textContent = total;
       document.getElementById('sActive').textContent = active;
       document.getElementById('sRetired').textContent = retired;
       window.loadedRecordsCache = records;
-    } catch(e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      document.getElementById('allTableBody').innerHTML =
+        '<tr><td colspan="9" class="loading text-danger">خطا در بارگذاری اطلاعات</td></tr>';
+    }
   }
 
+  // ===== لود لیست مکاتب =====
   async function loadSchoolsList() {
     try {
-        const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
-        const schools = await res.json();
-        const tbody = document.getElementById('usersTableBody');
-        tbody.innerHTML = '';
-        
-        if(Array.isArray(schools)) {
-            document.getElementById('sSchools').textContent = schools.length;
-            schools.forEach((sch, idx) => {
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                <td>${idx+1}</td>
-                <td><code>${sch.username}</code></td>
-                <td><strong>${sch.schoolname}</strong></td>
-                <td>${sch.district || '-'}</td>
-                <td><button class="btn btn-sm btn-danger px-2 py-1" onclick="deleteSchool(${sch.id})"><i class="fa-solid fa-trash"></i> حذف مکتب</button></td>
-              `;
-              tbody.appendChild(tr);
-            });
-        }
-    } catch (e) { console.error(e); }
+      const res = await fetch('/api/users', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+
+      if (res.status === 401) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+
+      const schools = await res.json();
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '';
+
+      if (Array.isArray(schools) && schools.length > 0) {
+        document.getElementById('sSchools').textContent = schools.length;
+        schools.forEach((sch, idx) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td><code>${escapeHtml(sch.username)}</code></td>
+            <td><strong>${escapeHtml(sch.schoolname)}</strong></td>
+            <td>${escapeHtml(sch.district || '-')}</td>
+            <td>
+              <button class="btn btn-sm btn-danger px-2 py-1" onclick="deleteSchool(${sch.id})">
+                <i class="fa-solid fa-trash"></i> حذف
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        document.getElementById('sSchools').textContent = 0;
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">هیچ مکتبی ثبت نشده است.</td></tr>';
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
-  // فیکس قطعی متد ارسال دیتای فرم افزودن مکتب به سرور همراه با تعریف Content-Type
+  // ===== افزودن مکتب =====
   async function addUser() {
     const body = {
       username: document.getElementById('uUsername').value.trim(),
@@ -178,23 +307,89 @@
       schoolName: document.getElementById('uSchoolName').value.trim(),
       district: document.getElementById('uDistrict').value.trim()
     };
-    if(!body.username || !body.password || !body.schoolName) { alert('لطفا تمام فیلدهای اصلی را پر کنید'); return; }
+
+    if (!body.username || !body.password || !body.schoolName) {
+      alert('لطفا نام کاربری، رمز عبور و نام مکتب را پر کنید');
+      return;
+    }
 
     try {
-        const res = await fetch('/api/users', {
-          method: 'POST',
-          headers: { 
-             'Content-Type': 'application/json', // فیکس باگ: تعریف هدر کدهای ارسالی به دیتابیس Supabase
-             'Authorization': 'Bearer ' + token 
-          },
-          body: JSON.stringify(body)
-        });
-        if (res.ok) {
-          alert('🏫 مکتب جدید با موفقیت در دیتابیس ثبت شد.');
-          document.getElementById('uUsername').value = '';
-          document.getElementById('uPassword').value = '';
-          document.getElementById('uSchoolName').value = '';
-          document.getElementById('uDistrict').value = '';
-          loadSchoolsList();
-        } else {
-          const errData = await res.json();
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        alert('🏫 مکتب جدید با موفقیت ثبت شد.');
+        document.getElementById('uUsername').value = '';
+        document.getElementById('uPassword').value = '';
+        document.getElementById('uSchoolName').value = '';
+        document.getElementById('uDistrict').value = '';
+        loadSchoolsList();
+      } else {
+        alert(data.error || 'خطا در افزودن مکتب');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('ارتباط با سرور برقرار نشد');
+    }
+  }
+
+  // ===== حذف مکتب =====
+  async function deleteSchool(id) {
+    if (!confirm('آیا از حذف این مکتب مطمئن هستید؟ تمام رکوردهای آن نیز حذف می‌شوند.')) return;
+    try {
+      const res = await fetch('/api/users/' + id, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (res.ok) {
+        loadSchoolsList();
+        loadAllRecords();
+      } else {
+        alert('خطا در حذف مکتب');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('ارتباط با سرور برقرار نشد');
+    }
+  }
+
+  // ===== تایید رکورد =====
+  async function approveRecord(id) {
+    try {
+      const res = await fetch('/api/records/' + id + '/approve', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (res.ok) {
+        loadAllRecords();
+      } else {
+        alert('خطا در تایید رکورد');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('ارتباط با سرور برقرار نشد');
+    }
+  }
+
+  // ===== خروجی CSV =====
+  function exportToExcel() {
+    const records = window.loadedRecordsCache || [];
+    if (!records.length) {
+      alert('هیچ رکوردی برای خروجی وجود ندارد');
+      return;
+    }
+
+    const headers = [
+      'ID', 'نام مکتب', 'ولسوالی', 'نام کارمند', 'نام پدر',
+      'وظیفه', 'تحصیلات', 'وضعیت'
+    ];
+
+    const rows

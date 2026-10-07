@@ -29,8 +29,8 @@
   .btn-purple:hover { background-color: #6d28d9; color: white; }
   .form-control, .table { font-size: 14px; }
   th { background-color: #f8fafc !important; color: #475569; }
-  .badge-pending { background: #fef3c7; color: #92400e; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
-  .badge-approved { background: #def7ec; color: #03543f; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
+  .badge-pending { background: #fef3c7; color: #92400e; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .badge-approved { background: #def7ec; color: #03543f; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .badge-active { background: #dcfce7; color: #15803d; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .badge-retired { background: #fee2e2; color: #b91c1c; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .badge-unknown { background: #e2e8f0; color: #475569; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
@@ -39,6 +39,10 @@
   .btn-approve:hover { background: #059669; }
   .btn-delete-row { background: #dc2626; color: #fff; }
   .btn-delete-row:hover { background: #b91c1c; }
+  .btn-view { background: #3b82f6; color: #fff; }
+  .btn-view:hover { background: #2563eb; }
+  .btn-print { background: #7c3aed; color: #fff; }
+  .btn-print:hover { background: #6d28d9; }
   .info-banner {
     background: #dbeafe; border-right: 5px solid #3b82f6;
     padding: 12px 15px; border-radius: 6px;
@@ -55,6 +59,9 @@
   .badge-search-active {
     background: #3b82f6; color: #fff; padding: 4px 10px;
     border-radius: 6px; font-size: 11px; margin-right: 8px;
+  }
+  @media print {
+    .no-print { display: none !important; }
   }
 </style>
 </head>
@@ -260,7 +267,7 @@
   const debouncedLoad = debounce(loadAllRecords, 400);
 
   // ============================================================
-  // لود رکوردها (بدون جستجو فقط pending، با جستجو همه)
+  // لود رکوردها
   // ============================================================
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value.trim();
@@ -286,7 +293,6 @@
       loadedRecordsCache = records;
       renderRecords(records, hasSearch);
 
-      // آمار از همه رکوردها
       loadStats();
     } catch (e) {
       console.error(e);
@@ -355,10 +361,13 @@
 
       const empStatusHtml = `<span class="${empStatus.cls}">${empStatus.status}</span>`;
 
+      // ⭐ دکمه‌های ادمین: تایید، خواندن، پرنت، حذف — بدون ویرایش
       let actionsHtml = '';
       if (row.status === 'pending') {
         actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})" title="تایید">✔️ تایید</button>`;
       }
+      actionsHtml += `<button class="btn-action btn-view" onclick="viewRecordAdmin(${row.id})" title="خواندن">👁️ خواندن</button>`;
+      actionsHtml += `<button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})" title="پرنت">🖨️ پرنت</button>`;
       actionsHtml += `<button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})" title="حذف">🗑️ حذف</button>`;
 
       const tr = document.createElement('tr');
@@ -418,6 +427,198 @@
     } catch (e) {
       showToast('ارتباط با سرور برقرار نشد', true);
     }
+  }
+
+  // ============================================================
+  // 👁️ خواندن (View) — باز کردن پنجره جدید با همه اطلاعات
+  // ============================================================
+  function viewRecordAdmin(id) {
+    const rec = loadedRecordsCache.find(r => r.id === id);
+    if (!rec) return;
+    const info = rec.data || {};
+
+    const sections = [
+      { title: '۱. هویت و اسناد تذکره', fields: [
+        ['کُد بست', info.jobCode], ['عنوان بست', info.jobTitle],
+        ['اسم', info.firstName], ['تخلص', info.lastName],
+        ['ولد', info.fatherName], ['ولدیت', info.grandfatherName],
+        ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira],
+        ['صفحه تذکره', info.tazkiraPage], ['جلد تذکره', info.tazkiraVolume],
+        ['قومیت', info.ethnicity]
+      ]},
+      { title: '۲. اطلاعات شخصی و تماس', fields: [
+        ['جنسیت', info.gender], ['تاریخ تولد', info.birthDate],
+        ['محل تولد', info.birthPlace],
+        ['سکونت اصلی', info.originAddress], ['سکونت فعلی', info.currentAddress],
+        ['تاریخ اولین تقرر', info.firstAppointmentDate],
+        ['شماره تماس', info.phone], ['معلولیت', info.disability],
+        ['موقف وظیفوی', info.positionType], ['نوع استخدام', info.employmentType]
+      ]},
+      { title: '۳. معلومات وظیفوی و تحصیلی', fields: [
+        ['بست', info.bust], ['قدم', info.grade],
+        ['تاریخ تقرر فعلی', info.currentPositionDate],
+        ['درجه تحصیلی', info.degree], ['رشته تحصیلی', info.major],
+        ['مرجع تعلیمی', info.eduInstitute],
+        ['موقعیت مرجع', info.eduInstituteLocation],
+        ['تاریخ شمولیت', info.enrollmentDate],
+        ['تاریخ فراغت', info.graduationDate],
+        ['مضمون تدریس', info.subjectTeaching]
+      ]}
+    ];
+
+    let html = '';
+    sections.forEach(sec => {
+      html += `<div style="grid-column:1/-1; background:#7c3aed; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">${sec.title}</div>`;
+      sec.fields.forEach(([label, value]) => {
+        html += `
+          <div style="background:#f8fafc; padding:10px 14px; border-radius:6px; border-right:4px solid #7c3aed;">
+            <div style="font-size:11px; color:#64748b; font-weight:600; margin-bottom:4px;">${label}</div>
+            <div style="font-size:13px; color:#1e293b; font-weight:bold; word-break:break-word;">${escapeHtml(value || '—')}</div>
+          </div>
+        `;
+      });
+    });
+
+    const empStatus = getEmployeeStatus(info);
+    const statusText = rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <!DOCTYPE html>
+      <html lang="fa" dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <title>مشاهده کارمند - ${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</title>
+        <style>
+          body { font-family: Tahoma, Arial, sans-serif; padding: 20px; background: #f0f4f8; direction: rtl; }
+          h2 { color: #7c3aed; text-align: center; }
+          .box { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+          .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .info-header { background:#f1f5f9; padding:12px; border-radius:6px; margin-bottom:15px; text-align:center; font-size:13px; }
+          .actions { text-align: center; margin-top: 20px; }
+          .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 14px; margin: 0 5px; }
+          .btn-print { background: #7c3aed; color: #fff; }
+          .btn-close { background: #e2e8f0; color: #1e293b; }
+          @media print {
+            body { background: #fff; padding: 0; }
+            .actions { display: none; }
+            .box { box-shadow: none; padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="box">
+          <h2>📄 معلومات کارمند</h2>
+          <div class="info-header">
+            <strong>آی‌دی:</strong> ${rec.id} |
+            مکتب: <strong>${escapeHtml(rec.schoolname || '-')}</strong> |
+            ولسوالی: <strong>${escapeHtml(rec.district || '-')}</strong><br>
+            وضعیت تایید: <strong>${statusText}</strong> |
+            سن: <strong>${empStatus.age}</strong> |
+            وضعیت کارمند: <strong>${empStatus.status}</strong>
+          </div>
+          <div class="info-grid">${html}</div>
+          <div class="actions">
+            <button class="btn btn-print" onclick="window.print()">🖨️ پرنت</button>
+            <button class="btn btn-close" onclick="window.close()">بستن</button>
+          </div>
+        </div>
+      </body>
+      </html>
+    `);
+    win.document.close();
+  }
+
+  // ============================================================
+  // 🖨️ پرنت (Print) — باز کردن پنجره چاپ مستقیم
+  // ============================================================
+  function printRecordAdmin(id) {
+    const rec = loadedRecordsCache.find(r => r.id === id);
+    if (!rec) return;
+    const info = rec.data || {};
+
+    const sections = [
+      { title: '۱. هویت و اسناد تذکره', fields: [
+        ['کُد بست', info.jobCode], ['عنوان بست', info.jobTitle],
+        ['اسم', info.firstName], ['تخلص', info.lastName],
+        ['ولد', info.fatherName], ['ولدیت', info.grandfatherName],
+        ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira],
+        ['صفحه تذکره', info.tazkiraPage], ['جلد تذکره', info.tazkiraVolume],
+        ['قومیت', info.ethnicity]
+      ]},
+      { title: '۲. اطلاعات شخصی و تماس', fields: [
+        ['جنسیت', info.gender], ['تاریخ تولد', info.birthDate],
+        ['محل تولد', info.birthPlace],
+        ['سکونت اصلی', info.originAddress], ['سکونت فعلی', info.currentAddress],
+        ['تاریخ اولین تقرر', info.firstAppointmentDate],
+        ['شماره تماس', info.phone], ['معلولیت', info.disability],
+        ['موقف وظیفوی', info.positionType], ['نوع استخدام', info.employmentType]
+      ]},
+      { title: '۳. معلومات وظیفوی و تحصیلی', fields: [
+        ['بست', info.bust], ['قدم', info.grade],
+        ['تقرر فعلی', info.currentPositionDate],
+        ['درجه تحصیلی', info.degree], ['رشته', info.major],
+        ['مرجع تعلیمی', info.eduInstitute],
+        ['موقعیت مرجع', info.eduInstituteLocation],
+        ['تاریخ شمولیت', info.enrollmentDate],
+        ['تاریخ فراغت', info.graduationDate],
+        ['مضمون تدریس', info.subjectTeaching]
+      ]}
+    ];
+
+    let html = `
+      <div style="text-align:center; border-bottom: 2px solid #333; padding-bottom:10px; margin-bottom:15px;">
+        <h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2>
+        <h4 style="margin:5px 0 0 0; font-size:13px; color:#555;">فورم معلومات کارمند</h4>
+      </div>
+      <table style="width:100%; margin-bottom:10px; border-collapse:collapse;">
+        <tr>
+          <td style="border:1px solid #333; padding:6px;"><strong>آی‌دی:</strong> ${rec.id}</td>
+          <td style="border:1px solid #333; padding:6px;"><strong>مکتب:</strong> ${escapeHtml(rec.schoolname || '-')}</td>
+          <td style="border:1px solid #333; padding:6px;"><strong>ولسوالی:</strong> ${escapeHtml(rec.district || '-')}</td>
+          <td style="border:1px solid #333; padding:6px;"><strong>وضعیت:</strong> ${rec.status === 'approved' ? 'تایید شده' : 'در انتظار'}</td>
+        </tr>
+      </table>
+    `;
+
+    sections.forEach(sec => {
+      html += `<table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+        <tr><td colspan="4" style="background:#eee; font-weight:bold; text-align:center; border:1px solid #333; padding:6px;">${sec.title}</td></tr>`;
+      for (let i = 0; i < sec.fields.length; i += 2) {
+        html += '<tr>';
+        html += `<td style="border:1px solid #333; padding:6px; font-size:11px;"><strong>${sec.fields[i][0]}:</strong></td><td style="border:1px solid #333; padding:6px; font-size:11px;">${escapeHtml(sec.fields[i][1] || '—')}</td>`;
+        if (sec.fields[i+1]) {
+          html += `<td style="border:1px solid #333; padding:6px; font-size:11px;"><strong>${sec.fields[i+1][0]}:</strong></td><td style="border:1px solid #333; padding:6px; font-size:11px;">${escapeHtml(sec.fields[i+1][1] || '—')}</td>`;
+        } else {
+          html += '<td style="border:1px solid #333; padding:6px;"></td><td style="border:1px solid #333; padding:6px;"></td>';
+        }
+        html += '</tr>';
+      }
+      html += '</table>';
+    });
+
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <!DOCTYPE html>
+      <html lang="fa" dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <title>پرنت کارمند</title>
+        <style>
+          body { font-family: Tahoma, Arial, sans-serif; padding: 15px; direction: rtl; }
+          @media print { body { padding: 0; } .no-print { display: none; } }
+        </style>
+      </head>
+      <body>
+        ${html}
+        <div class="no-print" style="text-align:center; margin-top:20px;">
+          <button onclick="window.print()" style="padding:10px 20px; background:#7c3aed; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-family:inherit;">🖨️ پرنت</button>
+          <button onclick="window.close()" style="padding:10px 20px; background:#e2e8f0; color:#1e293b; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-family:inherit; margin-right:5px;">بستن</button>
+        </div>
+        <script>setTimeout(function(){ window.print(); }, 400);<\/script>
+      </body>
+      </html>
+    `);
+    win.document.close();
   }
 
   // ===== لود مکاتب =====

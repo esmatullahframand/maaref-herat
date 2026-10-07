@@ -57,6 +57,7 @@
             const password = document.getElementById('password').value;
 
             try {
+                // فیکس شده: ارسال درخواست مستقیم به ریشه اصلی سایت رندر (حل مشکل پوشه تو در تو)
                 const res = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -69,16 +70,17 @@
                     localStorage.setItem('hr_token', data.token);
                     localStorage.setItem('hr_user', JSON.stringify(data.user));
                     
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
+                    // فیکس شده: ریدایرکت مستقیم به لایه سوم جایی که فایل‌ها پنهان شده‌اند
+                    if (username === 'admin') {
+                        window.location.href = '/public/public/admin.html';
                     } else {
-                        window.location.href = (data.user.role === 'admin') ? '/admin.html' : '/school.html';
+                        window.location.href = '/public/public/school.html';
                     }
                 } else {
                     showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
                 }
             } catch (err) {
-                showError('خطا در ارتباط با سرور. لطفاً وضعیت دپلوی رندر یا اینترنت خود را چک کنید.');
+                showError('خطا در ارتباط با سرور. لطفاً اینترنت خود را بررسی کنید.');
             }
         });
 

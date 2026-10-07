@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>پنل ادمین — معارف هرات</title>
+<title>پنل ادمین — معارف هرات (V4)</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
 <style>
@@ -13,6 +13,11 @@
     color: #fff; padding: 15px 25px;
     display: flex; justify-content: space-between; align-items: center;
     flex-wrap: wrap; gap: 10px;
+  }
+  .version-badge {
+    background: #fbbf24; color: #78350f;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: bold;
   }
   .card-custom {
     background: #fff; border-radius: 12px; padding: 25px;
@@ -69,7 +74,10 @@
     <h5 class="mb-0 fw-bold">🎛️ پنل ادمین — ریاست معارف ولایت هرات</h5>
     <small class="opacity-75">مدیریت مکاتب، کارمندان و گزارش‌ها</small>
   </div>
-  <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
+  <div>
+    <span class="version-badge">VERSION V4</span>
+    <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
+  </div>
 </div>
 
 <div class="container-fluid px-4">
@@ -78,7 +86,7 @@
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-chart-pie"></i> آمار کلی</h5>
     <div class="row g-3">
-      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;"><div class="text-muted">🏫 مکاتب فعال</div><div class="value text-purple" id="sSchools">0</div></div></div>
+      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;"><div class="text-muted">🏫 مکاتب</div><div class="value text-purple" id="sSchools">0</div></div></div>
       <div class="col-md-2"><div class="stat-card"><div class="text-muted">👥 کل کارمندان</div><div class="value" id="sTotal">0</div></div></div>
       <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;"><div class="text-muted">✅ تایید شده</div><div class="value text-success" id="sApproved">0</div></div></div>
       <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fcd34d;"><div class="text-muted">⏳ در انتظار</div><div class="value" style="color:#92400e;" id="sPending">0</div></div></div>
@@ -163,6 +171,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  console.log('🚀 admin.html VERSION V4 loaded');
+
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
@@ -175,9 +185,6 @@
   let loadedRecordsCache = [];
   const RETIREMENT_AGE = 65;
 
-  // ============================================================
-  // توابع تاریخ شمسی
-  // ============================================================
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -241,9 +248,6 @@
     return { age, status: '✅ فعال', cls: 'badge-active' };
   }
 
-  // ============================================================
-  // Toast
-  // ============================================================
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -263,13 +267,9 @@
 
   const debouncedLoad = debounce(loadAllRecords, 400);
 
-  // ============================================================
-  // لود رکوردها
-  // ============================================================
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value.trim();
     const hasSearch = search.length > 0;
-
     document.getElementById('searchBadge').style.display = hasSearch ? 'inline-block' : 'none';
 
     try {
@@ -289,7 +289,6 @@
       const records = await res.json();
       loadedRecordsCache = records;
       renderRecords(records, hasSearch);
-
       loadStats();
     } catch (e) {
       console.error(e);
@@ -308,23 +307,19 @@
         const total = allRecords.length;
         const approved = allRecords.filter(r => r.status === 'approved').length;
         const pending = allRecords.filter(r => r.status !== 'approved').length;
-
         let active = 0, retired = 0;
         allRecords.forEach(r => {
           const st = getEmployeeStatus(r.data || {});
           if (st.status.includes('متقاعد')) retired++;
           else if (st.status.includes('فعال')) active++;
         });
-
         document.getElementById('sTotal').textContent = total;
         document.getElementById('sApproved').textContent = approved;
         document.getElementById('sPending').textContent = pending;
         document.getElementById('sActive').textContent = active;
         document.getElementById('sRetired').textContent = retired;
       }
-    } catch (e) {
-      console.error('Stats error:', e);
-    }
+    } catch (e) { console.error('Stats error:', e); }
   }
 
   function renderRecords(records, hasSearch) {
@@ -332,9 +327,7 @@
     tbody.innerHTML = '';
 
     if (!Array.isArray(records) || records.length === 0) {
-      const msg = hasSearch
-        ? 'هیچ نتیجه‌ای برای جستجو یافت نشد'
-        : 'هیچ رکوردی در انتظار تایید نیست';
+      const msg = hasSearch ? 'هیچ نتیجه‌ای برای جستجو یافت نشد' : 'هیچ رکوردی در انتظار تایید نیست';
       tbody.innerHTML = `<tr><td colspan="11" class="text-muted p-4">${msg}</td></tr>`;
       return;
     }
@@ -343,13 +336,10 @@
 
     records.forEach((row) => {
       const info = row.data || {};
-      const name = info.firstName
-        ? `${info.firstName} ${info.lastName || ''}`
-        : (info.name || '-');
+      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
       const father = info.fatherName || '-';
       const job = info.jobTitle || info.job || '-';
       const degree = info.degree || '-';
-
       const empStatus = getEmployeeStatus(info);
 
       const approvalHtml = row.status === 'approved'
@@ -358,14 +348,13 @@
 
       const empStatusHtml = `<span class="${empStatus.cls}">${empStatus.status}</span>`;
 
-      // ⭐ دکمه‌های ادمین: تایید، خواندن، پرنت، حذف — بدون ویرایش
       let actionsHtml = '';
       if (row.status === 'pending') {
-        actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})" title="تایید">✔️ تایید</button>`;
+        actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})">✔️ تایید</button>`;
       }
-      actionsHtml += `<button class="btn-action btn-view" onclick="viewRecordAdmin(${row.id})" title="خواندن">👁️ خواندن</button>`;
-      actionsHtml += `<button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})" title="پرنت">🖨️ پرنت</button>`;
-      actionsHtml += `<button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})" title="حذف">🗑️ حذف</button>`;
+      actionsHtml += `<button class="btn-action btn-view" onclick="viewRecordAdmin(${row.id})">👁️ خواندن</button>`;
+      actionsHtml += `<button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})">🖨️ پرنت</button>`;
+      actionsHtml += `<button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})">🗑️ حذف</button>`;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -387,7 +376,6 @@
     tbody.appendChild(fragment);
   }
 
-  // ===== تایید رکورد =====
   async function approveRecord(id) {
     if (!confirm('آیا این رکورد تایید شود؟')) return;
     try {
@@ -395,18 +383,11 @@
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token }
       });
-      if (res.ok) {
-        showToast('✅ رکورد تایید شد');
-        loadAllRecords();
-      } else {
-        showToast('خطا در تایید', true);
-      }
-    } catch (e) {
-      showToast('ارتباط با سرور برقرار نشد', true);
-    }
+      if (res.ok) { showToast('✅ رکورد تایید شد'); loadAllRecords(); }
+      else { showToast('خطا در تایید', true); }
+    } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
-  // ===== حذف رکورد =====
   async function deleteRecord(id) {
     if (!confirm('⚠️ آیا از حذف این رکورد مطمئن هستید؟')) return;
     try {
@@ -414,21 +395,14 @@
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
-      if (res.ok) {
-        showToast('🗑️ رکورد حذف شد');
-        loadAllRecords();
-      } else {
+      if (res.ok) { showToast('🗑️ رکورد حذف شد'); loadAllRecords(); }
+      else {
         const data = await res.json().catch(() => ({}));
         showToast(data.error || 'خطا در حذف', true);
       }
-    } catch (e) {
-      showToast('ارتباط با سرور برقرار نشد', true);
-    }
+    } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
-  // ============================================================
-  // 👁️ خواندن
-  // ============================================================
   function viewRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
     if (!rec) return;
@@ -480,29 +454,20 @@
     const statusText = rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
     const win = window.open('', '_blank');
     win.document.write(`
-      <!DOCTYPE html>
-      <html lang="fa" dir="rtl">
-      <head>
-        <meta charset="UTF-8">
-        <title>مشاهده کارمند - ${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</title>
-        <style>
-          body { font-family: Tahoma, Arial, sans-serif; padding: 20px; background: #f0f4f8; direction: rtl; }
-          h2 { color: #7c3aed; text-align: center; }
-          .box { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-          .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-          .info-header { background:#f1f5f9; padding:12px; border-radius:6px; margin-bottom:15px; text-align:center; font-size:13px; }
-          .actions { text-align: center; margin-top: 20px; }
-          .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 14px; margin: 0 5px; }
-          .btn-print { background: #7c3aed; color: #fff; }
-          .btn-close { background: #e2e8f0; color: #1e293b; }
-          @media print {
-            body { background: #fff; padding: 0; }
-            .actions { display: none; }
-            .box { box-shadow: none; padding: 0; }
-          }
-        </style>
-      </head>
-      <body>
+      <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+      <title>مشاهده کارمند</title>
+      <style>
+        body { font-family: Tahoma, Arial, sans-serif; padding: 20px; background: #f0f4f8; direction: rtl; }
+        h2 { color: #7c3aed; text-align: center; }
+        .box { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .info-header { background:#f1f5f9; padding:12px; border-radius:6px; margin-bottom:15px; text-align:center; font-size:13px; }
+        .actions { text-align: center; margin-top: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 14px; margin: 0 5px; }
+        .btn-print { background: #7c3aed; color: #fff; }
+        .btn-close { background: #e2e8f0; color: #1e293b; }
+        @media print { body { background: #fff; padding: 0; } .actions { display: none; } .box { box-shadow: none; padding: 0; } }
+      </style></head><body>
         <div class="box">
           <h2>📄 معلومات کارمند</h2>
           <div class="info-header">
@@ -518,16 +483,11 @@
             <button class="btn btn-print" onclick="window.print()">🖨️ پرنت</button>
             <button class="btn btn-close" onclick="window.close()">بستن</button>
           </div>
-        </div>
-      </body>
-      </html>
+        </div></body></html>
     `);
     win.document.close();
   }
 
-  // ============================================================
-  // 🖨️ پرنت
-  // ============================================================
   function printRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
     if (!rec) return;
@@ -595,30 +555,23 @@
 
     const win = window.open('', '_blank');
     win.document.write(`
-      <!DOCTYPE html>
-      <html lang="fa" dir="rtl">
-      <head>
-        <meta charset="UTF-8">
-        <title>پرنت کارمند</title>
-        <style>
-          body { font-family: Tahoma, Arial, sans-serif; padding: 15px; direction: rtl; }
-          @media print { body { padding: 0; } .no-print { display: none; } }
-        </style>
-      </head>
-      <body>
+      <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+      <title>پرنت کارمند</title>
+      <style>
+        body { font-family: Tahoma, Arial, sans-serif; padding: 15px; direction: rtl; }
+        @media print { body { padding: 0; } .no-print { display: none; } }
+      </style></head><body>
         ${html}
         <div class="no-print" style="text-align:center; margin-top:20px;">
           <button onclick="window.print()" style="padding:10px 20px; background:#7c3aed; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-family:inherit;">🖨️ پرنت</button>
           <button onclick="window.close()" style="padding:10px 20px; background:#e2e8f0; color:#1e293b; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-family:inherit; margin-right:5px;">بستن</button>
         </div>
         <script>setTimeout(function(){ window.print(); }, 400);<\/script>
-      </body>
-      </html>
+      </body></html>
     `);
     win.document.close();
   }
 
-  // ===== لود مکاتب =====
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', {
@@ -645,19 +598,14 @@
           <td><code>${escapeHtml(sch.username)}</code></td>
           <td><strong>${escapeHtml(sch.schoolname)}</strong></td>
           <td>${escapeHtml(sch.district || '-')}</td>
-          <td>
-            <button class="btn-action btn-delete-row" onclick="deleteSchool(${sch.id})">🗑️ حذف</button>
-          </td>
+          <td><button class="btn-action btn-delete-row" onclick="deleteSchool(${sch.id})">🗑️ حذف</button></td>
         `;
         fragment.appendChild(tr);
       });
       tbody.appendChild(fragment);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   }
 
-  // ===== افزودن مکتب =====
   async function addUser() {
     const body = {
       username: document.getElementById('uUsername').value.trim(),
@@ -672,10 +620,7 @@
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify(body)
       });
       const data = await res.json().catch(() => ({}));
@@ -683,15 +628,10 @@
         showToast('🏫 مکتب ثبت شد');
         ['uUsername','uPassword','uSchoolName','uDistrict'].forEach(id => document.getElementById(id).value = '');
         loadSchoolsList();
-      } else {
-        showToast(data.error || 'خطا', true);
-      }
-    } catch (err) {
-      showToast('ارتباط با سرور برقرار نشد', true);
-    }
+      } else { showToast(data.error || 'خطا', true); }
+    } catch (err) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
-  // ===== حذف مکتب =====
   async function deleteSchool(id) {
     if (!confirm('⚠️ آیا از حذف این مکتب مطمئن هستید؟ تمام رکوردهای آن نیز حذف می‌شوند.')) return;
     try {
@@ -699,46 +639,26 @@
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
-      if (res.ok) {
-        showToast('🗑️ مکتب حذف شد');
-        loadSchoolsList();
-        loadAllRecords();
-      } else {
-        showToast('خطا در حذف', true);
-      }
-    } catch (e) {
-      showToast('ارتباط با سرور برقرار نشد', true);
-    }
+      if (res.ok) { showToast('🗑️ مکتب حذف شد'); loadSchoolsList(); loadAllRecords(); }
+      else { showToast('خطا در حذف', true); }
+    } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
-  // ===== خروجی CSV =====
   function exportToCSV() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی وجود ندارد', true); return; }
-
     const headers = ['ID','مکتب','ولسوالی','نام','ولد','وظیفه','درجه','سن','وضعیت کارمند','وضعیت تایید'];
     const rows = records.map(r => {
       const info = r.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '');
       const emp = getEmployeeStatus(info);
-      return [
-        r.id,
-        r.schoolname || '',
-        r.district || '',
-        name,
-        info.fatherName || '',
-        info.jobTitle || info.job || '',
-        info.degree || '',
-        emp.age,
-        emp.status,
-        r.status === 'approved' ? 'تایید شده' : 'در انتظار'
-      ];
+      return [r.id, r.schoolname || '', r.district || '', name, info.fatherName || '',
+        info.jobTitle || info.job || '', info.degree || '', emp.age, emp.status,
+        r.status === 'approved' ? 'تایید شده' : 'در انتظار'];
     });
-
     const csv = '\uFEFF' + [headers, ...rows]
       .map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
       .join('\n');
-
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

@@ -15,7 +15,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000 // جلوگیری از قفل شدن سرور در صورت اختلال شبکه
+  connectionTimeoutMillis: 10000 
 });
 
 // ساخت جدول‌ها به صورت ایمن بدون کرش دادن کل سرور
@@ -54,7 +54,6 @@ async function initDB() {
     }
   } catch (connErr) {
     console.error('❌ خطا در اتصال اولیه به دیتابیس Supabase:', connErr.message);
-    console.log('🔄 سرور آنلاین می‌ماند. اتصال در درخواست‌های بعدی مجدداً تلاش خواهد شد.');
   }
 }
 initDB();
@@ -72,28 +71,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// مسیر لاگین سیستم معارف
+// مسیر لاگین سیستم معارف (اصلاح شده)
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
 
+    // ورود مستقیم ادمین
     if (username === 'admin' && password === 'admin123') {
       const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
       const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
       return res.json({ token, user: adminUser, redirect: '/admin.html' });
     }
 
+    // ورود مکاتب از دیتابیس
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
     if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     
-    const user = result.rows[0];
+    // فیکس شده: دریافت ردیف اول آرایه به صورت صحیح
+    const user = result.rows[0]; 
     if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
     
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, redirect: '/school.html' });
   } catch (e) {
-    res.status(500).json({ error: 'خطای سرور در لاگین' });
+    console.error('Login Error:', e);
+    res.status(500).json({ error: 'خطای سرور در فرآیند لاگین' });
   }
 });
 

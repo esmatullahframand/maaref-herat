@@ -1,95 +1,146 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ریاست معارف ولایت هرات - ورود به سیستم</title>
-    <style>
-        * { box-sizing: border-box; transition: all 0.2s ease; }
-        body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; color: #333; direction: rtl; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .login-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 420px; text-align: center; }
-        .login-card h2 { color: #0056b3; margin-bottom: 5px; font-size: 20px; }
-        .login-card h4 { color: #666; margin-bottom: 25px; font-weight: normal; font-size: 14px; }
-        .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
-        .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
-        .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
-        .form-control:focus { border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,86,179,0.15); }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; background-color: #0056b3; color: white; display: flex; align-items: center; justify-content: center; }
-        .btn:hover { background-color: #004085; }
-        .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
-        .error-box { background-color: #fff5f5; border: 1px solid #fed7d7; color: #c53030; border-radius: 8px; padding: 10px; margin-bottom: 15px; font-size: 13px; text-align: right; display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ریاست معارف ولایت هرات - ورود به سیستم</title>
+<style>
+  * { box-sizing: border-box; transition: all 0.2s ease; }
+  body {
+    font-family: Tahoma, Arial, sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    direction: rtl;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .login-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+  }
+  .login-card h2 { color: #0056b3; margin-bottom: 5px; font-size: 20px; }
+  .login-card h4 { color: #666; margin-bottom: 25px; font-weight: normal; font-size: 14px; }
+  .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
+  .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
+  .form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    font-family: Tahoma, sans-serif;
+  }
+  .form-control:focus { border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,86,179,0.15); }
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+    background-color: #0056b3;
+    color: white;
+    font-family: Tahoma, sans-serif;
+  }
+  .btn:hover { background-color: #004085; }
+  .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
+  .error-box {
+    background-color: #fff5f5;
+    border: 1px solid #fed7d7;
+    color: #c53030;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    text-align: right;
+    display: none;
+  }
+  .hint { margin-top: 15px; font-size: 12px; color: #888; }
+</style>
 </head>
 <body>
 
-    <div class="login-card">
-        <h2>ریاست معارف ولایت هرات</h2>
-        <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
-        
-        <div id="errorBox" class="error-box"></div>
+<div class="login-card">
+  <h2>ریاست معارف ولایت هرات</h2>
+  <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
 
-        <form id="loginForm">
-            <div class="form-group">
-                <label>نام کاربری</label>
-                <input type="text" id="username" class="form-control" required placeholder="نام کاربری خود را وارد کنید">
-            </div>
-            <div class="form-group">
-                <label>رمز عبور</label>
-                <input type="password" id="password" class="form-control" required placeholder="رمز عبور خود را وارد کنید">
-            </div>
-            <button type="submit" id="submitBtn" class="btn">ورود به پنل مدیریت</button>
-        </form>
+  <div id="errorBox" class="error-box"></div>
+
+  <form id="loginForm">
+    <div class="form-group">
+      <label>نام کاربری</label>
+      <input type="text" id="username" class="form-control" required placeholder="نام کاربری خود را وارد کنید" autocomplete="username">
     </div>
+    <div class="form-group">
+      <label>رمز عبور</label>
+      <input type="password" id="password" class="form-control" required placeholder="رمز عبور خود را وارد کنید" autocomplete="current-password">
+    </div>
+    <button type="submit" id="submitBtn" class="btn">ورود به پنل مدیریت</button>
+  </form>
 
-    <script>
-        const loginForm = document.getElementById('loginForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const errorBox = document.getElementById('errorBox');
+  <div class="hint">ادمین پیش‌فرض: admin / admin123</div>
+</div>
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            errorBox.style.display = 'none';
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'در حال بررسی اطلاعات...';
+<script>
+  const loginForm = document.getElementById('loginForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorBox = document.getElementById('errorBox');
 
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            try {
-                // ارسال درخواست مستقیم به سرور اصلی بدون توجه به لایه‌های پوشه
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await res.json();
+    errorBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'در حال بررسی اطلاعات...';
 
-                if (res.ok) {
-                    localStorage.setItem('hr_token', data.token);
-                    localStorage.setItem('hr_user', JSON.stringify(data.user));
-                    
-                    // ریدایرکت هوشمند بر اساس نام کاربری به فایل‌های موجود در لایه جاری
-                    if (username === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'school.html';
-                    }
-                } else {
-                    showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
-                }
-            } catch (err) {
-                showError('خطا در ارتباط با سرور. لطفاً وضعیت سرور رندر یا اینترنت خود را بررسی کنید.');
-            }
-        });
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
 
-        function showError(message) {
-            errorBox.innerText = message;
-            errorBox.style.display = 'block';
-            submitBtn.disabled = false;
-            submitBtn.innerText = 'ورود به پنل مدیریت';
-        }
-    </script>
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        localStorage.setItem('hr_token', data.token);
+        localStorage.setItem('hr_user', JSON.stringify(data.user || {}));
+
+        // اگر مکتب باشد، باید schoolname داشته باشد
+        const redirectTo = data.redirect ||
+          (data.user && data.user.role === 'admin' ? '/admin.html' : '/school.html');
+
+        window.location.href = redirectTo;
+      } else {
+        showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
+      }
+    } catch (err) {
+      console.error(err);
+      showError('خطا در ارتباط با سرور. لطفاً اینترنت خود را بررسی کنید.');
+    }
+  });
+
+  function showError(message) {
+    errorBox.innerText = message;
+    errorBox.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'ورود به پنل مدیریت';
+  }
+</script>
+
 </body>
 </html>

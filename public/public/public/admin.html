@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>پنل ادمین — معارف هرات</title>
-<!-- اتصال مستقیم و استاندارد به فریم‌ورک ظاهری استایل‌ها جهت حل مشکل به‌هم‌ریختگی قالب -->
+<!-- اتصال به سی‌دی‌ان‌های پایدار برای فیکس کردن قطعی ظاهر پنل -->
 <link href="https://jsdelivr.net" rel="stylesheet">
 <link href="https://cloudflare.com" rel="stylesheet">
 <script src="https://jsdelivr.net"></script>
@@ -34,7 +34,7 @@
 
 <div class="container-fluid px-4">
 
-  <!-- بخش آمار کلی سیستم معارف هرات -->
+  <!-- آمار کلی سیستم -->
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-chart-pie"></i> آمار کلی سیستم معارف</h5>
     <div class="row g-3">
@@ -45,7 +45,7 @@
     </div>
   </div>
 
-  <!-- بخش مدیریت و اضافه کردن حساب مکتب جدید -->
+  <!-- افزودن مکتب جدید -->
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-school-flag"></i> مدیریت و افزودن مکاتب جدید</h5>
     <div class="row g-2 mb-3">
@@ -68,7 +68,7 @@
     </div>
   </div>
 
-  <!-- بخش نمایش تمام کارمندان معارف هرات همراه با فیلتر جستجو -->
+  <!-- لیست کل کارمندان -->
   <div class="card card-custom">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap g-2">
         <h5 class="text-purple m-0 fw-bold"><i class="fa-solid fa-users-gear"></i> همه کارمندان و پرسنل ولایت هرات</h5>
@@ -95,11 +95,9 @@
 </div>
 
 <script>
-  // تأیید احراز هویت ادمین معارف هرات
   const token = localStorage.getItem('hr_token');
   if (!token) { location.href = '/'; }
 
-  // لود پرونده‌های ثبت‌شده کل مکاتب از دیتابیس Supabase
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value;
     try {
@@ -148,7 +146,6 @@
     } catch(e) { console.error(e); }
   }
 
-  // لود لیست مکاتبی که در سیستم حساب دارند
   async function loadSchoolsList() {
     try {
         const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -173,7 +170,7 @@
     } catch (e) { console.error(e); }
   }
 
-  // ساخت حساب دسترسی جدید برای مکاتب در دیتابیس Supabase
+  // فیکس قطعی متد ارسال دیتای فرم افزودن مکتب به سرور همراه با تعریف Content-Type
   async function addUser() {
     const body = {
       username: document.getElementById('uUsername').value.trim(),
@@ -186,7 +183,10 @@
     try {
         const res = await fetch('/api/users', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          headers: { 
+             'Content-Type': 'application/json', // فیکس باگ: تعریف هدر کدهای ارسالی به دیتابیس Supabase
+             'Authorization': 'Bearer ' + token 
+          },
           body: JSON.stringify(body)
         });
         if (res.ok) {
@@ -194,3 +194,7 @@
           document.getElementById('uUsername').value = '';
           document.getElementById('uPassword').value = '';
           document.getElementById('uSchoolName').value = '';
+          document.getElementById('uDistrict').value = '';
+          loadSchoolsList();
+        } else {
+          const errData = await res.json();

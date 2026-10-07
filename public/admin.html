@@ -60,9 +60,6 @@
     background: #3b82f6; color: #fff; padding: 4px 10px;
     border-radius: 6px; font-size: 11px; margin-right: 8px;
   }
-  @media print {
-    .no-print { display: none !important; }
-  }
 </style>
 </head>
 <body>
@@ -430,7 +427,7 @@
   }
 
   // ============================================================
-  // 👁️ خواندن (View) — باز کردن پنجره جدید با همه اطلاعات
+  // 👁️ خواندن
   // ============================================================
   function viewRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
@@ -529,7 +526,7 @@
   }
 
   // ============================================================
-  // 🖨️ پرنت (Print) — باز کردن پنجره چاپ مستقیم
+  // 🖨️ پرنت
   // ============================================================
   function printRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);

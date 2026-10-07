@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
-// اتصال استاندارد و مقاوم‌سازی شده به دیتابیس آنلاین Supabase
+// اتصال استاندارد و بهینه به دیتابیس آنلاین Supabase
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
@@ -18,7 +18,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000 
 });
 
-// ساخت جدول‌ها به صورت ایمن بدون کرش دادن کل سرور
+// ایجاد ساختار جدول‌ها به صورت ایمن
 async function initDB() {
   try {
     const client = await pool.connect();
@@ -46,14 +46,14 @@ async function initDB() {
           FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
         );
       `);
-      console.log('✅ دیتابیس با موفقیت راه‌اندازی شد و جدول‌ها آماده هستند.');
+      console.log('✅ جدول‌های دیتابیس با موفقیت آماده‌سازی شدند.');
     } catch (queryErr) {
-      console.error('❌ خطای اجرای کوئری در دیتابیس:', queryErr);
+      console.error('❌ خطای اجرای کوئری ایجاد جدول:', queryErr);
     } finally {
       client.release();
     }
   } catch (connErr) {
-    console.error('❌ خطا در اتصال اولیه به دیتابیس Supabase:', connErr.message);
+    console.error('❌ خطا در اتصال اولیه به دیتابیس:', connErr.message);
   }
 }
 initDB();
@@ -71,32 +71,31 @@ app.use((req, res, next) => {
   next();
 });
 
-// مسیر لاگین سیستم معارف (اصلاح شده)
+// مسیر احراز هویت اصلی و لاگین مستقیم ادمین
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
-    if (!username || !password) return res.status(400).json({ error: 'نام و رمز الزامی' });
+    if (!username || !password) return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
 
-    // ورود مستقیم ادمین
+    // ورود مستقیم و بدون دیتابیس ادمین کل معارف
     if (username === 'admin' && password === 'admin123') {
       const adminUser = { id: 1, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
       const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
       return res.json({ token, user: adminUser, redirect: '/admin.html' });
     }
 
-    // ورود مکاتب از دیتابیس
+    // بررسی ورود کاربران مکاتب از جدول کاربران Supabase
     const result = await pool.query('SELECT * FROM users WHERE username = \$1', [username]);
     if (result.rows.length === 0) return res.status(401).json({ error: 'نام کاربری یافت نشد' });
     
-    // فیکس شده: دریافت ردیف اول آرایه به صورت صحیح
     const user = result.rows[0]; 
-    if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه' });
+    if (!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: 'رمز عبور اشتباه است' });
     
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district }, redirect: '/school.html' });
   } catch (e) {
-    console.error('Login Error:', e);
-    res.status(500).json({ error: 'خطای سرور در فرآیند لاگین' });
+    console.error('Login Route Error:', e);
+    res.status(500).json({ error: 'خطای داخلی سرور در فرآیند ورود' });
   }
 });
 
@@ -108,7 +107,7 @@ function authRequired(req, res, next) {
     req.user = jwt.verify(token, SECRET);
     next();
   } catch (e) {
-    res.status(401).json({ error: 'توکن نامعتبر' });
+    res.status(401).json({ error: 'توکن نامعتبر یا منقضی شده است' });
   }
 }
 
@@ -132,7 +131,7 @@ app.get('/api/records', authRequired, async (req, res) => {
     const rows = result.rows.map(r => ({ ...r, data: JSON.parse(r.data), status: r.status }));
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: 'خطا در دیتابیس' });
+    res.status(500).json({ error: 'خطا در واکشی اطلاعات دیتابیس' });
   }
 });
 
@@ -151,7 +150,7 @@ app.post('/api/records', authRequired, async (req, res) => {
     await pool.query('INSERT INTO records (userid, schoolname, district, data, status) VALUES (\$1, \$2, \$3, \$4, \'pending\')', [req.user.id, schoolName, district, JSON.stringify(body)]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: 'خطا در ثبت رکورد جدید' });
+    res.status(500).json({ error: 'خطا در ثبت رکورد جدید کارمند' });
   }
 });
 
@@ -160,7 +159,7 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
     await pool.query("UPDATE records SET status = 'approved' WHERE id = \$1", [req.params.id]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: 'خطا در تایید رکورد' });
+    res.status(500).json({ error: 'خطا در ثبت تاییدیه کارمند' });
   }
 });
 
@@ -169,7 +168,7 @@ app.get('/api/users', authRequired, async (req, res) => {
     const result = await pool.query("SELECT id, username, schoolname, district FROM users WHERE role = 'school' ORDER BY id DESC");
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: 'خطا در دریافت لیست کاربران' });
+    res.status(500).json({ error: 'خطا در دریافت لیست مکاتب' });
   }
 });
 
@@ -180,7 +179,7 @@ app.post('/api/users', authRequired, async (req, res) => {
     await pool.query("INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, 'school', \$3, \$4)", [username, hash, schoolName, district]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: 'خطا در ساخت کاربر جدید' });
+    res.status(500).json({ error: 'خطا در ایجاد حساب کاربری مکتب' });
   }
 });
 
@@ -189,7 +188,7 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
     await pool.query("DELETE FROM users WHERE id = \$1", [req.params.id]);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: 'خطا در حذف کاربر' });
+    res.status(500).json({ error: 'خطا در حذف مکتب از سیستم' });
   }
 });
 

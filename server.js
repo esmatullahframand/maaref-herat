@@ -9,44 +9,52 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
-// اتصال استاندارد و بهینه به دیتابیس آنلاین پستگرس رندر
+// اتصال استاندارد و مقاوم‌سازی شده به دیتابیس آنلاین Supabase
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-  max: 15,
-  idleTimeoutMillis: 30000
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000 // جلوگیری از قفل شدن سرور در صورت اختلال شبکه
 });
 
+// ساخت جدول‌ها به صورت ایمن بدون کرش دادن کل سرور
 async function initDB() {
-  const client = await pool.connect();
   try {
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL,
-        schoolname TEXT,
-        district TEXT,
-        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS records (
-        id SERIAL PRIMARY KEY,
-        userid INTEGER NOT NULL,
-        schoolname TEXT NOT NULL,
-        district TEXT NOT NULL,
-        data TEXT NOT NULL,
-        status TEXT DEFAULT 'pending',
-        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
-      );
-    `);
-  } catch (err) {
-    console.error('Init DB Error:', err);
-  } finally {
-    client.release();
+    const client = await pool.connect();
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          username TEXT UNIQUE NOT NULL,
+          password TEXT NOT NULL,
+          role TEXT NOT NULL,
+          schoolname TEXT,
+          district TEXT,
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS records (
+          id SERIAL PRIMARY KEY,
+          userid INTEGER NOT NULL,
+          schoolname TEXT NOT NULL,
+          district TEXT NOT NULL,
+          data TEXT NOT NULL,
+          status TEXT DEFAULT 'pending',
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
+        );
+      `);
+      console.log('✅ دیتابیس با موفقیت راه‌اندازی شد و جدول‌ها آماده هستند.');
+    } catch (queryErr) {
+      console.error('❌ خطای اجرای کوئری در دیتابیس:', queryErr);
+    } finally {
+      client.release();
+    }
+  } catch (connErr) {
+    console.error('❌ خطا در اتصال اولیه به دیتابیس Supabase:', connErr.message);
+    console.log('🔄 سرور آنلاین می‌ماند. اتصال در درخواست‌های بعدی مجدداً تلاش خواهد شد.');
   }
 }
 initDB();
@@ -64,7 +72,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// مسیر لاگین فیکس شده همراه با ارسال آدرس ریدایرکت مشخص برای فرانت‌اند
+// مسیر لاگین سیستم معارف
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
@@ -126,41 +134,62 @@ app.get('/api/records', authRequired, async (req, res) => {
 });
 
 app.post('/api/records', authRequired, async (req, res) => {
-  const body = req.body || {};
-  const schoolName = body.schoolName || req.user.schoolname || '';
-  const district = body.district || req.user.district || '';
-  const job = String(body.job || '').trim();
-  const degree = String(body.degree || '').trim();
-  const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
-  
-  if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
-    return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
+  try {
+    const body = req.body || {};
+    const schoolName = body.schoolName || req.user.schoolname || '';
+    const district = body.district || req.user.district || '';
+    const job = String(body.job || '').trim();
+    const degree = String(body.degree || '').trim();
+    const isServiceStaff = job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
+    
+    if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
+      return res.status(400).json({ error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و سایر اعضا الزامی است.' });
+    }
+    await pool.query('INSERT INTO records (userid, schoolname, district, data, status) VALUES (\$1, \$2, \$3, \$4, \'pending\')', [req.user.id, schoolName, district, JSON.stringify(body)]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'خطا در ثبت رکورد جدید' });
   }
-  await pool.query('INSERT INTO records (userid, schoolname, district, data, status) VALUES (\$1, \$2, \$3, \$4, \'pending\')', [req.user.id, schoolName, district, JSON.stringify(body)]);
-  res.json({ ok: true });
 });
 
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
-  await pool.query("UPDATE records SET status = 'approved' WHERE id = \$1", [req.params.id]);
-  res.json({ ok: true });
+  try {
+    await pool.query("UPDATE records SET status = 'approved' WHERE id = \$1", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'خطا در تایید رکورد' });
+  }
 });
 
 app.get('/api/users', authRequired, async (req, res) => {
-  const result = await pool.query("SELECT id, username, schoolname, district FROM users WHERE role = 'school' ORDER BY id DESC");
-  res.json(result.rows);
+  try {
+    const result = await pool.query("SELECT id, username, schoolname, district FROM users WHERE role = 'school' ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'خطا در دریافت لیست کاربران' });
+  }
 });
 
 app.post('/api/users', authRequired, async (req, res) => {
-  const { username, password, schoolName, district } = req.body;
-  const hash = bcrypt.hashSync(password, 10);
-  await pool.query("INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, 'school', \$3, \$4)", [username, hash, schoolName, district]);
-  res.json({ ok: true });
+  try {
+    const { username, password, schoolName, district } = req.body;
+    const hash = bcrypt.hashSync(password, 10);
+    await pool.query("INSERT INTO users (username, password, role, schoolname, district) VALUES (\$1, \$2, 'school', \$3, \$4)", [username, hash, schoolName, district]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'خطا در ساخت کاربر جدید' });
+  }
 });
 
 app.delete('/api/users/:id', authRequired, async (req, res) => {
-  await pool.query("DELETE FROM users WHERE id = \$1", [req.params.id]);
-  res.json({ ok: true });
+  try {
+    await pool.query("DELETE FROM users WHERE id = \$1", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'خطا در حذف کاربر' });
+  }
 });
 
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+
 app.listen(PORT, () => console.log(`🚀 Fast Server online on port ${PORT}`));

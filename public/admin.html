@@ -31,13 +31,14 @@
   th { background-color: #f8fafc !important; color: #475569; }
   .badge-pending { background: #fef3c7; color: #92400e; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
   .badge-approved { background: #def7ec; color: #03543f; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
+  .badge-active { background: #dcfce7; color: #15803d; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .badge-retired { background: #fee2e2; color: #b91c1c; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .badge-unknown { background: #e2e8f0; color: #475569; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
   .btn-action { padding: 4px 10px; font-size: 12px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; margin: 0 2px; }
   .btn-approve { background: #10b981; color: #fff; }
   .btn-approve:hover { background: #059669; }
   .btn-delete-row { background: #dc2626; color: #fff; }
   .btn-delete-row:hover { background: #b91c1c; }
-  .btn-view { background: #3b82f6; color: #fff; }
-  .btn-view:hover { background: #2563eb; }
   .info-banner {
     background: #dbeafe; border-right: 5px solid #3b82f6;
     padding: 12px 15px; border-radius: 6px;
@@ -50,6 +51,11 @@
     display: none; max-width: 90%; text-align: center;
   }
   .toast.error { background: #ef4444; }
+  .search-hint { font-size: 12px; color: #64748b; margin-top: 5px; font-style: italic; }
+  .badge-search-active {
+    background: #3b82f6; color: #fff; padding: 4px 10px;
+    border-radius: 6px; font-size: 11px; margin-right: 8px;
+  }
 </style>
 </head>
 <body>
@@ -68,10 +74,12 @@
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-chart-pie"></i> آمار کلی</h5>
     <div class="row g-3">
-      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;"><div class="text-muted">🏫 مکاتب فعال</div><div class="value text-purple" id="sSchools">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card"><div class="text-muted">👥 کل کارمندان</div><div class="value" id="sTotal">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;"><div class="text-muted">✅ تایید شده</div><div class="value text-success" id="sApproved">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fcd34d;"><div class="text-muted">⏳ در انتظار</div><div class="value" style="color:#92400e;" id="sPending">0</div></div></div>
+      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;"><div class="text-muted">🏫 مکاتب فعال</div><div class="value text-purple" id="sSchools">0</div></div></div>
+      <div class="col-md-2"><div class="stat-card"><div class="text-muted">👥 کل کارمندان</div><div class="value" id="sTotal">0</div></div></div>
+      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;"><div class="text-muted">✅ تایید شده</div><div class="value text-success" id="sApproved">0</div></div></div>
+      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fcd34d;"><div class="text-muted">⏳ در انتظار</div><div class="value" style="color:#92400e;" id="sPending">0</div></div></div>
+      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;"><div class="text-muted">👨‍🏫 فعال</div><div class="value text-success" id="sActive">0</div></div></div>
+      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #fee2e2, #fecaca); border-color: #fca5a5;"><div class="text-muted">🎖️ متقاعد</div><div class="value text-danger" id="sRetired">0</div></div></div>
     </div>
   </div>
 
@@ -98,26 +106,27 @@
   <!-- لیست کارمندان -->
   <div class="card card-custom">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-      <h5 class="text-purple m-0 fw-bold"><i class="fa-solid fa-users-gear"></i> کارمندان</h5>
+      <h5 class="text-purple m-0 fw-bold">
+        <i class="fa-solid fa-users-gear"></i> کارمندان
+        <span id="searchBadge" class="badge-search-active" style="display:none;">🔍 حالت جستجو</span>
+      </h5>
       <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportToCSV()">
         <i class="fa-solid fa-file-excel"></i> خروجی CSV
       </button>
     </div>
 
     <div class="info-banner">
-      ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند. رکوردهای <strong>تایید‌شده</strong> فقط با جستجو نمایش داده می‌شوند.
+      ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند.<br>
+      رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> نمایش داده می‌شوند.<br>
+      وضعیت <strong>فعال/متقاعد</strong> بر اساس سن (۶۵ سال) محاسبه می‌شود.
     </div>
 
     <div class="row g-3 mb-3">
-      <div class="col-md-8">
-        <input class="form-control border-primary" id="searchInput" placeholder="🔍 جستجو در همه رکوردها (نام، وظیفه، لیسه)..." oninput="debouncedLoad()">
-      </div>
-      <div class="col-md-4">
-        <select class="form-control" id="filterStatus" onchange="loadAllRecords()">
-          <option value="pending">⏳ فقط در انتظار تایید</option>
-          <option value="all">📋 همه (با جستجو)</option>
-          <option value="approved">✅ فقط تایید شده</option>
-        </select>
+      <div class="col-md-12">
+        <input class="form-control border-primary" id="searchInput"
+               placeholder="🔍 جستجو در همه رکوردها (نام، وظیفه، مکتب، ولسوالی)..."
+               oninput="debouncedLoad()">
+        <div class="search-hint">💡 برای دیدن رکوردهای تایید‌شده، بخشی از نام یا مکتب را تایپ کنید.</div>
       </div>
     </div>
 
@@ -132,12 +141,14 @@
             <th>ولد</th>
             <th>وظیفه</th>
             <th>درجه</th>
-            <th>وضعیت</th>
+            <th>سن</th>
+            <th>وضعیت کارمند</th>
+            <th>وضعیت تایید</th>
             <th>عملیات</th>
           </tr>
         </thead>
         <tbody id="allTableBody">
-          <tr><td colspan="9" class="text-muted p-4">در حال بارگذاری...</td></tr>
+          <tr><td colspan="11" class="text-muted p-4">در حال بارگذاری...</td></tr>
         </tbody>
       </table>
     </div>
@@ -158,7 +169,77 @@
   }
 
   let loadedRecordsCache = [];
+  const RETIREMENT_AGE = 65;
 
+  // ============================================================
+  // توابع تاریخ شمسی
+  // ============================================================
+  function normalizeDigits(str) {
+    if (!str) return '';
+    const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
+    return str.split('').map(ch => {
+      const pi = p.indexOf(ch); if (pi !== -1) return pi;
+      const ai = a.indexOf(ch); if (ai !== -1) return ai;
+      return ch;
+    }).join('');
+  }
+
+  function parseShamsiDate(dateStr) {
+    if (!dateStr) return null;
+    const cleaned = normalizeDigits(dateStr).replace(/[.\-]/g, '/').trim();
+    const parts = cleaned.split('/').map(p => p.trim());
+    if (parts.length !== 3) return null;
+    const p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]);
+    if (isNaN(p1) || isNaN(p2) || isNaN(p3)) return null;
+    let year, month, day;
+    if (parts[0].length === 4) { year = p1; month = p2; day = p3; }
+    else if (parts[2].length === 4) { year = p3; month = p2; day = p1; }
+    else if (p1 >= 1300 && p1 <= 1408) { year = p1; month = p2; day = p3; }
+    else if (p3 >= 1300 && p3 <= 1408) { year = p3; month = p2; day = p1; }
+    else return null;
+    if (year < 1300 || year > 1408) return null;
+    if (month < 1 || month > 12) return null;
+    if (day < 1 || day > 31) return null;
+    return { year, month, day };
+  }
+
+  function gregorianToShamsi(gy, gm, gd) {
+    const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+    let jy = (gy <= 1600) ? 0 : 979;
+    gy -= (gy <= 1600) ? 621 : 1600;
+    const gy2 = (gm > 2) ? (gy + 1) : gy;
+    let days = (365*gy) + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) +
+               Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1];
+    jy += 33 * Math.floor(days/12053);
+    days %= 12053;
+    jy += 4 * Math.floor(days/1461);
+    days %= 1461;
+    if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
+    const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
+    const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30));
+    return { year: jy, month: jm, day: jd };
+  }
+
+  function calculateAge(birthDateStr) {
+    const p = parseShamsiDate(birthDateStr);
+    if (!p) return null;
+    const now = new Date();
+    const g = gregorianToShamsi(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    let y = g.year - p.year;
+    if (g.month < p.month || (g.month === p.month && g.day < p.day)) y--;
+    return y >= 0 ? y : null;
+  }
+
+  function getEmployeeStatus(record) {
+    const age = calculateAge(record.birthDate);
+    if (age === null) return { age: '—', status: 'نامشخص', cls: 'badge-unknown' };
+    if (age >= RETIREMENT_AGE) return { age, status: '🎖️ متقاعد', cls: 'badge-retired' };
+    return { age, status: '✅ فعال', cls: 'badge-active' };
+  }
+
+  // ============================================================
+  // Toast
+  // ============================================================
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -178,18 +259,22 @@
 
   const debouncedLoad = debounce(loadAllRecords, 400);
 
-  // ===== لود رکوردها =====
+  // ============================================================
+  // لود رکوردها (بدون جستجو فقط pending، با جستجو همه)
+  // ============================================================
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value.trim();
-    const filterStatus = document.getElementById('filterStatus').value;
+    const hasSearch = search.length > 0;
+
+    document.getElementById('searchBadge').style.display = hasSearch ? 'inline-block' : 'none';
 
     try {
       let url = '/api/records?';
-      const params = [];
-      if (search) params.push('search=' + encodeURIComponent(search));
-      if (filterStatus === 'pending') params.push('status=pending');
-      if (filterStatus === 'approved') params.push('status=approved');
-      url += params.join('&');
+      if (hasSearch) {
+        url += 'search=' + encodeURIComponent(search);
+      } else {
+        url += 'status=pending';
+      }
 
       const res = await fetch(url, {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -199,35 +284,61 @@
 
       const records = await res.json();
       loadedRecordsCache = records;
-      renderRecords(records);
+      renderRecords(records, hasSearch);
+
+      // آمار از همه رکوردها
+      loadStats();
     } catch (e) {
       console.error(e);
       document.getElementById('allTableBody').innerHTML =
-        '<tr><td colspan="9" class="text-danger p-4">خطا در بارگذاری</td></tr>';
+        '<tr><td colspan="11" class="text-danger p-4">خطا در بارگذاری</td></tr>';
     }
   }
 
-  function renderRecords(records) {
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/records', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const allRecords = await res.json();
+      if (Array.isArray(allRecords)) {
+        const total = allRecords.length;
+        const approved = allRecords.filter(r => r.status === 'approved').length;
+        const pending = allRecords.filter(r => r.status !== 'approved').length;
+
+        let active = 0, retired = 0;
+        allRecords.forEach(r => {
+          const st = getEmployeeStatus(r.data || {});
+          if (st.status.includes('متقاعد')) retired++;
+          else if (st.status.includes('فعال')) active++;
+        });
+
+        document.getElementById('sTotal').textContent = total;
+        document.getElementById('sApproved').textContent = approved;
+        document.getElementById('sPending').textContent = pending;
+        document.getElementById('sActive').textContent = active;
+        document.getElementById('sRetired').textContent = retired;
+      }
+    } catch (e) {
+      console.error('Stats error:', e);
+    }
+  }
+
+  function renderRecords(records, hasSearch) {
     const tbody = document.getElementById('allTableBody');
     tbody.innerHTML = '';
 
-    let total = 0, approved = 0, pending = 0;
-
     if (!Array.isArray(records) || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-muted p-4">هیچ رکوردی یافت نشد</td></tr>';
-      document.getElementById('sTotal').textContent = 0;
-      document.getElementById('sApproved').textContent = 0;
-      document.getElementById('sPending').textContent = 0;
+      const msg = hasSearch
+        ? 'هیچ نتیجه‌ای برای جستجو یافت نشد'
+        : 'هیچ رکوردی در انتظار تایید نیست';
+      tbody.innerHTML = `<tr><td colspan="11" class="text-muted p-4">${msg}</td></tr>`;
       return;
     }
 
     const fragment = document.createDocumentFragment();
 
     records.forEach((row) => {
-      total++;
-      if (row.status === 'approved') approved++;
-      else pending++;
-
       const info = row.data || {};
       const name = info.firstName
         ? `${info.firstName} ${info.lastName || ''}`
@@ -236,11 +347,14 @@
       const job = info.jobTitle || info.job || '-';
       const degree = info.degree || '-';
 
-      const statusHtml = row.status === 'approved'
+      const empStatus = getEmployeeStatus(info);
+
+      const approvalHtml = row.status === 'approved'
         ? '<span class="badge-approved">✅ تایید شده</span>'
         : '<span class="badge-pending">⏳ در انتظار</span>';
 
-      // دکمه‌های عملیات
+      const empStatusHtml = `<span class="${empStatus.cls}">${empStatus.status}</span>`;
+
       let actionsHtml = '';
       if (row.status === 'pending') {
         actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})" title="تایید">✔️ تایید</button>`;
@@ -256,17 +370,15 @@
         <td>${escapeHtml(father)}</td>
         <td><span class="badge bg-light text-dark">${escapeHtml(job)}</span></td>
         <td>${escapeHtml(degree)}</td>
-        <td>${statusHtml}</td>
+        <td><strong>${empStatus.age}</strong></td>
+        <td>${empStatusHtml}</td>
+        <td>${approvalHtml}</td>
         <td>${actionsHtml}</td>
       `;
       fragment.appendChild(tr);
     });
 
     tbody.appendChild(fragment);
-
-    document.getElementById('sTotal').textContent = total;
-    document.getElementById('sApproved').textContent = approved;
-    document.getElementById('sPending').textContent = pending;
   }
 
   // ===== تایید رکورد =====
@@ -288,9 +400,9 @@
     }
   }
 
-  // ===== حذف رکورد (فقط ادمین) =====
+  // ===== حذف رکورد =====
   async function deleteRecord(id) {
-    if (!confirm('⚠️ آیا از حذف این رکورد مطمئن هستید؟ این عمل غیرقابل بازگشت است.')) return;
+    if (!confirm('⚠️ آیا از حذف این رکورد مطمئن هستید؟')) return;
     try {
       const res = await fetch('/api/records/' + id, {
         method: 'DELETE',
@@ -406,10 +518,11 @@
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی وجود ندارد', true); return; }
 
-    const headers = ['ID','مکتب','ولسوالی','نام','ولد','وظیفه','درجه','وضعیت'];
+    const headers = ['ID','مکتب','ولسوالی','نام','ولد','وظیفه','درجه','سن','وضعیت کارمند','وضعیت تایید'];
     const rows = records.map(r => {
       const info = r.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '');
+      const emp = getEmployeeStatus(info);
       return [
         r.id,
         r.schoolname || '',
@@ -418,6 +531,8 @@
         info.fatherName || '',
         info.jobTitle || info.job || '',
         info.degree || '',
+        emp.age,
+        emp.status,
         r.status === 'approved' ? 'تایید شده' : 'در انتظار'
       ];
     });

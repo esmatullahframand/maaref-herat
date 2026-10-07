@@ -14,8 +14,10 @@
         .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; }
         .form-control:focus { border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,86,179,0.15); }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; background-color: #0056b3; color: white; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; background-color: #0056b3; color: white; display: flex; align-items: center; justify-content: center; }
         .btn:hover { background-color: #004085; }
+        .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        .error-box { background-color: #fff5f5; border: 1px solid #fed7d7; color: #c53030; border-radius: 8px; padding: 10px; margin-bottom: 15px; font-size: 13px; text-align: right; display: none; }
     </style>
 </head>
 <body>
@@ -23,6 +25,10 @@
     <div class="login-card">
         <h2>ریاست معارف ولایت هرات</h2>
         <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
+        
+        <!-- کادر نمایش خطا -->
+        <div id="errorBox" class="error-box"></div>
+
         <form id="loginForm">
             <div class="form-group">
                 <label>نام کاربری</label>
@@ -32,40 +38,66 @@
                 <label>رمز عبور</label>
                 <input type="password" id="password" class="form-control" required placeholder="رمز عبور خود را وارد کنید">
             </div>
-            <button type="submit" class="btn">ورود به پنل مدیریت</button>
+            <button type="submit" id="submitBtn" class="btn">ورود به پنل مدیریت</button>
         </form>
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        const loginForm = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorBox = document.getElementById('errorBox');
+
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // مخفی کردن خطاهای قبلی و فعال کردن حالت لودینگ دکمه
+            errorBox.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'در حال بررسی اطلاعات...';
+
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+
             try {
                 const res = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
+                
                 const data = await res.json();
+
                 if (res.ok) {
-                    // ذخیره کامل اطلاعات ورود در سیستم مروگر
+                    // ذخیره کامل اطلاعات ورود در سیستم مرورگر
                     localStorage.setItem('hr_token', data.token);
                     localStorage.setItem('hr_user', JSON.stringify(data.user));
                     
-                    // ریدایرکت اتوماتیک به صفحه مدیریت لوکس ادمین یا مدارس بر اساس پاسخ سرور
+                    // ریدایرکت اتوماتیک به صفحه مدیریت بر اساس پاسخ سرور
                     if (data.redirect) {
                         window.location.href = data.redirect;
                     } else {
                         window.location.href = (data.user.role === 'admin') ? '/admin.html' : '/school.html';
                     }
                 } else {
-                    alert(data.error || 'نام کاربری یا رمز عبور اشتباه است');
+                    showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
                 }
             } catch (err) {
-                alert('خطا در اتصال به سرور معارف هرات');
+                showError('خطا در اتصال به سرور معارف هرات. لطفاً شبکه خود را بررسی کنید.');
+            } finally {
+                // خارج کردن دکمه از حالت لودینگ در صورت بروز خطا
+                if (submitBtn.disabled && window.location.href.includes('index.html')) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'ورود به پنل مدیریت';
+                }
             }
         });
+
+        function showError(message) {
+            errorBox.innerText = message;
+            errorBox.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'ورود به پنل مدیریت';
+        }
     </script>
 </body>
 </html>

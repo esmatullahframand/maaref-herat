@@ -50,7 +50,6 @@
   }
   .card h4 { margin-top: 0; color: #10b981; font-size: 17px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
 
-  /* ═══ تب‌ها برای جلوگیری از لگ ═══ */
   .tabs {
     display: flex;
     gap: 5px;
@@ -71,10 +70,7 @@
     transition: all 0.2s;
   }
   .tab-btn:hover { background: #e2e8f0; }
-  .tab-btn.active {
-    background: #10b981;
-    color: #fff;
-  }
+  .tab-btn.active { background: #10b981; color: #fff; }
   .tab-content { display: none; }
   .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -121,6 +117,14 @@
     border-color: #10b981;
     outline: none;
     box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+  }
+  input.invalid {
+    border-color: #ef4444 !important;
+    background: #fff5f5;
+  }
+  input.valid {
+    border-color: #10b981 !important;
+    background: #f0fdf4;
   }
   .date-hint { font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic; }
   .auto-detect-badge {
@@ -228,13 +232,13 @@
 
 <div class="container">
 
-  <!-- ═══ تب‌ها ═══ -->
+  <!-- تب‌ها -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('form')">➕ ثبت کارمند جدید</button>
-    <button class="tab-btn" onclick="switchTab('list')">📋 لیست کارمندان</button>
+    <button class="tab-btn active" onclick="switchTab('form', this)">➕ ثبت کارمند جدید</button>
+    <button class="tab-btn" onclick="switchTab('list', this)">📋 لیست کارمندان</button>
   </div>
 
-  <!-- ═══ تب فرم ═══ -->
+  <!-- تب فرم -->
   <div class="tab-content active" id="tab-form">
     <div class="card">
       <h4>➕ ثبت کارمند جدید</h4>
@@ -270,13 +274,17 @@
             </div>
             <div class="form-group">
               <label>تاریخ تولد (شمسی) *</label>
-              <input type="text" id="birthDate" placeholder="22/2/1360" required>
-              <span class="auto-detect-badge" id="detectedCalendarBadge">🔍 منتظر ورود...</span>
+              <input type="text" id="birthDate" placeholder="مثال: 1360/02/22" required>
+              <span class="auto-detect-badge" id="birthBadge">🔍 منتظر ورود...</span>
             </div>
             <div class="form-group"><label>محل تولد</label><input type="text" id="birthPlace"></div>
             <div class="form-group"><label>سکونت اصلی *</label><input type="text" id="originAddress" required></div>
             <div class="form-group"><label>سکونت فعلی *</label><input type="text" id="currentAddress" required></div>
-            <div class="form-group"><label>تاریخ اولین تقرر</label><input type="text" id="firstAppointmentDate"></div>
+            <div class="form-group">
+              <label>تاریخ اولین تقرر (شمسی)</label>
+              <input type="text" id="firstAppointmentDate" placeholder="مثال: 1385/01/10">
+              <span class="auto-detect-badge" id="appointBadge">🔍 اختیاری</span>
+            </div>
             <div class="form-group"><label>شماره تماس *</label><input type="text" id="phone" required></div>
             <div class="form-group">
               <label>معلولیت *</label>
@@ -301,13 +309,25 @@
           <div class="grid-4">
             <div class="form-group"><label>بست</label><input type="text" id="bust"></div>
             <div class="form-group"><label>قدم</label><input type="text" id="grade"></div>
-            <div class="form-group"><label>تاریخ تقرر فعلی</label><input type="text" id="currentPositionDate"></div>
+            <div class="form-group">
+              <label>تاریخ تقرر فعلی (شمسی)</label>
+              <input type="text" id="currentPositionDate" placeholder="مثال: 1400/03/20">
+              <span class="auto-detect-badge" id="currentPosBadge">🔍 اختیاری</span>
+            </div>
             <div class="form-group"><label>درجه تحصیلی <span style="color:#94a3b8;font-weight:normal;">(اختیاری)</span></label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
             <div class="form-group"><label>رشته تحصیلی <span style="color:#94a3b8;font-weight:normal;">(اختیاری)</span></label><input type="text" id="major"></div>
             <div class="form-group"><label>مرجع تعلیمی</label><input type="text" id="eduInstitute"></div>
             <div class="form-group"><label>موقعیت مرجع</label><input type="text" id="eduInstituteLocation"></div>
-            <div class="form-group"><label>تاریخ شمولیت</label><input type="text" id="enrollmentDate"></div>
-            <div class="form-group"><label>تاریخ فراغت</label><input type="text" id="graduationDate"></div>
+            <div class="form-group">
+              <label>تاریخ شمولیت (شمسی)</label>
+              <input type="text" id="enrollmentDate" placeholder="مثال: 1395/09/01">
+              <span class="auto-detect-badge" id="enrollBadge">🔍 اختیاری</span>
+            </div>
+            <div class="form-group">
+              <label>تاریخ فراغت (شمسی)</label>
+              <input type="text" id="graduationDate" placeholder="مثال: 1399/12/15">
+              <span class="auto-detect-badge" id="gradBadge">🔍 اختیاری</span>
+            </div>
             <div class="form-group"><label>مضمون تدریس</label><input type="text" id="subjectTeaching"></div>
           </div>
         </div>
@@ -317,14 +337,14 @@
     </div>
   </div>
 
-  <!-- ═══ تب لیست ═══ -->
+  <!-- تب لیست -->
   <div class="tab-content" id="tab-list">
     <div class="card">
       <h4>📋 لیست کارمندان</h4>
       <div class="info-banner">
         ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند. رکوردهای <strong>تایید‌شده</strong> فقط با جستجو نمایش داده می‌شوند.
       </div>
-      <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو (فقط رکوردهای تایید‌شده)...">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو (برای دیدن رکوردهای تایید‌شده)...">
       <div class="table-responsive">
         <table>
           <thead>
@@ -361,20 +381,15 @@
       `${user.username || '-'} | ${user.schoolname || ''} (${user.district || ''})`;
   }
 
-  // ===== Cache رکوردها برای جلوگیری از رندر مکرر =====
   let cachedRecords = [];
 
   // ===== تب =====
-  function switchTab(name) {
+  function switchTab(name, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
-    event.target.classList.add('active');
-
-    // وقتی تب لیست باز می‌شود، رکوردها را لود کن (اگر خالی است)
-    if (name === 'list' && cachedRecords.length === 0) {
-      loadSchoolRecords();
-    }
+    btn.classList.add('active');
+    if (name === 'list') loadSchoolRecords();
   }
 
   // ===== Toast =====
@@ -384,10 +399,10 @@
     t.className = 'toast' + (isError ? ' error' : '');
     t.style.display = 'block';
     clearTimeout(t._timer);
-    t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+    t._timer = setTimeout(() => { t.style.display = 'none'; }, 4000);
   }
 
-  // ===== Debounce (روی همه ورودی‌ها) =====
+  // ===== Debounce =====
   function debounce(fn, delay) {
     let timer;
     return function(...args) {
@@ -396,7 +411,9 @@
     };
   }
 
-  // ===== محاسبه سن =====
+  // ============================================================
+  // اعتبارسنجی تاریخ شمسی
+  // ============================================================
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -423,100 +440,143 @@
     if (year < 1300 || year > 1408) return null;
     if (month < 1 || month > 12) return null;
     if (day < 1 || day > 31) return null;
+    if (month >= 1 && month <= 6 && day > 31) return null;
+    if (month >= 7 && month <= 11 && day > 30) return null;
+    if (month === 12 && day > 30) return null;
     return { year, month, day };
   }
 
   function isValidShamsiDate(s) { return parseShamsiDate(s) !== null; }
 
-  function calculateAge(birth) {
-    const p = parseShamsiDate(birth);
-    if (!p) return null;
-    const now = new Date();
-    const g = gregorianToShamsi(now.getFullYear(), now.getMonth() + 1, now.getDate());
-    let y = g.year - p.year;
-    if (g.month < p.month || (g.month === p.month && g.day < p.day)) y--;
-    return y >= 0 ? y : null;
+  function formatShamsi(d) {
+    if (!d) return '';
+    return `${d.year}/${String(d.month).padStart(2,'0')}/${String(d.day).padStart(2,'0')}`;
   }
 
-  function gregorianToShamsi(gy, gm, gd) {
-    const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
-    let jy = (gy <= 1600) ? 0 : 979;
-    gy -= (gy <= 1600) ? 621 : 1600;
-    const gy2 = (gm > 2) ? (gy + 1) : gy;
-    let days = (365*gy) + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) +
-               Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1];
-    jy += 33 * Math.floor(days/12053);
-    days %= 12053;
-    jy += 4 * Math.floor(days/1461);
-    days %= 1461;
-    if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
-    const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
-    const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30));
-    return { year: jy, month: jm, day: jd };
-  }
+  // ===== Badge تاریخ =====
+  function updateBadge(inputId, badgeId, required) {
+    const input = document.getElementById(inputId);
+    const badge = document.getElementById(badgeId);
+    const v = input.value.trim();
 
-  // ===== Badge تاریخ تولد (debounced) =====
-  const birthDateInput = document.getElementById('birthDate');
-  const badge = document.getElementById('detectedCalendarBadge');
+    if (!v) {
+      badge.textContent = required ? '❌ الزامی' : '🔍 اختیاری';
+      badge.style.background = required ? '#ef4444' : '#94a3b8';
+      input.classList.remove('valid', 'invalid');
+      return false;
+    }
 
-  const updateBirthBadge = debounce(() => {
-    const v = birthDateInput.value.trim();
-    if (!v) { badge.textContent = '🔍 منتظر ورود...'; badge.style.background = '#94a3b8'; return; }
     const p = parseShamsiDate(v);
-    if (!p) { badge.textContent = '❌ نامعتبر'; badge.style.background = '#ef4444'; return; }
-    const age = calculateAge(v);
-    badge.textContent = `✅ معتبر — سن: ${age} سال`;
+    if (!p) {
+      badge.textContent = '❌ فرمت اشتباه — مثال: 1360/02/22';
+      badge.style.background = '#ef4444';
+      input.classList.add('invalid');
+      input.classList.remove('valid');
+      return false;
+    }
+
+    const formatted = formatShamsi(p);
+    input.value = formatted;
+    badge.textContent = `✅ معتبر: ${formatted}`;
     badge.style.background = '#0891b2';
-  }, 400);
+    input.classList.add('valid');
+    input.classList.remove('invalid');
+    return true;
+  }
 
-  birthDateInput.addEventListener('input', updateBirthBadge);
-  birthDateInput.addEventListener('blur', updateBirthBadge);
+  ['birthDate', 'firstAppointmentDate', 'currentPositionDate', 'enrollmentDate', 'graduationDate'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+      input.addEventListener('blur', () => updateBadge(id, id.replace('Date', 'Badge'), id === 'birthDate'));
+      input.addEventListener('input', () => {
+        const badge = document.getElementById(id.replace('Date', 'Badge'));
+        if (badge) { badge.textContent = '🔍 در حال بررسی...'; badge.style.background = '#94a3b8'; }
+      });
+    }
+  });
 
-  // ===== ارسال فرم =====
+  // ============================================================
+  // ارسال فرم
+  // ============================================================
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = document.getElementById('submitBtn');
 
     const val = id => document.getElementById(id).value.trim();
+
+    // اعتبارسنجی تاریخ تولد
+    if (!isValidShamsiDate(val('birthDate'))) {
+      showToast('❌ تاریخ تولد نامعتبر است. مثال: 1360/02/22', true);
+      document.getElementById('birthDate').focus();
+      return;
+    }
+    // اعتبارسنجی تاریخ‌های اختیاری
+    for (const [id, label] of [
+      ['firstAppointmentDate', 'تاریخ اولین تقرر'],
+      ['currentPositionDate', 'تاریخ تقرر فعلی'],
+      ['enrollmentDate', 'تاریخ شمولیت'],
+      ['graduationDate', 'تاریخ فراغت']
+    ]) {
+      const v = val(id);
+      if (v && !isValidShamsiDate(v)) {
+        showToast(`❌ ${label} نامعتبر است. مثال: 1395/09/01`, true);
+        document.getElementById(id).focus();
+        return;
+      }
+    }
+
     const body = {
-      jobCode: val('jobCode'), jobTitle: val('jobTitle'),
-      firstName: val('firstName'), lastName: val('lastName'),
-      fatherName: val('fatherName'), grandfatherName: val('grandfatherName'),
-      eTazkira: val('eTazkira'), paperTazkira: val('paperTazkira'),
-      tazkiraPage: val('tazkiraPage'), tazkiraVolume: val('tazkiraVolume'),
+      jobCode: val('jobCode'),
+      jobTitle: val('jobTitle'),
+      firstName: val('firstName'),
+      lastName: val('lastName'),
+      fatherName: val('fatherName'),
+      grandfatherName: val('grandfatherName'),
+      eTazkira: val('eTazkira'),
+      paperTazkira: val('paperTazkira'),
+      tazkiraPage: val('tazkiraPage'),
+      tazkiraVolume: val('tazkiraVolume'),
       ethnicity: val('ethnicity'),
       gender: document.getElementById('gender').value,
-      birthDate: val('birthDate'), birthPlace: val('birthPlace'),
-      originAddress: val('originAddress'), currentAddress: val('currentAddress'),
-      firstAppointmentDate: val('firstAppointmentDate'), phone: val('phone'),
+      birthDate: val('birthDate'),
+      birthPlace: val('birthPlace'),
+      originAddress: val('originAddress'),
+      currentAddress: val('currentAddress'),
+      firstAppointmentDate: val('firstAppointmentDate'),
+      phone: val('phone'),
       disability: document.getElementById('disability').value,
       positionType: document.getElementById('positionType').value,
       employmentType: document.getElementById('employmentType').value,
-      bust: val('bust'), grade: val('grade'),
+      bust: val('bust'),
+      grade: val('grade'),
       currentPositionDate: val('currentPositionDate'),
-      degree: val('degree'), major: val('major'),
-      eduInstitute: val('eduInstitute'), eduInstituteLocation: val('eduInstituteLocation'),
-      enrollmentDate: val('enrollmentDate'), graduationDate: val('graduationDate'),
+      degree: val('degree'),
+      major: val('major'),
+      eduInstitute: val('eduInstitute'),
+      eduInstituteLocation: val('eduInstituteLocation'),
+      enrollmentDate: val('enrollmentDate'),
+      graduationDate: val('graduationDate'),
       subjectTeaching: val('subjectTeaching'),
+      // ⭐ این دو برای سازگاری با سرور
+      name: (val('firstName') + ' ' + val('lastName')).trim(),
+      job: val('jobTitle'),
+      // مکتب از سشن کاربر
       schoolName: user.schoolname || '',
       district: user.district || ''
     };
 
+    // اعتبارسنجی نهایی
     if (!body.jobTitle || !body.firstName || !body.fatherName || !body.grandfatherName || !body.ethnicity || !body.phone) {
-      showToast('لطفاً فیلدهای ستاره‌دار (*) را پر کنید', true);
+      showToast('❌ لطفاً فیلدهای ستاره‌دار (*) را پر کنید', true);
       return;
     }
     if (!body.eTazkira && !body.paperTazkira) {
-      showToast('حداقل یکی از تذکره‌ها (برقی/کاغذی) الزامی است', true);
-      return;
-    }
-    if (!isValidShamsiDate(body.birthDate)) {
-      showToast('تاریخ تولد نامعتبر است. مثال: 22/2/1360', true);
+      showToast('❌ حداقل یکی از شماره‌های تذکره (برقی یا کاغذی) الزامی است', true);
       return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.innerText = 'در حال ارسال...';
+    submitBtn.innerText = '⏳ در حال ارسال...';
 
     try {
       const res = await fetch('/api/records', {
@@ -531,11 +591,13 @@
       const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        showToast('✅ ثبت شد و در صف تایید قرار گرفت');
+        showToast('✅ اطلاعات با موفقیت ثبت شد و در صف تایید قرار گرفت');
         document.getElementById('recordForm').reset();
-        badge.textContent = '🔍 منتظر ورود...';
-        badge.style.background = '#94a3b8';
-        cachedRecords = []; // بی‌اعتبار کردن کش
+        ['birthBadge', 'appointBadge', 'currentPosBadge', 'enrollBadge', 'gradBadge'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.textContent = '🔍 منتظر ورود...'; el.style.background = '#94a3b8'; }
+        });
+        cachedRecords = [];
         // برو به تب لیست
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -543,24 +605,24 @@
         document.querySelectorAll('.tab-btn')[1].classList.add('active');
         loadSchoolRecords();
       } else {
-        showToast(data.error || 'خطا در ثبت', true);
+        showToast('❌ ' + (data.error || 'خطا در ثبت'), true);
       }
     } catch (err) {
       console.error(err);
-      showToast('ارتباط با سرور برقرار نشد', true);
+      showToast('❌ ارتباط با سرور برقرار نشد', true);
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerText = '💾 ذخیره و ارسال به معارف';
     }
   });
 
-  // ===== لود رکوردها با منطق جدید =====
+  // ============================================================
+  // لود رکوردها (بدون جستجو فقط pending، با جستجو همه)
+  // ============================================================
   async function loadSchoolRecords() {
     const searchVal = document.getElementById('searchInput').value.trim();
 
     try {
-      // اگر جستجو خالی است، فقط رکوردهای pending را نشان بده
-      // اگر جستجو دارد، همه را جستجو کن
       const url = searchVal
         ? `/api/records?search=${encodeURIComponent(searchVal)}`
         : `/api/records?status=pending`;
@@ -592,7 +654,6 @@
         return;
       }
 
-      // استفاده از DocumentFragment برای رندر سریع‌تر
       const fragment = document.createDocumentFragment();
 
       records.forEach((row) => {
@@ -629,7 +690,7 @@
     }
   }
 
-  // ===== جستجو (debounced) =====
+  // ===== جستجو =====
   document.getElementById('searchInput').addEventListener('input', debounce(loadSchoolRecords, 400));
 
   // ===== Logout =====

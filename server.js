@@ -9,16 +9,28 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
-// ============ اتصال به دیتابیس Supabase ============
+// ============================================================
+// 🔧 حل مشکل SSL: غیرفعال کردن بررسی گواهی self-signed
+// ============================================================
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+// ============================================================
+// اتصال به دیتابیس Supabase
+// ============================================================
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  ssl: {
+    rejectUnauthorized: false,
+    checkServerIdentity: () => undefined
+  },
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000
 });
 
-// ============ ایجاد جدول‌ها ============
+// ============================================================
+// ایجاد خودکار جدول‌ها
+// ============================================================
 async function initDB() {
   try {
     const client = await pool.connect();
@@ -56,7 +68,9 @@ async function initDB() {
 }
 initDB();
 
-// ============ Middleware ============
+// ============================================================
+// Middleware
+// ============================================================
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -74,7 +88,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// ============ احراز هویت ============
+// ============================================================
+// احراز هویت
+// ============================================================
 function authRequired(req, res, next) {
   let token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
   if (!token && req.query.token) token = req.query.token;
@@ -87,7 +103,9 @@ function authRequired(req, res, next) {
   }
 }
 
-// ============ مسیر لاگین ============
+// ============================================================
+// مسیر لاگین
+// ============================================================
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
@@ -149,7 +167,9 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// ============ دریافت لیست رکوردها ============
+// ============================================================
+// دریافت لیست رکوردها
+// ============================================================
 app.get('/api/records', authRequired, async (req, res) => {
   try {
     const search = (req.query.search || '').trim();
@@ -202,7 +222,9 @@ app.get('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ============ ثبت رکورد جدید (کارمند) ============
+// ============================================================
+// ثبت رکورد جدید (کارمند)
+// ============================================================
 app.post('/api/records', authRequired, async (req, res) => {
   try {
     const body = req.body || {};
@@ -237,7 +259,9 @@ app.post('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ============ تایید رکورد توسط ادمین ============
+// ============================================================
+// تایید رکورد توسط ادمین
+// ============================================================
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -253,7 +277,9 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   }
 });
 
-// ============ افزودن مکتب جدید ============
+// ============================================================
+// افزودن مکتب جدید
+// ============================================================
 app.post('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -272,15 +298,23 @@ app.post('/api/users', authRequired, async (req, res) => {
     );
     res.json({ ok: true });
   } catch (err) {
-    console.error('Add School Error:', err.message);
+    console.error('❌ Add School Error Details:');
+    console.error('   Message:', err.message);
+    console.error('   Code:', err.code);
+    console.error('   Detail:', err.detail);
+
     if (err.code === '23505') {
       return res.status(400).json({ error: 'این نام کاربری قبلا ثبت شده است' });
     }
-    res.status(500).json({ error: 'خطا در ثبت مکتب جدید' });
+    res.status(500).json({
+      error: 'خطا در ثبت مکتب جدید: ' + err.message
+    });
   }
 });
 
-// ============ دریافت لیست مکاتب ============
+// ============================================================
+// دریافت لیست مکاتب
+// ============================================================
 app.get('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -296,7 +330,9 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ============ حذف مکتب ============
+// ============================================================
+// حذف مکتب
+// ============================================================
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -310,12 +346,16 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   }
 });
 
-// ============ Fallback ============
+// ============================================================
+// Fallback: هر مسیر ناشناخته → index.html
+// ============================================================
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ============ اجرای سرور ============
+// ============================================================
+// اجرای سرور
+// ============================================================
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });

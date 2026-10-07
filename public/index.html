@@ -66,7 +66,7 @@
     text-align: right;
     display: none;
   }
-  .hint { margin-top: 15px; font-size: 12px; color: #888; }
+  /* ═══ خط راهنمای رمز حذف شد ═══ */
 </style>
 </head>
 <body>
@@ -88,8 +88,6 @@
     </div>
     <button type="submit" id="submitBtn" class="btn">ورود به پنل مدیریت</button>
   </form>
-
-  <div class="hint">ادمین پیش‌فرض: admin / admin123</div>
 </div>
 
 <script>
@@ -120,7 +118,6 @@
         localStorage.setItem('hr_token', data.token);
         localStorage.setItem('hr_user', JSON.stringify(data.user || {}));
 
-        // اگر مکتب باشد، باید schoolname داشته باشد
         const redirectTo = data.redirect ||
           (data.user && data.user.role === 'admin' ? '/admin.html' : '/school.html');
 

@@ -392,4 +392,61 @@
       'وظیفه', 'تحصیلات', 'وضعیت'
     ];
 
-    const rows
+    const rows = records.map((r) => {
+      const info = r.data || {};
+      return [
+        r.id,
+        r.schoolname || '',
+        r.district || '',
+        info.name || '',
+        info.fatherName || '',
+        info.job || '',
+        info.degree || '',
+        r.status === 'approved' ? 'تایید شده' : 'در انتظار'
+      ];
+    });
+
+    const csvContent =
+      '\uFEFF' + // BOM برای فارسی در Excel
+      [headers, ...rows]
+        .map((row) =>
+          row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')
+        )
+        .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'maaref-herat-records.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ===== Logout =====
+  function logout() {
+    localStorage.removeItem('hr_token');
+    localStorage.removeItem('hr_user');
+    window.location.href = '/';
+  }
+
+  // ===== Escape HTML =====
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // ===== لود اولیه =====
+  loadAllRecords();
+  loadSchoolsList();
+</script>
+
+</body>
+</html>

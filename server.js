@@ -104,7 +104,7 @@ function authRequired(req, res, next) {
 }
 
 // ============================================================
-// مسیر لاگین
+// 🔑 مسیر لاگین
 // ============================================================
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -168,41 +168,47 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ============================================================
-// دریافت لیست رکوردها
+// 📋 GET /api/records — دریافت لیست رکوردها
+// پشتیبانی از فیلتر search و status
 // ============================================================
 app.get('/api/records', authRequired, async (req, res) => {
   try {
     const search = (req.query.search || '').trim();
+    const statusFilter = (req.query.status || '').trim(); // 'pending' یا 'approved'
     let result;
 
     if (req.user.role === 'admin') {
+      const conditions = [];
+      const params = [];
+
       if (search) {
-        result = await pool.query(
-          `SELECT * FROM records
-           WHERE schoolname ILIKE $1
-              OR district ILIKE $1
-              OR CAST(data AS TEXT) ILIKE $1
-           ORDER BY id DESC`,
-          [`%${search}%`]
-        );
-      } else {
-        result = await pool.query('SELECT * FROM records ORDER BY id DESC');
+        params.push(`%${search}%`);
+        const i = params.length;
+        conditions.push(`(schoolname ILIKE $${i} OR district ILIKE $${i} OR CAST(data AS TEXT) ILIKE $${i})`);
       }
+      if (statusFilter === 'pending' || statusFilter === 'approved') {
+        params.push(statusFilter);
+        conditions.push(`status = $${params.length}`);
+      }
+
+      const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+      result = await pool.query(`SELECT * FROM records ${where} ORDER BY id DESC`, params);
     } else {
+      const conditions = ['userid = $1'];
+      const params = [req.user.id];
+
       if (search) {
-        result = await pool.query(
-          `SELECT * FROM records
-           WHERE userid = $1
-             AND (schoolname ILIKE $2 OR district ILIKE $2 OR CAST(data AS TEXT) ILIKE $2)
-           ORDER BY id DESC`,
-          [req.user.id, `%${search}%`]
-        );
-      } else {
-        result = await pool.query(
-          'SELECT * FROM records WHERE userid = $1 ORDER BY id DESC',
-          [req.user.id]
-        );
+        params.push(`%${search}%`);
+        const i = params.length;
+        conditions.push(`(schoolname ILIKE $${i} OR district ILIKE $${i} OR CAST(data AS TEXT) ILIKE $${i})`);
       }
+      if (statusFilter === 'pending' || statusFilter === 'approved') {
+        params.push(statusFilter);
+        conditions.push(`status = $${params.length}`);
+      }
+
+      const where = 'WHERE ' + conditions.join(' AND ');
+      result = await pool.query(`SELECT * FROM records ${where} ORDER BY id DESC`, params);
     }
 
     const rows = result.rows.map((r) => {
@@ -223,29 +229,26 @@ app.get('/api/records', authRequired, async (req, res) => {
 });
 
 // ============================================================
-// ثبت رکورد جدید (کارمند)
+// ➕ POST /api/records — ثبت رکورد جدید (کارمند)
 // ============================================================
 app.post('/api/records', authRequired, async (req, res) => {
   try {
     const body = req.body || {};
     const schoolName = body.schoolName || req.user.schoolname || '';
     const district = body.district || req.user.district || '';
-    const job = String(body.job || '').trim();
-    const degree = String(body.degree || '').trim();
 
-    if (!body.name || !body.fatherName || !job) {
+    // پشتیبانی از هر دو فرمت: فرم ساده قدیمی و فرم کامل جدید
+    const job = String(body.jobTitle || body.job || '').trim();
+    const degree = String(body.degree || '').trim();
+    const firstName = String(body.firstName || '').trim();
+    const fatherName = String(body.fatherName || '').trim();
+    const name = String(body.name || (firstName ? firstName + ' ' + (body.lastName || '') : '')).trim();
+
+    if (!name || !fatherName || !job) {
       return res.status(400).json({ error: 'نام، نام پدر و وظیفه الزامی است' });
     }
 
-    const isServiceStaff =
-      job.includes('خدماتی') || job.includes('معتمد') || job.includes('ملازم');
-
-    if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
-      return res.status(400).json({
-        error: 'وارد کردن فیلد تحصیلات برای معلمان، مدیران و کارمندان دفتری الزامی است.'
-      });
-    }
-
+    // اگر درجه خالی است، مشکلی نیست (اختیاری است)
     await pool.query(
       `INSERT INTO records (userid, schoolname, district, data, status)
        VALUES ($1, $2, $3, $4, 'pending')`,
@@ -260,16 +263,20 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 // ============================================================
-// تایید رکورد توسط ادمین
+// ✔️ POST /api/records/:id/approve — تایید رکورد توسط ادمین
 // ============================================================
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'فقط ادمین اجازه تایید دارد' });
     }
-    await pool.query("UPDATE records SET status = 'approved' WHERE id = $1", [
-      req.params.id
-    ]);
+    const result = await pool.query(
+      "UPDATE records SET status = 'approved' WHERE id = $1",
+      [req.params.id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'رکورد یافت نشد' });
+    }
     res.json({ ok: true });
   } catch (err) {
     console.error('Approve Error:', err.message);
@@ -278,7 +285,26 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
 });
 
 // ============================================================
-// افزودن مکتب جدید
+// 🗑️ DELETE /api/records/:id — حذف رکورد (فقط ادمین)
+// ============================================================
+app.delete('/api/records/:id', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
+    }
+    const result = await pool.query('DELETE FROM records WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'رکورد یافت نشد' });
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Delete record error:', err.message);
+    res.status(500).json({ error: 'خطا در حذف رکورد: ' + err.message });
+  }
+});
+
+// ============================================================
+// ➕ POST /api/users — افزودن مکتب جدید (فقط ادمین)
 // ============================================================
 app.post('/api/users', authRequired, async (req, res) => {
   try {
@@ -313,7 +339,7 @@ app.post('/api/users', authRequired, async (req, res) => {
 });
 
 // ============================================================
-// دریافت لیست مکاتب
+// 📋 GET /api/users — دریافت لیست مکاتب (فقط ادمین)
 // ============================================================
 app.get('/api/users', authRequired, async (req, res) => {
   try {
@@ -331,18 +357,21 @@ app.get('/api/users', authRequired, async (req, res) => {
 });
 
 // ============================================================
-// حذف مکتب
+// 🗑️ DELETE /api/users/:id — حذف مکتب (فقط ادمین)
 // ============================================================
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
     }
-    await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    const result = await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'مکتب یافت نشد' });
+    }
     res.json({ ok: true });
   } catch (err) {
-    console.error('Delete Error:', err.message);
-    res.status(500).json({ error: 'خطا در حذف مکتب' });
+    console.error('Delete school error:', err.message);
+    res.status(500).json({ error: 'خطا در حذف مکتب: ' + err.message });
   }
 });
 

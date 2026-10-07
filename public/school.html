@@ -1,174 +1,263 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پنل اختصاصی مکاتب - هرات</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; direction: rtl; }
-        .topbar { background: #10b981; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; }
-        .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin-bottom: 12px; font-family: Tahoma, sans-serif; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background-color: #10b981; font-family: Tahoma, sans-serif; }
-        .btn:hover { background-color: #059669; }
-        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; margin-top: 15px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: center; }
-        th { background-color: #f8fafc; color: #475569; }
-        .status-badge { padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 12px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پنل اختصاصی مکاتب - هرات</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Tahoma, Arial, sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+  }
+  .topbar {
+    background: #10b981;
+    color: white;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    margin-bottom: 20px;
+  }
+  .form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+  }
+  .form-control:focus { outline: none; border-color: #10b981; }
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    background-color: #10b981;
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+  }
+  .btn:hover { background-color: #059669; }
+  .btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: right;
+    font-size: 13px;
+    margin-top: 15px;
+  }
+  th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+  th { background-color: #f8fafc; color: #475569; }
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 12px;
+  }
+  .loading { text-align: center; padding: 20px; color: #888; }
+</style>
 </head>
 <body>
-    <div class="topbar">
-        <div>
-            <h3 style="margin:0; font-size:18px;">پنل کاربری مکتب (جمع‌آوری معلومات کارمندان)</h3>
-            <small id="schoolInfo" style="color:#e6fffa;"></small>
-        </div>
-        <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer">خروج از سیستم</button>
+
+<div class="topbar">
+  <div>
+    <h3 style="margin:0; font-size:18px;">پنل کاربری مکتب (جمع‌آوری معلومات کارمندان)</h3>
+    <small id="schoolInfo" style="color:#e6fffa;"></small>
+  </div>
+  <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer; font-family: Tahoma;">
+    خروج از سیستم
+  </button>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h4>➕ ثبت کارمند جدید مکتب</h4>
+    <form id="recordForm">
+      <input type="text" id="formName" class="form-control" placeholder="نام کارمند" required>
+      <input type="text" id="formFatherName" class="form-control" placeholder="نام پدر" required>
+      <input type="text" id="formJob" class="form-control" placeholder="وظیفه (مثال: معلم، مدیر، کارکن خدماتی)" required>
+      <input type="text" id="formDegree" class="form-control" placeholder="درجه تحصیل (برای معلم، مدیر و کارمندان دفتری الزامی است)">
+      <button type="submit" id="submitBtn" class="btn">💾 ذخیره و ارسال به معارف</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h4>📋 لیست کارمندان ارسال شده به ریاست معارف</h4>
+    <input type="text" id="searchInput" class="form-control" placeholder="🔍 جستجو در لیست کارمندان این مکتب..." oninput="debouncedLoad()">
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>آی‌دی ثبت</th>
+            <th>نام کارمند</th>
+            <th>نام پدر</th>
+            <th>وظیفه / بست</th>
+            <th>درجه تحصیلات</th>
+            <th>وضعیت بررسی در معارف</th>
+          </tr>
+        </thead>
+        <tbody id="schoolTableBody">
+          <tr><td colspan="6" class="loading">در حال بارگذاری...</td></tr>
+        </tbody>
+      </table>
     </div>
-    
-    <div class="container">
-        <div class="card">
-            <h4>➕ ثبت کارمند جدید مکتب</h4>
-            <form id="recordForm">
-                <input type="text" id="formName" class="form-control" placeholder="نام کارمند" required>
-                <input type="text" id="formFatherName" class="form-control" placeholder="نام پدر" required>
-                <input type="text" id="formJob" class="form-control" placeholder="وظیفه (مثال: معلم، مدیر، کارکن خدماتی)" required>
-                <input type="text" id="formDegree" class="form-control" placeholder="درجه تحصیل (برای معلم، مدیر و کارمندان دفتری الزامی است)">
-                <button type="submit" id="submitBtn" class="btn">💾 ذخیره و ارسال به معارف</button>
-            </form>
-        </div>
-        
-        <div class="card">
-            <h4>📋 لیست کارمندان ارسال شده به ریاست معارف</h4>
-            <input type="text" id="searchInput" class="form-control" placeholder="🔍 جستجو در لیست کارمندان این مکتب..." oninput="loadSchoolRecords()">
-            <table>
-                <thead>
-                    <tr>
-                        <th>آی‌دی ثبت</th>
-                        <th>نام کارمند</th>
-                        <th>نام پدر</th>
-                        <th>وظیفه / بست</th>
-                        <th>درجه تحصیلات</th>
-                        <th>وضعیت بررسی در معارف</th>
-                    </tr>
-                </thead>
-                <tbody id="schoolTableBody"></tbody>
-            </table>
-        </div>
-    </div>
+  </div>
+</div>
 
-    <script>
-        // بررسی امنیتی برای اطمینان از لاگین بودن کاربر قبل از لود صفحه
-        const token = localStorage.getItem('hr_token');
-        const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
+<script>
+  const token = localStorage.getItem('hr_token');
+  const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
-        if (!token) {
-            alert('شما به این صفحه دسترسی ندارید. لطفا ابتدا وارد سیستم شوید.');
-            window.location.href = '/';
-        } else {
-            document.getElementById('schoolInfo').innerText = `کاربر: ${user.username} | ${user.schoolname || ''} (${user.district || ''})`;
+  if (!token) {
+    alert('شما به این صفحه دسترسی ندارید. لطفا ابتدا وارد سیستم شوید.');
+    window.location.href = '/';
+  } else {
+    document.getElementById('schoolInfo').innerText =
+      `کاربر: ${user.username || '-'} | ${user.schoolname || ''} (${user.district || ''})`;
+  }
+
+  let searchTimer = null;
+  function debouncedLoad() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(loadSchoolRecords, 300);
+  }
+
+  async function loadSchoolRecords() {
+    try {
+      const searchVal = document.getElementById('searchInput').value;
+      const res = await fetch(`/api/records?search=${encodeURIComponent(searchVal)}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
+      });
 
-        // دریافت اطلاعات از دیتابیس Supabase با ارسال توکن معتبر
-        async function loadSchoolRecords() {
-            try {
-                const searchVal = document.getElementById('searchInput').value;
-                const res = await fetch(`/api/records?search=${encodeURIComponent(searchVal)}`, {
-                    method: 'GET',
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!res.ok) throw new Error('خطا در دریافت اطلاعات از سرور');
-                
-                const records = await res.json();
-                const tbody = document.getElementById('schoolTableBody');
-                tbody.innerHTML = '';
-                
-                if (records.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="color:#718096; padding:20px;">هیچ رکوردی یافت نشد.</td></tr>`;
-                    return;
-                }
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
 
-                records.forEach(row => {
-                    const info = row.data || {};
-                    let statusHtml = row.status === 'approved' 
-                        ? '<span class="status-badge" style="background:#def7ec; color:#03543f;">تایید شده</span>' 
-                        : '<span class="status-badge" style="background:#fef3c7; color:#92400e;">در انتظار تایید معارف</span>';
-                    
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${row.id}</td>
-                        <td><b>${info.name || '-'}</b></td>
-                        <td>${info.fatherName || '-'}</td>
-                        <td><mark style="background:#edf2f7; padding:2px 6px; border-radius:4px;">${info.job || '-'}</mark></td>
-                        <td>${info.degree || '-'}</td>
-                        <td>${statusHtml}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
+      if (!res.ok) throw new Error('خطا در دریافت اطلاعات از سرور');
 
-        // ارسال فرم کارمند جدید به دیتابیس
-        document.getElementById('recordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            
-            const body = {
-                name: document.getElementById('formName').value,
-                fatherName: document.getElementById('formFatherName').value,
-                job: document.getElementById('formJob').value,
-                degree: document.getElementById('formDegree').value,
-                schoolName: user.schoolname,
-                district: user.district
-            };
+      const records = await res.json();
+      const tbody = document.getElementById('schoolTableBody');
+      tbody.innerHTML = '';
 
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'در حال ارسال اطلاعات...';
+      if (!Array.isArray(records) || records.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="6" class="loading">هیچ رکوردی یافت نشد.</td></tr>';
+        return;
+      }
 
-            try {
-                const res = await fetch('/api/records', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(body)
-                });
-                
-                const data = await res.json();
-                
-                if (res.ok) {
-                    alert('معلومات کارمند با موفقیت ثبت شد و در صف تایید معارف قرار گرفت.');
-                    document.getElementById('recordForm').reset();
-                    loadSchoolRecords();
-                } else {
-                    alert(data.error || 'خطا در ثبت اطلاعات');
-                }
-            } catch (err) {
-                alert('ارتباط با سرور برقرار نشد.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = '💾 ذخیره و ارسال به معارف';
-            }
-        });
+      records.forEach((row) => {
+        const info = row.data || {};
+        const statusHtml =
+          row.status === 'approved'
+            ? '<span class="status-badge" style="background:#def7ec; color:#03543f;">تایید شده</span>'
+            : '<span class="status-badge" style="background:#fef3c7; color:#92400e;">در انتظار تایید معارف</span>';
 
-        // خروج ایمن و پاکسازی سشن‌ها
-        function logout() {
-            localStorage.removeItem('hr_token');
-            localStorage.removeItem('hr_user');
-            window.location.href = '/';
-        }
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td><b>${escapeHtml(info.name || '-')}</b></td>
+          <td>${escapeHtml(info.fatherName || '-')}</td>
+          <td><mark style="background:#edf2f7; padding:2px 6px; border-radius:4px;">${escapeHtml(info.job || '-')}</mark></td>
+          <td>${escapeHtml(info.degree || '-')}</td>
+          <td>${statusHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+      document.getElementById('schoolTableBody').innerHTML =
+        '<tr><td colspan="6" class="loading" style="color:#c53030;">خطا در بارگذاری اطلاعات</td></tr>';
+    }
+  }
 
-        // لود اولیه اطلاعات زمان باز شدن صفحه
+  document.getElementById('recordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+
+    const body = {
+      name: document.getElementById('formName').value.trim(),
+      fatherName: document.getElementById('formFatherName').value.trim(),
+      job: document.getElementById('formJob').value.trim(),
+      degree: document.getElementById('formDegree').value.trim(),
+      schoolName: user.schoolname,
+      district: user.district
+    };
+
+    if (!body.name || !body.fatherName || !body.job) {
+      alert('نام، نام پدر و وظیفه الزامی است');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'در حال ارسال اطلاعات...';
+
+    try {
+      const res = await fetch('/api/records', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        alert('معلومات کارمند با موفقیت ثبت شد و در صف تایید معارف قرار گرفت.');
+        document.getElementById('recordForm').reset();
         loadSchoolRecords();
-    </script>
+      } else {
+        alert(data.error || 'خطا در ثبت اطلاعات');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('ارتباط با سرور برقرار نشد.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = '💾 ذخیره و ارسال به معارف';
+    }
+  });
+
+  function logout() {
+    localStorage.removeItem('hr_token');
+    localStorage.removeItem('hr_user');
+    window.location.href = '/';
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  loadSchoolRecords();
+</script>
+
 </body>
 </html>

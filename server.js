@@ -10,20 +10,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
 
-// ═══════════════════════════════════════════════════════════
-// رمز ادمین از Environment Variables (امن)
-// ═══════════════════════════════════════════════════════════
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-// ============================================================
-// حل مشکل SSL
-// ============================================================
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-// ============================================================
-// اتصال به دیتابیس
-// ============================================================
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false, checkServerIdentity: () => undefined },
@@ -33,7 +24,7 @@ const pool = new Pool({
 });
 
 // ============================================================
-// ایجاد خودکار جدول‌ها
+// ایجاد جدول‌ها
 // ============================================================
 async function initDB() {
   try {
@@ -99,18 +90,14 @@ app.use((req, res, next) => {
 });
 
 // ============================================================
-// 🔒 Rate Limiting برای لاگین
+// Rate Limiting
 // ============================================================
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // ۱۵ دقیقه
-  max: 10, // حداکثر ۱۰ تلاش در ۱۵ دقیقه
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است. لطفاً ۱۵ دقیقه بعد تلاش کنید.' },
-  handler: (req, res) => {
-    console.log(`🚫 Rate limit exceeded for IP: ${req.ip}`);
-    res.status(429).json({ error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است. لطفاً ۱۵ دقیقه بعد تلاش کنید.' });
-  }
+  message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است. لطفاً ۱۵ دقیقه بعد تلاش کنید.' }
 });
 
 // ============================================================
@@ -128,9 +115,6 @@ function authRequired(req, res, next) {
   }
 }
 
-// ============================================================
-// لاگ کردن تلاش‌های ورود
-// ============================================================
 async function logLoginAttempt(ip, username, success) {
   try {
     await pool.query(
@@ -143,70 +127,97 @@ async function logLoginAttempt(ip, username, success) {
 }
 
 // ============================================================
-// 🔑 POST /api/auth/login — با Rate Limiting و کپچای سمت سرور
+// ⭐ اعتبارسنجی کد بست
+// فرمت: 27-32-02-XXXXX (شروع با 27-32-02-)
+// ============================================================
+function isValidJobCode(jobCode) {
+  if (!jobCode) return false;
+  const cleaned = String(jobCode).trim();
+  // الگو: 27-32-02- و بعد ۳ تا ۶ رقم
+  const pattern = /^27-32-02-\d{3,6}$/;
+  return pattern.test(cleaned);
+}
+
+// ============================================================
+// ⭐ اعتبارسنجی تذکره برقی
+// فرمت: 1399-1200-63538 (سه بخش با خط تیره)
+// ============================================================
+function isValidETazkira(eTazkira) {
+  if (!eTazkira) return false;
+  const cleaned = String(eTazkira).trim();
+  // الگو: 4 رقم - 4 رقم - 5 رقم
+  const pattern = /^\d{4}-\d{4}-\d{5}$/;
+  return pattern.test(cleaned);
+}
+
+// ============================================================
+// ⭐ بررسی تکراری بودن کد بست
+// ============================================================
+async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
+  if (!jobCode) return false;
+  try {
+    const searchPattern = `%"jobCode":"${jobCode}"%`;
+    let result;
+    if (excludeRecordId) {
+      result = await pool.query(
+        `SELECT id FROM records 
+         WHERE CAST(data AS TEXT) LIKE $1 AND id != $2 
+         LIMIT 1`,
+        [searchPattern, excludeRecordId]
+      );
+    } else {
+      result = await pool.query(
+        `SELECT id FROM records 
+         WHERE CAST(data AS TEXT) LIKE $1 
+         LIMIT 1`,
+        [searchPattern]
+      );
+    }
+    return result.rows.length > 0;
+  } catch (err) {
+    console.error('Duplicate check error:', err.message);
+    return false;
+  }
+}
+
+// ============================================================
+// لاگین
 // ============================================================
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const clientIp = req.headers['x-forwarded-for'] || req.ip || 'unknown';
-
   try {
     const { username, password } = req.body || {};
     if (!username || !password) {
       return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
     }
 
-    // ═══ لاگین ادمین ═══
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
-      const adminUser = {
-        id: 0,
-        username: 'admin',
-        role: 'admin',
-        schoolname: 'ریاست معارف',
-        district: 'مرکز هرات'
-      };
+      const adminUser = { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
       const token = jwt.sign(adminUser, SECRET, { expiresIn: '7d' });
-      console.log(`✅ Admin logged in from ${clientIp}`);
       return res.json({ token, user: adminUser, redirect: '/admin.html' });
     }
 
-    // ═══ لاگین مکاتب ═══
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length === 0) {
       await logLoginAttempt(clientIp, username, false);
-      console.log(`❌ Failed login (user not found): ${username} from ${clientIp}`);
       return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });
     }
-
     const user = result.rows[0];
     if (!bcrypt.compareSync(password, user.password)) {
       await logLoginAttempt(clientIp, username, false);
-      console.log(`❌ Failed login (wrong password): ${username} from ${clientIp}`);
       return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });
     }
 
     await logLoginAttempt(clientIp, username, true);
     const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        schoolname: user.schoolname,
-        district: user.district
-      },
+      { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district },
       SECRET,
       { expiresIn: '7d' }
     );
-
-    console.log(`✅ School logged in: ${username} from ${clientIp}`);
     res.json({
       token,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        schoolname: user.schoolname,
-        district: user.district
-      },
+      user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district },
       redirect: '/school.html'
     });
   } catch (e) {
@@ -216,7 +227,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 });
 
 // ============================================================
-// GET /api/records — با فیلتر search, status, schoolname
+// GET /api/records
 // ============================================================
 app.get('/api/records', authRequired, async (req, res) => {
   try {
@@ -228,7 +239,6 @@ app.get('/api/records', authRequired, async (req, res) => {
     if (req.user.role === 'admin') {
       const conditions = [];
       const params = [];
-
       if (search) {
         params.push(`%${search}%`);
         const i = params.length;
@@ -242,13 +252,11 @@ app.get('/api/records', authRequired, async (req, res) => {
         params.push(schoolnameFilter);
         conditions.push(`schoolname = $${params.length}`);
       }
-
       const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
       result = await pool.query(`SELECT * FROM records ${where} ORDER BY id DESC`, params);
     } else {
       const conditions = ['userid = $1'];
       const params = [req.user.id];
-
       if (search) {
         params.push(`%${search}%`);
         const i = params.length;
@@ -258,7 +266,6 @@ app.get('/api/records', authRequired, async (req, res) => {
         params.push(statusFilter);
         conditions.push(`status = $${params.length}`);
       }
-
       const where = 'WHERE ' + conditions.join(' AND ');
       result = await pool.query(`SELECT * FROM records ${where} ORDER BY id DESC`, params);
     }
@@ -268,7 +275,6 @@ app.get('/api/records', authRequired, async (req, res) => {
       try { parsed = JSON.parse(r.data); } catch (e) {}
       return { ...r, data: parsed, status: r.status };
     });
-
     res.json(rows);
   } catch (err) {
     console.error('Records GET Error:', err.message);
@@ -277,7 +283,7 @@ app.get('/api/records', authRequired, async (req, res) => {
 });
 
 // ============================================================
-// POST /api/records — ثبت رکورد جدید
+// POST /api/records — با اعتبارسنجی کد بست و تذکره
 // ============================================================
 app.post('/api/records', authRequired, async (req, res) => {
   try {
@@ -294,7 +300,33 @@ app.post('/api/records', authRequired, async (req, res) => {
       return res.status(400).json({ error: 'نام، نام پدر و وظیفه الزامی است' });
     }
 
-    // ═══ کارکن خدماتی: درجه تحصیلی الزامی نیست ═══
+    // ═══ اعتبارسنجی کد بست ═══
+    const jobCode = String(body.jobCode || '').trim();
+    if (!jobCode) {
+      return res.status(400).json({ error: 'کُد بست الزامی است' });
+    }
+    if (!isValidJobCode(jobCode)) {
+      return res.status(400).json({
+        error: '❌ فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد (مثال: 27-32-02-13056)'
+      });
+    }
+    // ═══ بررسی تکراری بودن کد بست ═══
+    const isDuplicate = await isJobCodeDuplicate(jobCode);
+    if (isDuplicate) {
+      return res.status(400).json({
+        error: `❌ کُد بست «${jobCode}» قبلاً در سیستم ثبت شده است. لطفاً کُد بست دیگری وارد کنید.`
+      });
+    }
+
+    // ═══ اعتبارسنجی تذکره برقی ═══
+    const eTazkira = String(body.eTazkira || '').trim();
+    if (eTazkira && !isValidETazkira(eTazkira)) {
+      return res.status(400).json({
+        error: '❌ فرمت تذکره الکترونیکی اشتباه است. باید به شکل 1399-1200-63538 باشد (با خط تیره)'
+      });
+    }
+
+    // ═══ کارکن خدماتی: درجه اختیاری ═══
     const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
     const isServiceStaff = SERVICE_KEYWORDS.some(kw => job.includes(kw));
     const degree = String(body.degree || '').trim();
@@ -305,7 +337,6 @@ app.post('/api/records', authRequired, async (req, res) => {
       });
     }
 
-    // ═══ بررسی تاریخ‌های الزامی ═══
     if (!body.birthDate) return res.status(400).json({ error: 'تاریخ تولد الزامی است' });
     if (!body.firstAppointmentDate) return res.status(400).json({ error: 'تاریخ اولین تقرر الزامی است' });
     if (!body.currentPositionDate) return res.status(400).json({ error: 'تاریخ تقرر فعلی الزامی است' });
@@ -315,7 +346,6 @@ app.post('/api/records', authRequired, async (req, res) => {
        VALUES ($1, $2, $3, $4, 'pending')`,
       [req.user.id, schoolName, district, JSON.stringify(body)]
     );
-
     res.json({ ok: true });
   } catch (err) {
     console.error('Records POST Error:', err.message);
@@ -324,7 +354,7 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 // ============================================================
-// PUT /api/records/:id — ویرایش (فقط مکتب صاحب رکورد، فقط pending)
+// PUT /api/records/:id — ویرایش با اعتبارسنجی
 // ============================================================
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
@@ -346,6 +376,31 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
       return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
     }
 
+    // ═══ اعتبارسنجی کد بست ═══
+    const jobCode = String(body.jobCode || '').trim();
+    if (!jobCode) {
+      return res.status(400).json({ error: 'کُد بست الزامی است' });
+    }
+    if (!isValidJobCode(jobCode)) {
+      return res.status(400).json({
+        error: '❌ فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد'
+      });
+    }
+    const isDuplicate = await isJobCodeDuplicate(jobCode, id);
+    if (isDuplicate) {
+      return res.status(400).json({
+        error: `❌ کُد بست «${jobCode}» قبلاً در سیستم ثبت شده است.`
+      });
+    }
+
+    // ═══ اعتبارسنجی تذکره برقی ═══
+    const eTazkira = String(body.eTazkira || '').trim();
+    if (eTazkira && !isValidETazkira(eTazkira)) {
+      return res.status(400).json({
+        error: '❌ فرمت تذکره الکترونیکی اشتباه است. باید به شکل 1399-1200-63538 باشد'
+      });
+    }
+
     const schoolName = body.schoolName || req.user.schoolname || '';
     const district = body.district || req.user.district || '';
 
@@ -354,7 +409,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
        WHERE id = $4 AND userid = $5`,
       [schoolName, district, JSON.stringify(body), id, req.user.id]
     );
-
     res.json({ ok: true });
   } catch (err) {
     console.error('Records PUT Error:', err.message);
@@ -363,7 +417,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 });
 
 // ============================================================
-// POST /api/records/:id/approve — تایید (فقط ادمین)
+// تایید / حذف / کاربران
 // ============================================================
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
@@ -374,9 +428,7 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
       "UPDATE records SET status = 'approved' WHERE id = $1",
       [req.params.id]
     );
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'رکورد یافت نشد' });
-    }
+    if (result.rowCount === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
     res.json({ ok: true });
   } catch (err) {
     console.error('Approve Error:', err.message);
@@ -384,18 +436,13 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// DELETE /api/records/:id — حذف (فقط ادمین)
-// ============================================================
 app.delete('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
     }
     const result = await pool.query('DELETE FROM records WHERE id = $1', [req.params.id]);
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'رکورد یافت نشد' });
-    }
+    if (result.rowCount === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
     res.json({ ok: true });
   } catch (err) {
     console.error('Delete record error:', err.message);
@@ -403,9 +450,6 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// POST /api/users — افزودن مکتب (ادمین)
-// ============================================================
 app.post('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -415,7 +459,6 @@ app.post('/api/users', authRequired, async (req, res) => {
     if (!username || !password || !schoolName) {
       return res.status(400).json({ error: 'پر کردن فیلدهای اصلی الزامی است' });
     }
-
     const hash = bcrypt.hashSync(password, 10);
     await pool.query(
       `INSERT INTO users (username, password, role, schoolname, district)
@@ -425,21 +468,14 @@ app.post('/api/users', authRequired, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('Add School Error:', err.message);
-    if (err.code === '23505') {
-      return res.status(400).json({ error: 'این نام کاربری قبلا ثبت شده است' });
-    }
+    if (err.code === '23505') return res.status(400).json({ error: 'این نام کاربری قبلا ثبت شده است' });
     res.status(500).json({ error: 'خطا در ثبت مکتب: ' + err.message });
   }
 });
 
-// ============================================================
-// GET /api/users — لیست مکاتب (ادمین)
-// ============================================================
 app.get('/api/users', authRequired, async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    }
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
     const result = await pool.query(
       "SELECT id, username, schoolname, district FROM users WHERE role = 'school' ORDER BY id DESC"
     );
@@ -450,18 +486,11 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// DELETE /api/users/:id — حذف مکتب (ادمین)
-// ============================================================
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
-    }
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
     const result = await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'مکتب یافت نشد' });
-    }
+    if (result.rowCount === 0) return res.status(404).json({ error: 'مکتب یافت نشد' });
     res.json({ ok: true });
   } catch (err) {
     console.error('Delete school error:', err.message);
@@ -469,17 +498,10 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// GET /api/login-attempts — مشاهده تلاش‌های ورود (ادمین)
-// ============================================================
 app.get('/api/login-attempts', authRequired, async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    }
-    const result = await pool.query(
-      'SELECT * FROM login_attempts ORDER BY id DESC LIMIT 100'
-    );
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const result = await pool.query('SELECT * FROM login_attempts ORDER BY id DESC LIMIT 100');
     res.json(result.rows);
   } catch (err) {
     console.error('Login attempts error:', err.message);
@@ -487,17 +509,10 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// Fallback
-// ============================================================
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ============================================================
-// اجرا
-// ============================================================
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🔒 Rate limiting: 10 login attempts per 15 minutes`);
 });

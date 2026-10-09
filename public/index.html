@@ -66,7 +66,56 @@
     text-align: right;
     display: none;
   }
-  /* ═══ خط راهنمای رمز حذف شد ═══ */
+
+  /* ═══ کپچا ═══ */
+  .captcha-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .captcha-canvas {
+    background: #f1f5f9;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+    height: 50px;
+  }
+  .captcha-refresh {
+    background: #10b981;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+  .captcha-refresh:hover { background: #059669; }
+  .captcha-hint {
+    font-size: 11px;
+    color: #64748b;
+    text-align: right;
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* ═══ قفل موقت ═══ */
+  .locked-info {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    color: #78350f;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 12px;
+    text-align: center;
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -75,9 +124,10 @@
   <h2>ریاست معارف ولایت هرات</h2>
   <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
 
+  <div id="lockedInfo" class="locked-info"></div>
   <div id="errorBox" class="error-box"></div>
 
-  <form id="loginForm">
+  <form id="loginForm" autocomplete="off">
     <div class="form-group">
       <label>نام کاربری</label>
       <input type="text" id="username" class="form-control" required placeholder="نام کاربری خود را وارد کنید" autocomplete="username">
@@ -86,6 +136,18 @@
       <label>رمز عبور</label>
       <input type="password" id="password" class="form-control" required placeholder="رمز عبور خود را وارد کنید" autocomplete="current-password">
     </div>
+
+    <!-- ═══ کپچا ═══ -->
+    <div class="form-group">
+      <label>🔒 کد امنیتی</label>
+      <div class="captcha-wrapper">
+        <canvas id="captchaCanvas" class="captcha-canvas" width="200" height="50" title="برای تغییر، کلیک کنید"></canvas>
+        <button type="button" class="captcha-refresh" id="captchaRefresh" title="تغییر کد">🔄</button>
+      </div>
+      <input type="text" id="captchaAnswer" class="form-control" required placeholder="پاسخ سوال بالا را وارد کنید" autocomplete="off" inputmode="numeric">
+      <div class="captcha-hint">🔍 برای تغییر سوال، روی تصویر یا دکمه 🔄 کلیک کنید</div>
+    </div>
+
     <button type="submit" id="submitBtn" class="btn">ورود به پنل مدیریت</button>
   </form>
 </div>
@@ -94,11 +156,149 @@
   const loginForm = document.getElementById('loginForm');
   const submitBtn = document.getElementById('submitBtn');
   const errorBox = document.getElementById('errorBox');
+  const captchaCanvas = document.getElementById('captchaCanvas');
+  const captchaRefresh = document.getElementById('captchaRefresh');
+  const captchaAnswer = document.getElementById('captchaAnswer');
+  const lockedInfo = document.getElementById('lockedInfo');
 
+  // ═══════════════════════════════════════════
+  // کپچا
+  // ═══════════════════════════════════════════
+  let captchaCorrectAnswer = null;
+
+  function generateCaptcha() {
+    const ops = ['+', '-', '×'];
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    let a, b, answer;
+
+    if (op === '+') {
+      a = Math.floor(Math.random() * 20) + 5;
+      b = Math.floor(Math.random() * 20) + 5;
+      answer = a + b;
+    } else if (op === '-') {
+      a = Math.floor(Math.random() * 20) + 15;
+      b = Math.floor(Math.random() * 10) + 2;
+      answer = a - b;
+    } else {
+      a = Math.floor(Math.random() * 8) + 2;
+      b = Math.floor(Math.random() * 8) + 2;
+      answer = a * b;
+    }
+
+    captchaCorrectAnswer = answer;
+
+    const ctx = captchaCanvas.getContext('2d');
+    const w = captchaCanvas.width;
+    const h = captchaCanvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+    const gradient = ctx.createLinearGradient(0, 0, w, h);
+    gradient.addColorStop(0, '#f1f5f9');
+    gradient.addColorStop(1, '#e2e8f0');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+
+    for (let i = 0; i < 5; i++) {
+      ctx.strokeStyle = `rgba(${Math.random()*200}, ${Math.random()*200}, ${Math.random()*200}, 0.4)`;
+      ctx.lineWidth = 1 + Math.random() * 2;
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * w, Math.random() * h);
+      ctx.lineTo(Math.random() * w, Math.random() * h);
+      ctx.stroke();
+    }
+
+    for (let i = 0; i < 30; i++) {
+      ctx.fillStyle = `rgba(${Math.random()*200}, ${Math.random()*200}, ${Math.random()*200}, 0.5)`;
+      ctx.beginPath();
+      ctx.arc(Math.random() * w, Math.random() * h, Math.random() * 2, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    ctx.font = 'bold 26px Tahoma';
+    ctx.fillStyle = '#1e293b';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${a} ${op} ${b} = ?`, w / 2, h / 2);
+
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(10, h - 10);
+    ctx.lineTo(w - 10, 10);
+    ctx.stroke();
+
+    captchaAnswer.value = '';
+  }
+
+  captchaCanvas.addEventListener('click', generateCaptcha);
+  captchaRefresh.addEventListener('click', generateCaptcha);
+  generateCaptcha();
+
+  // ═══════════════════════════════════════════
+  // قفل موقت بعد از تلاش‌های ناموفق
+  // ═══════════════════════════════════════════
+  let failedAttempts = parseInt(localStorage.getItem('hr_failed_attempts') || '0');
+  let lockUntil = parseInt(localStorage.getItem('hr_lock_until') || '0');
+
+  function checkLock() {
+    const now = Date.now();
+    if (lockUntil > now) {
+      const remaining = Math.ceil((lockUntil - now) / 1000);
+      const minutes = Math.floor(remaining / 60);
+      const seconds = remaining % 60;
+      lockedInfo.textContent = `🔒 حساب شما به‌دلیل تلاش‌های ناموفق قفل شده است. لطفاً ${minutes} دقیقه و ${seconds} ثانیه دیگر تلاش کنید.`;
+      lockedInfo.style.display = 'block';
+      submitBtn.disabled = true;
+      setTimeout(checkLock, 1000);
+      return true;
+    } else {
+      lockedInfo.style.display = 'none';
+      submitBtn.disabled = false;
+      return false;
+    }
+  }
+
+  function recordFailedAttempt() {
+    failedAttempts++;
+    localStorage.setItem('hr_failed_attempts', failedAttempts.toString());
+
+    if (failedAttempts >= 3) {
+      // قفل ۵ دقیقه‌ای بعد از ۳ تلاش ناموفق
+      lockUntil = Date.now() + 5 * 60 * 1000;
+      localStorage.setItem('hr_lock_until', lockUntil.toString());
+      failedAttempts = 0;
+      localStorage.setItem('hr_failed_attempts', '0');
+      checkLock();
+    }
+  }
+
+  function resetFailedAttempts() {
+    failedAttempts = 0;
+    localStorage.removeItem('hr_failed_attempts');
+    localStorage.removeItem('hr_lock_until');
+  }
+
+  checkLock();
+
+  // ═══════════════════════════════════════════
+  // ارسال فرم
+  // ═══════════════════════════════════════════
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    if (checkLock()) return;
+
     errorBox.style.display = 'none';
+
+    // بررسی کپچا
+    const userAnswer = parseInt(captchaAnswer.value.trim());
+    if (isNaN(userAnswer) || userAnswer !== captchaCorrectAnswer) {
+      showError('❌ کد امنیتی اشتباه است. لطفاً دوباره تلاش کنید.');
+      generateCaptcha();
+      captchaAnswer.focus();
+      return;
+    }
+
     submitBtn.disabled = true;
     submitBtn.innerText = 'در حال بررسی اطلاعات...';
 
@@ -115,6 +315,7 @@
       const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
+        resetFailedAttempts();
         localStorage.setItem('hr_token', data.token);
         localStorage.setItem('hr_user', JSON.stringify(data.user || {}));
 
@@ -123,21 +324,12 @@
 
         window.location.href = redirectTo;
       } else {
-        showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
-      }
-    } catch (err) {
-      console.error(err);
-      showError('خطا در ارتباط با سرور. لطفاً اینترنت خود را بررسی کنید.');
-    }
-  });
-
-  function showError(message) {
-    errorBox.innerText = message;
-    errorBox.style.display = 'block';
-    submitBtn.disabled = false;
-    submitBtn.innerText = 'ورود به پنل مدیریت';
-  }
-</script>
-
-</body>
-</html>
+        // اگر خطای Rate Limit بود
+        if (res.status === 429) {
+          lockUntil = Date.now() + 15 * 60 * 1000;
+          localStorage.setItem('hr_lock_until', lockUntil.toString());
+          checkLock();
+        } else {
+          recordFailedAttempt();
+        }
+        show

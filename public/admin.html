@@ -14,26 +14,6 @@
     display: flex; justify-content: space-between; align-items: center;
     flex-wrap: wrap; gap: 10px;
   }
-  .btn-test-mode {
-    background: #f59e0b; color: white;
-    border: none; padding: 8px 16px;
-    border-radius: 6px; font-weight: bold;
-    cursor: pointer; font-family: inherit;
-    margin-left: 8px;
-  }
-  .btn-test-mode.active { background: #dc2626; }
-  .test-banner {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
-    border: 2px solid #f59e0b;
-    color: #78350f;
-    padding: 12px 20px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    font-weight: bold;
-    text-align: center;
-    display: none;
-  }
-  .test-banner.active { display: block; }
   .card-custom {
     background: #fff; border-radius: 12px; padding: 25px;
     box-shadow: 0 4px 15px rgba(0,0,0,.04); margin-bottom: 25px;
@@ -75,7 +55,6 @@
     display: none; max-width: 90%; text-align: center;
   }
   .toast.error { background: #ef4444; }
-  .toast.warning { background: #f59e0b; }
   .search-hint { font-size: 12px; color: #64748b; margin-top: 5px; font-style: italic; }
   .badge-search-active {
     background: #3b82f6; color: #fff; padding: 4px 10px;
@@ -90,17 +69,10 @@
     <h5 class="mb-0 fw-bold">🎛️ پنل ادمین — ریاست معارف ولایت هرات</h5>
     <small class="opacity-75">مدیریت مکاتب، کارمندان و گزارش‌ها</small>
   </div>
-  <div>
-    <button class="btn-test-mode" id="testModeBtn" onclick="toggleTestMode()">🧪 حالت تست</button>
-    <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
-  </div>
+  <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
 </div>
 
 <div class="container-fluid px-4">
-
-  <div class="test-banner" id="testBanner">
-    🧪 <strong>حالت تست فعال است</strong> — عملیات تایید، حذف و ثبت انجام <strong>نمی‌شود</strong>
-  </div>
 
   <!-- آمار -->
   <div class="card card-custom">
@@ -199,8 +171,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  console.log('🚀 admin.html VERSION V5 (با حالت تست) loaded');
-
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
@@ -212,7 +182,6 @@
 
   let loadedRecordsCache = [];
   let allSchoolsList = [];
-  let testMode = false;
   const RETIREMENT_AGE = 65;
 
   // ============================================================
@@ -284,13 +253,13 @@
   // ============================================================
   // Toast
   // ============================================================
-  function showToast(msg, isError = false, isWarning = false) {
+  function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
-    t.className = 'toast' + (isError ? ' error' : '') + (isWarning ? ' warning' : '');
+    t.className = 'toast' + (isError ? ' error' : '');
     t.style.display = 'block';
     clearTimeout(t._timer);
-    t._timer = setTimeout(() => { t.style.display = 'none'; }, 4000);
+    t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
   }
 
   function debounce(fn, delay) {
@@ -304,27 +273,7 @@
   const debouncedLoad = debounce(loadAllRecords, 400);
 
   // ============================================================
-  // حالت تست
-  // ============================================================
-  function toggleTestMode() {
-    testMode = !testMode;
-    const btn = document.getElementById('testModeBtn');
-    const banner = document.getElementById('testBanner');
-    if (testMode) {
-      btn.textContent = '🧪 حالت تست فعال';
-      btn.classList.add('active');
-      banner.classList.add('active');
-      showToast('🧪 حالت تست فعال شد — عملیات انجام نمی‌شود', false, true);
-    } else {
-      btn.textContent = '🧪 حالت تست';
-      btn.classList.remove('active');
-      banner.classList.remove('active');
-      showToast('✅ حالت تست غیرفعال شد');
-    }
-  }
-
-  // ============================================================
-  // لود رکوردها
+  // لود رکوردها (با فیلتر مکتب)
   // ============================================================
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value.trim();
@@ -341,6 +290,7 @@
       if (!hasSearch && !hasSchoolFilter) params.push('status=pending');
 
       const url = '/api/records?' + params.join('&');
+
       const res = await fetch(url, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -350,6 +300,7 @@
       const records = await res.json();
       loadedRecordsCache = records;
       renderRecords(records, hasSearch || hasSchoolFilter);
+
       loadStats();
     } catch (e) {
       console.error(e);
@@ -462,10 +413,6 @@
   // تایید رکورد
   // ============================================================
   async function approveRecord(id) {
-    if (testMode) {
-      showToast('🧪 حالت تست — تایید انجام نشد', false, true);
-      return;
-    }
     if (!confirm('آیا این رکورد تایید شود؟')) return;
     try {
       const res = await fetch('/api/records/' + id + '/approve', {
@@ -481,10 +428,6 @@
   // حذف رکورد
   // ============================================================
   async function deleteRecord(id) {
-    if (testMode) {
-      showToast('🧪 حالت تست — حذف انجام نشد', false, true);
-      return;
-    }
     if (!confirm('⚠️ آیا از حذف این رکورد مطمئن هستید؟')) return;
     try {
       const res = await fetch('/api/records/' + id, {
@@ -730,10 +673,6 @@
   // افزودن مکتب
   // ============================================================
   async function addUser() {
-    if (testMode) {
-      showToast('🧪 حالت تست — افزودن مکتب انجام نشد', false, true);
-      return;
-    }
     const body = {
       username: document.getElementById('uUsername').value.trim(),
       password: document.getElementById('uPassword').value,
@@ -763,10 +702,6 @@
   // حذف مکتب
   // ============================================================
   async function deleteSchool(id) {
-    if (testMode) {
-      showToast('🧪 حالت تست — حذف مکتب انجام نشد', false, true);
-      return;
-    }
     if (!confirm('⚠️ آیا از حذف این مکتب مطمئن هستید؟ تمام رکوردهای آن نیز حذف می‌شوند.')) return;
     try {
       const res = await fetch('/api/users/' + id, {

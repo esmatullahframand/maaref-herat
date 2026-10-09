@@ -7,14 +7,16 @@
 <style>
   * { box-sizing: border-box; }
   body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; direction: rtl; color: #222; }
-  .topbar { background: #10b981; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 100; }
+  .topbar { background: #10b981; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
   .topbar h3 { margin: 0; font-size: 18px; }
+  .topbar small { color: #e6fffa; }
   .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; }
   .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
   .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); margin-bottom: 20px; }
   .card h4 { margin-top: 0; color: #10b981; font-size: 17px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
   .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap; }
   .tab-btn { padding: 12px 24px; border: none; background: #f1f5f9; color: #475569; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; font-family: inherit; font-size: 14px; }
+  .tab-btn:hover { background: #e2e8f0; }
   .tab-btn.active { background: #10b981; color: #fff; }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
@@ -25,6 +27,8 @@
   label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #4a5568; }
   input[type="text"], select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; background-color: #fff; width: 100%; }
   input:focus, select:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+  input.valid { border-color: #10b981 !important; background: #f0fdf4; }
+  input.invalid { border-color: #ef4444 !important; background: #fff5f5; }
   .auto-detect-badge { display: inline-block; background: #94a3b8; color: #fff; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 10px; margin-top: 5px; align-self: flex-start; }
   .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background-color: #10b981; font-family: inherit; font-size: 14px; }
   .btn:hover { background-color: #059669; }
@@ -48,8 +52,10 @@
   .empty-state .icon { font-size: 48px; display: block; margin-bottom: 10px; }
   .info-banner { background: #fef3c7; border-right: 5px solid #f59e0b; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #78350f; }
 
+  /* ═══ کارت آمار تفکیکی ═══ */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
-  .stat-box { background: #fff; border-radius: 8px; padding: 12px 10px; text-align: center; border: 1px solid #e2e8f0; }
+  .stat-box { background: #fff; border-radius: 8px; padding: 12px 10px; text-align: center; border: 1px solid #e2e8f0; transition: all 0.2s; }
+  .stat-box:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
   .stat-box .stat-label { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 6px; }
   .stat-box .stat-value { font-size: 22px; font-weight: bold; color: #1e293b; }
   .stat-box.total { border-color: #7c3aed; background: #f3e8ff; }
@@ -119,7 +125,7 @@
             <div class="form-group">
               <label>کُد بست *</label>
               <input type="text" id="jobCode" placeholder="27-32-02-13056" required>
-              <span class="auto-detect-badge" id="jobCodeBadge">🔍 فرمت: 27-32-02-XXXXX</span>
+              <span class="auto-detect-badge" id="jobCodeBadge">🔍 فرمت: 27-32-02-XXXXX (یکتا در همه معارف)</span>
             </div>
             <div class="form-group"><label>عنوان بست *</label><input type="text" id="jobTitle" required></div>
             <div class="form-group"><label>اسم *</label><input type="text" id="firstName" required></div>
@@ -224,27 +230,63 @@
     <div class="card">
       <h4>📋 لیست کارمندان</h4>
 
+      <!-- ═══ کارت آمار تفکیکی ═══ -->
       <div class="stats-grid" id="schoolStatsGrid">
-        <div class="stat-box total"><div class="stat-label">👥 کل</div><div class="stat-value" id="statTotal">0</div></div>
-        <div class="stat-box teacher"><div class="stat-label">👨‍🏫 معلمان</div><div class="stat-value" id="statTeachers">0</div></div>
-        <div class="stat-box manager"><div class="stat-label">👨‍💼 مدیران</div><div class="stat-value" id="statManagers">0</div></div>
-        <div class="stat-box admin-staff"><div class="stat-label">📋 دفتری</div><div class="stat-value" id="statAdminStaff">0</div></div>
-        <div class="stat-box service"><div class="stat-label">🧹 خدماتی</div><div class="stat-value" id="statService">0</div></div>
-        <div class="stat-box active"><div class="stat-label">✅ فعال</div><div class="stat-value" id="statActive">0</div></div>
-        <div class="stat-box retired"><div class="stat-label">🎖️ متقاعد</div><div class="stat-value" id="statRetired">0</div></div>
-        <div class="stat-box approved"><div class="stat-label">✅ تایید</div><div class="stat-value" id="statApproved">0</div></div>
-        <div class="stat-box pending"><div class="stat-label">⏳ انتظار</div><div class="stat-value" id="statPending">0</div></div>
+        <div class="stat-box total">
+          <div class="stat-label">👥 کل ثبت‌شده‌ها</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-box teacher">
+          <div class="stat-label">👨‍🏫 معلمان</div>
+          <div class="stat-value" id="statTeachers">0</div>
+        </div>
+        <div class="stat-box manager">
+          <div class="stat-label">👨‍💼 مدیران</div>
+          <div class="stat-value" id="statManagers">0</div>
+        </div>
+        <div class="stat-box admin-staff">
+          <div class="stat-label">📋 کارمندان دفتری</div>
+          <div class="stat-value" id="statAdminStaff">0</div>
+        </div>
+        <div class="stat-box service">
+          <div class="stat-label">🧹 کارکن خدماتی</div>
+          <div class="stat-value" id="statService">0</div>
+        </div>
+        <div class="stat-box active">
+          <div class="stat-label">✅ فعال</div>
+          <div class="stat-value" id="statActive">0</div>
+        </div>
+        <div class="stat-box retired">
+          <div class="stat-label">🎖️ متقاعد</div>
+          <div class="stat-value" id="statRetired">0</div>
+        </div>
+        <div class="stat-box approved">
+          <div class="stat-label">✅ تایید‌شده</div>
+          <div class="stat-value" id="statApproved">0</div>
+        </div>
+        <div class="stat-box pending">
+          <div class="stat-label">⏳ در انتظار</div>
+          <div class="stat-value" id="statPending">0</div>
+        </div>
       </div>
 
       <div class="info-banner">
-        ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند. رکوردهای <strong>تایید‌شده</strong> فقط با جستجو نمایش داده می‌شوند.
+        ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند. رکوردهای <strong>تایید‌شده</strong> فقط با جستجو نمایش داده می‌شوند.<br>
+        🖨️ برای چاپ هر کارمند، روی دکمه <strong>پرنت</strong> کلیک کنید.
       </div>
-      <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو...">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو (برای دیدن رکوردهای تایید‌شده)...">
       <div class="table-responsive">
         <table>
           <thead>
             <tr>
-              <th>آی‌دی</th><th>نام</th><th>ولد</th><th>کد بست</th><th>وظیفه</th><th>درجه</th><th>وضعیت</th><th>عملیات</th>
+              <th>آی‌دی</th>
+              <th>نام کارمند</th>
+              <th>ولد</th>
+              <th>کد بست</th>
+              <th>وظیفه</th>
+              <th>درجه</th>
+              <th>وضعیت</th>
+              <th>عملیات</th>
             </tr>
           </thead>
           <tbody id="schoolTableBody">
@@ -257,6 +299,7 @@
 
 </div>
 
+<!-- Modal مشاهده -->
 <div class="modal-overlay" id="viewModal">
   <div class="modal-box">
     <h3>📄 مشاهده معلومات کارمند</h3>
@@ -268,6 +311,7 @@
   </div>
 </div>
 
+<!-- Modal ویرایش -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3>✏️ ویرایش معلومات کارمند</h3>
@@ -286,12 +330,18 @@
   const token = localStorage.getItem('hr_token');
   const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
-  if (!token) { alert('لطفا ابتدا وارد شوید.'); window.location.href = '/'; }
-  else { document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''} (${user.district || ''})`; }
+  if (!token) {
+    alert('لطفا ابتدا وارد شوید.');
+    window.location.href = '/';
+  } else {
+    document.getElementById('schoolInfo').innerText =
+      `${user.username || '-'} | ${user.schoolname || ''} (${user.district || ''})`;
+  }
 
   let cachedRecords = [];
   let editingRecordId = null;
 
+  // ═══ کلمات کلیدی ═══
   const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
   const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
   const TEACHER_KEYWORDS = ['معلم', 'آموزگار', 'استاد', 'مدرس'];
@@ -312,11 +362,13 @@
   // ═══ اعتبارسنجی ═══
   function isValidJobCode(jobCode) {
     if (!jobCode) return false;
-    return /^27-32-02-\d{3,6}$/.test(jobCode.trim());
+    // فرمت: 27-32-02- و بعد حداقل یک رقم (تعداد مهم نیست)
+    return /^27-32-02-\d+$/.test(jobCode.trim());
   }
 
   function isValidETazkira(eTazkira) {
     if (!eTazkira) return false;
+    // فرمت: XXXX-XXXX-XXXXX (۴-۴-۵ رقم)
     return /^\d{4}-\d{4}-\d{5}$/.test(eTazkira.trim());
   }
 
@@ -402,7 +454,8 @@
     return y >= 0 ? y : null;
   }
 
-  function updateBadge(inputId, badgeId, required) {
+  // ═══ Badge تاریخ‌ها ═══
+  function updateDateBadge(inputId, badgeId, required) {
     const input = document.getElementById(inputId);
     const badge = document.getElementById(badgeId);
     if (!input || !badge) return;
@@ -410,6 +463,7 @@
     if (!v) {
       badge.textContent = required ? '❌ الزامی' : '🔍 اختیاری';
       badge.style.background = required ? '#ef4444' : '#94a3b8';
+      input.classList.remove('valid', 'invalid');
       return;
     }
     if (isValidShamsiDate(v)) {
@@ -417,15 +471,39 @@
       input.value = formatted;
       badge.textContent = `✅ ${formatted}`;
       badge.style.background = '#10b981';
+      input.classList.add('valid');
+      input.classList.remove('invalid');
     } else {
-      badge.textContent = '❌ فرمت اشتباه';
+      badge.textContent = '❌ فرمت اشتباه — مثال: 1360/02/22';
       badge.style.background = '#ef4444';
+      input.classList.add('invalid');
+      input.classList.remove('valid');
     }
   }
 
-  ['birthDate', 'firstAppointmentDate', 'currentPositionDate', 'enrollmentDate', 'graduationDate'].forEach(id => {
-    const input = document.getElementById(id);
-    if (input) input.addEventListener('blur', () => updateBadge(id, id.replace('Date', 'Badge'), id === 'birthDate' || id === 'firstAppointmentDate' || id === 'currentPositionDate'));
+  const requiredDates = [
+    { id: 'birthDate', badge: 'birthBadge' },
+    { id: 'firstAppointmentDate', badge: 'appointBadge' },
+    { id: 'currentPositionDate', badge: 'currentPosBadge' }
+  ];
+  const optionalDates = [
+    { id: 'enrollmentDate', badge: 'enrollBadge' },
+    { id: 'graduationDate', badge: 'gradBadge' }
+  ];
+
+  requiredDates.forEach(d => {
+    const input = document.getElementById(d.id);
+    if (input) {
+      input.addEventListener('blur', () => updateDateBadge(d.id, d.badge, true));
+      input.addEventListener('input', () => {
+        const badge = document.getElementById(d.badge);
+        if (badge) { badge.textContent = '🔍 در حال بررسی...'; badge.style.background = '#94a3b8'; }
+      });
+    }
+  });
+  optionalDates.forEach(d => {
+    const input = document.getElementById(d.id);
+    if (input) input.addEventListener('blur', () => updateDateBadge(d.id, d.badge, false));
   });
 
   // ═══ Badge کد بست ═══
@@ -433,13 +511,22 @@
   const jobCodeBadge = document.getElementById('jobCodeBadge');
   jobCodeInput.addEventListener('blur', () => {
     const v = jobCodeInput.value.trim();
-    if (!v) { jobCodeBadge.textContent = '🔍 فرمت: 27-32-02-XXXXX'; jobCodeBadge.style.background = '#94a3b8'; return; }
+    if (!v) {
+      jobCodeBadge.textContent = '🔍 فرمت: 27-32-02-XXXXX';
+      jobCodeBadge.style.background = '#94a3b8';
+      jobCodeInput.classList.remove('valid', 'invalid');
+      return;
+    }
     if (isValidJobCode(v)) {
-      jobCodeBadge.textContent = '✅ فرمت معتبر';
+      jobCodeBadge.textContent = '✅ فرمت معتبر — بررسی یکتا بودن در سرور';
       jobCodeBadge.style.background = '#10b981';
+      jobCodeInput.classList.add('valid');
+      jobCodeInput.classList.remove('invalid');
     } else {
       jobCodeBadge.textContent = '❌ باید با 27-32-02- شروع شود';
       jobCodeBadge.style.background = '#ef4444';
+      jobCodeInput.classList.add('invalid');
+      jobCodeInput.classList.remove('valid');
     }
   });
 
@@ -448,13 +535,22 @@
   const eTazkiraBadge = document.getElementById('eTazkiraBadge');
   eTazkiraInput.addEventListener('blur', () => {
     const v = eTazkiraInput.value.trim();
-    if (!v) { eTazkiraBadge.textContent = '🔍 فرمت: XXXX-XXXX-XXXXX'; eTazkiraBadge.style.background = '#94a3b8'; return; }
+    if (!v) {
+      eTazkiraBadge.textContent = '🔍 فرمت: XXXX-XXXX-XXXXX';
+      eTazkiraBadge.style.background = '#94a3b8';
+      eTazkiraInput.classList.remove('valid', 'invalid');
+      return;
+    }
     if (isValidETazkira(v)) {
       eTazkiraBadge.textContent = '✅ فرمت معتبر';
       eTazkiraBadge.style.background = '#10b981';
+      eTazkiraInput.classList.add('valid');
+      eTazkiraInput.classList.remove('invalid');
     } else {
       eTazkiraBadge.textContent = '❌ باید به شکل 1399-1200-63538 باشد';
       eTazkiraBadge.style.background = '#ef4444';
+      eTazkiraInput.classList.add('invalid');
+      eTazkiraInput.classList.remove('valid');
     }
   });
 
@@ -470,13 +566,16 @@
       degreeRequiredMark.style.display = 'none';
       degreeHint.textContent = '✅ برای کارکن خدماتی اختیاری است';
       degreeHint.style.background = '#10b981';
+      degreeInput.placeholder = 'اختیاری (کارکن خدماتی)';
     } else {
       degreeRequiredMark.style.display = 'inline';
       degreeHint.textContent = '⚠️ برای معلمان، مدیران و کارمندان دفتری الزامی است';
       degreeHint.style.background = '#ef4444';
+      degreeInput.placeholder = 'مثال: لیسانس یا 16';
     }
   }
   jobTitleInput.addEventListener('input', updateDegreeRequirement);
+  jobTitleInput.addEventListener('blur', updateDegreeRequirement);
   updateDegreeRequirement();
 
   function collectForm() {
@@ -534,6 +633,9 @@
 
     if (!body.currentPositionDate) errors.push('تاریخ تقرر فعلی الزامی است');
     else if (!isValidShamsiDate(body.currentPositionDate)) errors.push('تاریخ تقرر فعلی نامعتبر است');
+
+    if (body.enrollmentDate && !isValidShamsiDate(body.enrollmentDate)) errors.push('تاریخ شمولیت نامعتبر است');
+    if (body.graduationDate && !isValidShamsiDate(body.graduationDate)) errors.push('تاریخ فراغت نامعتبر است');
 
     // ═══ درجه تحصیلی ═══
     const serviceStaff = isServiceStaff(body.jobTitle);
@@ -605,9 +707,11 @@
     closeModal('editModal');
   }
 
+  // ═══ آمار تفکیکی ═══
   function updateSchoolStats(records) {
     let total = 0, teachers = 0, managers = 0, adminStaff = 0, service = 0;
     let active = 0, retired = 0, approved = 0, pending = 0;
+
     records.forEach(row => {
       total++;
       const info = row.data || {};
@@ -623,9 +727,11 @@
         if (age >= 65) retired++;
         else active++;
       }
+
       if (row.status === 'approved') approved++;
       else pending++;
     });
+
     document.getElementById('statTotal').textContent = total;
     document.getElementById('statTeachers').textContent = teachers;
     document.getElementById('statManagers').textContent = managers;
@@ -640,30 +746,43 @@
   async function loadSchoolRecords() {
     const searchVal = document.getElementById('searchInput').value.trim();
     try {
-      const url = searchVal ? `/api/records?search=${encodeURIComponent(searchVal)}` : `/api/records?status=pending`;
+      const url = searchVal
+        ? `/api/records?search=${encodeURIComponent(searchVal)}`
+        : `/api/records?status=pending`;
+
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+
       if (res.status === 401) { localStorage.clear(); window.location.href = '/'; return; }
+
       const records = await res.json();
       cachedRecords = records;
       const tbody = document.getElementById('schoolTableBody');
       tbody.innerHTML = '';
+
       updateSchoolStats(records);
+
       if (!Array.isArray(records) || records.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><span class="icon">📭</span>هیچ رکوردی یافت نشد</td></tr>`;
+        const msg = searchVal ? 'هیچ نتیجه‌ای یافت نشد.' : 'هیچ کارمندی در انتظار تایید نیست.';
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><span class="icon">📭</span>${msg}</td></tr>`;
         return;
       }
+
       const fragment = document.createDocumentFragment();
+
       records.forEach((row) => {
         const info = row.data || {};
         const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
+
         const statusHtml = row.status === 'approved'
           ? '<span class="status-badge status-approved">✅ تایید شده</span>'
           : '<span class="status-badge status-pending">⏳ در انتظار</span>';
+
         const actionsHtml = `
-          <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})">✏️</button>
-          <button class="btn-action btn-view" onclick="viewRecord(${row.id})">👁️</button>
-          <button class="btn-action btn-print" onclick="printRecord(${row.id})">🖨️</button>
+          <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>
+          <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="خواندن">👁️</button>
+          <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرنت">🖨️</button>
         `;
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row.id}</td>
@@ -677,9 +796,12 @@
         `;
         fragment.appendChild(tr);
       });
+
       tbody.appendChild(fragment);
     } catch (err) {
       console.error(err);
+      document.getElementById('schoolTableBody').innerHTML =
+        '<tr><td colspan="8" class="empty-state" style="color:#c53030;">خطا در بارگذاری</td></tr>';
     }
   }
 
@@ -687,29 +809,36 @@
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) return;
     const info = rec.data || {};
+
     const sections = [
-      { title: '۱. هویت و اسناد', fields: [
+      { title: '۱. هویت و اسناد تذکره', fields: [
         ['کُد بست', info.jobCode], ['عنوان بست', info.jobTitle],
         ['اسم', info.firstName], ['تخلص', info.lastName],
         ['ولد', info.fatherName], ['ولدیت', info.grandfatherName],
-        ['تذکره برقی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira],
+        ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira],
+        ['صفحه تذکره', info.tazkiraPage], ['جلد تذکره', info.tazkiraVolume],
         ['قومیت', info.ethnicity]
       ]},
-      { title: '۲. اطلاعات شخصی', fields: [
+      { title: '۲. اطلاعات شخصی و تماس', fields: [
         ['جنسیت', info.gender], ['تاریخ تولد', info.birthDate],
+        ['محل تولد', info.birthPlace],
         ['سکونت اصلی', info.originAddress], ['سکونت فعلی', info.currentAddress],
         ['تاریخ اولین تقرر', info.firstAppointmentDate],
-        ['شماره تماس', info.phone], ['معلولیت', info.disability]
+        ['شماره تماس', info.phone], ['معلولیت', info.disability],
+        ['موقف وظیفوی', info.positionType], ['نوع استخدام', info.employmentType]
       ]},
-      { title: '۳. وظیفوی و تحصیلی', fields: [
+      { title: '۳. معلومات وظیفوی و تحصیلی', fields: [
+        ['بست', info.bust], ['قدم', info.grade],
         ['تاریخ تقرر فعلی', info.currentPositionDate],
-        ['درجه تحصیلی', info.degree], ['رشته', info.major],
+        ['درجه تحصیلی', info.degree], ['رشته تحصیلی', info.major],
         ['مرجع تعلیمی', info.eduInstitute],
+        ['موقعیت مرجع', info.eduInstituteLocation],
         ['تاریخ شمولیت', info.enrollmentDate],
         ['تاریخ فراغت', info.graduationDate],
         ['مضمون تدریس', info.subjectTeaching]
       ]}
     ];
+
     let html = '';
     sections.forEach(sec => {
       html += `<div class="info-section-title">${sec.title}</div>`;
@@ -717,7 +846,14 @@
         html += `<div class="info-item"><div class="label">${label}</div><div class="value">${escapeHtml(value || '—')}</div></div>`;
       });
     });
-    document.getElementById('viewContent').innerHTML = `<div class="info-grid">${html}</div>`;
+
+    const statusText = rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
+    document.getElementById('viewContent').innerHTML = `
+      <div style="background:#f1f5f9; padding:12px; border-radius:6px; margin-bottom:15px; text-align:center;">
+        <strong>آی‌دی: ${rec.id}</strong> | مکتب: <strong>${escapeHtml(rec.schoolname || '-')}</strong> | وضعیت: <strong>${statusText}</strong>
+      </div>
+      <div class="info-grid">${html}</div>
+    `;
     document.getElementById('viewModal').classList.add('active');
   }
 
@@ -728,56 +864,72 @@
     if (!rec) return;
     editingRecordId = id;
     const info = rec.data || {};
+
     const fields = [
       ['jobCode', 'کُد بست'], ['jobTitle', 'عنوان بست'], ['firstName', 'اسم'],
       ['lastName', 'تخلص'], ['fatherName', 'ولد'], ['grandfatherName', 'ولدیت'],
-      ['eTazkira', 'تذکره برقی'], ['paperTazkira', 'تذکره کاغذی'],
+      ['eTazkira', 'تذکره الکترونیکی'], ['paperTazkira', 'تذکره کاغذی'],
+      ['tazkiraPage', 'صفحه تذکره'], ['tazkiraVolume', 'جلد تذکره'],
       ['ethnicity', 'قومیت'], ['birthDate', 'تاریخ تولد'],
-      ['originAddress', 'سکونت اصلی'], ['currentAddress', 'سکونت فعلی'],
-      ['firstAppointmentDate', 'تاریخ اولین تقرر'], ['phone', 'شماره تماس'],
+      ['birthPlace', 'محل تولد'], ['originAddress', 'سکونت اصلی'],
+      ['currentAddress', 'سکونت فعلی'], ['firstAppointmentDate', 'تاریخ اولین تقرر'],
+      ['phone', 'شماره تماس'], ['bust', 'بست'], ['grade', 'قدم'],
       ['currentPositionDate', 'تاریخ تقرر فعلی'], ['degree', 'درجه تحصیلی'],
       ['major', 'رشته تحصیلی'], ['eduInstitute', 'مرجع تعلیمی'],
+      ['eduInstituteLocation', 'موقعیت مرجع'],
       ['enrollmentDate', 'تاریخ شمولیت'], ['graduationDate', 'تاریخ فراغت'],
       ['subjectTeaching', 'مضمون تدریس']
     ];
+
     let html = '';
     fields.forEach(([key, label]) => {
       html += `<div class="form-group"><label>${label}</label><input type="text" id="edit_${key}" value="${escapeHtml(info[key] || '')}"></div>`;
     });
+
     const selects = [
       ['gender', 'جنسیت', ['', 'مرد', 'زن']],
       ['disability', 'معلولیت', ['نخیر', 'بلی']],
       ['positionType', 'موقف وظیفوی', ['', 'اصلی', 'سرپرستی']],
       ['employmentType', 'نوع استخدام', ['', 'حکمی', 'رقابتی']]
     ];
+
     selects.forEach(([key, label, options]) => {
       let opts = '';
-      options.forEach(o => { opts += `<option value="${o}" ${info[key] === o ? 'selected' : ''}>${o || 'انتخاب کنید'}</option>`; });
+      options.forEach(o => {
+        opts += `<option value="${o}" ${info[key] === o ? 'selected' : ''}>${o || 'انتخاب کنید'}</option>`;
+      });
       html += `<div class="form-group"><label>${label}</label><select id="edit_${key}">${opts}</select></div>`;
     });
+
     document.getElementById('editFieldsGrid').innerHTML = html;
     document.getElementById('editModal').classList.add('active');
   }
 
   async function saveEdit() {
     if (!editingRecordId) return;
-    const getVal = id => { const el = document.getElementById('edit_' + id); return el ? el.value.trim() : ''; };
+    const getVal = id => {
+      const el = document.getElementById('edit_' + id);
+      return el ? el.value.trim() : '';
+    };
+
     const body = {
       jobCode: getVal('jobCode'), jobTitle: getVal('jobTitle'),
       firstName: getVal('firstName'), lastName: getVal('lastName'),
       fatherName: getVal('fatherName'), grandfatherName: getVal('grandfatherName'),
       eTazkira: getVal('eTazkira'), paperTazkira: getVal('paperTazkira'),
+      tazkiraPage: getVal('tazkiraPage'), tazkiraVolume: getVal('tazkiraVolume'),
       ethnicity: getVal('ethnicity'),
       gender: getVal('gender'),
-      birthDate: getVal('birthDate'),
+      birthDate: getVal('birthDate'), birthPlace: getVal('birthPlace'),
       originAddress: getVal('originAddress'), currentAddress: getVal('currentAddress'),
       firstAppointmentDate: getVal('firstAppointmentDate'), phone: getVal('phone'),
       disability: getVal('disability'),
       positionType: getVal('positionType'),
       employmentType: getVal('employmentType'),
+      bust: getVal('bust'), grade: getVal('grade'),
       currentPositionDate: getVal('currentPositionDate'),
       degree: getVal('degree'), major: getVal('major'),
-      eduInstitute: getVal('eduInstitute'),
+      eduInstitute: getVal('eduInstitute'), eduInstituteLocation: getVal('eduInstituteLocation'),
       enrollmentDate: getVal('enrollmentDate'), graduationDate: getVal('graduationDate'),
       subjectTeaching: getVal('subjectTeaching'),
       name: (getVal('firstName') + ' ' + getVal('lastName')).trim(),
@@ -785,8 +937,10 @@
       schoolName: user.schoolname || '',
       district: user.district || ''
     };
+
     const errors = validateBody(body);
     if (errors.length > 0) { showToast('❌ ' + errors[0], true); return; }
+
     try {
       const res = await fetch('/api/records/' + editingRecordId, {
         method: 'PUT',

@@ -4,10 +4,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
+
+// ═══════════════════════════════════════════════════════════
+// رمز ادمین از Environment Variables (امن)
+// ═══════════════════════════════════════════════════════════
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 // ============================================================
 // حل مشکل SSL
@@ -55,6 +62,15 @@ async function initDB() {
           FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
         );
       `);
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS login_attempts (
+          id SERIAL PRIMARY KEY,
+          ip TEXT NOT NULL,
+          username TEXT,
+          success BOOLEAN DEFAULT FALSE,
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
       console.log('✅ جداول دیتابیس آماده شدند.');
     } finally {
       client.release();
@@ -83,6 +99,21 @@ app.use((req, res, next) => {
 });
 
 // ============================================================
+// 🔒 Rate Limiting برای لاگین
+// ============================================================
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // ۱۵ دقیقه
+  max: 10, // حداکثر ۱۰ تلاش در ۱۵ دقیقه
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است. لطفاً ۱۵ دقیقه بعد تلاش کنید.' },
+  handler: (req, res) => {
+    console.log(`🚫 Rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({ error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است. لطفاً ۱۵ دقیقه بعد تلاش کنید.' });
+  }
+});
+
+// ============================================================
 // احراز هویت
 // ============================================================
 function authRequired(req, res, next) {
@@ -98,39 +129,84 @@ function authRequired(req, res, next) {
 }
 
 // ============================================================
-// لاگین
+// لاگ کردن تلاش‌های ورود
 // ============================================================
-app.post('/api/auth/login', async (req, res) => {
+async function logLoginAttempt(ip, username, success) {
+  try {
+    await pool.query(
+      'INSERT INTO login_attempts (ip, username, success) VALUES ($1, $2, $3)',
+      [ip || 'unknown', username || 'unknown', success]
+    );
+  } catch (e) {
+    console.error('Log attempt error:', e.message);
+  }
+}
+
+// ============================================================
+// 🔑 POST /api/auth/login — با Rate Limiting و کپچای سمت سرور
+// ============================================================
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
+  const clientIp = req.headers['x-forwarded-for'] || req.ip || 'unknown';
+
   try {
     const { username, password } = req.body || {};
     if (!username || !password) {
       return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
     }
 
-    if (username === 'admin' && password === 'admin123') {
-      const adminUser = { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
-      const token = jwt.sign(adminUser, SECRET, { expiresIn: '30d' });
+    // ═══ لاگین ادمین ═══
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      await logLoginAttempt(clientIp, username, true);
+      const adminUser = {
+        id: 0,
+        username: 'admin',
+        role: 'admin',
+        schoolname: 'ریاست معارف',
+        district: 'مرکز هرات'
+      };
+      const token = jwt.sign(adminUser, SECRET, { expiresIn: '7d' });
+      console.log(`✅ Admin logged in from ${clientIp}`);
       return res.json({ token, user: adminUser, redirect: '/admin.html' });
     }
 
+    // ═══ لاگین مکاتب ═══
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length === 0) {
+      await logLoginAttempt(clientIp, username, false);
+      console.log(`❌ Failed login (user not found): ${username} from ${clientIp}`);
       return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });
     }
+
     const user = result.rows[0];
     if (!bcrypt.compareSync(password, user.password)) {
+      await logLoginAttempt(clientIp, username, false);
+      console.log(`❌ Failed login (wrong password): ${username} from ${clientIp}`);
       return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });
     }
 
+    await logLoginAttempt(clientIp, username, true);
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district },
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        schoolname: user.schoolname,
+        district: user.district
+      },
       SECRET,
-      { expiresIn: '30d' }
+      { expiresIn: '7d' }
     );
 
+    console.log(`✅ School logged in: ${username} from ${clientIp}`);
     res.json({
       token,
-      user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district },
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        schoolname: user.schoolname,
+        district: user.district
+      },
       redirect: '/school.html'
     });
   } catch (e) {
@@ -394,6 +470,24 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
 });
 
 // ============================================================
+// GET /api/login-attempts — مشاهده تلاش‌های ورود (ادمین)
+// ============================================================
+app.get('/api/login-attempts', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    }
+    const result = await pool.query(
+      'SELECT * FROM login_attempts ORDER BY id DESC LIMIT 100'
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Login attempts error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت لاگ' });
+  }
+});
+
+// ============================================================
 // Fallback
 // ============================================================
 app.get('*', (req, res) => {
@@ -405,4 +499,5 @@ app.get('*', (req, res) => {
 // ============================================================
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔒 Rate limiting: 10 login attempts per 15 minutes`);
 });

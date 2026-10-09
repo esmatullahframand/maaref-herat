@@ -52,7 +52,6 @@
   .empty-state .icon { font-size: 48px; display: block; margin-bottom: 10px; }
   .info-banner { background: #fef3c7; border-right: 5px solid #f59e0b; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #78350f; }
 
-  /* ═══ کارت آمار تفکیکی ═══ */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
   .stat-box { background: #fff; border-radius: 8px; padding: 12px 10px; text-align: center; border: 1px solid #e2e8f0; transition: all 0.2s; }
   .stat-box:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
@@ -134,8 +133,8 @@
             <div class="form-group"><label>ولدیت *</label><input type="text" id="grandfatherName" required></div>
             <div class="form-group">
               <label>تذکره الکترونیکی</label>
-              <input type="text" id="eTazkira" placeholder="1399-1200-63538">
-              <span class="auto-detect-badge" id="eTazkiraBadge">🔍 فرمت: XXXX-XXXX-XXXXX</span>
+              <input type="text" id="eTazkira" placeholder="1399-1200-2434">
+              <span class="auto-detect-badge" id="eTazkiraBadge">🔍 فرمت: عدد-عدد-عدد (با دو خط تیره)</span>
             </div>
             <div class="form-group"><label>تذکره کاغذی</label><input type="text" id="paperTazkira"></div>
             <div class="form-group"><label>صفحه تذکره</label><input type="text" id="tazkiraPage"></div>
@@ -230,44 +229,16 @@
     <div class="card">
       <h4>📋 لیست کارمندان</h4>
 
-      <!-- ═══ کارت آمار تفکیکی ═══ -->
       <div class="stats-grid" id="schoolStatsGrid">
-        <div class="stat-box total">
-          <div class="stat-label">👥 کل ثبت‌شده‌ها</div>
-          <div class="stat-value" id="statTotal">0</div>
-        </div>
-        <div class="stat-box teacher">
-          <div class="stat-label">👨‍🏫 معلمان</div>
-          <div class="stat-value" id="statTeachers">0</div>
-        </div>
-        <div class="stat-box manager">
-          <div class="stat-label">👨‍💼 مدیران</div>
-          <div class="stat-value" id="statManagers">0</div>
-        </div>
-        <div class="stat-box admin-staff">
-          <div class="stat-label">📋 کارمندان دفتری</div>
-          <div class="stat-value" id="statAdminStaff">0</div>
-        </div>
-        <div class="stat-box service">
-          <div class="stat-label">🧹 کارکن خدماتی</div>
-          <div class="stat-value" id="statService">0</div>
-        </div>
-        <div class="stat-box active">
-          <div class="stat-label">✅ فعال</div>
-          <div class="stat-value" id="statActive">0</div>
-        </div>
-        <div class="stat-box retired">
-          <div class="stat-label">🎖️ متقاعد</div>
-          <div class="stat-value" id="statRetired">0</div>
-        </div>
-        <div class="stat-box approved">
-          <div class="stat-label">✅ تایید‌شده</div>
-          <div class="stat-value" id="statApproved">0</div>
-        </div>
-        <div class="stat-box pending">
-          <div class="stat-label">⏳ در انتظار</div>
-          <div class="stat-value" id="statPending">0</div>
-        </div>
+        <div class="stat-box total"><div class="stat-label">👥 کل ثبت‌شده‌ها</div><div class="stat-value" id="statTotal">0</div></div>
+        <div class="stat-box teacher"><div class="stat-label">👨‍🏫 معلمان</div><div class="stat-value" id="statTeachers">0</div></div>
+        <div class="stat-box manager"><div class="stat-label">👨‍💼 مدیران</div><div class="stat-value" id="statManagers">0</div></div>
+        <div class="stat-box admin-staff"><div class="stat-label">📋 کارمندان دفتری</div><div class="stat-value" id="statAdminStaff">0</div></div>
+        <div class="stat-box service"><div class="stat-label">🧹 کارکن خدماتی</div><div class="stat-value" id="statService">0</div></div>
+        <div class="stat-box active"><div class="stat-label">✅ فعال</div><div class="stat-value" id="statActive">0</div></div>
+        <div class="stat-box retired"><div class="stat-label">🎖️ متقاعد</div><div class="stat-value" id="statRetired">0</div></div>
+        <div class="stat-box approved"><div class="stat-label">✅ تایید‌شده</div><div class="stat-value" id="statApproved">0</div></div>
+        <div class="stat-box pending"><div class="stat-label">⏳ در انتظار</div><div class="stat-value" id="statPending">0</div></div>
       </div>
 
       <div class="info-banner">
@@ -299,7 +270,6 @@
 
 </div>
 
-<!-- Modal مشاهده -->
 <div class="modal-overlay" id="viewModal">
   <div class="modal-box">
     <h3>📄 مشاهده معلومات کارمند</h3>
@@ -311,7 +281,6 @@
   </div>
 </div>
 
-<!-- Modal ویرایش -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3>✏️ ویرایش معلومات کارمند</h3>
@@ -341,7 +310,6 @@
   let cachedRecords = [];
   let editingRecordId = null;
 
-  // ═══ کلمات کلیدی ═══
   const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
   const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
   const TEACHER_KEYWORDS = ['معلم', 'آموزگار', 'استاد', 'مدرس'];
@@ -362,14 +330,13 @@
   // ═══ اعتبارسنجی ═══
   function isValidJobCode(jobCode) {
     if (!jobCode) return false;
-    // فرمت: 27-32-02- و بعد حداقل یک رقم (تعداد مهم نیست)
     return /^27-32-02-\d+$/.test(jobCode.trim());
   }
 
   function isValidETazkira(eTazkira) {
     if (!eTazkira) return false;
-    // فرمت: XXXX-XXXX-XXXXX (۴-۴-۵ رقم)
-    return /^\d{4}-\d{4}-\d{5}$/.test(eTazkira.trim());
+    // دو خط تیره، تعداد ارقام مهم نیست
+    return /^\d+-\d+-\d+$/.test(eTazkira.trim());
   }
 
   function switchTab(name, btn) {
@@ -397,7 +364,6 @@
     };
   }
 
-  // ═══ تاریخ شمسی ═══
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -454,7 +420,6 @@
     return y >= 0 ? y : null;
   }
 
-  // ═══ Badge تاریخ‌ها ═══
   function updateDateBadge(inputId, badgeId, required) {
     const input = document.getElementById(inputId);
     const badge = document.getElementById(badgeId);
@@ -506,7 +471,6 @@
     if (input) input.addEventListener('blur', () => updateDateBadge(d.id, d.badge, false));
   });
 
-  // ═══ Badge کد بست ═══
   const jobCodeInput = document.getElementById('jobCode');
   const jobCodeBadge = document.getElementById('jobCodeBadge');
   jobCodeInput.addEventListener('blur', () => {
@@ -518,7 +482,7 @@
       return;
     }
     if (isValidJobCode(v)) {
-      jobCodeBadge.textContent = '✅ فرمت معتبر — بررسی یکتا بودن در سرور';
+      jobCodeBadge.textContent = '✅ فرمت معتبر';
       jobCodeBadge.style.background = '#10b981';
       jobCodeInput.classList.add('valid');
       jobCodeInput.classList.remove('invalid');
@@ -530,13 +494,12 @@
     }
   });
 
-  // ═══ Badge تذکره برقی ═══
   const eTazkiraInput = document.getElementById('eTazkira');
   const eTazkiraBadge = document.getElementById('eTazkiraBadge');
   eTazkiraInput.addEventListener('blur', () => {
     const v = eTazkiraInput.value.trim();
     if (!v) {
-      eTazkiraBadge.textContent = '🔍 فرمت: XXXX-XXXX-XXXXX';
+      eTazkiraBadge.textContent = '🔍 فرمت: عدد-عدد-عدد (با دو خط تیره)';
       eTazkiraBadge.style.background = '#94a3b8';
       eTazkiraInput.classList.remove('valid', 'invalid');
       return;
@@ -547,14 +510,13 @@
       eTazkiraInput.classList.add('valid');
       eTazkiraInput.classList.remove('invalid');
     } else {
-      eTazkiraBadge.textContent = '❌ باید به شکل 1399-1200-63538 باشد';
+      eTazkiraBadge.textContent = '❌ باید دو خط تیره داشته باشد (مثال: 1399-1200-2434)';
       eTazkiraBadge.style.background = '#ef4444';
       eTazkiraInput.classList.add('invalid');
       eTazkiraInput.classList.remove('valid');
     }
   });
 
-  // ═══ درجه تحصیلی ═══
   const jobTitleInput = document.getElementById('jobTitle');
   const degreeInput = document.getElementById('degree');
   const degreeRequiredMark = document.getElementById('degreeRequired');
@@ -616,15 +578,12 @@
     if (!body.ethnicity) errors.push('قومیت الزامی است');
     if (!body.phone) errors.push('شماره تماس الزامی است');
 
-    // ═══ کد بست ═══
     if (!body.jobCode) errors.push('کُد بست الزامی است');
     else if (!isValidJobCode(body.jobCode)) errors.push('فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد');
 
-    // ═══ تذکره ═══
     if (!body.eTazkira && !body.paperTazkira) errors.push('حداقل یکی از تذکره‌ها الزامی است');
-    if (body.eTazkira && !isValidETazkira(body.eTazkira)) errors.push('فرمت تذکره برقی اشتباه است. باید به شکل 1399-1200-63538 باشد');
+    if (body.eTazkira && !isValidETazkira(body.eTazkira)) errors.push('فرمت تذکره برقی اشتباه است. باید دو خط تیره داشته باشد (مثال: 1399-1200-2434)');
 
-    // ═══ تاریخ‌ها ═══
     if (!body.birthDate) errors.push('تاریخ تولد الزامی است');
     else if (!isValidShamsiDate(body.birthDate)) errors.push('تاریخ تولد نامعتبر است');
 
@@ -637,7 +596,6 @@
     if (body.enrollmentDate && !isValidShamsiDate(body.enrollmentDate)) errors.push('تاریخ شمولیت نامعتبر است');
     if (body.graduationDate && !isValidShamsiDate(body.graduationDate)) errors.push('تاریخ فراغت نامعتبر است');
 
-    // ═══ درجه تحصیلی ═══
     const serviceStaff = isServiceStaff(body.jobTitle);
     const hasDegree = body.degree && body.degree.replace(/\s/g, '') !== '';
     if (!serviceStaff && !hasDegree) errors.push('درجه تحصیلی برای معلمان، مدیران و کارمندان دفتری الزامی است');
@@ -707,7 +665,6 @@
     closeModal('editModal');
   }
 
-  // ═══ آمار تفکیکی ═══
   function updateSchoolStats(records) {
     let total = 0, teachers = 0, managers = 0, adminStaff = 0, service = 0;
     let active = 0, retired = 0, approved = 0, pending = 0;
@@ -727,7 +684,6 @@
         if (age >= 65) retired++;
         else active++;
       }
-
       if (row.status === 'approved') approved++;
       else pending++;
     });
@@ -778,9 +734,9 @@
           : '<span class="status-badge status-pending">⏳ در انتظار</span>';
 
         const actionsHtml = `
-          <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>
-          <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="خواندن">👁️</button>
-          <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرنت">🖨️</button>
+          <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})">✏️</button>
+          <button class="btn-action btn-view" onclick="viewRecord(${row.id})">👁️</button>
+          <button class="btn-action btn-print" onclick="printRecord(${row.id})">🖨️</button>
         `;
 
         const tr = document.createElement('tr');

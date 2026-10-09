@@ -41,13 +41,12 @@ async function initDB() {
       await client.query(`
         CREATE TABLE IF NOT EXISTS records (
           id SERIAL PRIMARY KEY,
-          userid INTEGER NOT NULL,
-          schoolname TEXT NOT NULL,
-          district TEXT NOT NULL,
-          data TEXT NOT NULL,
+          userid INTEGER,
+          schoolname TEXT,
+          district TEXT,
+          data TEXT,
           status TEXT DEFAULT 'pending',
-          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY(userid) REFERENCES users(id) ON DELETE CASCADE
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
       await client.query(`
@@ -125,12 +124,13 @@ function isValidJobCode(jobCode) {
 }
 
 // ============================================================
-// اعتبارسنجی تذکره برقی — XXXX-XXXX-XXXXX
+// اعتبارسنجی تذکره برقی — دو خط تیره، تعداد ارقام مهم نیست
+// مثال: 1399-1200-2434
 // ============================================================
 function isValidETazkira(eTazkira) {
   if (!eTazkira) return false;
   const cleaned = String(eTazkira).trim();
-  const pattern = /^\d{4}-\d{4}-\d{5}$/;
+  const pattern = /^\d+-\d+-\d+$/;
   return pattern.test(cleaned);
 }
 
@@ -294,7 +294,7 @@ app.post('/api/records', authRequired, async (req, res) => {
 
     const eTazkira = String(body.eTazkira || '').trim();
     if (eTazkira && !isValidETazkira(eTazkira)) {
-      return res.status(400).json({ error: '❌ فرمت تذکره الکترونیکی اشتباه است. باید به شکل 1399-1200-63538 باشد' });
+      return res.status(400).json({ error: '❌ فرمت تذکره الکترونیکی اشتباه است. باید با دو خط تیره باشد (مثال: 1399-1200-2434)' });
     }
 
     const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
@@ -348,7 +348,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 
     const eTazkira = String(body.eTazkira || '').trim();
     if (eTazkira && !isValidETazkira(eTazkira)) {
-      return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است' });
+      return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است. باید با دو خط تیره باشد (مثال: 1399-1200-2434)' });
     }
 
     const schoolName = body.schoolName || req.user.schoolname || '';

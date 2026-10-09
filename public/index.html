@@ -332,4 +332,25 @@
         } else {
           recordFailedAttempt();
         }
-        show
+        showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
+        generateCaptcha();
+      }
+    } catch (err) {
+      console.error(err);
+      showError('خطا در ارتباط با سرور. لطفاً اینترنت خود را بررسی کنید.');
+      generateCaptcha();
+    }
+  });
+
+  function showError(message) {
+    errorBox.innerText = message;
+    errorBox.style.display = 'block';
+    if (!checkLock()) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'ورود به پنل مدیریت';
+    }
+  }
+</script>
+
+</body>
+</html>

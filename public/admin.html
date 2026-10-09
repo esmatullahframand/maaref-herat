@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>پنل ادمین — معارف هرات (V4)</title>
+<title>پنل ادمین — معارف هرات</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
 <style>
@@ -13,11 +13,6 @@
     color: #fff; padding: 15px 25px;
     display: flex; justify-content: space-between; align-items: center;
     flex-wrap: wrap; gap: 10px;
-  }
-  .version-badge {
-    background: #fbbf24; color: #78350f;
-    padding: 4px 12px; border-radius: 20px;
-    font-size: 12px; font-weight: bold;
   }
   .card-custom {
     background: #fff; border-radius: 12px; padding: 25px;
@@ -74,10 +69,7 @@
     <h5 class="mb-0 fw-bold">🎛️ پنل ادمین — ریاست معارف ولایت هرات</h5>
     <small class="opacity-75">مدیریت مکاتب، کارمندان و گزارش‌ها</small>
   </div>
-  <div>
-    <span class="version-badge">VERSION V4</span>
-    <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
-  </div>
+  <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
 </div>
 
 <div class="container-fluid px-4">
@@ -86,7 +78,7 @@
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-chart-pie"></i> آمار کلی</h5>
     <div class="row g-3">
-      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;"><div class="text-muted">🏫 مکاتب</div><div class="value text-purple" id="sSchools">0</div></div></div>
+      <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: #c4b5fd;"><div class="text-muted">🏫 مکاتب فعال</div><div class="value text-purple" id="sSchools">0</div></div></div>
       <div class="col-md-2"><div class="stat-card"><div class="text-muted">👥 کل کارمندان</div><div class="value" id="sTotal">0</div></div></div>
       <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #86efac;"><div class="text-muted">✅ تایید شده</div><div class="value text-success" id="sApproved">0</div></div></div>
       <div class="col-md-2"><div class="stat-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fcd34d;"><div class="text-muted">⏳ در انتظار</div><div class="value" style="color:#92400e;" id="sPending">0</div></div></div>
@@ -120,7 +112,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <h5 class="text-purple m-0 fw-bold">
         <i class="fa-solid fa-users-gear"></i> کارمندان
-        <span id="searchBadge" class="badge-search-active" style="display:none;">🔍 حالت جستجو</span>
+        <span id="searchBadge" class="badge-search-active" style="display:none;">🔍 حالت فیلتر</span>
       </h5>
       <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportToCSV()">
         <i class="fa-solid fa-file-excel"></i> خروجی CSV
@@ -129,18 +121,26 @@
 
     <div class="info-banner">
       ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند.<br>
-      رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> نمایش داده می‌شوند.<br>
+      رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> یا <strong>فیلتر مکتب</strong> نمایش داده می‌شوند.<br>
       وضعیت <strong>فعال/متقاعد</strong> بر اساس سن (۶۵ سال) محاسبه می‌شود.
     </div>
 
     <div class="row g-3 mb-3">
-      <div class="col-md-12">
+      <div class="col-md-8">
         <input class="form-control border-primary" id="searchInput"
                placeholder="🔍 جستجو در همه رکوردها (نام، وظیفه، مکتب، ولسوالی)..."
                oninput="debouncedLoad()">
         <div class="search-hint">💡 برای دیدن رکوردهای تایید‌شده، بخشی از نام یا مکتب را تایپ کنید.</div>
       </div>
+      <div class="col-md-4">
+        <label style="font-size:13px;font-weight:bold;color:#475569;margin-bottom:6px;">🏫 فیلتر بر اساس مکتب:</label>
+        <select class="form-control" id="schoolFilter" onchange="loadAllRecords()">
+          <option value="">📋 همه مکاتب</option>
+        </select>
+      </div>
     </div>
+
+    <div id="filterInfoBar"></div>
 
     <div class="table-responsive border rounded">
       <table class="table table-hover align-middle mb-0 text-center">
@@ -171,8 +171,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  console.log('🚀 admin.html VERSION V4 loaded');
-
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
@@ -183,8 +181,12 @@
   }
 
   let loadedRecordsCache = [];
+  let allSchoolsList = [];
   const RETIREMENT_AGE = 65;
 
+  // ============================================================
+  // تاریخ شمسی
+  // ============================================================
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -248,6 +250,9 @@
     return { age, status: '✅ فعال', cls: 'badge-active' };
   }
 
+  // ============================================================
+  // Toast
+  // ============================================================
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -267,18 +272,24 @@
 
   const debouncedLoad = debounce(loadAllRecords, 400);
 
+  // ============================================================
+  // لود رکوردها (با فیلتر مکتب)
+  // ============================================================
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value.trim();
+    const schoolFilter = document.getElementById('schoolFilter').value.trim();
     const hasSearch = search.length > 0;
-    document.getElementById('searchBadge').style.display = hasSearch ? 'inline-block' : 'none';
+    const hasSchoolFilter = schoolFilter.length > 0;
+
+    document.getElementById('searchBadge').style.display = (hasSearch || hasSchoolFilter) ? 'inline-block' : 'none';
 
     try {
-      let url = '/api/records?';
-      if (hasSearch) {
-        url += 'search=' + encodeURIComponent(search);
-      } else {
-        url += 'status=pending';
-      }
+      const params = [];
+      if (hasSearch) params.push('search=' + encodeURIComponent(search));
+      if (hasSchoolFilter) params.push('schoolname=' + encodeURIComponent(schoolFilter));
+      if (!hasSearch && !hasSchoolFilter) params.push('status=pending');
+
+      const url = '/api/records?' + params.join('&');
 
       const res = await fetch(url, {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -288,7 +299,8 @@
 
       const records = await res.json();
       loadedRecordsCache = records;
-      renderRecords(records, hasSearch);
+      renderRecords(records, hasSearch || hasSchoolFilter);
+
       loadStats();
     } catch (e) {
       console.error(e);
@@ -322,12 +334,34 @@
     } catch (e) { console.error('Stats error:', e); }
   }
 
-  function renderRecords(records, hasSearch) {
+  function renderRecords(records, hasFilter) {
     const tbody = document.getElementById('allTableBody');
+    const filterBar = document.getElementById('filterInfoBar');
     tbody.innerHTML = '';
 
+    // نمایش نوار فیلتر فعال
+    const schoolFilter = document.getElementById('schoolFilter').value;
+    const searchVal = document.getElementById('searchInput').value;
+    if (schoolFilter || searchVal) {
+      filterBar.innerHTML = `<div style="background:#dbeafe; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#1e3a8a;">
+        🔍 فیلتر فعال: 
+        ${schoolFilter ? `<strong>مکتب: ${escapeHtml(schoolFilter)}</strong>` : ''}
+        ${schoolFilter && searchVal ? ' + ' : ''}
+        ${searchVal ? `<strong>جستجو: ${escapeHtml(searchVal)}</strong>` : ''}
+      </div>`;
+    } else {
+      filterBar.innerHTML = '';
+    }
+
     if (!Array.isArray(records) || records.length === 0) {
-      const msg = hasSearch ? 'هیچ نتیجه‌ای برای جستجو یافت نشد' : 'هیچ رکوردی در انتظار تایید نیست';
+      let msg = 'هیچ رکوردی در انتظار تایید نیست';
+      if (schoolFilter && searchVal) {
+        msg = `هیچ کارمندی برای مکتب «${escapeHtml(schoolFilter)}» با جستجوی «${escapeHtml(searchVal)}» یافت نشد`;
+      } else if (schoolFilter) {
+        msg = `هیچ کارمندی برای مکتب «${escapeHtml(schoolFilter)}» یافت نشد`;
+      } else if (searchVal) {
+        msg = 'هیچ نتیجه‌ای برای جستجو یافت نشد';
+      }
       tbody.innerHTML = `<tr><td colspan="11" class="text-muted p-4">${msg}</td></tr>`;
       return;
     }
@@ -376,6 +410,9 @@
     tbody.appendChild(fragment);
   }
 
+  // ============================================================
+  // تایید رکورد
+  // ============================================================
   async function approveRecord(id) {
     if (!confirm('آیا این رکورد تایید شود؟')) return;
     try {
@@ -388,6 +425,9 @@
     } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
+  // ============================================================
+  // حذف رکورد
+  // ============================================================
   async function deleteRecord(id) {
     if (!confirm('⚠️ آیا از حذف این رکورد مطمئن هستید؟')) return;
     try {
@@ -403,6 +443,9 @@
     } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
+  // ============================================================
+  // خواندن
+  // ============================================================
   function viewRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
     if (!rec) return;
@@ -488,6 +531,9 @@
     win.document.close();
   }
 
+  // ============================================================
+  // پرنت
+  // ============================================================
   function printRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
     if (!rec) return;
@@ -572,6 +618,9 @@
     win.document.close();
   }
 
+  // ============================================================
+  // لود مکاتب + پر کردن dropdown فیلتر
+  // ============================================================
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', {
@@ -579,19 +628,36 @@
       });
       if (res.status === 401) { localStorage.clear(); location.href = '/'; return; }
       const schools = await res.json();
+      allSchoolsList = Array.isArray(schools) ? schools : [];
+
+      // ⭐ پر کردن dropdown فیلتر
+      const filterSelect = document.getElementById('schoolFilter');
+      if (filterSelect) {
+        const currentVal = filterSelect.value;
+        filterSelect.innerHTML = '<option value="">📋 همه مکاتب</option>';
+        allSchoolsList.forEach(sch => {
+          const opt = document.createElement('option');
+          opt.value = sch.schoolname;
+          opt.textContent = `🏫 ${sch.schoolname}${sch.district ? ' — ' + sch.district : ''}`;
+          if (sch.schoolname === currentVal) opt.selected = true;
+          filterSelect.appendChild(opt);
+        });
+      }
+
+      // جدول مکاتب
       const tbody = document.getElementById('usersTableBody');
       tbody.innerHTML = '';
 
-      if (!Array.isArray(schools) || schools.length === 0) {
+      if (allSchoolsList.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-muted p-3">هیچ مکتبی ثبت نشده</td></tr>';
         document.getElementById('sSchools').textContent = 0;
         return;
       }
 
-      document.getElementById('sSchools').textContent = schools.length;
+      document.getElementById('sSchools').textContent = allSchoolsList.length;
       const fragment = document.createDocumentFragment();
 
-      schools.forEach((sch, idx) => {
+      allSchoolsList.forEach((sch, idx) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${idx + 1}</td>
@@ -606,6 +672,9 @@
     } catch (e) { console.error(e); }
   }
 
+  // ============================================================
+  // افزودن مکتب
+  // ============================================================
   async function addUser() {
     const body = {
       username: document.getElementById('uUsername').value.trim(),
@@ -632,6 +701,9 @@
     } catch (err) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
+  // ============================================================
+  // حذف مکتب
+  // ============================================================
   async function deleteSchool(id) {
     if (!confirm('⚠️ آیا از حذف این مکتب مطمئن هستید؟ تمام رکوردهای آن نیز حذف می‌شوند.')) return;
     try {
@@ -639,11 +711,17 @@
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
-      if (res.ok) { showToast('🗑️ مکتب حذف شد'); loadSchoolsList(); loadAllRecords(); }
-      else { showToast('خطا در حذف', true); }
+      if (res.ok) {
+        showToast('🗑️ مکتب حذف شد');
+        loadSchoolsList();
+        loadAllRecords();
+      } else { showToast('خطا در حذف', true); }
     } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
+  // ============================================================
+  // خروجی CSV
+  // ============================================================
   function exportToCSV() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی وجود ندارد', true); return; }

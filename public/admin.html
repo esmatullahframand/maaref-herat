@@ -115,7 +115,7 @@
           <i class="fa-solid fa-file-excel"></i> خروجی CSV
         </button>
         <button class="btn btn-info fw-bold btn-sm px-3 text-white" onclick="printList()">
-          🖨️ چاپ لیست (۱۵ در صفحه)
+          🖨️ چاپ لیست (۳ ردیف)
         </button>
       </div>
     </div>
@@ -667,7 +667,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // 🖨️ چاپ لیست — جدول افقی با همه ۳۰+ فیلد، ۱۵ نفر در صفحه
+  // 🖨️ چاپ لیست — هر کارمند در ۳ ردیف + فونت درشت
   // ═══════════════════════════════════════════════════════════
   function printList() {
     const records = loadedRecordsCache || [];
@@ -679,47 +679,62 @@
     let rowsHtml = '';
     records.forEach((row, idx) => {
       const info = row.data || {};
-      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
       const empStatus = getEmployeeStatus(info);
-      const statusText = row.status === 'approved' ? 'تایید' : 'انتظار';
+      const statusText = row.status === 'approved' ? '✅ تایید' : '⏳ انتظار';
 
+      // ردیف ۱: هویت
       rowsHtml += `
-        <tr>
-          <td class="col-num">${idx + 1}</td>
-          <td class="col-code">${escapeHtml(info.jobCode || '—')}</td>
-          <td class="col-job">${escapeHtml(info.jobTitle || info.job || '—')}</td>
-          <td class="col-first">${escapeHtml(info.firstName || '—')}</td>
-          <td class="col-last">${escapeHtml(info.lastName || '—')}</td>
-          <td class="col-father">${escapeHtml(info.fatherName || '—')}</td>
-          <td class="col-grand">${escapeHtml(info.grandfatherName || '—')}</td>
-          <td class="col-tazkira">${escapeHtml(info.eTazkira || '—')}</td>
-          <td class="col-tazkira">${escapeHtml(info.paperTazkira || '—')}</td>
-          <td class="col-page">${escapeHtml(info.tazkiraPage || '—')}</td>
-          <td class="col-vol">${escapeHtml(info.tazkiraVolume || '—')}</td>
-          <td class="col-eth">${escapeHtml(info.ethnicity || '—')}</td>
-          <td class="col-gender">${escapeHtml(info.gender || '—')}</td>
-          <td class="col-date">${escapeHtml(info.birthDate || '—')}</td>
-          <td class="col-place">${escapeHtml(info.birthPlace || '—')}</td>
-          <td class="col-origin">${escapeHtml(info.originAddress || '—')}</td>
-          <td class="col-current">${escapeHtml(info.currentAddress || '—')}</td>
-          <td class="col-date">${escapeHtml(info.firstAppointmentDate || '—')}</td>
-          <td class="col-phone">${escapeHtml(info.phone || '—')}</td>
-          <td class="col-dis">${escapeHtml(info.disability || '—')}</td>
-          <td class="col-pos">${escapeHtml(info.positionType || '—')}</td>
-          <td class="col-emp">${escapeHtml(info.employmentType || '—')}</td>
-          <td class="col-bust">${escapeHtml(info.bust || '—')}</td>
-          <td class="col-grade">${escapeHtml(info.grade || '—')}</td>
-          <td class="col-date">${escapeHtml(info.currentPositionDate || '—')}</td>
-          <td class="col-degree">${escapeHtml(info.degree || '—')}</td>
-          <td class="col-major">${escapeHtml(info.major || '—')}</td>
-          <td class="col-inst">${escapeHtml(info.eduInstitute || '—')}</td>
-          <td class="col-inst">${escapeHtml(info.eduInstituteLocation || '—')}</td>
-          <td class="col-date">${escapeHtml(info.enrollmentDate || '—')}</td>
-          <td class="col-date">${escapeHtml(info.graduationDate || '—')}</td>
-          <td class="col-subject">${escapeHtml(info.subjectTeaching || '—')}</td>
-          <td class="col-age">${empStatus.age}</td>
-          <td class="col-emp-status">${empStatus.status}</td>
-          <td class="col-status">${statusText}</td>
+        <tr class="emp-row-1">
+          <td class="col-num" rowspan="3">${idx + 1}</td>
+          <td class="col-lbl">اسم</td>
+          <td class="col-val-name">${escapeHtml(info.firstName || '—')}</td>
+          <td class="col-lbl">تخلص</td>
+          <td class="col-val">${escapeHtml(info.lastName || '—')}</td>
+          <td class="col-lbl">ولد</td>
+          <td class="col-val">${escapeHtml(info.fatherName || '—')}</td>
+          <td class="col-lbl">ولدیت</td>
+          <td class="col-val">${escapeHtml(info.grandfatherName || '—')}</td>
+          <td class="col-lbl">قومیت</td>
+          <td class="col-val">${escapeHtml(info.ethnicity || '—')}</td>
+          <td class="col-lbl">جنسیت</td>
+          <td class="col-val">${escapeHtml(info.gender || '—')}</td>
+          <td class="col-status" rowspan="3">${statusText}</td>
+        </tr>
+      `;
+
+      // ردیف ۲: اطلاعات شخصی
+      rowsHtml += `
+        <tr class="emp-row-2">
+          <td class="col-lbl">تذکره برقی</td>
+          <td class="col-val-wide">${escapeHtml(info.eTazkira || '—')}</td>
+          <td class="col-lbl">تذکره کاغذی</td>
+          <td class="col-val-wide">${escapeHtml(info.paperTazkira || '—')}</td>
+          <td class="col-lbl">صفحه / جلد</td>
+          <td class="col-val">${escapeHtml(info.tazkiraPage || '—')} / ${escapeHtml(info.tazkiraVolume || '—')}</td>
+          <td class="col-lbl">تاریخ تولد</td>
+          <td class="col-val">${escapeHtml(info.birthDate || '—')}</td>
+          <td class="col-lbl">محل تولد</td>
+          <td class="col-val">${escapeHtml(info.birthPlace || '—')}</td>
+          <td class="col-lbl">تماس</td>
+          <td class="col-val">${escapeHtml(info.phone || '—')}</td>
+        </tr>
+      `;
+
+      // ردیف ۳: اطلاعات وظیفوی
+      rowsHtml += `
+        <tr class="emp-row-3">
+          <td class="col-lbl">کُد بست</td>
+          <td class="col-val-wide">${escapeHtml(info.jobCode || '—')}</td>
+          <td class="col-lbl">وظیفه</td>
+          <td class="col-val">${escapeHtml(info.jobTitle || info.job || '—')}</td>
+          <td class="col-lbl">درجه</td>
+          <td class="col-val">${escapeHtml(info.degree || '—')}</td>
+          <td class="col-lbl">رشته</td>
+          <td class="col-val">${escapeHtml(info.major || '—')}</td>
+          <td class="col-lbl">مضمون</td>
+          <td class="col-val">${escapeHtml(info.subjectTeaching || '—')}</td>
+          <td class="col-lbl">سن</td>
+          <td class="col-val">${empStatus.age}</td>
         </tr>
       `;
     });
@@ -733,66 +748,127 @@
         <title>چاپ لیست کارمندان</title>
         <style>
           * { box-sizing: border-box; }
-          body { font-family: 'B Nazanin', Tahoma, Arial, sans-serif; direction: rtl; padding: 5px; margin: 0; background: #fff; color: #000; }
+          body {
+            font-family: 'B Nazanin', Tahoma, Arial, sans-serif;
+            direction: rtl;
+            padding: 8px;
+            margin: 0;
+            background: #fff;
+            color: #000;
+          }
 
-          .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 6px; margin-bottom: 8px; }
-          .header h2 { margin: 0; font-size: 15px; font-weight: bold; }
-          .header h4 { margin: 3px 0 0 0; font-size: 11px; color: #444; }
+          .header {
+            text-align: center;
+            border-bottom: 3px double #333;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+          }
+          .header h2 { margin: 0; font-size: 20px; font-weight: bold; }
+          .header h4 { margin: 4px 0 0 0; font-size: 14px; color: #444; }
 
-          .info-bar { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 6px; padding: 4px 8px; background: #f1f5f9; border-radius: 4px; font-weight: bold; }
+          .info-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 10px;
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            font-weight: bold;
+          }
 
-          table { width: 100%; border-collapse: collapse; font-size: 8px; table-layout: fixed; }
-          th, td { border: 1px solid #333; padding: 3px 1px; text-align: center; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
-          th { background: #1e40af; color: #fff; font-weight: bold; font-size: 8px; padding: 4px 1px; }
-          tbody tr:nth-child(even) { background: #f8fafc; }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+          }
+          th, td {
+            border: 1px solid #333;
+            padding: 6px 5px;
+            text-align: center;
+            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.4;
+          }
+          th {
+            background: #1e40af;
+            color: #fff;
+            font-weight: bold;
+            font-size: 13px;
+            padding: 8px 4px;
+          }
 
-          .col-num { width: 2.5%; font-weight: bold; }
-          .col-code { width: 4.5%; font-size: 7px; }
-          .col-job { width: 3.5%; }
-          .col-first { width: 3.5%; font-weight: bold; }
-          .col-last { width: 3.5%; }
-          .col-father { width: 3.5%; }
-          .col-grand { width: 3.5%; }
-          .col-tazkira { width: 4.5%; font-size: 7px; }
-          .col-page { width: 2%; }
-          .col-vol { width: 2%; }
-          .col-eth { width: 2.5%; }
-          .col-gender { width: 2%; }
-          .col-date { width: 3.5%; font-size: 7px; }
-          .col-place { width: 2.5%; }
-          .col-origin { width: 3%; }
-          .col-current { width: 3%; }
-          .col-phone { width: 3.5%; font-size: 7px; }
-          .col-dis { width: 2.5%; }
-          .col-pos { width: 2.5%; }
-          .col-emp { width: 2.5%; }
-          .col-bust { width: 2%; }
-          .col-grade { width: 2%; }
-          .col-degree { width: 2.5%; }
-          .col-major { width: 3%; }
-          .col-inst { width: 3.5%; }
-          .col-subject { width: 3.5%; }
-          .col-age { width: 2%; font-weight: bold; }
-          .col-emp-status { width: 3%; }
-          .col-status { width: 2.5%; }
+          tr.emp-row-1 { background: #dbeafe; }
+          tr.emp-row-2 { background: #f8fafc; }
+          tr.emp-row-3 { background: #fff; }
+
+          tr.emp-row-2 td, tr.emp-row-3 td { border-top: none; }
+
+          tr.emp-row-1:not(:first-child) td {
+            border-top: 3px solid #1e40af;
+          }
+
+          .col-num {
+            width: 3.5%;
+            font-weight: bold;
+            font-size: 18px;
+            background: #1e40af !important;
+            color: #fff;
+          }
+          .col-lbl {
+            width: 7%;
+            background: #e2e8f0;
+            font-weight: bold;
+            font-size: 12px;
+            color: #1e40af;
+          }
+          .col-val {
+            width: 9%;
+            font-size: 13px;
+            font-weight: 500;
+          }
+          .col-val-name {
+            width: 12%;
+            font-size: 15px;
+            font-weight: bold;
+            color: #1e40af;
+          }
+          .col-val-wide {
+            width: 14%;
+            font-size: 13px;
+          }
+          .col-status {
+            width: 6%;
+            background: #dbeafe !important;
+            font-weight: bold;
+            font-size: 13px;
+          }
 
           @media print {
             body { padding: 0; }
             .no-print { display: none !important; }
-            @page { size: A4 landscape; margin: 4mm; }
+            @page { size: A4 landscape; margin: 6mm; }
 
-            .header { margin-bottom: 5px; padding-bottom: 5px; }
-            .header h2 { font-size: 13px; }
-            .header h4 { font-size: 10px; }
-            .info-bar { font-size: 9px; padding: 3px 6px; margin-bottom: 4px; }
+            .header { margin-bottom: 6px; padding-bottom: 6px; }
+            .header h2 { font-size: 16px; }
+            .header h4 { font-size: 12px; }
+            .info-bar { font-size: 11px; padding: 5px 10px; margin-bottom: 6px; }
 
-            table { font-size: 7.5px; }
-            th, td { padding: 2px 1px; font-size: 7.5px; }
-            th { font-size: 7.5px; padding: 3px 1px; }
+            table { font-size: 11.5px; }
+            th, td { padding: 5px 4px; font-size: 11.5px; }
+            th { font-size: 11.5px; padding: 6px 4px; }
+            .col-num { font-size: 15px; }
+            .col-lbl { font-size: 10.5px; }
+            .col-val { font-size: 11.5px; }
+            .col-val-name { font-size: 13px; }
+            .col-val-wide { font-size: 11.5px; }
 
             thead { display: table-header-group; }
 
-            tbody tr:nth-child(15n+16) {
+            tr.emp-row-1:nth-child(21n+22) {
               page-break-before: always;
             }
 
@@ -801,8 +877,13 @@
 
           thead { display: table-header-group; }
 
-          .print-btn { text-align: center; margin-top: 10px; padding: 6px; }
-          .print-btn button { padding: 8px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 12px; margin: 0 4px; }
+          .print-btn { text-align: center; margin-top: 12px; padding: 8px; }
+          .print-btn button {
+            padding: 10px 24px; background: #3b82f6; color: #fff;
+            border: none; border-radius: 6px; font-weight: bold;
+            cursor: pointer; font-family: inherit; font-size: 14px;
+            margin: 0 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          }
           .print-btn button:hover { background: #2563eb; }
           .print-btn .btn-close { background: #e2e8f0; color: #1e293b; }
         </style>
@@ -816,7 +897,7 @@
 
         <div class="info-bar">
           <span>📋 تعداد کل: ${records.length} نفر</span>
-          <span>📄 هر صفحه: ۱۵ نفر</span>
+          <span>📄 هر صفحه: ۷ نفر (هر کارمند ۳ ردیف)</span>
           <span>📅 تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</span>
         </div>
 
@@ -824,40 +905,19 @@
           <thead>
             <tr>
               <th class="col-num">#</th>
-              <th class="col-code">کُد بست</th>
-              <th class="col-job">وظیفه</th>
-              <th class="col-first">اسم</th>
-              <th class="col-last">تخلص</th>
-              <th class="col-father">ولد</th>
-              <th class="col-grand">ولدیت</th>
-              <th class="col-tazkira">تذکره برقی</th>
-              <th class="col-tazkira">تذکره کاغذی</th>
-              <th class="col-page">صفحه</th>
-              <th class="col-vol">جلد</th>
-              <th class="col-eth">قومیت</th>
-              <th class="col-gender">جنسیت</th>
-              <th class="col-date">تاریخ تولد</th>
-              <th class="col-place">محل تولد</th>
-              <th class="col-origin">سکونت اصلی</th>
-              <th class="col-current">سکونت فعلی</th>
-              <th class="col-date">اولین تقرر</th>
-              <th class="col-phone">شماره تماس</th>
-              <th class="col-dis">معلولیت</th>
-              <th class="col-pos">موقف</th>
-              <th class="col-emp">نوع استخدام</th>
-              <th class="col-bust">بست</th>
-              <th class="col-grade">قدم</th>
-              <th class="col-date">تقرر فعلی</th>
-              <th class="col-degree">درجه</th>
-              <th class="col-major">رشته</th>
-              <th class="col-inst">مرجع تعلیمی</th>
-              <th class="col-inst">موقعیت مرجع</th>
-              <th class="col-date">تاریخ شمولیت</th>
-              <th class="col-date">تاریخ فراغت</th>
-              <th class="col-subject">مضمون تدریس</th>
-              <th class="col-age">سن</th>
-              <th class="col-emp-status">وضعیت</th>
-              <th class="col-status">تایید</th>
+              <th class="col-lbl">—</th>
+              <th class="col-val-name">—</th>
+              <th class="col-lbl">—</th>
+              <th class="col-val">—</th>
+              <th class="col-lbl">—</th>
+              <th class="col-val">—</th>
+              <th class="col-lbl">—</th>
+              <th class="col-val">—</th>
+              <th class="col-lbl">—</th>
+              <th class="col-val">—</th>
+              <th class="col-lbl">—</th>
+              <th class="col-val">—</th>
+              <th class="col-status">—</th>
             </tr>
           </thead>
           <tbody>

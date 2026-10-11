@@ -36,13 +36,9 @@
   .badge-unknown { background: #e2e8f0; color: #475569; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
   .btn-action { padding: 4px 10px; font-size: 12px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; margin: 0 2px; }
   .btn-approve { background: #10b981; color: #fff; }
-  .btn-approve:hover { background: #059669; }
   .btn-delete-row { background: #dc2626; color: #fff; }
-  .btn-delete-row:hover { background: #b91c1c; }
   .btn-view { background: #3b82f6; color: #fff; }
-  .btn-view:hover { background: #2563eb; }
   .btn-print { background: #7c3aed; color: #fff; }
-  .btn-print:hover { background: #6d28d9; }
   .info-banner {
     background: #dbeafe; border-right: 5px solid #3b82f6;
     padding: 12px 15px; border-radius: 6px;
@@ -119,7 +115,7 @@
           <i class="fa-solid fa-file-excel"></i> خروجی CSV
         </button>
         <button class="btn btn-info fw-bold btn-sm px-3 text-white" onclick="printList()">
-          🖨️ چاپ لیست کامل (۲ در صفحه)
+          🖨️ چاپ لیست (۱۵ در صفحه)
         </button>
       </div>
     </div>
@@ -150,8 +146,8 @@
         <label style="font-size:13px;font-weight:bold;color:#475569;margin-bottom:6px;">👤 وضعیت کارمند:</label>
         <select class="form-control" id="empStatusFilter" onchange="loadAllRecords()">
           <option value="">👥 همه</option>
-          <option value="active">✅ فقط فعال (زیر ۶۵ سال)</option>
-          <option value="retired">🎖️ فقط متقاعد (۶۵+ سال)</option>
+          <option value="active">✅ فقط فعال</option>
+          <option value="retired">🎖️ فقط متقاعد</option>
         </select>
       </div>
       <div class="col-md-4">
@@ -210,7 +206,6 @@
   let allSchoolsList = [];
   const RETIREMENT_AGE = 65;
 
-  // ═══ دسته‌بندی کارمندان ═══
   const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
   const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
   const TEACHER_KEYWORDS = ['معلم', 'آموزگار', 'استاد', 'مدرس'];
@@ -231,9 +226,6 @@
     return 'admin_staff';
   }
 
-  // ============================================================
-  // تاریخ شمسی
-  // ============================================================
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -297,9 +289,6 @@
     return { age, status: '✅ فعال', cls: 'badge-active' };
   }
 
-  // ============================================================
-  // Toast
-  // ============================================================
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -319,9 +308,6 @@
 
   const debouncedLoad = debounce(loadAllRecords, 400);
 
-  // ============================================================
-  // لود رکوردها (با ۳ فیلتر)
-  // ============================================================
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value.trim();
     const schoolFilter = document.getElementById('schoolFilter').value.trim();
@@ -352,7 +338,6 @@
 
       let records = await res.json();
 
-      // ⭐ فیلتر وضعیت (فعال/متقاعد)
       if (hasEmpFilter && Array.isArray(records)) {
         records = records.filter(row => {
           const info = row.data || {};
@@ -364,7 +349,6 @@
         });
       }
 
-      // ⭐ فیلتر نوع کارمند
       if (hasJobFilter && Array.isArray(records)) {
         records = records.filter(row => {
           const info = row.data || {};
@@ -458,9 +442,6 @@
     records.forEach((row) => {
       const info = row.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
-      const father = info.fatherName || '-';
-      const job = info.jobTitle || info.job || '-';
-      const degree = info.degree || '-';
       const empStatus = getEmployeeStatus(info);
 
       const approvalHtml = row.status === 'approved'
@@ -483,9 +464,9 @@
         <td><strong>${escapeHtml(row.schoolname || info.schoolName || '-')}</strong></td>
         <td>${escapeHtml(row.district || info.district || '-')}</td>
         <td>${escapeHtml(name)}</td>
-        <td>${escapeHtml(father)}</td>
-        <td><span class="badge bg-light text-dark">${escapeHtml(job)}</span></td>
-        <td>${escapeHtml(degree)}</td>
+        <td>${escapeHtml(info.fatherName || '-')}</td>
+        <td><span class="badge bg-light text-dark">${escapeHtml(info.jobTitle || info.job || '-')}</span></td>
+        <td>${escapeHtml(info.degree || '-')}</td>
         <td><strong>${empStatus.age}</strong></td>
         <td>${empStatusHtml}</td>
         <td>${approvalHtml}</td>
@@ -497,9 +478,6 @@
     tbody.appendChild(fragment);
   }
 
-  // ============================================================
-  // تایید رکورد
-  // ============================================================
   async function approveRecord(id) {
     if (!confirm('آیا این رکورد تایید شود؟')) return;
     try {
@@ -512,9 +490,6 @@
     } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
-  // ============================================================
-  // حذف رکورد
-  // ============================================================
   async function deleteRecord(id) {
     if (!confirm('⚠️ آیا از حذف این رکورد مطمئن هستید؟')) return;
     try {
@@ -530,9 +505,6 @@
     } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
-  // ============================================================
-  // خواندن
-  // ============================================================
   function viewRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
     if (!rec) return;
@@ -618,9 +590,6 @@
     win.document.close();
   }
 
-  // ============================================================
-  // پرنت یک کارمند
-  // ============================================================
   function printRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
     if (!rec) return;
@@ -660,14 +629,6 @@
         <h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2>
         <h4 style="margin:5px 0 0 0; font-size:13px; color:#555;">فورم معلومات کارمند</h4>
       </div>
-      <table style="width:100%; margin-bottom:10px; border-collapse:collapse;">
-        <tr>
-          <td style="border:1px solid #333; padding:6px;"><strong>آی‌دی:</strong> ${rec.id}</td>
-          <td style="border:1px solid #333; padding:6px;"><strong>مکتب:</strong> ${escapeHtml(rec.schoolname || '-')}</td>
-          <td style="border:1px solid #333; padding:6px;"><strong>ولسوالی:</strong> ${escapeHtml(rec.district || '-')}</td>
-          <td style="border:1px solid #333; padding:6px;"><strong>وضعیت:</strong> ${rec.status === 'approved' ? 'تایید شده' : 'در انتظار'}</td>
-        </tr>
-      </table>
     `;
 
     sections.forEach(sec => {
@@ -705,9 +666,9 @@
     win.document.close();
   }
 
-  // ============================================================
-  // 🖨️ چاپ لیست کامل — همه فیلدها + ۲ کارمند در هر صفحه
-  // ============================================================
+  // ═══════════════════════════════════════════════════════════
+  // 🖨️ چاپ لیست — جدول افقی با همه ۳۰+ فیلد، ۱۵ نفر در صفحه
+  // ═══════════════════════════════════════════════════════════
   function printList() {
     const records = loadedRecordsCache || [];
     if (records.length === 0) {
@@ -715,101 +676,51 @@
       return;
     }
 
-    let employeesHtml = '';
+    let rowsHtml = '';
     records.forEach((row, idx) => {
       const info = row.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
       const empStatus = getEmployeeStatus(info);
-      const statusText = row.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
+      const statusText = row.status === 'approved' ? 'تایید' : 'انتظار';
 
-      employeesHtml += `
-        <div class="employee-block">
-          <div class="emp-header">
-            <div class="emp-num">${idx + 1}</div>
-            <div class="emp-name">${escapeHtml(name)} ولد ${escapeHtml(info.fatherName || '-')}</div>
-            <div class="emp-badges">
-              <span class="badge badge-blue">${escapeHtml(info.jobTitle || info.job || '-')}</span>
-              <span class="badge badge-gray">${escapeHtml(info.jobCode || '-')}</span>
-              <span class="badge ${empStatus.status.includes('متقاعد') ? 'badge-red' : 'badge-green'}">${empStatus.status} — ${empStatus.age} سال</span>
-              <span class="badge ${row.status === 'approved' ? 'badge-green' : 'badge-yellow'}">${statusText}</span>
-            </div>
-          </div>
-
-          <table class="info-table">
-            <tr>
-              <td class="lbl">کُد بست</td><td class="val">${escapeHtml(info.jobCode || '—')}</td>
-              <td class="lbl">عنوان بست</td><td class="val">${escapeHtml(info.jobTitle || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">اسم</td><td class="val">${escapeHtml(info.firstName || '—')}</td>
-              <td class="lbl">تخلص</td><td class="val">${escapeHtml(info.lastName || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">ولد</td><td class="val">${escapeHtml(info.fatherName || '—')}</td>
-              <td class="lbl">ولدیت</td><td class="val">${escapeHtml(info.grandfatherName || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">تذکره الکترونیکی</td><td class="val">${escapeHtml(info.eTazkira || '—')}</td>
-              <td class="lbl">تذکره کاغذی</td><td class="val">${escapeHtml(info.paperTazkira || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">صفحه تذکره</td><td class="val">${escapeHtml(info.tazkiraPage || '—')}</td>
-              <td class="lbl">جلد تذکره</td><td class="val">${escapeHtml(info.tazkiraVolume || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">قومیت</td><td class="val">${escapeHtml(info.ethnicity || '—')}</td>
-              <td class="lbl">جنسیت</td><td class="val">${escapeHtml(info.gender || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">تاریخ تولد</td><td class="val">${escapeHtml(info.birthDate || '—')}</td>
-              <td class="lbl">محل تولد</td><td class="val">${escapeHtml(info.birthPlace || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">سکونت اصلی</td><td class="val">${escapeHtml(info.originAddress || '—')}</td>
-              <td class="lbl">سکونت فعلی</td><td class="val">${escapeHtml(info.currentAddress || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">تاریخ اولین تقرر</td><td class="val">${escapeHtml(info.firstAppointmentDate || '—')}</td>
-              <td class="lbl">شماره تماس</td><td class="val">${escapeHtml(info.phone || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">معلولیت</td><td class="val">${escapeHtml(info.disability || '—')}</td>
-              <td class="lbl">موقف وظیفوی</td><td class="val">${escapeHtml(info.positionType || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">نوع استخدام</td><td class="val">${escapeHtml(info.employmentType || '—')}</td>
-              <td class="lbl">بست</td><td class="val">${escapeHtml(info.bust || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">قدم</td><td class="val">${escapeHtml(info.grade || '—')}</td>
-              <td class="lbl">تاریخ تقرر فعلی</td><td class="val">${escapeHtml(info.currentPositionDate || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">درجه تحصیلی</td><td class="val">${escapeHtml(info.degree || '—')}</td>
-              <td class="lbl">رشته تحصیلی</td><td class="val">${escapeHtml(info.major || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">مرجع تعلیمی</td><td class="val">${escapeHtml(info.eduInstitute || '—')}</td>
-              <td class="lbl">موقعیت مرجع</td><td class="val">${escapeHtml(info.eduInstituteLocation || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">تاریخ شمولیت</td><td class="val">${escapeHtml(info.enrollmentDate || '—')}</td>
-              <td class="lbl">تاریخ فراغت</td><td class="val">${escapeHtml(info.graduationDate || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">مضمون تدریس</td><td class="val">${escapeHtml(info.subjectTeaching || '—')}</td>
-              <td class="lbl">سن دقیق</td><td class="val">${empStatus.age} سال</td>
-            </tr>
-            <tr>
-              <td class="lbl">مکتب</td><td class="val">${escapeHtml(row.schoolname || '—')}</td>
-              <td class="lbl">ولسوالی</td><td class="val">${escapeHtml(row.district || '—')}</td>
-            </tr>
-            <tr>
-              <td class="lbl">آی‌دی رکورد</td><td class="val">${row.id}</td>
-              <td class="lbl">وضعیت کارمند</td><td class="val">${empStatus.status}</td>
-            </tr>
-          </table>
-        </div>
+      rowsHtml += `
+        <tr>
+          <td class="col-num">${idx + 1}</td>
+          <td class="col-code">${escapeHtml(info.jobCode || '—')}</td>
+          <td class="col-job">${escapeHtml(info.jobTitle || info.job || '—')}</td>
+          <td class="col-first">${escapeHtml(info.firstName || '—')}</td>
+          <td class="col-last">${escapeHtml(info.lastName || '—')}</td>
+          <td class="col-father">${escapeHtml(info.fatherName || '—')}</td>
+          <td class="col-grand">${escapeHtml(info.grandfatherName || '—')}</td>
+          <td class="col-tazkira">${escapeHtml(info.eTazkira || '—')}</td>
+          <td class="col-tazkira">${escapeHtml(info.paperTazkira || '—')}</td>
+          <td class="col-page">${escapeHtml(info.tazkiraPage || '—')}</td>
+          <td class="col-vol">${escapeHtml(info.tazkiraVolume || '—')}</td>
+          <td class="col-eth">${escapeHtml(info.ethnicity || '—')}</td>
+          <td class="col-gender">${escapeHtml(info.gender || '—')}</td>
+          <td class="col-date">${escapeHtml(info.birthDate || '—')}</td>
+          <td class="col-place">${escapeHtml(info.birthPlace || '—')}</td>
+          <td class="col-origin">${escapeHtml(info.originAddress || '—')}</td>
+          <td class="col-current">${escapeHtml(info.currentAddress || '—')}</td>
+          <td class="col-date">${escapeHtml(info.firstAppointmentDate || '—')}</td>
+          <td class="col-phone">${escapeHtml(info.phone || '—')}</td>
+          <td class="col-dis">${escapeHtml(info.disability || '—')}</td>
+          <td class="col-pos">${escapeHtml(info.positionType || '—')}</td>
+          <td class="col-emp">${escapeHtml(info.employmentType || '—')}</td>
+          <td class="col-bust">${escapeHtml(info.bust || '—')}</td>
+          <td class="col-grade">${escapeHtml(info.grade || '—')}</td>
+          <td class="col-date">${escapeHtml(info.currentPositionDate || '—')}</td>
+          <td class="col-degree">${escapeHtml(info.degree || '—')}</td>
+          <td class="col-major">${escapeHtml(info.major || '—')}</td>
+          <td class="col-inst">${escapeHtml(info.eduInstitute || '—')}</td>
+          <td class="col-inst">${escapeHtml(info.eduInstituteLocation || '—')}</td>
+          <td class="col-date">${escapeHtml(info.enrollmentDate || '—')}</td>
+          <td class="col-date">${escapeHtml(info.graduationDate || '—')}</td>
+          <td class="col-subject">${escapeHtml(info.subjectTeaching || '—')}</td>
+          <td class="col-age">${empStatus.age}</td>
+          <td class="col-emp-status">${empStatus.status}</td>
+          <td class="col-status">${statusText}</td>
+        </tr>
       `;
     });
 
@@ -819,61 +730,79 @@
       <html lang="fa" dir="rtl">
       <head>
         <meta charset="UTF-8">
-        <title>چاپ لیست کامل کارمندان</title>
+        <title>چاپ لیست کارمندان</title>
         <style>
           * { box-sizing: border-box; }
-          body { font-family: 'B Nazanin', Tahoma, Arial, sans-serif; direction: rtl; padding: 10px; margin: 0; background: #fff; color: #000; }
+          body { font-family: 'B Nazanin', Tahoma, Arial, sans-serif; direction: rtl; padding: 5px; margin: 0; background: #fff; color: #000; }
 
-          .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 12px; }
-          .header h2 { margin: 0; font-size: 20px; font-weight: bold; }
-          .header h4 { margin: 4px 0 0 0; font-size: 13px; color: #444; }
+          .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 6px; margin-bottom: 8px; }
+          .header h2 { margin: 0; font-size: 15px; font-weight: bold; }
+          .header h4 { margin: 3px 0 0 0; font-size: 11px; color: #444; }
 
-          .info-bar { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 10px; padding: 6px 12px; background: #f1f5f9; border-radius: 5px; font-weight: bold; }
+          .info-bar { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 6px; padding: 4px 8px; background: #f1f5f9; border-radius: 4px; font-weight: bold; }
 
-          .employee-block { border: 2px solid #333; border-radius: 6px; margin-bottom: 12px; page-break-inside: avoid; overflow: hidden; }
+          table { width: 100%; border-collapse: collapse; font-size: 8px; table-layout: fixed; }
+          th, td { border: 1px solid #333; padding: 3px 1px; text-align: center; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+          th { background: #1e40af; color: #fff; font-weight: bold; font-size: 8px; padding: 4px 1px; }
+          tbody tr:nth-child(even) { background: #f8fafc; }
 
-          .emp-header { background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 8px 12px; border-bottom: 2px solid #333; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-          .emp-num { background: #2563eb; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0; }
-          .emp-name { font-size: 15px; font-weight: bold; flex: 1; min-width: 150px; color: #1e3a8a; }
-          .emp-badges { display: flex; gap: 5px; flex-wrap: wrap; }
-          .badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap; }
-          .badge-blue { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
-          .badge-gray { background: #f1f5f9; color: #334155; border: 1px solid #94a3b8; }
-          .badge-green { background: #dcfce7; color: #15803d; border: 1px solid #16a34a; }
-          .badge-red { background: #fee2e2; color: #b91c1c; border: 1px solid #dc2626; }
-          .badge-yellow { background: #fef3c7; color: #92400e; border: 1px solid #d97706; }
-
-          .info-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-          .info-table td { border: 1px solid #cbd5e1; padding: 5px 8px; vertical-align: middle; line-height: 1.5; }
-          .info-table .lbl { background: #f1f5f9; font-weight: bold; width: 18%; font-size: 11.5px; color: #334155; }
-          .info-table .val { background: #fff; width: 32%; font-size: 12px; }
+          .col-num { width: 2.5%; font-weight: bold; }
+          .col-code { width: 4.5%; font-size: 7px; }
+          .col-job { width: 3.5%; }
+          .col-first { width: 3.5%; font-weight: bold; }
+          .col-last { width: 3.5%; }
+          .col-father { width: 3.5%; }
+          .col-grand { width: 3.5%; }
+          .col-tazkira { width: 4.5%; font-size: 7px; }
+          .col-page { width: 2%; }
+          .col-vol { width: 2%; }
+          .col-eth { width: 2.5%; }
+          .col-gender { width: 2%; }
+          .col-date { width: 3.5%; font-size: 7px; }
+          .col-place { width: 2.5%; }
+          .col-origin { width: 3%; }
+          .col-current { width: 3%; }
+          .col-phone { width: 3.5%; font-size: 7px; }
+          .col-dis { width: 2.5%; }
+          .col-pos { width: 2.5%; }
+          .col-emp { width: 2.5%; }
+          .col-bust { width: 2%; }
+          .col-grade { width: 2%; }
+          .col-degree { width: 2.5%; }
+          .col-major { width: 3%; }
+          .col-inst { width: 3.5%; }
+          .col-subject { width: 3.5%; }
+          .col-age { width: 2%; font-weight: bold; }
+          .col-emp-status { width: 3%; }
+          .col-status { width: 2.5%; }
 
           @media print {
             body { padding: 0; }
             .no-print { display: none !important; }
-            @page { size: A4 portrait; margin: 8mm; }
+            @page { size: A4 landscape; margin: 4mm; }
 
-            .header { margin-bottom: 8px; padding-bottom: 8px; }
-            .header h2 { font-size: 17px; }
-            .header h4 { font-size: 12px; }
-            .info-bar { font-size: 11px; padding: 5px 10px; margin-bottom: 8px; }
+            .header { margin-bottom: 5px; padding-bottom: 5px; }
+            .header h2 { font-size: 13px; }
+            .header h4 { font-size: 10px; }
+            .info-bar { font-size: 9px; padding: 3px 6px; margin-bottom: 4px; }
 
-            .employee-block { margin-bottom: 8px; page-break-inside: avoid; }
-            .employee-block:nth-child(2n+3) { page-break-before: always; }
+            table { font-size: 7.5px; }
+            th, td { padding: 2px 1px; font-size: 7.5px; }
+            th { font-size: 7.5px; padding: 3px 1px; }
 
-            .emp-header { padding: 6px 10px; }
-            .emp-num { width: 26px; height: 26px; font-size: 12px; }
-            .emp-name { font-size: 13px; }
-            .badge { font-size: 10px; padding: 2px 8px; }
+            thead { display: table-header-group; }
 
-            .info-table { font-size: 11px; }
-            .info-table td { padding: 4px 6px; }
-            .info-table .lbl { font-size: 10.5px; }
-            .info-table .val { font-size: 11px; }
+            tbody tr:nth-child(15n+16) {
+              page-break-before: always;
+            }
+
+            tr { page-break-inside: avoid; }
           }
 
-          .print-btn { text-align: center; margin-top: 15px; padding: 10px; }
-          .print-btn button { padding: 10px 24px; background: #3b82f6; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; margin: 0 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+          thead { display: table-header-group; }
+
+          .print-btn { text-align: center; margin-top: 10px; padding: 6px; }
+          .print-btn button { padding: 8px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 12px; margin: 0 4px; }
           .print-btn button:hover { background: #2563eb; }
           .print-btn .btn-close { background: #e2e8f0; color: #1e293b; }
         </style>
@@ -887,11 +816,54 @@
 
         <div class="info-bar">
           <span>📋 تعداد کل: ${records.length} نفر</span>
-          <span>📄 هر صفحه: ۲ نفر</span>
+          <span>📄 هر صفحه: ۱۵ نفر</span>
           <span>📅 تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</span>
         </div>
 
-        ${employeesHtml}
+        <table>
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-code">کُد بست</th>
+              <th class="col-job">وظیفه</th>
+              <th class="col-first">اسم</th>
+              <th class="col-last">تخلص</th>
+              <th class="col-father">ولد</th>
+              <th class="col-grand">ولدیت</th>
+              <th class="col-tazkira">تذکره برقی</th>
+              <th class="col-tazkira">تذکره کاغذی</th>
+              <th class="col-page">صفحه</th>
+              <th class="col-vol">جلد</th>
+              <th class="col-eth">قومیت</th>
+              <th class="col-gender">جنسیت</th>
+              <th class="col-date">تاریخ تولد</th>
+              <th class="col-place">محل تولد</th>
+              <th class="col-origin">سکونت اصلی</th>
+              <th class="col-current">سکونت فعلی</th>
+              <th class="col-date">اولین تقرر</th>
+              <th class="col-phone">شماره تماس</th>
+              <th class="col-dis">معلولیت</th>
+              <th class="col-pos">موقف</th>
+              <th class="col-emp">نوع استخدام</th>
+              <th class="col-bust">بست</th>
+              <th class="col-grade">قدم</th>
+              <th class="col-date">تقرر فعلی</th>
+              <th class="col-degree">درجه</th>
+              <th class="col-major">رشته</th>
+              <th class="col-inst">مرجع تعلیمی</th>
+              <th class="col-inst">موقعیت مرجع</th>
+              <th class="col-date">تاریخ شمولیت</th>
+              <th class="col-date">تاریخ فراغت</th>
+              <th class="col-subject">مضمون تدریس</th>
+              <th class="col-age">سن</th>
+              <th class="col-emp-status">وضعیت</th>
+              <th class="col-status">تایید</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
 
         <div class="print-btn no-print">
           <button onclick="window.print()">🖨️ پرنت</button>
@@ -907,9 +879,6 @@
     win.document.close();
   }
 
-  // ============================================================
-  // لود مکاتب + dropdown فیلتر
-  // ============================================================
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', {
@@ -959,9 +928,6 @@
     } catch (e) { console.error(e); }
   }
 
-  // ============================================================
-  // افزودن مکتب
-  // ============================================================
   async function addUser() {
     const body = {
       username: document.getElementById('uUsername').value.trim(),
@@ -988,9 +954,6 @@
     } catch (err) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
-  // ============================================================
-  // حذف مکتب
-  // ============================================================
   async function deleteSchool(id) {
     if (!confirm('⚠️ آیا از حذف این مکتب مطمئن هستید؟ تمام رکوردهای آن نیز حذف می‌شوند.')) return;
     try {
@@ -1006,20 +969,33 @@
     } catch (e) { showToast('ارتباط با سرور برقرار نشد', true); }
   }
 
-  // ============================================================
-  // خروجی CSV
-  // ============================================================
   function exportToCSV() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی وجود ندارد', true); return; }
-    const headers = ['ID','مکتب','ولسوالی','نام','ولد','کد بست','وظیفه','درجه','سن','وضعیت کارمند','وضعیت تایید'];
+    const headers = ['ID','مکتب','ولسوالی','کُد بست','وظیفه','اسم','تخلص','ولد','ولدیت','تذکره برقی','تذکره کاغذی','صفحه','جلد','قومیت','جنسیت','تاریخ تولد','محل تولد','سکونت اصلی','سکونت فعلی','اولین تقرر','تماس','معلولیت','موقف','نوع استخدام','بست','قدم','تقرر فعلی','درجه','رشته','مرجع','موقعیت مرجع','شمولیت','فراغت','مضمون تدریس','سن','وضعیت کارمند','وضعیت تایید'];
     const rows = records.map(r => {
       const info = r.data || {};
-      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '');
       const emp = getEmployeeStatus(info);
-      return [r.id, r.schoolname || '', r.district || '', name, info.fatherName || '',
-        info.jobCode || '', info.jobTitle || info.job || '', info.degree || '', emp.age, emp.status,
-        r.status === 'approved' ? 'تایید شده' : 'در انتظار'];
+      return [
+        r.id, r.schoolname || '', r.district || '',
+        info.jobCode || '', info.jobTitle || info.job || '',
+        info.firstName || '', info.lastName || '',
+        info.fatherName || '', info.grandfatherName || '',
+        info.eTazkira || '', info.paperTazkira || '',
+        info.tazkiraPage || '', info.tazkiraVolume || '',
+        info.ethnicity || '', info.gender || '',
+        info.birthDate || '', info.birthPlace || '',
+        info.originAddress || '', info.currentAddress || '',
+        info.firstAppointmentDate || '', info.phone || '',
+        info.disability || '', info.positionType || '',
+        info.employmentType || '', info.bust || '',
+        info.grade || '', info.currentPositionDate || '',
+        info.degree || '', info.major || '',
+        info.eduInstitute || '', info.eduInstituteLocation || '',
+        info.enrollmentDate || '', info.graduationDate || '',
+        info.subjectTeaching || '', emp.age, emp.status,
+        r.status === 'approved' ? 'تایید شده' : 'در انتظار'
+      ];
     });
     const csv = '\uFEFF' + [headers, ...rows]
       .map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))

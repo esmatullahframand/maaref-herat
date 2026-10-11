@@ -114,28 +114,54 @@
         <i class="fa-solid fa-users-gear"></i> کارمندان
         <span id="searchBadge" class="badge-search-active" style="display:none;">🔍 حالت فیلتر</span>
       </h5>
-      <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportToCSV()">
-        <i class="fa-solid fa-file-excel"></i> خروجی CSV
-      </button>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportToCSV()">
+          <i class="fa-solid fa-file-excel"></i> خروجی CSV
+        </button>
+        <button class="btn btn-info fw-bold btn-sm px-3 text-white" onclick="printList()">
+          🖨️ چاپ لیست کامل (۲ در صفحه)
+        </button>
+      </div>
     </div>
 
     <div class="info-banner">
       ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند.<br>
-      رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> یا <strong>فیلتر مکتب</strong> نمایش داده می‌شوند.<br>
+      رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> یا <strong>فیلتر</strong> نمایش داده می‌شوند.<br>
       وضعیت <strong>فعال/متقاعد</strong> بر اساس سن (۶۵ سال) محاسبه می‌شود.
     </div>
 
     <div class="row g-3 mb-3">
-      <div class="col-md-8">
+      <div class="col-md-12">
         <input class="form-control border-primary" id="searchInput"
                placeholder="🔍 جستجو در همه رکوردها (نام، وظیفه، مکتب، ولسوالی)..."
                oninput="debouncedLoad()">
         <div class="search-hint">💡 برای دیدن رکوردهای تایید‌شده، بخشی از نام یا مکتب را تایپ کنید.</div>
       </div>
+    </div>
+
+    <div class="row g-3 mb-3">
       <div class="col-md-4">
-        <label style="font-size:13px;font-weight:bold;color:#475569;margin-bottom:6px;">🏫 فیلتر بر اساس مکتب:</label>
+        <label style="font-size:13px;font-weight:bold;color:#475569;margin-bottom:6px;">🏫 فیلتر مکتب:</label>
         <select class="form-control" id="schoolFilter" onchange="loadAllRecords()">
           <option value="">📋 همه مکاتب</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label style="font-size:13px;font-weight:bold;color:#475569;margin-bottom:6px;">👤 وضعیت کارمند:</label>
+        <select class="form-control" id="empStatusFilter" onchange="loadAllRecords()">
+          <option value="">👥 همه</option>
+          <option value="active">✅ فقط فعال (زیر ۶۵ سال)</option>
+          <option value="retired">🎖️ فقط متقاعد (۶۵+ سال)</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label style="font-size:13px;font-weight:bold;color:#475569;margin-bottom:6px;">💼 نوع کارمند:</label>
+        <select class="form-control" id="jobTypeFilter" onchange="loadAllRecords()">
+          <option value="">📋 همه انواع</option>
+          <option value="teacher">👨‍🏫 معلمان</option>
+          <option value="manager">👨‍💼 مدیران</option>
+          <option value="admin_staff">📋 کارمندان دفتری</option>
+          <option value="service">🧹 کارکن خدماتی</option>
         </select>
       </div>
     </div>
@@ -183,6 +209,27 @@
   let loadedRecordsCache = [];
   let allSchoolsList = [];
   const RETIREMENT_AGE = 65;
+
+  // ═══ دسته‌بندی کارمندان ═══
+  const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
+  const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
+  const TEACHER_KEYWORDS = ['معلم', 'آموزگار', 'استاد', 'مدرس'];
+
+  const JOB_TYPE_LABELS = {
+    'teacher': '👨‍🏫 معلمان',
+    'manager': '👨‍💼 مدیران',
+    'admin_staff': '📋 کارمندان دفتری',
+    'service': '🧹 کارکن خدماتی'
+  };
+
+  function getJobCategory(jobTitle) {
+    if (!jobTitle) return 'admin_staff';
+    const j = jobTitle.trim();
+    if (SERVICE_KEYWORDS.some(kw => j.includes(kw))) return 'service';
+    if (MANAGER_KEYWORDS.some(kw => j.includes(kw))) return 'manager';
+    if (TEACHER_KEYWORDS.some(kw => j.includes(kw))) return 'teacher';
+    return 'admin_staff';
+  }
 
   // ============================================================
   // تاریخ شمسی
@@ -273,21 +320,27 @@
   const debouncedLoad = debounce(loadAllRecords, 400);
 
   // ============================================================
-  // لود رکوردها (با فیلتر مکتب)
+  // لود رکوردها (با ۳ فیلتر)
   // ============================================================
   async function loadAllRecords() {
     const search = document.getElementById('searchInput').value.trim();
     const schoolFilter = document.getElementById('schoolFilter').value.trim();
+    const empStatusFilter = document.getElementById('empStatusFilter').value;
+    const jobTypeFilter = document.getElementById('jobTypeFilter').value;
+
     const hasSearch = search.length > 0;
     const hasSchoolFilter = schoolFilter.length > 0;
+    const hasEmpFilter = empStatusFilter.length > 0;
+    const hasJobFilter = jobTypeFilter.length > 0;
+    const hasAnyFilter = hasSearch || hasSchoolFilter || hasEmpFilter || hasJobFilter;
 
-    document.getElementById('searchBadge').style.display = (hasSearch || hasSchoolFilter) ? 'inline-block' : 'none';
+    document.getElementById('searchBadge').style.display = hasAnyFilter ? 'inline-block' : 'none';
 
     try {
       const params = [];
       if (hasSearch) params.push('search=' + encodeURIComponent(search));
       if (hasSchoolFilter) params.push('schoolname=' + encodeURIComponent(schoolFilter));
-      if (!hasSearch && !hasSchoolFilter) params.push('status=pending');
+      if (!hasAnyFilter) params.push('status=pending');
 
       const url = '/api/records?' + params.join('&');
 
@@ -297,9 +350,31 @@
 
       if (res.status === 401) { localStorage.clear(); location.href = '/'; return; }
 
-      const records = await res.json();
+      let records = await res.json();
+
+      // ⭐ فیلتر وضعیت (فعال/متقاعد)
+      if (hasEmpFilter && Array.isArray(records)) {
+        records = records.filter(row => {
+          const info = row.data || {};
+          const emp = getEmployeeStatus(info);
+          const isRetired = emp.status.includes('متقاعد');
+          if (empStatusFilter === 'retired') return isRetired;
+          if (empStatusFilter === 'active') return !isRetired && emp.age !== '—';
+          return true;
+        });
+      }
+
+      // ⭐ فیلتر نوع کارمند
+      if (hasJobFilter && Array.isArray(records)) {
+        records = records.filter(row => {
+          const info = row.data || {};
+          const job = info.jobTitle || info.job || '';
+          return getJobCategory(job) === jobTypeFilter;
+        });
+      }
+
       loadedRecordsCache = records;
-      renderRecords(records, hasSearch || hasSchoolFilter);
+      renderRecords(records, hasAnyFilter);
 
       loadStats();
     } catch (e) {
@@ -341,25 +416,38 @@
 
     const schoolFilter = document.getElementById('schoolFilter').value;
     const searchVal = document.getElementById('searchInput').value;
-    if (schoolFilter || searchVal) {
-      filterBar.innerHTML = `<div style="background:#dbeafe; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#1e3a8a;">
-        🔍 فیلتر فعال: 
-        ${schoolFilter ? `<strong>مکتب: ${escapeHtml(schoolFilter)}</strong>` : ''}
-        ${schoolFilter && searchVal ? ' + ' : ''}
-        ${searchVal ? `<strong>جستجو: ${escapeHtml(searchVal)}</strong>` : ''}
+    const empStatusFilter = document.getElementById('empStatusFilter').value;
+    const jobTypeFilter = document.getElementById('jobTypeFilter').value;
+
+    const activeFilters = [];
+    if (schoolFilter) activeFilters.push(`🏫 مکتب: <strong>${escapeHtml(schoolFilter)}</strong>`);
+    if (searchVal) activeFilters.push(`🔍 جستجو: <strong>${escapeHtml(searchVal)}</strong>`);
+    if (empStatusFilter === 'active') activeFilters.push(`👤 وضعیت: <strong>✅ فعال</strong>`);
+    if (empStatusFilter === 'retired') activeFilters.push(`👤 وضعیت: <strong>🎖️ متقاعد</strong>`);
+    if (jobTypeFilter) activeFilters.push(`💼 نوع: <strong>${JOB_TYPE_LABELS[jobTypeFilter]}</strong>`);
+
+    if (activeFilters.length > 0) {
+      filterBar.innerHTML = `<div style="background:#dbeafe; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#1e3a8a; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <span>🔍 فیلترهای فعال: ${activeFilters.join(' + ')}</span>
+        <span style="background:#3b82f6; color:#fff; padding:4px 14px; border-radius:20px; font-weight:bold;">تعداد: ${records.length} نفر</span>
       </div>`;
     } else {
       filterBar.innerHTML = '';
     }
 
     if (!Array.isArray(records) || records.length === 0) {
-      let msg = 'هیچ رکوردی در انتظار تایید نیست';
-      if (schoolFilter && searchVal) {
-        msg = `هیچ کارمندی برای مکتب «${escapeHtml(schoolFilter)}» با جستجوی «${escapeHtml(searchVal)}» یافت نشد`;
-      } else if (schoolFilter) {
-        msg = `هیچ کارمندی برای مکتب «${escapeHtml(schoolFilter)}» یافت نشد`;
-      } else if (searchVal) {
-        msg = 'هیچ نتیجه‌ای برای جستجو یافت نشد';
+      let msg = 'هیچ رکوردی یافت نشد';
+      const filters = [];
+      if (empStatusFilter === 'retired') filters.push('متقاعد');
+      if (empStatusFilter === 'active') filters.push('فعال');
+      if (jobTypeFilter) filters.push(JOB_TYPE_LABELS[jobTypeFilter]);
+      if (schoolFilter) filters.push(`مکتب «${escapeHtml(schoolFilter)}»`);
+      if (searchVal) filters.push(`جستجوی «${escapeHtml(searchVal)}»`);
+
+      if (filters.length > 0) {
+        msg = `هیچ رکوردی برای ${filters.join(' + ')} یافت نشد`;
+      } else {
+        msg = 'هیچ رکوردی در انتظار تایید نیست';
       }
       tbody.innerHTML = `<tr><td colspan="11" class="text-muted p-4">${msg}</td></tr>`;
       return;
@@ -531,7 +619,7 @@
   }
 
   // ============================================================
-  // پرنت
+  // پرنت یک کارمند
   // ============================================================
   function printRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
@@ -613,6 +701,208 @@
         </div>
         <script>setTimeout(function(){ window.print(); }, 400);<\/script>
       </body></html>
+    `);
+    win.document.close();
+  }
+
+  // ============================================================
+  // 🖨️ چاپ لیست کامل — همه فیلدها + ۲ کارمند در هر صفحه
+  // ============================================================
+  function printList() {
+    const records = loadedRecordsCache || [];
+    if (records.length === 0) {
+      showToast('هیچ رکوردی برای چاپ وجود ندارد', true);
+      return;
+    }
+
+    let employeesHtml = '';
+    records.forEach((row, idx) => {
+      const info = row.data || {};
+      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
+      const empStatus = getEmployeeStatus(info);
+      const statusText = row.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
+
+      employeesHtml += `
+        <div class="employee-block">
+          <div class="emp-header">
+            <div class="emp-num">${idx + 1}</div>
+            <div class="emp-name">${escapeHtml(name)} ولد ${escapeHtml(info.fatherName || '-')}</div>
+            <div class="emp-badges">
+              <span class="badge badge-blue">${escapeHtml(info.jobTitle || info.job || '-')}</span>
+              <span class="badge badge-gray">${escapeHtml(info.jobCode || '-')}</span>
+              <span class="badge ${empStatus.status.includes('متقاعد') ? 'badge-red' : 'badge-green'}">${empStatus.status} — ${empStatus.age} سال</span>
+              <span class="badge ${row.status === 'approved' ? 'badge-green' : 'badge-yellow'}">${statusText}</span>
+            </div>
+          </div>
+
+          <table class="info-table">
+            <tr>
+              <td class="lbl">کُد بست</td><td class="val">${escapeHtml(info.jobCode || '—')}</td>
+              <td class="lbl">عنوان بست</td><td class="val">${escapeHtml(info.jobTitle || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">اسم</td><td class="val">${escapeHtml(info.firstName || '—')}</td>
+              <td class="lbl">تخلص</td><td class="val">${escapeHtml(info.lastName || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">ولد</td><td class="val">${escapeHtml(info.fatherName || '—')}</td>
+              <td class="lbl">ولدیت</td><td class="val">${escapeHtml(info.grandfatherName || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">تذکره الکترونیکی</td><td class="val">${escapeHtml(info.eTazkira || '—')}</td>
+              <td class="lbl">تذکره کاغذی</td><td class="val">${escapeHtml(info.paperTazkira || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">صفحه تذکره</td><td class="val">${escapeHtml(info.tazkiraPage || '—')}</td>
+              <td class="lbl">جلد تذکره</td><td class="val">${escapeHtml(info.tazkiraVolume || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">قومیت</td><td class="val">${escapeHtml(info.ethnicity || '—')}</td>
+              <td class="lbl">جنسیت</td><td class="val">${escapeHtml(info.gender || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">تاریخ تولد</td><td class="val">${escapeHtml(info.birthDate || '—')}</td>
+              <td class="lbl">محل تولد</td><td class="val">${escapeHtml(info.birthPlace || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">سکونت اصلی</td><td class="val">${escapeHtml(info.originAddress || '—')}</td>
+              <td class="lbl">سکونت فعلی</td><td class="val">${escapeHtml(info.currentAddress || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">تاریخ اولین تقرر</td><td class="val">${escapeHtml(info.firstAppointmentDate || '—')}</td>
+              <td class="lbl">شماره تماس</td><td class="val">${escapeHtml(info.phone || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">معلولیت</td><td class="val">${escapeHtml(info.disability || '—')}</td>
+              <td class="lbl">موقف وظیفوی</td><td class="val">${escapeHtml(info.positionType || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">نوع استخدام</td><td class="val">${escapeHtml(info.employmentType || '—')}</td>
+              <td class="lbl">بست</td><td class="val">${escapeHtml(info.bust || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">قدم</td><td class="val">${escapeHtml(info.grade || '—')}</td>
+              <td class="lbl">تاریخ تقرر فعلی</td><td class="val">${escapeHtml(info.currentPositionDate || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">درجه تحصیلی</td><td class="val">${escapeHtml(info.degree || '—')}</td>
+              <td class="lbl">رشته تحصیلی</td><td class="val">${escapeHtml(info.major || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">مرجع تعلیمی</td><td class="val">${escapeHtml(info.eduInstitute || '—')}</td>
+              <td class="lbl">موقعیت مرجع</td><td class="val">${escapeHtml(info.eduInstituteLocation || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">تاریخ شمولیت</td><td class="val">${escapeHtml(info.enrollmentDate || '—')}</td>
+              <td class="lbl">تاریخ فراغت</td><td class="val">${escapeHtml(info.graduationDate || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">مضمون تدریس</td><td class="val">${escapeHtml(info.subjectTeaching || '—')}</td>
+              <td class="lbl">سن دقیق</td><td class="val">${empStatus.age} سال</td>
+            </tr>
+            <tr>
+              <td class="lbl">مکتب</td><td class="val">${escapeHtml(row.schoolname || '—')}</td>
+              <td class="lbl">ولسوالی</td><td class="val">${escapeHtml(row.district || '—')}</td>
+            </tr>
+            <tr>
+              <td class="lbl">آی‌دی رکورد</td><td class="val">${row.id}</td>
+              <td class="lbl">وضعیت کارمند</td><td class="val">${empStatus.status}</td>
+            </tr>
+          </table>
+        </div>
+      `;
+    });
+
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <!DOCTYPE html>
+      <html lang="fa" dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <title>چاپ لیست کامل کارمندان</title>
+        <style>
+          * { box-sizing: border-box; }
+          body { font-family: 'B Nazanin', Tahoma, Arial, sans-serif; direction: rtl; padding: 10px; margin: 0; background: #fff; color: #000; }
+
+          .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 12px; }
+          .header h2 { margin: 0; font-size: 20px; font-weight: bold; }
+          .header h4 { margin: 4px 0 0 0; font-size: 13px; color: #444; }
+
+          .info-bar { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 10px; padding: 6px 12px; background: #f1f5f9; border-radius: 5px; font-weight: bold; }
+
+          .employee-block { border: 2px solid #333; border-radius: 6px; margin-bottom: 12px; page-break-inside: avoid; overflow: hidden; }
+
+          .emp-header { background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 8px 12px; border-bottom: 2px solid #333; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+          .emp-num { background: #2563eb; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0; }
+          .emp-name { font-size: 15px; font-weight: bold; flex: 1; min-width: 150px; color: #1e3a8a; }
+          .emp-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+          .badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+          .badge-blue { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
+          .badge-gray { background: #f1f5f9; color: #334155; border: 1px solid #94a3b8; }
+          .badge-green { background: #dcfce7; color: #15803d; border: 1px solid #16a34a; }
+          .badge-red { background: #fee2e2; color: #b91c1c; border: 1px solid #dc2626; }
+          .badge-yellow { background: #fef3c7; color: #92400e; border: 1px solid #d97706; }
+
+          .info-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+          .info-table td { border: 1px solid #cbd5e1; padding: 5px 8px; vertical-align: middle; line-height: 1.5; }
+          .info-table .lbl { background: #f1f5f9; font-weight: bold; width: 18%; font-size: 11.5px; color: #334155; }
+          .info-table .val { background: #fff; width: 32%; font-size: 12px; }
+
+          @media print {
+            body { padding: 0; }
+            .no-print { display: none !important; }
+            @page { size: A4 portrait; margin: 8mm; }
+
+            .header { margin-bottom: 8px; padding-bottom: 8px; }
+            .header h2 { font-size: 17px; }
+            .header h4 { font-size: 12px; }
+            .info-bar { font-size: 11px; padding: 5px 10px; margin-bottom: 8px; }
+
+            .employee-block { margin-bottom: 8px; page-break-inside: avoid; }
+            .employee-block:nth-child(2n+3) { page-break-before: always; }
+
+            .emp-header { padding: 6px 10px; }
+            .emp-num { width: 26px; height: 26px; font-size: 12px; }
+            .emp-name { font-size: 13px; }
+            .badge { font-size: 10px; padding: 2px 8px; }
+
+            .info-table { font-size: 11px; }
+            .info-table td { padding: 4px 6px; }
+            .info-table .lbl { font-size: 10.5px; }
+            .info-table .val { font-size: 11px; }
+          }
+
+          .print-btn { text-align: center; margin-top: 15px; padding: 10px; }
+          .print-btn button { padding: 10px 24px; background: #3b82f6; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; margin: 0 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+          .print-btn button:hover { background: #2563eb; }
+          .print-btn .btn-close { background: #e2e8f0; color: #1e293b; }
+        </style>
+      </head>
+      <body>
+
+        <div class="header">
+          <h2>ریاست معارف ولایت هرات</h2>
+          <h4>لیست کامل کارمندان — همه معلومات</h4>
+        </div>
+
+        <div class="info-bar">
+          <span>📋 تعداد کل: ${records.length} نفر</span>
+          <span>📄 هر صفحه: ۲ نفر</span>
+          <span>📅 تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</span>
+        </div>
+
+        ${employeesHtml}
+
+        <div class="print-btn no-print">
+          <button onclick="window.print()">🖨️ پرنت</button>
+          <button class="btn-close" onclick="window.close()">بستن</button>
+        </div>
+
+        <script>
+          setTimeout(() => { window.print(); }, 500);
+        <\/script>
+      </body>
+      </html>
     `);
     win.document.close();
   }
@@ -722,13 +1012,13 @@
   function exportToCSV() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی وجود ندارد', true); return; }
-    const headers = ['ID','مکتب','ولسوالی','نام','ولد','وظیفه','درجه','سن','وضعیت کارمند','وضعیت تایید'];
+    const headers = ['ID','مکتب','ولسوالی','نام','ولد','کد بست','وظیفه','درجه','سن','وضعیت کارمند','وضعیت تایید'];
     const rows = records.map(r => {
       const info = r.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '');
       const emp = getEmployeeStatus(info);
       return [r.id, r.schoolname || '', r.district || '', name, info.fatherName || '',
-        info.jobTitle || info.job || '', info.degree || '', emp.age, emp.status,
+        info.jobCode || '', info.jobTitle || info.job || '', info.degree || '', emp.age, emp.status,
         r.status === 'approved' ? 'تایید شده' : 'در انتظار'];
     });
     const csv = '\uFEFF' + [headers, ...rows]

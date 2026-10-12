@@ -113,6 +113,9 @@
 
   let captchaCorrectAnswer = null;
 
+  // ═══════════════════════════════════════════════
+  // کپچا
+  // ═══════════════════════════════════════════════
   function generateCaptcha() {
     const ops = ['+', '-', '×'];
     const op = ops[Math.floor(Math.random() * ops.length)];
@@ -181,7 +184,9 @@
   captchaRefresh.addEventListener('click', generateCaptcha);
   generateCaptcha();
 
-  // ═══ قفل موقت ═══
+  // ═══════════════════════════════════════════════
+  // قفل موقت
+  // ═══════════════════════════════════════════════
   let failedAttempts = parseInt(localStorage.getItem('hr_failed_attempts') || '0');
   let lockUntil = parseInt(localStorage.getItem('hr_lock_until') || '0');
 
@@ -191,7 +196,7 @@
       const remaining = Math.ceil((lockUntil - now) / 1000);
       const minutes = Math.floor(remaining / 60);
       const seconds = remaining % 60;
-      lockedInfo.textContent = `🔒 حساب شما به‌دلیل تلاش‌های ناموفق قفل شده است. لطفاً ${minutes} دقیقه و ${seconds} ثانیه دیگر تلاش کنید.`;
+      lockedInfo.textContent = `🔒 حساب شما قفل شده است. لطفاً ${minutes} دقیقه و ${seconds} ثانیه دیگر تلاش کنید.`;
       lockedInfo.style.display = 'block';
       submitBtn.disabled = true;
       setTimeout(checkLock, 1000);
@@ -223,7 +228,9 @@
 
   checkLock();
 
-  // ═══ ارسال فرم ═══
+  // ═══════════════════════════════════════════════
+  // ارسال فرم
+  // ═══════════════════════════════════════════════
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (checkLock()) return;
@@ -239,7 +246,7 @@
     }
 
     submitBtn.disabled = true;
-    submitBtn.innerText = 'در حال بررسی اطلاعات...';
+    submitBtn.innerText = 'در حال بررسی...';
 
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
@@ -255,8 +262,20 @@
 
       if (res.ok) {
         resetFailedAttempts();
+
+        // ⭐ ذخیره توکن
         localStorage.setItem('hr_token', data.token);
+
+        // ⭐ ذخیره اطلاعات کاربر (شامل schoolname فارسی)
         localStorage.setItem('hr_user', JSON.stringify(data.user || {}));
+
+        // ⭐ ذخیره جداگانه schoolname و district (برای اطمینان بیشتر)
+        if (data.user && data.user.schoolname) {
+          localStorage.setItem('hr_schoolname', data.user.schoolname);
+        }
+        if (data.user && data.user.district) {
+          localStorage.setItem('hr_district', data.user.district);
+        }
 
         const redirectTo = data.redirect ||
           (data.user && data.user.role === 'admin' ? '/admin.html' : '/school.html');

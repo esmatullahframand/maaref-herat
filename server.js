@@ -23,6 +23,37 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000
 });
 
+// ═══════════════════════════════════════════════════════════
+// عناوین بست
+// ═══════════════════════════════════════════════════════════
+const JOB_TITLES = [
+  'آمر',
+  'مدیر',
+  'مدیر اجرائیه',
+  'معلم',
+  'سر معلم',
+  'معلم همکار',
+  'معلم سپورت',
+  'معلم لابرانت',
+  'عضو علمی معلمان',
+  'عضو علمی مدرسین',
+  'عضو مسلکی امور مالی و کارکنان',
+  'عضو مسلکی نظارت احصاییه و گزارش',
+  'عضو مسلکی تاسیسات و ترمیمات',
+  'عضو مسلکی شوراها',
+  'کارکن خدماتی',
+  'معتمد جنسی (تحویلدار)',
+  'معلم قراردادی',
+  'معلم افتخاری',
+  'سایر'
+];
+
+// عناوینی که کد بست الزامی نیست
+const NO_CODE_TITLES = ['معلم قراردادی', 'معلم افتخاری'];
+
+// عناوینی که درجه تحصیلی الزامی نیست
+const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
+
 async function initDB() {
   try {
     const client = await pool.connect();
@@ -113,30 +144,28 @@ async function logLoginAttempt(ip, username, success) {
   }
 }
 
-// ============================================================
-// اعتبارسنجی کد بست — 27-32-02- و بعد حداقل یک رقم
-// ============================================================
+// ═══════════════════════════════════════════════════════════
+// اعتبارسنجی‌ها
+// ═══════════════════════════════════════════════════════════
 function isValidJobCode(jobCode) {
   if (!jobCode) return false;
-  const cleaned = String(jobCode).trim();
-  const pattern = /^27-32-02-\d+$/;
-  return pattern.test(cleaned);
+  return /^27-32-02-\d+$/.test(jobCode.trim());
 }
 
-// ============================================================
-// اعتبارسنجی تذکره برقی — دو خط تیره، تعداد ارقام مهم نیست
-// مثال: 1399-1200-2434
-// ============================================================
 function isValidETazkira(eTazkira) {
   if (!eTazkira) return false;
-  const cleaned = String(eTazkira).trim();
-  const pattern = /^\d+-\d+-\d+$/;
-  return pattern.test(cleaned);
+  return /^\d+-\d+-\d+$/.test(eTazkira.trim());
 }
 
-// ============================================================
-// بررسی تکراری بودن کد بست در همه سیستم
-// ============================================================
+function isNoCodeTitle(jobTitle) {
+  return NO_CODE_TITLES.some(t => jobTitle === t);
+}
+
+function isServiceStaff(jobTitle) {
+  if (!jobTitle) return false;
+  return SERVICE_KEYWORDS.some(kw => jobTitle.includes(kw)) || jobTitle === 'کارکن خدماتی';
+}
+
 async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
   if (!jobCode) return false;
   try {
@@ -160,9 +189,9 @@ async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
   }
 }
 
-// ============================================================
+// ═══════════════════════════════════════════════════════════
 // لاگین
-// ============================================================
+// ═══════════════════════════════════════════════════════════
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const clientIp = req.headers['x-forwarded-for'] || req.ip || 'unknown';
   try {
@@ -206,9 +235,9 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
   }
 });
 
-// ============================================================
+// ═══════════════════════════════════════════════════════════
 // GET /api/records
-// ============================================================
+// ═══════════════════════════════════════════════════════════
 app.get('/api/records', authRequired, async (req, res) => {
   try {
     const search = (req.query.search || '').trim();
@@ -262,9 +291,9 @@ app.get('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// POST /api/records
-// ============================================================
+// ═══════════════════════════════════════════════════════════
+// POST /api/records — با اعتبارسنجی جدید
+// ═══════════════════════════════════════════════════════════
 app.post('/api/records', authRequired, async (req, res) => {
   try {
     const body = req.body || {};
@@ -274,40 +303,67 @@ app.post('/api/records', authRequired, async (req, res) => {
     const job = String(body.jobTitle || body.job || '').trim();
     const firstName = String(body.firstName || '').trim();
     const fatherName = String(body.fatherName || '').trim();
-    const name = String(body.name || (firstName ? firstName + ' ' + (body.lastName || '') : '')).trim();
 
-    if (!name || !fatherName || !job) {
-      return res.status(400).json({ error: 'نام، نام پدر و وظیفه الزامی است' });
+    if (!firstName || !fatherName || !job) {
+      return res.status(400).json({ error: 'نام، نام پدر و عنوان بست الزامی است' });
     }
 
+    // ═══ بررسی عنوان بست ═══
+    if (!JOB_TITLES.includes(job)) {
+      return res.status(400).json({ error: '❌ عنوان بست انتخابی معتبر نیست' });
+    }
+
+    const isContractTeacher = isNoCodeTitle(job);
     const jobCode = String(body.jobCode || '').trim();
-    if (!jobCode) {
-      return res.status(400).json({ error: 'کُد بست الزامی است' });
-    }
-    if (!isValidJobCode(jobCode)) {
-      return res.status(400).json({ error: '❌ فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد' });
-    }
-    const isDuplicate = await isJobCodeDuplicate(jobCode);
-    if (isDuplicate) {
-      return res.status(400).json({ error: `❌ کُد بست «${jobCode}» قبلاً در سیستم ثبت شده است` });
-    }
-
     const eTazkira = String(body.eTazkira || '').trim();
-    if (eTazkira && !isValidETazkira(eTazkira)) {
-      return res.status(400).json({ error: '❌ فرمت تذکره الکترونیکی اشتباه است. باید با دو خط تیره باشد (مثال: 1399-1200-2434)' });
-    }
-
-    const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
-    const isServiceStaff = SERVICE_KEYWORDS.some(kw => job.includes(kw));
     const degree = String(body.degree || '').trim();
+    const birthDate = String(body.birthDate || '').trim();
+    const firstAppointmentDate = String(body.firstAppointmentDate || '').trim();
+    const currentPositionDate = String(body.currentPositionDate || '').trim();
 
-    if (!isServiceStaff && (!degree || degree.replace(/\s/g, '') === '')) {
-      return res.status(400).json({ error: 'درجه تحصیلی برای معلمان، مدیران و کارمندان دفتری الزامی است' });
+    if (isContractTeacher) {
+      // ═══ معلم قراردادی/افتخاری: فقط اسم، ولد، ولدیت، تاریخ تولد، تذکره الزامی ═══
+      const grandfatherName = String(body.grandfatherName || '').trim();
+      if (!grandfatherName) {
+        return res.status(400).json({ error: 'ولدیت الزامی است' });
+      }
+      if (!eTazkira && !body.paperTazkira) {
+        return res.status(400).json({ error: 'حداقل یکی از تذکره‌ها الزامی است' });
+      }
+      if (eTazkira && !isValidETazkira(eTazkira)) {
+        return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)' });
+      }
+      if (!birthDate) {
+        return res.status(400).json({ error: 'تاریخ تولد الزامی است' });
+      }
+    } else {
+      // ═══ بقیه: همه فیلدهای اصلی الزامی ═══
+      if (!body.jobCode || !isValidJobCode(jobCode)) {
+        return res.status(400).json({ error: '❌ فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد' });
+      }
+      const isDuplicate = await isJobCodeDuplicate(jobCode);
+      if (isDuplicate) {
+        return res.status(400).json({ error: `❌ کُد بست «${jobCode}» قبلاً در سیستم ثبت شده است` });
+      }
+
+      if (eTazkira && !isValidETazkira(eTazkira)) {
+        return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)' });
+      }
+
+      const serviceStaff = isServiceStaff(job);
+      if (!serviceStaff && !degree) {
+        return res.status(400).json({ error: 'درجه تحصیلی برای این عنوان الزامی است' });
+      }
+
+      if (!birthDate) return res.status(400).json({ error: 'تاریخ تولد الزامی است' });
+      if (!firstAppointmentDate) return res.status(400).json({ error: 'تاریخ اولین تقرر الزامی است' });
+      if (!currentPositionDate) return res.status(400).json({ error: 'تاریخ تقرر فعلی الزامی است' });
     }
 
-    if (!body.birthDate) return res.status(400).json({ error: 'تاریخ تولد الزامی است' });
-    if (!body.firstAppointmentDate) return res.status(400).json({ error: 'تاریخ اولین تقرر الزامی است' });
-    if (!body.currentPositionDate) return res.status(400).json({ error: 'تاریخ تقرر فعلی الزامی است' });
+    // ═══ بررسی دکمه موافقت ═══
+    if (!body.agreement) {
+      return res.status(400).json({ error: '❌ شما باید موافقت خود را اعلام کنید' });
+    }
 
     await pool.query(
       `INSERT INTO records (userid, schoolname, district, data, status)
@@ -321,9 +377,9 @@ app.post('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// PUT /api/records/:id
-// ============================================================
+// ═══════════════════════════════════════════════════════════
+// PUT /api/records/:id — ویرایش
+// ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') {
@@ -340,15 +396,25 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
       return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
     }
 
+    const job = String(body.jobTitle || '').trim();
+    if (!JOB_TITLES.includes(job)) {
+      return res.status(400).json({ error: '❌ عنوان بست انتخابی معتبر نیست' });
+    }
+
+    const isContractTeacher = isNoCodeTitle(job);
     const jobCode = String(body.jobCode || '').trim();
-    if (!jobCode) return res.status(400).json({ error: 'کُد بست الزامی است' });
-    if (!isValidJobCode(jobCode)) return res.status(400).json({ error: '❌ فرمت کُد بست اشتباه است' });
-    const isDuplicate = await isJobCodeDuplicate(jobCode, id);
-    if (isDuplicate) return res.status(400).json({ error: `❌ کُد بست «${jobCode}» قبلاً ثبت شده است` });
+
+    if (!isContractTeacher) {
+      if (!jobCode || !isValidJobCode(jobCode)) {
+        return res.status(400).json({ error: '❌ فرمت کُد بست اشتباه است' });
+      }
+      const isDuplicate = await isJobCodeDuplicate(jobCode, id);
+      if (isDuplicate) return res.status(400).json({ error: `❌ کُد بست «${jobCode}» قبلاً ثبت شده است` });
+    }
 
     const eTazkira = String(body.eTazkira || '').trim();
     if (eTazkira && !isValidETazkira(eTazkira)) {
-      return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است. باید با دو خط تیره باشد (مثال: 1399-1200-2434)' });
+      return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است' });
     }
 
     const schoolName = body.schoolName || req.user.schoolname || '';
@@ -366,9 +432,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// POST /api/records/:id/approve
-// ============================================================
+// تایید / حذف / کاربران
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه تایید دارد' });
@@ -381,9 +445,6 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// DELETE /api/records/:id
-// ============================================================
 app.delete('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
@@ -396,9 +457,6 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// POST /api/users
-// ============================================================
 app.post('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه افزودن مکتب دارد' });
@@ -420,9 +478,6 @@ app.post('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// GET /api/users
-// ============================================================
 app.get('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -434,9 +489,6 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// DELETE /api/users/:id
-// ============================================================
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
@@ -449,9 +501,6 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// GET /api/login-attempts
-// ============================================================
 app.get('/api/login-attempts', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -463,17 +512,10 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
   }
 });
 
-// ============================================================
-// Fallback
-// ============================================================
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ============================================================
-// اجرا
-// ============================================================
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🔒 Rate limiting: 10 login attempts per 15 minutes`);
 });

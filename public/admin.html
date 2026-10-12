@@ -723,6 +723,7 @@
     win.document.close();
   }
 
+  // ⭐ تابع اصلاح‌شده با پر کردن schoolname و district از allSchoolsList
   async function loadSchoolSettings() {
     try {
       const res = await fetch('/api/all-school-settings', {
@@ -737,6 +738,20 @@
 
       if (res.ok) {
         allSchoolSettings = await res.json();
+        
+        // ⭐ پر کردن schoolname و district از allSchoolsList اگر خالی بودند
+        if (Array.isArray(allSchoolSettings) && Array.isArray(allSchoolsList)) {
+          allSchoolSettings.forEach(s => {
+            if (!s.schoolname && s.username) {
+              const user = allSchoolsList.find(u => u.username === s.username);
+              if (user) s.schoolname = user.schoolname;
+            }
+            if (!s.district && s.username) {
+              const user = allSchoolsList.find(u => u.username === s.username);
+              if (user) s.district = user.district;
+            }
+          });
+        }
       } else {
         allSchoolSettings = [];
       }
@@ -765,7 +780,6 @@
     schoolSettingsModal.show();
   }
 
-  // ⭐ نمایش نام مکتب‌ها در بالای مودال
   function updateSchoolModalHeader() {
     const headerEl = document.getElementById('schoolNamesHeader');
     if (!headerEl) return;
@@ -1322,9 +1336,10 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
+  // ⭐ ترتیب اصلاح‌شده: اول لیست مکاتب، بعد تنظیمات
   (async function init() {
-    await loadSchoolSettings();
-    await loadSchoolsList();
+    await loadSchoolsList();        // ⭐ اول لیست مکاتب
+    await loadSchoolSettings();     // ⭐ بعد تنظیمات (برای استفاده از allSchoolsList)
     await loadAllRecords();
   })();
 </script>

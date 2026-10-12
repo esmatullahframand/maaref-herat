@@ -220,7 +220,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     }
 
     await logLoginAttempt(clientIp, username, true);
-    // ⭐ توکن فقط با اطلاعات ضروری — بدون کاراکترهای فارسی
+    // ⭐ فقط اطلاعات ضروری در توکن — بدون کاراکترهای فارسی
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       SECRET,
@@ -432,6 +432,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 // school_settings endpoints
 // ═══════════════════════════════════════════════════════════
 
+// GET /api/school-settings — تنظیمات مکتب خود
 app.get('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -444,6 +445,7 @@ app.get('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
+// POST /api/school-settings — ذخیره تنظیمات مکتب
 app.post('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -516,6 +518,7 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
+// GET /api/all-school-settings — همه تنظیمات (ادمین)
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -612,10 +615,31 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// تست
+// ═══════════════════════════════════════════════════════════
+app.get('/api/test', (req, res) => {
+  res.json({
+    ok: true,
+    message: 'Server is running with new code',
+    timestamp: new Date().toISOString(),
+    version: '2.0.0',
+    has_school_settings: true
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// Fallback
+// ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log('═══════════════════════════════════════');
+  console.log('🚀 Server running on port ' + PORT);
+  console.log('📌 Version: 2.0.0');
+  console.log('📌 Has /api/school-settings: YES');
+  console.log('📌 Has /api/test: YES');
+  console.log('═══════════════════════════════════════');
 });

@@ -56,7 +56,7 @@
 </div>
 
 <script>
-  // ⭐ خطوط localStorage.clear() حذف شدند تا توکن پاک نشود
+  // ⭐ خطوط localStorage.clear() از اینجا حذف شدند تا توکن پاک نشود
 
   const loginForm = document.getElementById('loginForm');
   const submitBtn = document.getElementById('submitBtn');
@@ -164,8 +164,8 @@
 
       const data = await res.json().catch(() => ({}));
 
-      if (res.ok) {
-        // ⭐ ذخیره توکن جدید
+      // ⭐ بررسی وجود توکن قبل از ذخیره
+      if (res.ok && data.token) {
         localStorage.setItem('hr_token', data.token);
         localStorage.setItem('hr_user', JSON.stringify(data.user || {}));
 
@@ -183,13 +183,20 @@
 
         window.location.href = redirectTo;
       } else {
+        // ⭐ اگر توکن نیامد یا خطا بود
+        localStorage.clear();
         showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
         generateCaptcha();
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'ورود به سیستم';
       }
     } catch (err) {
       console.error(err);
+      localStorage.clear();
       showError('خطا در ارتباط با سرور');
       generateCaptcha();
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'ورود به سیستم';
     }
   });
 

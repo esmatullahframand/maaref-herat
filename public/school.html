@@ -93,7 +93,6 @@
   @media (max-width: 600px) { .info-grid, .edit-grid { grid-template-columns: 1fr; } }
   @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; direction: rtl; } .no-print { display: none !important; } }
 
-  /* ═══ دکمه موافقت ═══ */
   .agreement-box {
     background: #fef3c7;
     border: 2px solid #f59e0b;
@@ -273,6 +272,39 @@
               <span class="auto-detect-badge" id="gradBadge">🔍 اختیاری</span>
             </div>
             <div class="form-group"><label>مضمون تدریس</label><input type="text" id="subjectTeaching"></div>
+          </div>
+        </div>
+
+        <!-- ═══ بخش ۴: ورکشاپ، ساعت درسی، ارزیابی ═══ -->
+        <div class="form-section">
+          <h5>۴. ورکشاپ، ساعت درسی و ارزیابی</h5>
+          <div class="grid-4">
+            <div class="form-group">
+              <label>ورکشاپ اخذ کرده؟</label>
+              <select id="workshopStatus" onchange="toggleWorkshopFields()">
+                <option value="نخیر">نخیر</option>
+                <option value="بلی">بلی</option>
+              </select>
+              <span class="auto-detect-badge" id="workshopBadge">🔍 وضعیت ورکشاپ</span>
+            </div>
+            <div class="form-group" id="workshopTitleGroup" style="display:none;">
+              <label>عنوان ورکشاپ <span style="color:#ef4444;">*</span></label>
+              <input type="text" id="workshopTitle" placeholder="مثال: ورکشاپ تدریس فعال">
+            </div>
+            <div class="form-group" id="workshopDurationGroup" style="display:none;">
+              <label>مدت ورکشاپ <span style="color:#ef4444;">*</span></label>
+              <input type="text" id="workshopDuration" placeholder="مثال: ۲۴ ساعت / ۳ روز">
+            </div>
+            <div class="form-group">
+              <label>مجموعه ساعت درسی</label>
+              <input type="text" id="totalTeachingHours" placeholder="مثال: 24" inputmode="numeric">
+              <span class="auto-detect-badge" id="hoursBadge">🔍 تعداد ساعت (اختیاری)</span>
+            </div>
+            <div class="form-group">
+              <label>نمره ارزیابی</label>
+              <input type="text" id="evaluationScore" placeholder="مثال: 95" inputmode="numeric">
+              <span class="auto-detect-badge" id="scoreBadge">🔍 نمره ۰ تا ۱۰۰ (اختیاری)</span>
+            </div>
           </div>
         </div>
 
@@ -536,18 +568,16 @@
     }
 
     if (isNoCodeTitle(job)) {
-      // معلم قراردادی/افتخاری
       jobTitleBadge.textContent = `✅ ${job} — فیلدها اختیاری`;
       jobTitleBadge.style.background = '#f59e0b';
       jobCodeRequired.style.display = 'none';
       jobCodeInput.placeholder = 'اختیاری';
       jobCodeInput.removeAttribute('required');
-      // فیلدهای اختیاری
       ['grandfatherName','ethnicity','gender','birthDate','originAddress','currentAddress','firstAppointmentDate','phone','disability','currentPositionDate'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.removeAttribute('required');
       });
-      document.getElementById('grandRequired').textContent = '';
+      document.getElementById('grandRequired').textContent = '*';
       document.getElementById('ethRequired').textContent = '';
       document.getElementById('genderRequired').textContent = '';
       document.getElementById('birthRequired').textContent = '*';
@@ -561,7 +591,6 @@
       degreeHint.textContent = 'اختیاری';
       degreeHint.style.background = '#10b981';
     } else if (isServiceStaff(job)) {
-      // کارکن خدماتی
       jobTitleBadge.textContent = `✅ ${job} — کد بست الزامی، درجه اختیاری`;
       jobTitleBadge.style.background = '#10b981';
       jobCodeRequired.style.display = 'inline';
@@ -570,18 +599,8 @@
       degreeRequiredMark.style.display = 'none';
       degreeHint.textContent = '✅ برای کارکن خدماتی اختیاری است';
       degreeHint.style.background = '#10b981';
-      document.getElementById('grandRequired').textContent = '*';
-      document.getElementById('ethRequired').textContent = '*';
-      document.getElementById('genderRequired').textContent = '*';
-      document.getElementById('birthRequired').textContent = '*';
-      document.getElementById('originRequired').textContent = '*';
-      document.getElementById('currentRequired').textContent = '*';
-      document.getElementById('appointRequired').textContent = '*';
-      document.getElementById('phoneRequired').textContent = '*';
-      document.getElementById('disRequired').textContent = '*';
-      document.getElementById('currentPosRequired').textContent = '*';
+      resetRequiredMarks();
     } else {
-      // بقیه
       jobTitleBadge.textContent = `✅ ${job} — همه فیلدها الزامی`;
       jobTitleBadge.style.background = '#10b981';
       jobCodeRequired.style.display = 'inline';
@@ -590,21 +609,48 @@
       degreeRequiredMark.style.display = 'inline';
       degreeHint.textContent = '⚠️ برای این عنوان الزامی است';
       degreeHint.style.background = '#ef4444';
-      document.getElementById('grandRequired').textContent = '*';
-      document.getElementById('ethRequired').textContent = '*';
-      document.getElementById('genderRequired').textContent = '*';
-      document.getElementById('birthRequired').textContent = '*';
-      document.getElementById('originRequired').textContent = '*';
-      document.getElementById('currentRequired').textContent = '*';
-      document.getElementById('appointRequired').textContent = '*';
-      document.getElementById('phoneRequired').textContent = '*';
-      document.getElementById('disRequired').textContent = '*';
-      document.getElementById('currentPosRequired').textContent = '*';
+      resetRequiredMarks();
     }
     updateAgreementButton();
   }
 
+  function resetRequiredMarks() {
+    document.getElementById('grandRequired').textContent = '*';
+    document.getElementById('ethRequired').textContent = '*';
+    document.getElementById('genderRequired').textContent = '*';
+    document.getElementById('birthRequired').textContent = '*';
+    document.getElementById('originRequired').textContent = '*';
+    document.getElementById('currentRequired').textContent = '*';
+    document.getElementById('appointRequired').textContent = '*';
+    document.getElementById('phoneRequired').textContent = '*';
+    document.getElementById('disRequired').textContent = '*';
+    document.getElementById('currentPosRequired').textContent = '*';
+  }
+
   jobTitleInput.addEventListener('change', updateFormByJobTitle);
+
+  // ═══ ورکشاپ ═══
+  function toggleWorkshopFields() {
+    const status = document.getElementById('workshopStatus').value;
+    const titleGroup = document.getElementById('workshopTitleGroup');
+    const durationGroup = document.getElementById('workshopDurationGroup');
+    const badge = document.getElementById('workshopBadge');
+
+    if (status === 'بلی') {
+      titleGroup.style.display = 'flex';
+      durationGroup.style.display = 'flex';
+      badge.textContent = '✅ عنوان و مدت ورکشاپ الزامی است';
+      badge.style.background = '#ef4444';
+    } else {
+      titleGroup.style.display = 'none';
+      durationGroup.style.display = 'none';
+      badge.textContent = '🔍 ورکشاپ اخذ نکرده';
+      badge.style.background = '#94a3b8';
+      document.getElementById('workshopTitle').value = '';
+      document.getElementById('workshopDuration').value = '';
+    }
+  }
+  window.toggleWorkshopFields = toggleWorkshopFields;
 
   // ═══ دکمه موافقت ═══
   const agreementCheck = document.getElementById('agreementCheck');
@@ -678,6 +724,11 @@
       eduInstitute: val('eduInstitute'), eduInstituteLocation: val('eduInstituteLocation'),
       enrollmentDate: val('enrollmentDate'), graduationDate: val('graduationDate'),
       subjectTeaching: val('subjectTeaching'),
+      workshopStatus: val('workshopStatus'),
+      workshopTitle: val('workshopTitle'),
+      workshopDuration: val('workshopDuration'),
+      totalTeachingHours: val('totalTeachingHours'),
+      evaluationScore: val('evaluationScore'),
       name: (val('firstName') + ' ' + val('lastName')).trim(),
       job: val('jobTitle'),
       schoolName: user.schoolname || '',
@@ -693,15 +744,13 @@
     if (!body.jobTitle) errors.push('عنوان بست الزامی است');
     if (!body.firstName) errors.push('اسم الزامی است');
     if (!body.fatherName) errors.push('ولد الزامی است');
+    if (!body.grandfatherName) errors.push('ولدیت الزامی است');
 
     if (isContract) {
-      // فقط اسم، ولد، ولدیت، تاریخ تولد، تذکره
-      if (!body.grandfatherName) errors.push('ولدیت الزامی است');
       if (!body.eTazkira && !body.paperTazkira) errors.push('حداقل یکی از تذکره‌ها الزامی است');
       if (!body.birthDate) errors.push('تاریخ تولد الزامی است');
       else if (!isValidShamsiDate(body.birthDate)) errors.push('تاریخ تولد نامعتبر است');
     } else {
-      if (!body.grandfatherName) errors.push('ولدیت الزامی است');
       if (!body.ethnicity) errors.push('قومیت الزامی است');
       if (!body.phone) errors.push('شماره تماس الزامی است');
       if (!body.eTazkira && !body.paperTazkira) errors.push('حداقل یکی از تذکره‌ها الزامی است');
@@ -721,6 +770,24 @@
       if (!isServiceStaff(body.jobTitle)) {
         if (!body.degree) errors.push('درجه تحصیلی الزامی است');
       }
+    }
+
+    // ورکشاپ
+    if (body.workshopStatus === 'بلی') {
+      if (!body.workshopTitle) errors.push('عنوان ورکشاپ الزامی است');
+      if (!body.workshopDuration) errors.push('مدت ورکشاپ الزامی است');
+    }
+
+    // نمره ارزیابی
+    if (body.evaluationScore) {
+      const num = Number(body.evaluationScore);
+      if (isNaN(num) || num < 0 || num > 100) errors.push('نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد');
+    }
+
+    // مجموعه ساعت درسی
+    if (body.totalTeachingHours) {
+      const num = Number(body.totalTeachingHours);
+      if (isNaN(num) || num < 0) errors.push('مجموعه ساعت درسی باید عددی مثبت باشد');
     }
 
     if (!body.agreement) errors.push('شما باید موافقت خود را اعلام کنید');
@@ -787,6 +854,7 @@
     jobTitleBadge.textContent = '🔍 عنوان بست را انتخاب کنید';
     jobTitleBadge.style.background = '#94a3b8';
     updateAgreementButton();
+    toggleWorkshopFields();
     closeModal('editModal');
   }
 
@@ -899,6 +967,13 @@
         ['تاریخ شمولیت', info.enrollmentDate],
         ['تاریخ فراغت', info.graduationDate],
         ['مضمون تدریس', info.subjectTeaching]
+      ]},
+      { title: '۴. ورکشاپ، ساعت درسی و ارزیابی', fields: [
+        ['ورکشاپ اخذ کرده', info.workshopStatus || 'نخیر'],
+        ['عنوان ورکشاپ', info.workshopTitle || '—'],
+        ['مدت ورکشاپ', info.workshopDuration || '—'],
+        ['مجموعه ساعت درسی', info.totalTeachingHours || '—'],
+        ['نمره ارزیابی', info.evaluationScore || '—']
       ]}
     ];
     let html = '';
@@ -939,7 +1014,11 @@
       ['major', 'رشته تحصیلی'], ['eduInstitute', 'مرجع تعلیمی'],
       ['eduInstituteLocation', 'موقعیت مرجع'],
       ['enrollmentDate', 'تاریخ شمولیت'], ['graduationDate', 'تاریخ فراغت'],
-      ['subjectTeaching', 'مضمون تدریس']
+      ['subjectTeaching', 'مضمون تدریس'],
+      ['workshopTitle', 'عنوان ورکشاپ'],
+      ['workshopDuration', 'مدت ورکشاپ'],
+      ['totalTeachingHours', 'مجموعه ساعت درسی'],
+      ['evaluationScore', 'نمره ارزیابی']
     ];
     let html = '';
     fields.forEach(([key, label]) => {
@@ -949,7 +1028,8 @@
       ['gender', 'جنسیت', ['', 'مرد', 'زن']],
       ['disability', 'معلولیت', ['نخیر', 'بلی']],
       ['positionType', 'موقف وظیفوی', ['', 'اصلی', 'سرپرستی']],
-      ['employmentType', 'نوع استخدام', ['', 'حکمی', 'رقابتی']]
+      ['employmentType', 'نوع استخدام', ['', 'حکمی', 'رقابتی']],
+      ['workshopStatus', 'وضعیت ورکشاپ', ['نخیر', 'بلی']]
     ];
     selects.forEach(([key, label, options]) => {
       let opts = '';
@@ -983,6 +1063,11 @@
       eduInstitute: getVal('eduInstitute'), eduInstituteLocation: getVal('eduInstituteLocation'),
       enrollmentDate: getVal('enrollmentDate'), graduationDate: getVal('graduationDate'),
       subjectTeaching: getVal('subjectTeaching'),
+      workshopStatus: getVal('workshopStatus'),
+      workshopTitle: getVal('workshopTitle'),
+      workshopDuration: getVal('workshopDuration'),
+      totalTeachingHours: getVal('totalTeachingHours'),
+      evaluationScore: getVal('evaluationScore'),
       name: (getVal('firstName') + ' ' + getVal('lastName')).trim(),
       job: getVal('jobTitle'),
       schoolName: user.schoolname || '',
@@ -1030,6 +1115,12 @@
             <td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">شماره تماس</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.phone || '—')}</td></tr>
         <tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">درجه تحصیلی</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.degree || '—')}</td>
             <td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">رشته تحصیلی</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.major || '—')}</td></tr>
+        <tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">ورکشاپ</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.workshopStatus || 'نخیر')}</td>
+            <td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">عنوان ورکشاپ</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.workshopTitle || '—')}</td></tr>
+        <tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">مدت ورکشاپ</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.workshopDuration || '—')}</td>
+            <td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">مجموعه ساعت درسی</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.totalTeachingHours || '—')}</td></tr>
+        <tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">نمره ارزیابی</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.evaluationScore || '—')}</td>
+            <td style="border:1px solid #333; padding:6px;"></td><td style="border:1px solid #333; padding:6px;"></td></tr>
       </table>
     `;
   }

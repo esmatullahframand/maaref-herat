@@ -572,6 +572,7 @@
           ? '<span class="status-badge status-approved">✅ تایید</span>'
           : '<span class="status-badge status-pending">⏳ انتظار</span>';
 
+        // ⭐ دکمه ویرایش فقط برای رکوردهای در انتظار تایید
         let editBtn = '';
         if (row.status !== 'approved') {
           editBtn = `<button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>`;
@@ -897,7 +898,7 @@
       bust: document.getElementById('eBust').value.trim(),
       grade: document.getElementById('eGrade').value.trim(),
       currentPositionDate: document.getElementById('eCurrentPositionDate').value.trim(),
-      // ⭐ درجه و رشته تحصیلی از رکورد اصلی (غیرقابل ویرایش)
+      // ⭐ درجه و رشته تحصیلی از رکورد اصلی
       degree: rec.data.degree || '',
       major: rec.data.major || '',
       subjectTeaching: document.getElementById('eSubjectTeaching').value.trim(),
@@ -907,7 +908,6 @@
       totalTeachingHours: document.getElementById('eTotalTeachingHours').value.trim(),
       evaluationScore: document.getElementById('eEvaluationScore').value.trim(),
       agreement: true,
-      // فیلدهای حفظ شده
       tazkiraPage: rec.data.tazkiraPage || '',
       tazkiraVolume: rec.data.tazkiraVolume || '',
       birthPlace: rec.data.birthPlace || '',

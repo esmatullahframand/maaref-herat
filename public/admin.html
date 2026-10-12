@@ -22,6 +22,9 @@
   .badge-active { background: #dcfce7; color: #15803d; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .badge-retired { background: #fee2e2; color: #b91c1c; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .badge-unknown { background: #e2e8f0; color: #475569; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
+  .badge-budget-normal { background: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .badge-budget-extra { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .badge-budget-lack { background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .btn-action { padding: 4px 10px; font-size: 12px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; margin: 0 2px; }
   .btn-approve { background: #10b981; color: #fff; }
   .btn-delete-row { background: #dc2626; color: #fff; }
@@ -35,6 +38,8 @@
   .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 15px; background: #f8fafc; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
   .filter-item label { font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; display: block; }
   .filter-item select, .filter-item input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .modal-header-purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; }
+  .modal-header-purple .btn-close { filter: invert(1); }
 </style>
 </head>
 <body>
@@ -64,21 +69,13 @@
 
   <!-- افزودن مکتب -->
   <div class="card card-custom">
-    <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-school-flag"></i> مدیریت مکاتب</h5>
+    <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-school-flag"></i> افزودن مکتب جدید</h5>
     <div class="row g-2 mb-3">
       <div class="col-md-3"><input id="uUsername" class="form-control" placeholder="نام کاربری انگلیسی"></div>
       <div class="col-md-3"><input id="uPassword" class="form-control" type="password" placeholder="رمز عبور"></div>
       <div class="col-md-3"><input id="uSchoolName" class="form-control" placeholder="نام مکتب (فارسی)"></div>
       <div class="col-md-2"><input id="uDistrict" class="form-control" placeholder="ولسوالی"></div>
       <div class="col-md-1"><button class="btn btn-purple w-100 fw-bold" onclick="addUser()">➕</button></div>
-    </div>
-    <div class="table-responsive border rounded">
-      <table class="table table-hover align-middle mb-0 text-center">
-        <thead class="table-light">
-          <tr><th>#</th><th>نام کاربری</th><th>نام مکتب</th><th>ولسوالی</th><th>عملیات</th></tr>
-        </thead>
-        <tbody id="usersTableBody"></tbody>
-      </table>
     </div>
   </div>
 
@@ -223,15 +220,53 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ═══════════ Modal مدیریت مکاتب ═══════════ -->
 <div class="modal fade" id="schoolSettingsModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <div class="modal-header bg-purple text-white">
-        <h5 class="modal-title text-white">🏫 مدیریت مکاتب</h5>
+      <div class="modal-header modal-header-purple">
+        <h5 class="modal-title">🏫 مدیریت مکاتب — اطلاعات کامل</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" id="schoolSettingsModalBody">
-        در حال بارگذاری...
+      <div class="modal-body">
+
+        <!-- دکمه‌های پرنت و خروجی -->
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div>
+            <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">
+              📊 تعداد مکاتب: <strong id="modalSchoolCount">0</strong>
+            </span>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-primary btn-sm fw-bold" onclick="printSchoolSettings()">
+              🖨️ پرنت لیست مکاتب
+            </button>
+            <button class="btn btn-success btn-sm fw-bold" onclick="exportSchoolSettingsCSV()">
+              📊 خروجی Excel (CSV)
+            </button>
+          </div>
+        </div>
+
+        <!-- جدول مکاتب -->
+        <div class="table-responsive border rounded">
+          <table class="table table-hover table-bordered align-middle mb-0 text-center" id="schoolSettingsTable">
+            <thead class="table-light">
+              <tr>
+                <th style="width:50px;">#</th>
+                <th>🏫 مکتب</th>
+                <th>📍 ولسوالی</th>
+                <th>⏰ تایم</th>
+                <th>🎓 عضو علمی</th>
+                <th>📚 شعبات</th>
+                <th>💼 وضعیت بست</th>
+              </tr>
+            </thead>
+            <tbody id="schoolSettingsModalBody">
+              <tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
   </div>
@@ -681,6 +716,187 @@
     win.document.close();
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // 🏫 مدیریت مکاتب — Modal
+  // ═══════════════════════════════════════════════════════════
+  async function loadSchoolSettings() {
+    try {
+      const res = await fetch('/api/all-school-settings', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.ok) {
+        allSchoolSettings = await res.json();
+      } else {
+        allSchoolSettings = [];
+      }
+    } catch (e) {
+      console.error('loadSchoolSettings:', e);
+      allSchoolSettings = [];
+    }
+  }
+
+  function getBudgetStatusText(s) {
+    if (!s) return { text: 'عادی', cls: 'badge-budget-normal' };
+    if (s.budget_status === 'اضافه بست') {
+      return { text: `➕ ${s.extra_bust_count || 0} (${s.extra_bust_field || '—'})`, cls: 'badge-budget-extra' };
+    } else if (s.budget_status === 'کمبود بست') {
+      return { text: `➖ ${s.lack_bust_count || 0} (${s.lack_bust_field || '—'})`, cls: 'badge-budget-lack' };
+    }
+    return { text: '⚖️ عادی', cls: 'badge-budget-normal' };
+  }
+
+  function showSchoolSettings() {
+    if (!schoolSettingsModal) {
+      schoolSettingsModal = new bootstrap.Modal(document.getElementById('schoolSettingsModal'));
+    }
+
+    renderSchoolSettingsTable();
+    schoolSettingsModal.show();
+  }
+
+  function renderSchoolSettingsTable() {
+    const tbody = document.getElementById('schoolSettingsModalBody');
+    const countEl = document.getElementById('modalSchoolCount');
+
+    if (!allSchoolSettings || allSchoolSettings.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-muted">هیچ مکتبی اطلاعات خود را ثبت نکرده است.</td></tr>';
+      countEl.textContent = '0';
+      return;
+    }
+
+    countEl.textContent = allSchoolSettings.length;
+    let html = '';
+
+    allSchoolSettings.forEach((s, idx) => {
+      const budget = getBudgetStatusText(s);
+      html += `
+        <tr>
+          <td>${idx + 1}</td>
+          <td><strong>${escapeHtml(s.schoolname || '-')}</strong></td>
+          <td>${escapeHtml(s.district || '-')}</td>
+          <td><span class="badge bg-info text-white">${escapeHtml(s.time_type || '—')}</span></td>
+          <td>${escapeHtml(s.academic_member || '—')}</td>
+          <td><strong>${s.branches_total || 0}</strong></td>
+          <td><span class="${budget.cls}">${escapeHtml(budget.text)}</span></td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+  }
+
+  // 🖨️ پرنت لیست مکاتب
+  function printSchoolSettings() {
+    if (!allSchoolSettings || allSchoolSettings.length === 0) {
+      showToast('رکوردی برای پرنت نیست', true);
+      return;
+    }
+
+    let rowsHtml = '';
+    allSchoolSettings.forEach((s, idx) => {
+      const budget = getBudgetStatusText(s);
+      rowsHtml += `
+        <tr>
+          <td style="border:1px solid #333; padding:6px; text-align:center;">${idx + 1}</td>
+          <td style="border:1px solid #333; padding:6px;">${escapeHtml(s.schoolname || '-')}</td>
+          <td style="border:1px solid #333; padding:6px; text-align:center;">${escapeHtml(s.district || '-')}</td>
+          <td style="border:1px solid #333; padding:6px; text-align:center;">${escapeHtml(s.time_type || '—')}</td>
+          <td style="border:1px solid #333; padding:6px;">${escapeHtml(s.academic_member || '—')}</td>
+          <td style="border:1px solid #333; padding:6px; text-align:center;">${s.branches_total || 0}</td>
+          <td style="border:1px solid #333; padding:6px; text-align:center;">${escapeHtml(budget.text)}</td>
+        </tr>
+      `;
+    });
+
+    const html = `
+      <div style="text-align:center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+        <h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2>
+        <h4 style="margin:5px 0 0 0; font-size:13px; color:#555;">لیست مکاتب و اطلاعات مکتب</h4>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px;">
+        <span><strong>تعداد مکاتب:</strong> ${allSchoolSettings.length}</span>
+        <span><strong>تاریخ چاپ:</strong> ${new Date().toLocaleDateString('fa-IR')}</span>
+      </div>
+
+      <table style="width:100%; border-collapse:collapse; font-size:11px;">
+        <thead>
+          <tr style="background:#7c3aed; color:#fff;">
+            <th style="border:1px solid #333; padding:8px; text-align:center; width:40px;">#</th>
+            <th style="border:1px solid #333; padding:8px; text-align:center;">🏫 مکتب</th>
+            <th style="border:1px solid #333; padding:8px; text-align:center;">📍 ولسوالی</th>
+            <th style="border:1px solid #333; padding:8px; text-align:center;">⏰ تایم</th>
+            <th style="border:1px solid #333; padding:8px; text-align:center;">🎓 عضو علمی</th>
+            <th style="border:1px solid #333; padding:8px; text-align:center;">📚 شعبات</th>
+            <th style="border:1px solid #333; padding:8px; text-align:center;">💼 وضعیت بست</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت لیست مکاتب</title>
+      <style>
+        body { font-family: Tahoma; padding: 15px; direction: rtl; }
+        @media print {
+          body { padding: 0; }
+          .no-print { display: none; }
+          @page { size: A4 portrait; margin: 8mm; }
+          thead { display: table-header-group; }
+          tr { page-break-inside: avoid; }
+        }
+      </style></head><body>
+        ${html}
+        <div class="no-print" style="text-align:center; margin-top:20px;">
+          <button onclick="window.print()" style="padding:10px 20px; background:#7c3aed; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🖨️ پرنت</button>
+          <button onclick="window.close()" style="padding:10px 20px; background:#e2e8f0; color:#1e293b; border:none; border-radius:6px; cursor:pointer; font-weight:bold; margin-right:5px;">بستن</button>
+        </div>
+        <script>setTimeout(()=>window.print(), 500);<\/script>
+      </body></html>`);
+    win.document.close();
+  }
+
+  // 📊 خروجی CSV مکاتب
+  function exportSchoolSettingsCSV() {
+    if (!allSchoolSettings || allSchoolSettings.length === 0) {
+      showToast('رکوردی برای خروجی نیست', true);
+      return;
+    }
+
+    const headers = ['#', 'مکتب', 'ولسوالی', 'تایم', 'عضو علمی', 'شعبات', 'وضعیت بست'];
+    const rows = allSchoolSettings.map((s, idx) => {
+      const budget = getBudgetStatusText(s);
+      return [
+        idx + 1,
+        s.schoolname || '',
+        s.district || '',
+        s.time_type || '',
+        s.academic_member || '',
+        s.branches_total || 0,
+        budget.text
+      ];
+    });
+
+    const csv = '\uFEFF' + [headers, ...rows]
+      .map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'schools_settings_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📊 خروجی CSV دانلود شد');
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // پرنت لیست کامل کارمندان
+  // ═══════════════════════════════════════════════════════════
   function printList() {
     const records = loadedRecordsCache || [];
     if (records.length === 0) { showToast('رکوردی برای چاپ نیست', true); return; }
@@ -883,6 +1099,9 @@
     win.document.close();
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // خروجی‌ها
+  // ═══════════════════════════════════════════════════════════
   function exportFull() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
@@ -1003,50 +1222,9 @@
     showToast('🔍 خروجی فیلتر دانلود شد');
   }
 
-  async function loadSchoolSettings() {
-    try {
-      const res = await fetch('/api/all-school-settings', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (res.ok) allSchoolSettings = await res.json();
-    } catch (e) { console.error(e); }
-  }
-
-  function showSchoolSettings() {
-    if (!schoolSettingsModal) {
-      schoolSettingsModal = new bootstrap.Modal(document.getElementById('schoolSettingsModal'));
-    }
-    const body = document.getElementById('schoolSettingsModalBody');
-    if (allSchoolSettings.length === 0) {
-      body.innerHTML = '<p class="text-muted text-center p-4">هیچ مکتبی اطلاعات خود را ثبت نکرده است.</p>';
-    } else {
-      let html = `<table class="table table-bordered table-sm text-center">
-        <thead class="table-light">
-          <tr>
-            <th>#</th><th>مکتب</th><th>ولسوالی</th><th>تایم</th>
-            <th>عضو علمی</th><th>شعبات</th><th>وضعیت بست</th>
-          </tr>
-        </thead><tbody>`;
-      allSchoolSettings.forEach((s, idx) => {
-        let budgetInfo = s.budget_status || 'عادی';
-        if (s.budget_status === 'اضافه بست') budgetInfo = `➕ ${s.extra_bust_count} (${s.extra_bust_field || '—'})`;
-        else if (s.budget_status === 'کمبود بست') budgetInfo = `➖ ${s.lack_bust_count} (${s.lack_bust_field || '—'})`;
-        html += `<tr>
-          <td>${idx + 1}</td>
-          <td><strong>${escapeHtml(s.schoolname || '-')}</strong></td>
-          <td>${escapeHtml(s.district || '-')}</td>
-          <td>${escapeHtml(s.time_type || '-')}</td>
-          <td>${escapeHtml(s.academic_member || '-')}</td>
-          <td>${s.branches_total || 0}</td>
-          <td>${budgetInfo}</td>
-        </tr>`;
-      });
-      html += '</tbody></table>';
-      body.innerHTML = html;
-    }
-    schoolSettingsModal.show();
-  }
-
+  // ═══════════════════════════════════════════════════════════
+  // مکاتب (لیست کاربران)
+  // ═══════════════════════════════════════════════════════════
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -1081,27 +1259,7 @@
         });
       }
 
-      const tbody = document.getElementById('usersTableBody');
-      tbody.innerHTML = '';
-      if (allSchoolsList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-muted p-3">هیچ مکتبی ثبت نشده</td></tr>';
-        document.getElementById('sSchools').textContent = 0;
-        return;
-      }
       document.getElementById('sSchools').textContent = allSchoolsList.length;
-      const fragment = document.createDocumentFragment();
-      allSchoolsList.forEach((sch, idx) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${idx + 1}</td>
-          <td><code>${escapeHtml(sch.username)}</code></td>
-          <td><strong>${escapeHtml(sch.schoolname)}</strong></td>
-          <td>${escapeHtml(sch.district || '-')}</td>
-          <td><button class="btn-action btn-delete-row" onclick="deleteSchool(${sch.id})">🗑️</button></td>
-        `;
-        fragment.appendChild(tr);
-      });
-      tbody.appendChild(fragment);
     } catch (e) { console.error(e); }
   }
 

@@ -51,7 +51,7 @@ const JOB_TITLES = [
 // عناوینی که کد بست الزامی نیست
 const NO_CODE_TITLES = ['معلم قراردادی', 'معلم افتخاری'];
 
-// عناوینی که درجه تحصیلی الزامی نیست
+// کلمات کلیدی کارکن خدماتی
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
 async function initDB() {
@@ -145,7 +145,7 @@ async function logLoginAttempt(ip, username, success) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// اعتبارسنجی‌ها
+// توابع اعتبارسنجی
 // ═══════════════════════════════════════════════════════════
 function isValidJobCode(jobCode) {
   if (!jobCode) return false;
@@ -292,7 +292,93 @@ app.get('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// POST /api/records — با اعتبارسنجی جدید
+// اعتبارسنجی مشترک برای POST و PUT
+// ═══════════════════════════════════════════════════════════
+async function validateRecordBody(body, excludeId = null) {
+  const job = String(body.jobTitle || '').trim();
+  const firstName = String(body.firstName || '').trim();
+  const fatherName = String(body.fatherName || '').trim();
+  const grandfatherName = String(body.grandfatherName || '').trim();
+  const jobCode = String(body.jobCode || '').trim();
+  const eTazkira = String(body.eTazkira || '').trim();
+  const paperTazkira = String(body.paperTazkira || '').trim();
+  const degree = String(body.degree || '').trim();
+  const birthDate = String(body.birthDate || '').trim();
+  const firstAppointmentDate = String(body.firstAppointmentDate || '').trim();
+  const currentPositionDate = String(body.currentPositionDate || '').trim();
+  const ethnicity = String(body.ethnicity || '').trim();
+  const phone = String(body.phone || '').trim();
+
+  // الزامیات پایه
+  if (!job) return 'عنوان بست الزامی است';
+  if (!JOB_TITLES.includes(job)) return '❌ عنوان بست انتخابی معتبر نیست';
+  if (!firstName) return 'اسم الزامی است';
+  if (!fatherName) return 'ولد الزامی است';
+  if (!grandfatherName) return 'ولدیت الزامی است';
+
+  const isContract = isNoCodeTitle(job);
+
+  if (isContract) {
+    // ═══ معلم قراردادی/افتخاری: فقط اسم، تخلص، ولد، ولدیت، تاریخ تولد، تذکره ═══
+    if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
+    if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)';
+    if (!birthDate) return 'تاریخ تولد الزامی است';
+  } else {
+    // ═══ بقیه: همه فیلدهای اصلی الزامی ═══
+    if (!ethnicity) return 'قومیت الزامی است';
+    if (!phone) return 'شماره تماس الزامی است';
+    if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
+    if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)';
+
+    if (!jobCode) return 'کُد بست الزامی است';
+    if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد';
+    const isDuplicate = await isJobCodeDuplicate(jobCode, excludeId);
+    if (isDuplicate) return `❌ کُد بست «${jobCode}» قبلاً در سیستم ثبت شده است`;
+
+    if (!birthDate) return 'تاریخ تولد الزامی است';
+    if (!firstAppointmentDate) return 'تاریخ اولین تقرر الزامی است';
+    if (!currentPositionDate) return 'تاریخ تقرر فعلی الزامی است';
+
+    if (!isServiceStaff(job) && !degree) return 'درجه تحصیلی برای این عنوان الزامی است';
+  }
+
+  // ═══ بررسی ورکشاپ ═══
+  const workshopStatus = String(body.workshopStatus || '').trim();
+  if (workshopStatus === 'بلی') {
+    const workshopTitle = String(body.workshopTitle || '').trim();
+    const workshopDuration = String(body.workshopDuration || '').trim();
+    if (!workshopTitle) return '❌ عنوان ورکشاپ الزامی است (چون ورکشاپ اخذ کرده‌اید)';
+    if (!workshopDuration) return '❌ مدت ورکشاپ الزامی است (چون ورکشاپ اخذ کرده‌اید)';
+  }
+
+  // ═══ بررسی نمره ارزیابی ═══
+  const evaluationScore = String(body.evaluationScore || '').trim();
+  if (evaluationScore) {
+    const num = Number(evaluationScore);
+    if (isNaN(num) || num < 0 || num > 100) {
+      return '❌ نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد';
+    }
+  }
+
+  // ═══ بررسی مجموعه ساعت درسی ═══
+  const totalTeachingHours = String(body.totalTeachingHours || '').trim();
+  if (totalTeachingHours) {
+    const num = Number(totalTeachingHours);
+    if (isNaN(num) || num < 0) {
+      return '❌ مجموعه ساعت درسی باید عددی مثبت باشد';
+    }
+  }
+
+  // ═══ بررسی دکمه موافقت ═══
+  if (excludeId === null && !body.agreement) {
+    return '❌ شما باید موافقت خود را اعلام کنید';
+  }
+
+  return null; // بدون خطا
+}
+
+// ═══════════════════════════════════════════════════════════
+// POST /api/records — ثبت رکورد جدید
 // ═══════════════════════════════════════════════════════════
 app.post('/api/records', authRequired, async (req, res) => {
   try {
@@ -300,69 +386,9 @@ app.post('/api/records', authRequired, async (req, res) => {
     const schoolName = body.schoolName || req.user.schoolname || '';
     const district = body.district || req.user.district || '';
 
-    const job = String(body.jobTitle || body.job || '').trim();
-    const firstName = String(body.firstName || '').trim();
-    const fatherName = String(body.fatherName || '').trim();
-
-    if (!firstName || !fatherName || !job) {
-      return res.status(400).json({ error: 'نام، نام پدر و عنوان بست الزامی است' });
-    }
-
-    // ═══ بررسی عنوان بست ═══
-    if (!JOB_TITLES.includes(job)) {
-      return res.status(400).json({ error: '❌ عنوان بست انتخابی معتبر نیست' });
-    }
-
-    const isContractTeacher = isNoCodeTitle(job);
-    const jobCode = String(body.jobCode || '').trim();
-    const eTazkira = String(body.eTazkira || '').trim();
-    const degree = String(body.degree || '').trim();
-    const birthDate = String(body.birthDate || '').trim();
-    const firstAppointmentDate = String(body.firstAppointmentDate || '').trim();
-    const currentPositionDate = String(body.currentPositionDate || '').trim();
-
-    if (isContractTeacher) {
-      // ═══ معلم قراردادی/افتخاری: فقط اسم، ولد، ولدیت، تاریخ تولد، تذکره الزامی ═══
-      const grandfatherName = String(body.grandfatherName || '').trim();
-      if (!grandfatherName) {
-        return res.status(400).json({ error: 'ولدیت الزامی است' });
-      }
-      if (!eTazkira && !body.paperTazkira) {
-        return res.status(400).json({ error: 'حداقل یکی از تذکره‌ها الزامی است' });
-      }
-      if (eTazkira && !isValidETazkira(eTazkira)) {
-        return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)' });
-      }
-      if (!birthDate) {
-        return res.status(400).json({ error: 'تاریخ تولد الزامی است' });
-      }
-    } else {
-      // ═══ بقیه: همه فیلدهای اصلی الزامی ═══
-      if (!body.jobCode || !isValidJobCode(jobCode)) {
-        return res.status(400).json({ error: '❌ فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد' });
-      }
-      const isDuplicate = await isJobCodeDuplicate(jobCode);
-      if (isDuplicate) {
-        return res.status(400).json({ error: `❌ کُد بست «${jobCode}» قبلاً در سیستم ثبت شده است` });
-      }
-
-      if (eTazkira && !isValidETazkira(eTazkira)) {
-        return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)' });
-      }
-
-      const serviceStaff = isServiceStaff(job);
-      if (!serviceStaff && !degree) {
-        return res.status(400).json({ error: 'درجه تحصیلی برای این عنوان الزامی است' });
-      }
-
-      if (!birthDate) return res.status(400).json({ error: 'تاریخ تولد الزامی است' });
-      if (!firstAppointmentDate) return res.status(400).json({ error: 'تاریخ اولین تقرر الزامی است' });
-      if (!currentPositionDate) return res.status(400).json({ error: 'تاریخ تقرر فعلی الزامی است' });
-    }
-
-    // ═══ بررسی دکمه موافقت ═══
-    if (!body.agreement) {
-      return res.status(400).json({ error: '❌ شما باید موافقت خود را اعلام کنید' });
+    const error = await validateRecordBody(body, null);
+    if (error) {
+      return res.status(400).json({ error });
     }
 
     await pool.query(
@@ -378,7 +404,7 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// PUT /api/records/:id — ویرایش
+// PUT /api/records/:id — ویرایش رکورد
 // ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
@@ -396,25 +422,9 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
       return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
     }
 
-    const job = String(body.jobTitle || '').trim();
-    if (!JOB_TITLES.includes(job)) {
-      return res.status(400).json({ error: '❌ عنوان بست انتخابی معتبر نیست' });
-    }
-
-    const isContractTeacher = isNoCodeTitle(job);
-    const jobCode = String(body.jobCode || '').trim();
-
-    if (!isContractTeacher) {
-      if (!jobCode || !isValidJobCode(jobCode)) {
-        return res.status(400).json({ error: '❌ فرمت کُد بست اشتباه است' });
-      }
-      const isDuplicate = await isJobCodeDuplicate(jobCode, id);
-      if (isDuplicate) return res.status(400).json({ error: `❌ کُد بست «${jobCode}» قبلاً ثبت شده است` });
-    }
-
-    const eTazkira = String(body.eTazkira || '').trim();
-    if (eTazkira && !isValidETazkira(eTazkira)) {
-      return res.status(400).json({ error: '❌ فرمت تذکره برقی اشتباه است' });
+    const error = await validateRecordBody(body, id);
+    if (error) {
+      return res.status(400).json({ error });
     }
 
     const schoolName = body.schoolName || req.user.schoolname || '';
@@ -432,7 +442,9 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
-// تایید / حذف / کاربران
+// ═══════════════════════════════════════════════════════════
+// تایید رکورد (فقط ادمین)
+// ═══════════════════════════════════════════════════════════
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه تایید دارد' });
@@ -445,6 +457,9 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// حذف رکورد (فقط ادمین)
+// ═══════════════════════════════════════════════════════════
 app.delete('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
@@ -457,6 +472,9 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// افزودن مکتب (فقط ادمین)
+// ═══════════════════════════════════════════════════════════
 app.post('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه افزودن مکتب دارد' });
@@ -478,6 +496,9 @@ app.post('/api/users', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// لیست مکاتب (فقط ادمین)
+// ═══════════════════════════════════════════════════════════
 app.get('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -489,6 +510,9 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// حذف مکتب (فقط ادمین)
+// ═══════════════════════════════════════════════════════════
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
@@ -501,6 +525,9 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// لاگ تلاش‌های ورود (فقط ادمین)
+// ═══════════════════════════════════════════════════════════
 app.get('/api/login-attempts', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -512,10 +539,14 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// Fallback
+// ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔒 Rate limiting: 10 login attempts per 15 minutes`);
 });

@@ -9,12 +9,11 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ⭐ JWT_SECRET ثابت
 const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V7.0 starting...');
+console.log('🔐 Server V8.0 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
@@ -33,14 +32,15 @@ const pool = new Pool({
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'admin123';
 
+// ⭐ معلم قراردادی و افتخاری حذف شدند
 const JOB_TITLES = [
   'آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار',
   'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین',
   'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش',
   'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی',
-  'معتمد جنسی (تحویلدار)', 'معلم قراردادی', 'معلم افتخاری', 'سایر'
+  'معتمد جنسی (تحویلدار)', 'سایر'
 ];
-const NO_CODE_TITLES = ['معلم قراردادی', 'معلم افتخاری'];
+const NO_CODE_TITLES = [];
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
 async function initDB() {
@@ -110,14 +110,10 @@ async function initDB() {
 }
 initDB();
 
-// ═══════════════════════════════════════════════════════════
-// ⭐ Middleware — ترتیب مهم است!
-// ═══════════════════════════════════════════════════════════
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ⭐ جلوگیری از کش شدن HTML — قبل از static
 app.use((req, res, next) => {
   if (req.url.endsWith('.html') || req.url === '/' || req.url.startsWith('/?')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -230,7 +226,6 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
     }
 
-    // ادمین
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
       const payload = { id: 0, username: 'admin', role: 'admin' };
@@ -246,7 +241,6 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       });
     }
 
-    // مکتب
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length === 0) {
       await logLoginAttempt(clientIp, username, false);
@@ -443,25 +437,50 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// PUT /api/records/:id
+// ⭐ PUT /api/records/:id — ویرایش توسط ادمین (حتی رکوردهای تایید شده)
 // ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
-    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب اجازه ویرایش دارد' });
     const id = req.params.id;
     const body = req.body || {};
-    const check = await pool.query('SELECT * FROM records WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    let check;
+
+    if (req.user.role === 'admin') {
+      // ⭐ ادمین: هر رکوردی را می‌تواند ویرایش کند
+      check = await pool.query('SELECT * FROM records WHERE id = $1', [id]);
+    } else if (req.user.role === 'school') {
+      // مکتب: فقط رکوردهای خودش
+      check = await pool.query('SELECT * FROM records WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+
     if (check.rows.length === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
-    if (check.rows[0].status === 'approved') return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
+
+    // مکتب نمی‌تواند رکورد تایید شده را ویرایش کند
+    if (req.user.role === 'school' && check.rows[0].status === 'approved') {
+      return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
+    }
+
     const error = await validateRecordBody(body, id);
     if (error) return res.status(400).json({ error });
-    const schoolName = body.schoolName || req.user.schoolname || '';
-    const district = body.district || req.user.district || '';
-    await pool.query(
-      `UPDATE records SET schoolname = $1, district = $2, data = $3
-       WHERE id = $4 AND userid = $5`,
-      [schoolName, district, JSON.stringify(body), id, req.user.id]
-    );
+
+    const schoolName = body.schoolName || check.rows[0].schoolname || '';
+    const district = body.district || check.rows[0].district || '';
+
+    if (req.user.role === 'admin') {
+      await pool.query(
+        `UPDATE records SET schoolname = $1, district = $2, data = $3
+         WHERE id = $4`,
+        [schoolName, district, JSON.stringify(body), id]
+      );
+    } else {
+      await pool.query(
+        `UPDATE records SET schoolname = $1, district = $2, data = $3
+         WHERE id = $4 AND userid = $5`,
+        [schoolName, district, JSON.stringify(body), id, req.user.id]
+      );
+    }
     res.json({ ok: true });
   } catch (err) {
     console.error('Records PUT Error:', err.message);
@@ -556,7 +575,7 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ تابع اصلاح‌شده: استفاده از COALESCE برای پر کردن schoolname و district
+// ⭐ استفاده از COALESCE برای پر کردن schoolname و district
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -672,9 +691,6 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// تست
-// ═══════════════════════════════════════════════════════════
 app.get('/api/test', (req, res) => {
   const testPayload = { id: 999, username: 'test', role: 'school' };
   const testToken = jwt.sign(testPayload, JWT_SECRET_CONSTANT, {
@@ -701,7 +717,7 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '7.0.0',
+    version: '8.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_algorithm: JWT_ALGORITHM,
     self_verify: verifyResult,
@@ -712,9 +728,6 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// ═══════════════════════════════════════════════════════════
-// Fallback
-// ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.setHeader('Pragma', 'no-cache');
@@ -724,7 +737,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V7.0 live on port ' + PORT);
+  console.log('🚀 Server V8.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
   console.log('📌 Cache-Control: enabled for HTML');

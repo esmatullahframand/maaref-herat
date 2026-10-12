@@ -192,7 +192,7 @@
     </div>
   </div>
 
-  <!-- ═══════════ تب فرم ثبت کارمند ═══════════ -->
+  <!-- ═══════════ تب ثبت کارمند ═══════════ -->
   <div class="tab-content" id="tab-form">
     <div class="card">
       <h4 id="formTitle">➕ ثبت کارمند جدید</h4>
@@ -371,7 +371,7 @@
     </div>
   </div>
 
-  <!-- ═══════════ تب لیست کارمندان ═══════════ -->
+  <!-- ═══════════ تب لیست ═══════════ -->
   <div class="tab-content" id="tab-list">
     <div class="card">
       <h4>📋 لیست کارمندان</h4>
@@ -619,7 +619,6 @@
       jobTitleBadge.style.background = '#94a3b8';
       return;
     }
-
     if (isNoCodeTitle(job)) {
       jobTitleBadge.textContent = `✅ ${job} — فیلدها اختیاری`;
       jobTitleBadge.style.background = '#f59e0b';
@@ -786,16 +785,12 @@
       if (body.eTazkira && !isValidETazkira(body.eTazkira)) errors.push('فرمت تذکره برقی اشتباه است');
       if (!body.jobCode) errors.push('کُد بست الزامی است');
       else if (!isValidJobCode(body.jobCode)) errors.push('فرمت کُد بست اشتباه است');
-
       if (!body.birthDate) errors.push('تاریخ تولد الزامی است');
       else if (!isValidShamsiDate(body.birthDate)) errors.push('تاریخ تولد نامعتبر است');
-
       if (!body.firstAppointmentDate) errors.push('تاریخ اولین تقرر الزامی است');
       else if (!isValidShamsiDate(body.firstAppointmentDate)) errors.push('تاریخ اولین تقرر نامعتبر است');
-
       if (!body.currentPositionDate) errors.push('تاریخ تقرر فعلی الزامی است');
       else if (!isValidShamsiDate(body.currentPositionDate)) errors.push('تاریخ تقرر فعلی نامعتبر است');
-
       if (!isServiceStaff(body.jobTitle)) {
         if (!body.degree) errors.push('درجه تحصیلی الزامی است');
       }
@@ -805,17 +800,14 @@
       if (!body.workshopTitle) errors.push('عنوان ورکشاپ الزامی است');
       if (!body.workshopDuration) errors.push('مدت ورکشاپ الزامی است');
     }
-
     if (body.evaluationScore) {
       const num = Number(body.evaluationScore);
       if (isNaN(num) || num < 0 || num > 100) errors.push('نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد');
     }
-
     if (body.totalTeachingHours) {
       const num = Number(body.totalTeachingHours);
       if (isNaN(num) || num < 0) errors.push('مجموعه ساعت درسی باید عددی مثبت باشد');
     }
-
     if (!body.agreement) errors.push('شما باید موافقت خود را اعلام کنید');
 
     return errors;
@@ -825,10 +817,7 @@
     e.preventDefault();
     const body = collectForm();
     const errors = validateBody(body);
-    if (errors.length > 0) {
-      showToast('❌ ' + errors[0], true);
-      return;
-    }
+    if (errors.length > 0) { showToast('❌ ' + errors[0], true); return; }
 
     submitBtn.disabled = true;
     submitBtn.innerText = editingRecordId ? '⏳ در حال ذخیره...' : '⏳ در حال ارسال...';
@@ -896,7 +885,6 @@
       else if (cat === 'manager') managers++;
       else if (cat === 'service') service++;
       else if (cat === 'admin_staff') adminStaff++;
-
       const age = calculateAge(info.birthDate);
       if (age !== null) {
         if (age >= 65) retired++;
@@ -1316,7 +1304,6 @@
     }
   });
 
-  // ═══ بررسی تنظیمات در زمان لود ═══
   (async function checkSchoolSettings() {
     try {
       const res = await fetch('/api/school-settings', {

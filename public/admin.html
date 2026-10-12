@@ -92,6 +92,7 @@
         <button class="btn btn-info fw-bold btn-sm px-3 text-white" onclick="exportTashkeel()">📋 خروجی تشکیل</button>
         <button class="btn btn-secondary fw-bold btn-sm px-3" onclick="exportFiltered()">🔍 خروجی فیلتر</button>
         <button class="btn btn-purple fw-bold btn-sm px-3" onclick="showSchoolSettings()">🏫 مدیریت مکاتب</button>
+        <button class="btn btn-danger fw-bold btn-sm px-3" onclick="showManageSchools()">👥 مدیریت لیست مکاتب</button>
       </div>
     </div>
 
@@ -212,7 +213,7 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ═══════════ Modal مدیریت مکاتب ═══════════ -->
+<!-- ═══════════ Modal مدیریت مکاتب (اطلاعات) ═══════════ -->
 <div class="modal fade" id="schoolSettingsModal" tabindex="-1">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -264,6 +265,90 @@
   </div>
 </div>
 
+<!-- ═══════════ Modal مدیریت لیست مکاتب ═══════════ -->
+<div class="modal fade" id="manageSchoolsModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header modal-header-purple">
+        <h5 class="modal-title">👥 مدیریت لیست مکاتب</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="mb-3">
+          <input type="text" id="manageSchoolSearch" class="form-control form-control-lg" placeholder="🔍 جستجو بر اساس نام مکتب یا نام کاربری..." oninput="filterManageSchools()">
+          <small class="text-muted">🔎 برای جستجو تایپ کنید — نتایج فوری نمایش داده می‌شوند</small>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">
+            📊 تعداد مکاتب: <strong id="manageSchoolCount">0</strong>
+          </span>
+        </div>
+
+        <div class="table-responsive border rounded">
+          <table class="table table-hover table-bordered align-middle mb-0" id="manageSchoolsTable">
+            <thead class="table-light">
+              <tr>
+                <th style="width:50px; text-align:center;">#</th>
+                <th style="text-align:center;">🏫 نام مکتب</th>
+                <th style="text-align:center;">👤 نام کاربری</th>
+                <th style="text-align:center;">🔑 رمز عبور</th>
+                <th style="text-align:center;">📍 ولسوالی</th>
+                <th style="text-align:center;">عملیات</th>
+              </tr>
+            </thead>
+            <tbody id="manageSchoolsBody">
+              <tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ Modal ویرایش مکتب ═══════════ -->
+<div class="modal fade" id="editSchoolModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#f59e0b; color:#fff;">
+        <h5 class="modal-title">✏️ ویرایش مکتب</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editSchoolId">
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold">نام کاربری</label>
+          <input type="text" id="editSchoolUsername" class="form-control" placeholder="نام کاربری انگلیسی">
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold">رمز عبور جدید (اختیاری)</label>
+          <input type="text" id="editSchoolPassword" class="form-control" placeholder="برای تغییر رمز، اینجا وارد کنید">
+          <small class="text-muted">⚠️ اگر خالی بگذارید، رمز عبور تغییر نمی‌کند</small>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold">نام مکتب (فارسی)</label>
+          <input type="text" id="editSchoolName" class="form-control" placeholder="نام مکتب">
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold">ولسوالی</label>
+          <input type="text" id="editSchoolDistrict" class="form-control" placeholder="ولسوالی">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button type="button" class="btn fw-bold" style="background:#f59e0b; color:#fff;" onclick="saveSchoolEdit()">💾 ذخیره تغییرات</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const token = localStorage.getItem('hr_token');
@@ -285,6 +370,9 @@
   let allSchoolsList = [];
   let allSchoolSettings = [];
   let schoolSettingsModal = null;
+  let manageSchoolsModal = null;
+  let editSchoolModal = null;
+  let manageSchoolsCache = [];
   const RETIREMENT_AGE = 65;
 
   const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
@@ -721,7 +809,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // مدیریت مکاتب
+  // مدیریت مکاتب (اطلاعات)
   // ═══════════════════════════════════════════════════════════
   async function loadSchoolSettings() {
     try {
@@ -935,7 +1023,177 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // پرنت لیست کامل کارمندان
+  // ⭐ مدیریت لیست مکاتب (جدید)
+  // ═══════════════════════════════════════════════════════════
+  async function showManageSchools() {
+    if (!manageSchoolsModal) {
+      manageSchoolsModal = new bootstrap.Modal(document.getElementById('manageSchoolsModal'));
+    }
+    if (!editSchoolModal) {
+      editSchoolModal = new bootstrap.Modal(document.getElementById('editSchoolModal'));
+    }
+    
+    document.getElementById('manageSchoolSearch').value = '';
+    await refreshManageSchools();
+    manageSchoolsModal.show();
+  }
+  window.showManageSchools = showManageSchools;
+
+  async function refreshManageSchools() {
+    try {
+      const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+      const schools = await res.json();
+      manageSchoolsCache = Array.isArray(schools) ? schools : [];
+      renderManageSchools(manageSchoolsCache);
+    } catch (e) {
+      console.error(e);
+      document.getElementById('manageSchoolsBody').innerHTML = 
+        '<tr><td colspan="6" class="text-center text-danger p-4">خطا در بارگذاری لیست مکاتب</td></tr>';
+    }
+  }
+
+  function renderManageSchools(schools) {
+    const tbody = document.getElementById('manageSchoolsBody');
+    const countEl = document.getElementById('manageSchoolCount');
+    
+    countEl.textContent = schools.length;
+    
+    if (!schools || schools.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">هیچ مکتبی یافت نشد</td></tr>';
+      return;
+    }
+    
+    let html = '';
+    schools.forEach((s, idx) => {
+      html += `
+        <tr>
+          <td class="text-center">${idx + 1}</td>
+          <td><strong>${escapeHtml(s.schoolname || '-')}</strong></td>
+          <td><code>${escapeHtml(s.username || '-')}</code></td>
+          <td><code style="color:#059669;">••••••••</code></td>
+          <td>${escapeHtml(s.district || '-')}</td>
+          <td class="text-center">
+            <button class="btn btn-warning btn-sm fw-bold" onclick="openEditSchool(${s.id})" title="ویرایش">✏️</button>
+            <button class="btn btn-danger btn-sm fw-bold" onclick="deleteSchoolAdmin(${s.id})" title="حذف">🗑️</button>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function filterManageSchools() {
+    const search = document.getElementById('manageSchoolSearch').value.trim().toLowerCase();
+    
+    if (!search) {
+      renderManageSchools(manageSchoolsCache);
+      return;
+    }
+    
+    const filtered = manageSchoolsCache.filter(s => {
+      const nameMatch = (s.schoolname || '').toLowerCase().includes(search);
+      const userMatch = (s.username || '').toLowerCase().includes(search);
+      const districtMatch = (s.district || '').toLowerCase().includes(search);
+      return nameMatch || userMatch || districtMatch;
+    });
+    
+    renderManageSchools(filtered);
+  }
+  window.filterManageSchools = filterManageSchools;
+
+  function openEditSchool(id) {
+    const school = manageSchoolsCache.find(s => s.id === id);
+    if (!school) { showToast('مکتب یافت نشد', true); return; }
+    
+    document.getElementById('editSchoolId').value = school.id;
+    document.getElementById('editSchoolUsername').value = school.username || '';
+    document.getElementById('editSchoolPassword').value = '';
+    document.getElementById('editSchoolName').value = school.schoolname || '';
+    document.getElementById('editSchoolDistrict').value = school.district || '';
+    
+    editSchoolModal.show();
+  }
+  window.openEditSchool = openEditSchool;
+
+  async function saveSchoolEdit() {
+    const id = document.getElementById('editSchoolId').value;
+    const username = document.getElementById('editSchoolUsername').value.trim();
+    const password = document.getElementById('editSchoolPassword').value;
+    const schoolName = document.getElementById('editSchoolName').value.trim();
+    const district = document.getElementById('editSchoolDistrict').value.trim();
+    
+    if (!username) { showToast('❌ نام کاربری الزامی است', true); return; }
+    if (!schoolName) { showToast('❌ نام مکتب الزامی است', true); return; }
+    
+    try {
+      const res = await fetch('/api/users/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ username, password, schoolName, district })
+      });
+      
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+      
+      const data = await res.json().catch(() => ({}));
+      
+      if (res.ok) {
+        showToast('✅ مکتب ویرایش شد');
+        editSchoolModal.hide();
+        await refreshManageSchools();
+        await loadSchoolsList();
+      } else {
+        showToast('❌ ' + (data.error || 'خطا در ویرایش'), true);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('❌ ارتباط با سرور برقرار نشد', true);
+    }
+  }
+  window.saveSchoolEdit = saveSchoolEdit;
+
+  async function deleteSchoolAdmin(id) {
+    const school = manageSchoolsCache.find(s => s.id === id);
+    if (!school) return;
+    
+    if (!confirm(`⚠️ آیا از حذف مکتب «${school.schoolname}» مطمئن هستید؟\n\nاین عمل غیرقابل بازگشت است.`)) return;
+    
+    try {
+      const res = await fetch('/api/users/' + id, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+      
+      if (res.ok) {
+        showToast('🗑️ مکتب حذف شد');
+        await refreshManageSchools();
+        await loadSchoolsList();
+      } else {
+        showToast('❌ خطا در حذف', true);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('❌ ارتباط با سرور برقرار نشد', true);
+    }
+  }
+  window.deleteSchoolAdmin = deleteSchoolAdmin;
+
+  // ═══════════════════════════════════════════════════════════
+  // پرنت و خروجی لیست کارمندان
   // ═══════════════════════════════════════════════════════════
   function printList() {
     const records = loadedRecordsCache || [];
@@ -1137,9 +1395,6 @@
     win.document.close();
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // خروجی‌های CSV
-  // ═══════════════════════════════════════════════════════════
   function exportFull() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
@@ -1261,7 +1516,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // مکاتب (لیست کاربران)
+  // مکاتب (لیست کاربران) - تابع اصلی
   // ═══════════════════════════════════════════════════════════
   async function loadSchoolsList() {
     try {

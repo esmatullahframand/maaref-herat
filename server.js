@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V11.0 starting...');
+console.log('🔐 Server V12.0 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
@@ -201,48 +201,35 @@ function validateShamsiDateServer(dateStr, fieldName) {
     return `${fieldName} باید فقط شامل اعداد باشد`;
   }
   
-  if (year < 1300 || year > 1450) {
-    return `${fieldName}: سال باید بین ۱۳۰۰ تا ۱۴۵۰ باشد`;
-  }
-  
-  if (month < 1 || month > 12) {
-    return `${fieldName}: ماه باید بین ۱ تا ۱۲ باشد`;
-  }
+  if (year < 1300 || year > 1450) return `${fieldName}: سال باید بین ۱۳۰۰ تا ۱۴۵۰ باشد`;
+  if (month < 1 || month > 12) return `${fieldName}: ماه باید بین ۱ تا ۱۲ باشد`;
   
   let maxDay = 31;
   if (month >= 7 && month <= 11) maxDay = 30;
   if (month === 12) maxDay = 29;
   
-  if (day < 1 || day > maxDay) {
-    return `${fieldName}: روز باید بین ۱ تا ${maxDay} باشد`;
-  }
+  if (day < 1 || day > maxDay) return `${fieldName}: روز باید بین ۱ تا ${maxDay} باشد`;
   
   return null;
 }
 
 function validateTazkiraServer(tazkiraStr) {
   if (!tazkiraStr) return null;
-  
   const cleaned = normalizeDigits(tazkiraStr).trim();
   const pattern = /^\d+-\d+-\d+$/;
-  
   if (!pattern.test(cleaned)) {
     return 'فرمت تذکره الکترونیکی باید XXXXX-XXXXX-XXXX باشد (مثلاً 32434-32323-3232)';
   }
-  
   return null;
 }
 
 function validateJobCodeServer(jobCode) {
   if (!jobCode) return null;
-  
   const cleaned = normalizeDigits(jobCode).trim();
   const pattern = /^\d{4,5}-\d{2}-\d{2}-\d{2}$/;
-  
   if (!pattern.test(cleaned)) {
     return 'فرمت کُد بست باید XXXXX-XX-XX-XX باشد (مثلاً 13056-02-32-27)';
   }
-  
   return null;
 }
 
@@ -254,11 +241,6 @@ function isValidJobCode(jobCode) {
 
 function isNoCodeTitle(jobTitle) {
   return NO_CODE_TITLES.some(t => jobTitle === t);
-}
-
-function isServiceStaff(jobTitle) {
-  if (!jobTitle) return false;
-  return SERVICE_KEYWORDS.some(kw => jobTitle.includes(kw)) || jobTitle === 'کارکن خدماتی';
 }
 
 function isServiceOrSupport(jobTitle) {
@@ -559,7 +541,7 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ PUT /api/records/:id — ویرایش با فیلتر فیلدها برای مکتب
+// PUT /api/records/:id
 // ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
@@ -577,15 +559,12 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 
     if (check.rows.length === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
 
-    // ⭐ برای مکتب: فقط فیلدهای مجاز را از body استخراج کن (بقیه از رکورد اصلی حفظ می‌شوند)
     let finalBody;
     
     if (req.user.role === 'school') {
       const originalData = JSON.parse(check.rows[0].data || '{}');
       
-      // ⭐ فقط این فیلدها از مکتب پذیرفته می‌شوند
       finalBody = {
-        // فیلدهای قابل ویرایش توسط مکتب
         jobTitle: body.jobTitle !== undefined ? String(body.jobTitle).trim() : originalData.jobTitle,
         bust: body.bust !== undefined ? String(body.bust).trim() : originalData.bust,
         grade: body.grade !== undefined ? String(body.grade).trim() : originalData.grade,
@@ -596,7 +575,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
         totalTeachingHours: body.totalTeachingHours !== undefined ? String(body.totalTeachingHours).trim() : originalData.totalTeachingHours,
         evaluationScore: body.evaluationScore !== undefined ? String(body.evaluationScore).trim() : originalData.evaluationScore,
         
-        // بقیه فیلدها از رکورد اصلی حفظ می‌شوند (غیرقابل ویرایش توسط مکتب)
         firstName: originalData.firstName,
         lastName: originalData.lastName,
         fatherName: originalData.fatherName,
@@ -624,15 +602,12 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
         enrollmentDate: originalData.enrollmentDate,
         graduationDate: originalData.graduationDate,
         
-        // موافقت
         agreement: true
       };
     } else {
-      // ادمین: همه فیلدها
       finalBody = body;
     }
 
-    // اعتبارسنجی
     const error = await validateRecordBody(finalBody, id);
     if (error) return res.status(400).json({ error });
 
@@ -770,7 +745,7 @@ app.get('/api/all-school-settings', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// تایید / حذف / کاربران
+// تایید / حذف رکوردها
 // ═══════════════════════════════════════════════════════════
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
@@ -796,6 +771,9 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// کاربران (مکاتب)
+// ═══════════════════════════════════════════════════════════
 app.post('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه افزودن مکتب دارد' });
@@ -812,6 +790,53 @@ app.post('/api/users', authRequired, async (req, res) => {
     console.error('Add School Error:', err.message);
     if (err.code === '23505') return res.status(400).json({ error: 'این نام کاربری قبلا ثبت شده است' });
     res.status(500).json({ error: 'خطا در ثبت مکتب: ' + err.message });
+  }
+});
+
+// ⭐ ویرایش مکتب
+app.put('/api/users/:id', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    
+    const id = req.params.id;
+    const { username, password, schoolName, district } = req.body || {};
+    
+    if (!username || !schoolName) {
+      return res.status(400).json({ error: 'نام کاربری و نام مکتب الزامی است' });
+    }
+    
+    const check = await pool.query("SELECT * FROM users WHERE id = $1 AND role = 'school'", [id]);
+    if (check.rows.length === 0) {
+      return res.status(404).json({ error: 'مکتب یافت نشد' });
+    }
+    
+    const dup = await pool.query(
+      "SELECT id FROM users WHERE username = $1 AND id != $2",
+      [username.trim(), id]
+    );
+    if (dup.rows.length > 0) {
+      return res.status(400).json({ error: 'این نام کاربری قبلاً استفاده شده است' });
+    }
+    
+    if (password && password.trim()) {
+      const hash = bcrypt.hashSync(password.trim(), 10);
+      await pool.query(
+        `UPDATE users SET username = $1, password = $2, schoolname = $3, district = $4
+         WHERE id = $5 AND role = 'school'`,
+        [username.trim(), hash, schoolName.trim(), (district || '').trim(), id]
+      );
+    } else {
+      await pool.query(
+        `UPDATE users SET username = $1, schoolname = $2, district = $3
+         WHERE id = $4 AND role = 'school'`,
+        [username.trim(), schoolName.trim(), (district || '').trim(), id]
+      );
+    }
+    
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Edit School Error:', err.message);
+    res.status(500).json({ error: 'خطا در ویرایش مکتب: ' + err.message });
   }
 });
 
@@ -875,7 +900,7 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '11.0.0',
+    version: '12.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_algorithm: JWT_ALGORITHM,
     self_verify: verifyResult,
@@ -895,7 +920,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V11.0 live on port ' + PORT);
+  console.log('🚀 Server V12.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
   console.log('📌 Cache-Control: enabled for HTML');

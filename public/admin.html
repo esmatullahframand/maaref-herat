@@ -157,12 +157,6 @@
         </select>
       </div>
       <div class="filter-item">
-        <label>🎓 عضو علمی</label>
-        <select id="academicMemberFilter" onchange="loadAllRecords()">
-          <option value="">📋 همه اعضای علمی</option>
-        </select>
-      </div>
-      <div class="filter-item">
         <label>📚 ورکشاپ</label>
         <select id="workshopFilter" onchange="loadAllRecords()">
           <option value="">📋 همه</option>
@@ -230,7 +224,9 @@
       </div>
       <div class="modal-body">
 
-        <!-- دکمه‌های پرنت و خروجی -->
+        <!-- ⭐ نمایش نام مکتب‌ها -->
+        <div id="schoolNamesHeader" class="mb-3"></div>
+
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <div>
             <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">
@@ -247,7 +243,6 @@
           </div>
         </div>
 
-        <!-- جدول مکاتب -->
         <div class="table-responsive border rounded">
           <table class="table table-hover table-bordered align-middle mb-0 text-center" id="schoolSettingsTable">
             <thead class="table-light">
@@ -277,10 +272,16 @@
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
-  if (!token) location.href = '/';
+  if (!token || token === 'undefined' || token === 'null') {
+    localStorage.clear();
+    location.href = '/';
+    throw new Error('No token');
+  }
+
   if (currentUser.role !== 'admin') {
     alert('دسترسی فقط برای ادمین');
     location.href = '/school.html';
+    throw new Error('Not admin');
   }
 
   let loadedRecordsCache = [];
@@ -386,7 +387,6 @@
       schoolType: document.getElementById('schoolTypeFilter').value,
       jobTitle: document.getElementById('jobTitleFilter').value,
       gender: document.getElementById('genderFilter').value,
-      academicMember: document.getElementById('academicMemberFilter').value,
       workshop: document.getElementById('workshopFilter').value,
       budget: document.getElementById('budgetFilter').value,
       empStatus: document.getElementById('empStatusFilter').value
@@ -394,7 +394,7 @@
   }
 
   function hasAnyFilter(f) {
-    return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.academicMember || f.workshop || f.budget || f.empStatus);
+    return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus);
   }
 
   async function loadAllRecords() {
@@ -409,7 +409,12 @@
 
       const url = '/api/records?' + params.join('&');
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-      if (res.status === 401) { localStorage.clear(); location.href = '/'; return; }
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
 
       let records = await res.json();
 
@@ -426,12 +431,6 @@
         records = records.filter(row => {
           const info = row.data || {};
           return (info.gender || '') === f.gender;
-        });
-      }
-      if (f.academicMember) {
-        records = records.filter(row => {
-          const settings = allSchoolSettings.find(s => s.schoolname === row.schoolname);
-          return settings && settings.academic_member === f.academicMember;
         });
       }
       if (f.workshop) {
@@ -470,6 +469,13 @@
   async function loadStats() {
     try {
       const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+
       const allRecords = await res.json();
       if (Array.isArray(allRecords)) {
         const total = allRecords.length;
@@ -501,7 +507,6 @@
     if (f.schoolType) activeFilters.push(`📖 نوع: <strong>${f.schoolType}</strong>`);
     if (f.jobTitle) activeFilters.push(`👨‍🏫 بست: <strong>${f.jobTitle}</strong>`);
     if (f.gender) activeFilters.push(`👤 جنسیت: <strong>${f.gender}</strong>`);
-    if (f.academicMember) activeFilters.push(`🎓 عضو علمی: <strong>${escapeHtml(f.academicMember)}</strong>`);
     if (f.workshop) activeFilters.push(`📚 ورکشاپ: <strong>${f.workshop}</strong>`);
     if (f.budget) activeFilters.push(`💼 بست: <strong>${f.budget}</strong>`);
     if (f.empStatus) activeFilters.push(`وضعیت: <strong>${f.empStatus === 'active' ? 'فعال' : 'متقاعد'}</strong>`);
@@ -567,6 +572,7 @@
       const res = await fetch('/api/records/' + id + '/approve', {
         method: 'POST', headers: { 'Authorization': 'Bearer ' + token }
       });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
       if (res.ok) { showToast('✅ تایید شد'); loadAllRecords(); }
       else { showToast('خطا', true); }
     } catch (e) { showToast('ارتباط برقرار نشد', true); }
@@ -578,6 +584,7 @@
       const res = await fetch('/api/records/' + id, {
         method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
       });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
       if (res.ok) { showToast('🗑️ حذف شد'); loadAllRecords(); }
       else { showToast('خطا', true); }
     } catch (e) { showToast('ارتباط برقرار نشد', true); }
@@ -716,14 +723,18 @@
     win.document.close();
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // 🏫 مدیریت مکاتب — Modal
-  // ═══════════════════════════════════════════════════════════
   async function loadSchoolSettings() {
     try {
       const res = await fetch('/api/all-school-settings', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+
       if (res.ok) {
         allSchoolSettings = await res.json();
       } else {
@@ -749,9 +760,28 @@
     if (!schoolSettingsModal) {
       schoolSettingsModal = new bootstrap.Modal(document.getElementById('schoolSettingsModal'));
     }
-
     renderSchoolSettingsTable();
+    updateSchoolModalHeader();
     schoolSettingsModal.show();
+  }
+
+  // ⭐ نمایش نام مکتب‌ها در بالای مودال
+  function updateSchoolModalHeader() {
+    const headerEl = document.getElementById('schoolNamesHeader');
+    if (!headerEl) return;
+    
+    if (!allSchoolSettings || allSchoolSettings.length === 0) {
+      headerEl.innerHTML = '<div class="alert alert-info mb-0">هیچ مکتبی اطلاعات خود را ثبت نکرده است</div>';
+      return;
+    }
+    
+    let html = '<div style="display:flex; flex-wrap:wrap; gap:8px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; max-height:120px; overflow-y:auto;">';
+    html += '<span style="font-weight:bold; color:#7c3aed; margin-left:8px; align-self:center;">🏫 مکاتب ثبت‌شده:</span>';
+    allSchoolSettings.forEach((s, idx) => {
+      html += `<span style="background:#e9d5ff; color:#5b21b6; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:bold; border:1px solid #c4b5fd;">${idx + 1}. ${escapeHtml(s.schoolname || '—')}</span>`;
+    });
+    html += '</div>';
+    headerEl.innerHTML = html;
   }
 
   function renderSchoolSettingsTable() {
@@ -785,7 +815,6 @@
     tbody.innerHTML = html;
   }
 
-  // 🖨️ پرنت لیست مکاتب
   function printSchoolSettings() {
     if (!allSchoolSettings || allSchoolSettings.length === 0) {
       showToast('رکوردی برای پرنت نیست', true);
@@ -859,7 +888,6 @@
     win.document.close();
   }
 
-  // 📊 خروجی CSV مکاتب
   function exportSchoolSettingsCSV() {
     if (!allSchoolSettings || allSchoolSettings.length === 0) {
       showToast('رکوردی برای خروجی نیست', true);
@@ -894,9 +922,6 @@
     showToast('📊 خروجی CSV دانلود شد');
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // پرنت لیست کامل کارمندان
-  // ═══════════════════════════════════════════════════════════
   function printList() {
     const records = loadedRecordsCache || [];
     if (records.length === 0) { showToast('رکوردی برای چاپ نیست', true); return; }
@@ -1013,7 +1038,6 @@
     if (f.school) filterDesc.push('مکتب: ' + f.school);
     if (f.jobTitle) filterDesc.push('عنوان بست: ' + f.jobTitle);
     if (f.gender) filterDesc.push('جنسیت: ' + f.gender);
-    if (f.academicMember) filterDesc.push('عضو علمی: ' + f.academicMember);
     if (f.workshop) filterDesc.push('ورکشاپ: ' + f.workshop);
     if (f.budget) filterDesc.push('بست: ' + f.budget);
     if (f.empStatus) filterDesc.push('وضعیت: ' + (f.empStatus === 'active' ? 'فعال' : 'متقاعد'));
@@ -1099,9 +1123,6 @@
     win.document.close();
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // خروجی‌ها
-  // ═══════════════════════════════════════════════════════════
   function exportFull() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
@@ -1222,13 +1243,16 @@
     showToast('🔍 خروجی فیلتر دانلود شد');
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // مکاتب (لیست کاربران)
-  // ═══════════════════════════════════════════════════════════
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
-      if (res.status === 401) { localStorage.clear(); location.href = '/'; return; }
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+
       const schools = await res.json();
       allSchoolsList = Array.isArray(schools) ? schools : [];
 
@@ -1242,20 +1266,6 @@
           opt.textContent = `🏫 ${sch.schoolname}`;
           if (sch.schoolname === currentVal) opt.selected = true;
           filterSelect.appendChild(opt);
-        });
-      }
-
-      const acSelect = document.getElementById('academicMemberFilter');
-      if (acSelect) {
-        const members = [...new Set(allSchoolSettings.map(s => s.academic_member).filter(Boolean))];
-        const currentVal = acSelect.value;
-        acSelect.innerHTML = '<option value="">📋 همه اعضای علمی</option>';
-        members.forEach(m => {
-          const opt = document.createElement('option');
-          opt.value = m;
-          opt.textContent = `🎓 ${m}`;
-          if (m === currentVal) opt.selected = true;
-          acSelect.appendChild(opt);
         });
       }
 
@@ -1279,6 +1289,7 @@
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify(body)
       });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         showToast('🏫 مکتب ثبت شد');
@@ -1294,6 +1305,7 @@
       const res = await fetch('/api/users/' + id, {
         method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
       });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
       if (res.ok) { showToast('🗑️ حذف شد'); loadSchoolsList(); loadAllRecords(); }
       else { showToast('خطا', true); }
     } catch (e) { showToast('ارتباط برقرار نشد', true); }

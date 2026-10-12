@@ -27,31 +27,15 @@ const pool = new Pool({
 // عناوین بست
 // ═══════════════════════════════════════════════════════════
 const JOB_TITLES = [
-  'آمر',
-  'مدیر',
-  'مدیر اجرائیه',
-  'معلم',
-  'سر معلم',
-  'معلم همکار',
-  'معلم سپورت',
-  'معلم لابرانت',
-  'عضو علمی معلمان',
-  'عضو علمی مدرسین',
-  'عضو مسلکی امور مالی و کارکنان',
-  'عضو مسلکی نظارت احصاییه و گزارش',
-  'عضو مسلکی تاسیسات و ترمیمات',
-  'عضو مسلکی شوراها',
-  'کارکن خدماتی',
-  'معتمد جنسی (تحویلدار)',
-  'معلم قراردادی',
-  'معلم افتخاری',
-  'سایر'
+  'آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار',
+  'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین',
+  'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش',
+  'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی',
+  'معتمد جنسی (تحویلدار)', 'معلم قراردادی', 'معلم افتخاری', 'سایر'
 ];
 
-// عناوینی که کد بست الزامی نیست
 const NO_CODE_TITLES = ['معلم قراردادی', 'معلم افتخاری'];
 
-// کلمات کلیدی کارکن خدماتی
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
 async function initDB() {
@@ -87,6 +71,29 @@ async function initDB() {
           username TEXT,
           success BOOLEAN DEFAULT FALSE,
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS school_settings (
+          id SERIAL PRIMARY KEY,
+          userid INTEGER UNIQUE NOT NULL,
+          schoolname TEXT,
+          district TEXT,
+          time_type TEXT DEFAULT 'یک تایم',
+          academic_member TEXT,
+          branches_total INTEGER DEFAULT 0,
+          branches_1_3 INTEGER DEFAULT 0,
+          branches_4_6 INTEGER DEFAULT 0,
+          branches_7_9 INTEGER DEFAULT 0,
+          branches_10_12 INTEGER DEFAULT 0,
+          budget_status TEXT DEFAULT 'عادی',
+          extra_bust_count INTEGER DEFAULT 0,
+          extra_bust_field TEXT,
+          lack_bust_count INTEGER DEFAULT 0,
+          lack_bust_field TEXT,
+          status TEXT DEFAULT 'pending',
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
       console.log('✅ جداول دیتابیس آماده شدند.');
@@ -145,7 +152,7 @@ async function logLoginAttempt(ip, username, success) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// توابع اعتبارسنجی
+// اعتبارسنجی
 // ═══════════════════════════════════════════════════════════
 function isValidJobCode(jobCode) {
   if (!jobCode) return false;
@@ -292,7 +299,7 @@ app.get('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// اعتبارسنجی مشترک برای POST و PUT
+// اعتبارسنجی رکورد
 // ═══════════════════════════════════════════════════════════
 async function validateRecordBody(body, excludeId = null) {
   const job = String(body.jobTitle || '').trim();
@@ -309,7 +316,6 @@ async function validateRecordBody(body, excludeId = null) {
   const ethnicity = String(body.ethnicity || '').trim();
   const phone = String(body.phone || '').trim();
 
-  // الزامیات پایه
   if (!job) return 'عنوان بست الزامی است';
   if (!JOB_TITLES.includes(job)) return '❌ عنوان بست انتخابی معتبر نیست';
   if (!firstName) return 'اسم الزامی است';
@@ -319,16 +325,14 @@ async function validateRecordBody(body, excludeId = null) {
   const isContract = isNoCodeTitle(job);
 
   if (isContract) {
-    // ═══ معلم قراردادی/افتخاری: فقط اسم، تخلص، ولد، ولدیت، تاریخ تولد، تذکره ═══
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
     if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)';
     if (!birthDate) return 'تاریخ تولد الزامی است';
   } else {
-    // ═══ بقیه: همه فیلدهای اصلی الزامی ═══
     if (!ethnicity) return 'قومیت الزامی است';
     if (!phone) return 'شماره تماس الزامی است';
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
-    if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)';
+    if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است';
 
     if (!jobCode) return 'کُد بست الزامی است';
     if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد';
@@ -342,43 +346,31 @@ async function validateRecordBody(body, excludeId = null) {
     if (!isServiceStaff(job) && !degree) return 'درجه تحصیلی برای این عنوان الزامی است';
   }
 
-  // ═══ بررسی ورکشاپ ═══
   const workshopStatus = String(body.workshopStatus || '').trim();
   if (workshopStatus === 'بلی') {
-    const workshopTitle = String(body.workshopTitle || '').trim();
-    const workshopDuration = String(body.workshopDuration || '').trim();
-    if (!workshopTitle) return '❌ عنوان ورکشاپ الزامی است (چون ورکشاپ اخذ کرده‌اید)';
-    if (!workshopDuration) return '❌ مدت ورکشاپ الزامی است (چون ورکشاپ اخذ کرده‌اید)';
+    if (!String(body.workshopTitle || '').trim()) return '❌ عنوان ورکشاپ الزامی است';
+    if (!String(body.workshopDuration || '').trim()) return '❌ مدت ورکشاپ الزامی است';
   }
 
-  // ═══ بررسی نمره ارزیابی ═══
   const evaluationScore = String(body.evaluationScore || '').trim();
   if (evaluationScore) {
     const num = Number(evaluationScore);
-    if (isNaN(num) || num < 0 || num > 100) {
-      return '❌ نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد';
-    }
+    if (isNaN(num) || num < 0 || num > 100) return '❌ نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد';
   }
 
-  // ═══ بررسی مجموعه ساعت درسی ═══
   const totalTeachingHours = String(body.totalTeachingHours || '').trim();
   if (totalTeachingHours) {
     const num = Number(totalTeachingHours);
-    if (isNaN(num) || num < 0) {
-      return '❌ مجموعه ساعت درسی باید عددی مثبت باشد';
-    }
+    if (isNaN(num) || num < 0) return '❌ مجموعه ساعت درسی باید عددی مثبت باشد';
   }
 
-  // ═══ بررسی دکمه موافقت ═══
-  if (excludeId === null && !body.agreement) {
-    return '❌ شما باید موافقت خود را اعلام کنید';
-  }
+  if (excludeId === null && !body.agreement) return '❌ شما باید موافقت خود را اعلام کنید';
 
-  return null; // بدون خطا
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════
-// POST /api/records — ثبت رکورد جدید
+// POST /api/records
 // ═══════════════════════════════════════════════════════════
 app.post('/api/records', authRequired, async (req, res) => {
   try {
@@ -386,10 +378,19 @@ app.post('/api/records', authRequired, async (req, res) => {
     const schoolName = body.schoolName || req.user.schoolname || '';
     const district = body.district || req.user.district || '';
 
-    const error = await validateRecordBody(body, null);
-    if (error) {
-      return res.status(400).json({ error });
+    // بررسی تنظیمات مکتب
+    const settingsCheck = await pool.query(
+      'SELECT id FROM school_settings WHERE userid = $1',
+      [req.user.id]
+    );
+    if (settingsCheck.rows.length === 0) {
+      return res.status(400).json({
+        error: '❌ لطفاً ابتدا اطلاعات مکتب خود را در بخش «مدیریت مکتب» ثبت کنید'
+      });
     }
+
+    const error = await validateRecordBody(body, null);
+    if (error) return res.status(400).json({ error });
 
     await pool.query(
       `INSERT INTO records (userid, schoolname, district, data, status)
@@ -404,28 +405,21 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// PUT /api/records/:id — ویرایش رکورد
+// PUT /api/records/:id
 // ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
-    if (req.user.role !== 'school') {
-      return res.status(403).json({ error: 'فقط مکتب اجازه ویرایش دارد' });
-    }
+    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب اجازه ویرایش دارد' });
+
     const id = req.params.id;
     const body = req.body || {};
 
     const check = await pool.query('SELECT * FROM records WHERE id = $1 AND userid = $2', [id, req.user.id]);
-    if (check.rows.length === 0) {
-      return res.status(404).json({ error: 'رکورد یافت نشد یا به شما تعلق ندارد' });
-    }
-    if (check.rows[0].status === 'approved') {
-      return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
-    }
+    if (check.rows.length === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
+    if (check.rows[0].status === 'approved') return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
 
     const error = await validateRecordBody(body, id);
-    if (error) {
-      return res.status(400).json({ error });
-    }
+    if (error) return res.status(400).json({ error });
 
     const schoolName = body.schoolName || req.user.schoolname || '';
     const district = body.district || req.user.district || '';
@@ -443,7 +437,124 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// تایید رکورد (فقط ادمین)
+// school_settings endpoints
+// ═══════════════════════════════════════════════════════════
+app.get('/api/school-settings', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
+    const result = await pool.query('SELECT * FROM school_settings WHERE userid = $1', [req.user.id]);
+    if (result.rows.length === 0) return res.json({ exists: false, settings: null });
+    res.json({ exists: true, settings: result.rows[0] });
+  } catch (err) {
+    console.error('School settings GET Error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت تنظیمات مکتب' });
+  }
+});
+
+app.post('/api/school-settings', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
+
+    const body = req.body || {};
+    const timeType = String(body.timeType || 'یک تایم').trim();
+    const academicMember = String(body.academicMember || '').trim();
+    const branchesTotal = parseInt(body.branchesTotal || 0) || 0;
+    const branches13 = parseInt(body.branches13 || 0) || 0;
+    const branches46 = parseInt(body.branches46 || 0) || 0;
+    const branches79 = parseInt(body.branches79 || 0) || 0;
+    const branches1012 = parseInt(body.branches1012 || 0) || 0;
+    const budgetStatus = String(body.budgetStatus || 'عادی').trim();
+    const extraBustCount = parseInt(body.extraBustCount || 0) || 0;
+    const extraBustField = String(body.extraBustField || '').trim();
+    const lackBustCount = parseInt(body.lackBustCount || 0) || 0;
+    const lackBustField = String(body.lackBustField || '').trim();
+
+    if (!academicMember) return res.status(400).json({ error: 'نام و تخلص عضو علمی الزامی است' });
+    if (!['یک تایم', 'دو تایم', 'سه تایم'].includes(timeType)) return res.status(400).json({ error: 'نوع تایم معتبر نیست' });
+    if (!['عادی', 'اضافه بست', 'کمبود بست'].includes(budgetStatus)) return res.status(400).json({ error: 'وضعیت بست معتبر نیست' });
+
+    if (budgetStatus === 'اضافه بست') {
+      if (!extraBustCount || extraBustCount <= 0) return res.status(400).json({ error: 'تعداد اضافه بست الزامی است' });
+      if (!extraBustField) return res.status(400).json({ error: 'رشته اضافه بست الزامی است' });
+    }
+    if (budgetStatus === 'کمبود بست') {
+      if (!lackBustCount || lackBustCount <= 0) return res.status(400).json({ error: 'تعداد کمبود بست الزامی است' });
+      if (!lackBustField) return res.status(400).json({ error: 'رشته کمبود بست الزامی است' });
+    }
+
+    const schoolName = req.user.schoolname || '';
+    const district = req.user.district || '';
+
+    const check = await pool.query('SELECT id FROM school_settings WHERE userid = $1', [req.user.id]);
+
+    if (check.rows.length > 0) {
+      await pool.query(
+        `UPDATE school_settings SET
+          schoolname = $1, district = $2,
+          time_type = $3, academic_member = $4,
+          branches_total = $5, branches_1_3 = $6, branches_4_6 = $7,
+          branches_7_9 = $8, branches_10_12 = $9,
+          budget_status = $10, extra_bust_count = $11, extra_bust_field = $12,
+          lack_bust_count = $13, lack_bust_field = $14,
+          updatedat = CURRENT_TIMESTAMP
+         WHERE userid = $15`,
+        [schoolName, district, timeType, academicMember,
+         branchesTotal, branches13, branches46, branches79, branches1012,
+         budgetStatus, extraBustCount, extraBustField,
+         lackBustCount, lackBustField, req.user.id]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO school_settings (
+          userid, schoolname, district, time_type, academic_member,
+          branches_total, branches_1_3, branches_4_6, branches_7_9, branches_10_12,
+          budget_status, extra_bust_count, extra_bust_field,
+          lack_bust_count, lack_bust_field
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+        [req.user.id, schoolName, district, timeType, academicMember,
+         branchesTotal, branches13, branches46, branches79, branches1012,
+         budgetStatus, extraBustCount, extraBustField,
+         lackBustCount, lackBustField]
+      );
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('School settings POST Error:', err.message);
+    res.status(500).json({ error: 'خطا در ذخیره تنظیمات مکتب: ' + err.message });
+  }
+});
+
+app.get('/api/school-settings/:userid', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const result = await pool.query('SELECT * FROM school_settings WHERE userid = $1', [req.params.userid]);
+    if (result.rows.length === 0) return res.json({ exists: false, settings: null });
+    res.json({ exists: true, settings: result.rows[0] });
+  } catch (err) {
+    console.error('School settings (admin) GET Error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت تنظیمات مکتب' });
+  }
+});
+
+app.get('/api/all-school-settings', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const result = await pool.query(
+      `SELECT s.*, u.username 
+       FROM school_settings s 
+       LEFT JOIN users u ON u.id = s.userid 
+       ORDER BY s.id DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('All school settings Error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت تنظیمات' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// تایید / حذف / کاربران
 // ═══════════════════════════════════════════════════════════
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
@@ -457,9 +568,6 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// حذف رکورد (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.delete('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
@@ -472,16 +580,11 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// افزودن مکتب (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.post('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه افزودن مکتب دارد' });
     const { username, password, schoolName, district } = req.body || {};
-    if (!username || !password || !schoolName) {
-      return res.status(400).json({ error: 'پر کردن فیلدهای اصلی الزامی است' });
-    }
+    if (!username || !password || !schoolName) return res.status(400).json({ error: 'پر کردن فیلدهای اصلی الزامی است' });
     const hash = bcrypt.hashSync(password, 10);
     await pool.query(
       `INSERT INTO users (username, password, role, schoolname, district)
@@ -496,9 +599,6 @@ app.post('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// لیست مکاتب (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.get('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -510,9 +610,6 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// حذف مکتب (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
@@ -525,9 +622,6 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// لاگ تلاش‌های ورود (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.get('/api/login-attempts', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });

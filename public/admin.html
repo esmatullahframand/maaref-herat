@@ -30,16 +30,20 @@
   .btn-delete-row { background: #dc2626; color: #fff; }
   .btn-view { background: #3b82f6; color: #fff; }
   .btn-print { background: #7c3aed; color: #fff; }
+  .btn-edit-row { background: #f59e0b; color: #fff; }
   .info-banner { background: #dbeafe; border-right: 5px solid #3b82f6; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #1e3a8a; }
   .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 8px; font-weight: bold; z-index: 9999; display: none; max-width: 90%; text-align: center; }
   .toast.error { background: #ef4444; }
-  .search-hint { font-size: 12px; color: #64748b; margin-top: 5px; font-style: italic; }
   .badge-search-active { background: #3b82f6; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 11px; margin-right: 8px; }
   .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 15px; background: #f8fafc; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
   .filter-item label { font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; display: block; }
   .filter-item select, .filter-item input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; }
   .modal-header-purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; }
   .modal-header-purple .btn-close { filter: invert(1); }
+  .form-group-edit { display:flex; flex-direction:column; }
+  .form-group-edit label { font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px; }
+  .form-group-edit input, .form-group-edit select { padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; }
+  .form-group-edit input:focus, .form-group-edit select:focus { border-color:#7c3aed; outline:none; box-shadow:0 0 0 3px rgba(124,58,237,0.15); }
 </style>
 </head>
 <body>
@@ -98,7 +102,8 @@
 
     <div class="info-banner">
       ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند.<br>
-      رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> یا <strong>فیلتر</strong> نمایش داده می‌شوند.
+      رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> یا <strong>فیلتر</strong> نمایش داده می‌شوند.<br>
+      ✏️ برای ویرایش (حتی رکوردهای تایید شده) روی دکمه ویرایش کلیک کنید.
     </div>
 
     <!-- فیلترها -->
@@ -143,8 +148,6 @@
           <option value="عضو مسلکی شوراها">عضو مسلکی شوراها</option>
           <option value="کارکن خدماتی">کارکن خدماتی</option>
           <option value="معتمد جنسی (تحویلدار)">معتمد جنسی</option>
-          <option value="معلم قراردادی">معلم قراردادی</option>
-          <option value="معلم افتخاری">معلم افتخاری</option>
           <option value="سایر">سایر</option>
         </select>
       </div>
@@ -224,7 +227,6 @@
       </div>
       <div class="modal-body">
 
-        <!-- ⭐ نمایش نام مکتب‌ها -->
         <div id="schoolNamesHeader" class="mb-3"></div>
 
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -267,6 +269,112 @@
   </div>
 </div>
 
+<!-- ═══════════ Modal ویرایش سریع رکورد ═══════════ -->
+<div class="modal fade" id="editRecordModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-purple">
+        <h5 class="modal-title">✏️ ویرایش معلومات کارمند</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="editRecordInfo" style="background:#f1f5f9; padding:10px 15px; border-radius:6px; margin-bottom:15px; font-size:13px;"></div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+          
+          <div class="form-group-edit">
+            <label>👨‍🏫 عنوان بست *</label>
+            <select id="eJobTitle" class="form-control">
+              <option value="">— انتخاب کنید —</option>
+              <option value="آمر">آمر</option>
+              <option value="مدیر">مدیر</option>
+              <option value="مدیر اجرائیه">مدیر اجرائیه</option>
+              <option value="معلم">معلم</option>
+              <option value="سر معلم">سر معلم</option>
+              <option value="معلم همکار">معلم همکار</option>
+              <option value="معلم سپورت">معلم سپورت</option>
+              <option value="معلم لابرانت">معلم لابرانت</option>
+              <option value="عضو علمی معلمان">عضو علمی معلمان</option>
+              <option value="عضو علمی مدرسین">عضو علمی مدرسین</option>
+              <option value="عضو مسلکی امور مالی و کارکنان">عضو مسلکی امور مالی و کارکنان</option>
+              <option value="عضو مسلکی نظارت احصاییه و گزارش">عضو مسلکی نظارت احصاییه و گزارش</option>
+              <option value="عضو مسلکی تاسیسات و ترمیمات">عضو مسلکی تاسیسات و ترمیمات</option>
+              <option value="عضو مسلکی شوراها">عضو مسلکی شوراها</option>
+              <option value="کارکن خدماتی">کارکن خدماتی</option>
+              <option value="معتمد جنسی (تحویلدار)">معتمد جنسی (تحویلدار)</option>
+              <option value="سایر">سایر</option>
+            </select>
+          </div>
+
+          <div class="form-group-edit">
+            <label>📚 مضمون تدریس</label>
+            <input type="text" id="eSubjectTeaching" class="form-control" placeholder="مثلاً: ریاضی">
+          </div>
+
+          <div class="form-group-edit">
+            <label>🎓 درجه تحصیلی</label>
+            <input type="text" id="eDegree" class="form-control" placeholder="مثلاً: ماستر یا 18">
+          </div>
+
+          <div class="form-group-edit">
+            <label>🔬 رشته تحصیلی</label>
+            <input type="text" id="eMajor" class="form-control" placeholder="رشته تحصیلی">
+          </div>
+
+          <div class="form-group-edit">
+            <label>💼 بست</label>
+            <input type="text" id="eBust" class="form-control">
+          </div>
+
+          <div class="form-group-edit">
+            <label>📊 قدم</label>
+            <input type="text" id="eGrade" class="form-control">
+          </div>
+
+          <div class="form-group-edit">
+            <label>📅 تاریخ تقرر فعلی</label>
+            <input type="text" id="eCurrentPositionDate" class="form-control" placeholder="1400/03/20">
+          </div>
+
+          <div style="grid-column:1/-1; background:#7c3aed; color:#fff; padding:6px 14px; border-radius:6px; font-weight:bold; font-size:13px; margin-top:8px;">📚 ورکشاپ، ساعت درسی و ارزیابی</div>
+
+          <div class="form-group-edit">
+            <label>ورکشاپ اخذ کرده؟</label>
+            <select id="eWorkshopStatus" class="form-control">
+              <option value="نخیر">نخیر</option>
+              <option value="بلی">بلی</option>
+            </select>
+          </div>
+
+          <div class="form-group-edit">
+            <label>عنوان ورکشاپ</label>
+            <input type="text" id="eWorkshopTitle" class="form-control">
+          </div>
+
+          <div class="form-group-edit">
+            <label>مدت ورکشاپ</label>
+            <input type="text" id="eWorkshopDuration" class="form-control">
+          </div>
+
+          <div class="form-group-edit">
+            <label>مجموعه ساعت درسی</label>
+            <input type="text" id="eTotalTeachingHours" class="form-control" placeholder="مثلاً: 24">
+          </div>
+
+          <div class="form-group-edit">
+            <label>نمره ارزیابی</label>
+            <input type="text" id="eEvaluationScore" class="form-control" placeholder="0 تا 100">
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button type="button" class="btn btn-purple fw-bold" onclick="saveEditedRecord()">💾 ذخیره تغییرات</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const token = localStorage.getItem('hr_token');
@@ -288,6 +396,8 @@
   let allSchoolsList = [];
   let allSchoolSettings = [];
   let schoolSettingsModal = null;
+  let editRecordModal = null;
+  let editingRecordId = null;
   const RETIREMENT_AGE = 65;
 
   const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
@@ -542,6 +652,7 @@
       if (row.status === 'pending') {
         actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})">✔️</button>`;
       }
+      actionsHtml += `<button class="btn-action btn-edit-row" onclick="openEditRecord(${row.id})" title="ویرایش">✏️</button>`;
       actionsHtml += `<button class="btn-action btn-view" onclick="viewRecordAdmin(${row.id})">👁️</button>`;
       actionsHtml += `<button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})">🖨️</button>`;
       actionsHtml += `<button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})">🗑️</button>`;
@@ -590,6 +701,151 @@
     } catch (e) { showToast('ارتباط برقرار نشد', true); }
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ ویرایش سریع رکورد
+  // ═══════════════════════════════════════════════════════════
+  function openEditRecord(id) {
+    const rec = loadedRecordsCache.find(r => r.id === id);
+    if (!rec) { showToast('رکورد یافت نشد', true); return; }
+    
+    editingRecordId = id;
+    const info = rec.data || {};
+
+    const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
+    const statusText = rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
+    document.getElementById('editRecordInfo').innerHTML = `
+      <strong>👤 کارمند:</strong> ${escapeHtml(name)} | 
+      <strong>ولد:</strong> ${escapeHtml(info.fatherName || '-')} | 
+      <strong>🏫 مکتب:</strong> ${escapeHtml(rec.schoolname || '-')} | 
+      <strong>📊 وضعیت:</strong> ${statusText}
+    `;
+
+    document.getElementById('eJobTitle').value = info.jobTitle || '';
+    document.getElementById('eSubjectTeaching').value = info.subjectTeaching || '';
+    document.getElementById('eDegree').value = info.degree || '';
+    document.getElementById('eMajor').value = info.major || '';
+    document.getElementById('eBust').value = info.bust || '';
+    document.getElementById('eGrade').value = info.grade || '';
+    document.getElementById('eCurrentPositionDate').value = info.currentPositionDate || '';
+    document.getElementById('eWorkshopStatus').value = info.workshopStatus || 'نخیر';
+    document.getElementById('eWorkshopTitle').value = info.workshopTitle || '';
+    document.getElementById('eWorkshopDuration').value = info.workshopDuration || '';
+    document.getElementById('eTotalTeachingHours').value = info.totalTeachingHours || '';
+    document.getElementById('eEvaluationScore').value = info.evaluationScore || '';
+
+    if (!editRecordModal) {
+      editRecordModal = new bootstrap.Modal(document.getElementById('editRecordModal'));
+    }
+    editRecordModal.show();
+  }
+
+  async function saveEditedRecord() {
+    if (!editingRecordId) return;
+
+    const rec = loadedRecordsCache.find(r => r.id === editingRecordId);
+    if (!rec) { showToast('رکورد یافت نشد', true); return; }
+
+    const info = rec.data || {};
+
+    const body = {
+      firstName: info.firstName || '',
+      lastName: info.lastName || '',
+      fatherName: info.fatherName || '',
+      grandfatherName: info.grandfatherName || '',
+      eTazkira: info.eTazkira || '',
+      paperTazkira: info.paperTazkira || '',
+      tazkiraPage: info.tazkiraPage || '',
+      tazkiraVolume: info.tazkiraVolume || '',
+      ethnicity: info.ethnicity || '',
+      gender: info.gender || '',
+      birthDate: info.birthDate || '',
+      birthPlace: info.birthPlace || '',
+      originAddress: info.originAddress || '',
+      currentAddress: info.currentAddress || '',
+      firstAppointmentDate: info.firstAppointmentDate || '',
+      phone: info.phone || '',
+      disability: info.disability || 'نخیر',
+      positionType: info.positionType || '',
+      employmentType: info.employmentType || '',
+      jobCode: info.jobCode || '',
+      enrollmentDate: info.enrollmentDate || '',
+      graduationDate: info.graduationDate || '',
+      eduInstitute: info.eduInstitute || '',
+      eduInstituteLocation: info.eduInstituteLocation || '',
+      
+      jobTitle: document.getElementById('eJobTitle').value.trim(),
+      subjectTeaching: document.getElementById('eSubjectTeaching').value.trim(),
+      degree: document.getElementById('eDegree').value.trim(),
+      major: document.getElementById('eMajor').value.trim(),
+      bust: document.getElementById('eBust').value.trim(),
+      grade: document.getElementById('eGrade').value.trim(),
+      currentPositionDate: document.getElementById('eCurrentPositionDate').value.trim(),
+      workshopStatus: document.getElementById('eWorkshopStatus').value,
+      workshopTitle: document.getElementById('eWorkshopTitle').value.trim(),
+      workshopDuration: document.getElementById('eWorkshopDuration').value.trim(),
+      totalTeachingHours: document.getElementById('eTotalTeachingHours').value.trim(),
+      evaluationScore: document.getElementById('eEvaluationScore').value.trim(),
+      
+      agreement: true
+    };
+
+    if (!body.jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
+    
+    if (body.workshopStatus === 'بلی') {
+      if (!body.workshopTitle) { showToast('❌ عنوان ورکشاپ الزامی است', true); return; }
+      if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); return; }
+    }
+
+    if (body.evaluationScore) {
+      const num = Number(body.evaluationScore);
+      if (isNaN(num) || num < 0 || num > 100) {
+        showToast('❌ نمره ارزیابی باید بین ۰ تا ۱۰۰ باشد', true);
+        return;
+      }
+    }
+
+    if (body.totalTeachingHours) {
+      const num = Number(body.totalTeachingHours);
+      if (isNaN(num) || num < 0) {
+        showToast('❌ مجموعه ساعت درسی باید عددی مثبت باشد', true);
+        return;
+      }
+    }
+
+    try {
+      const res = await fetch('/api/records/' + editingRecordId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(body)
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = '/';
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        showToast('✅ تغییرات ذخیره شد');
+        editRecordModal.hide();
+        loadAllRecords();
+      } else {
+        showToast('❌ ' + (data.error || 'خطا در ذخیره'), true);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('❌ ارتباط با سرور برقرار نشد', true);
+    }
+  }
+
+  window.openEditRecord = openEditRecord;
+  window.saveEditedRecord = saveEditedRecord;
+
+  // ═══════════════════════════════════════════════════════════
+  // مشاهده و پرنت رکورد
+  // ═══════════════════════════════════════════════════════════
   function viewRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);
     if (!rec) return;
@@ -723,7 +979,9 @@
     win.document.close();
   }
 
-  // ⭐ تابع اصلاح‌شده با پر کردن schoolname و district از allSchoolsList
+  // ═══════════════════════════════════════════════════════════
+  // مدیریت مکاتب
+  // ═══════════════════════════════════════════════════════════
   async function loadSchoolSettings() {
     try {
       const res = await fetch('/api/all-school-settings', {
@@ -739,7 +997,6 @@
       if (res.ok) {
         allSchoolSettings = await res.json();
         
-        // ⭐ پر کردن schoolname و district از allSchoolsList اگر خالی بودند
         if (Array.isArray(allSchoolSettings) && Array.isArray(allSchoolsList)) {
           allSchoolSettings.forEach(s => {
             if (!s.schoolname && s.username) {
@@ -936,6 +1193,9 @@
     showToast('📊 خروجی CSV دانلود شد');
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // پرنت لیست کامل کارمندان
+  // ═══════════════════════════════════════════════════════════
   function printList() {
     const records = loadedRecordsCache || [];
     if (records.length === 0) { showToast('رکوردی برای چاپ نیست', true); return; }
@@ -943,7 +1203,6 @@
     let rowsHtml = '';
     records.forEach((row, idx) => {
       const info = row.data || {};
-      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
       const empStatus = getEmployeeStatus(info);
       const statusText = row.status === 'approved' ? '✅ تایید' : '⏳ انتظار';
 
@@ -1137,6 +1396,9 @@
     win.document.close();
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // خروجی‌های CSV
+  // ═══════════════════════════════════════════════════════════
   function exportFull() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
@@ -1257,6 +1519,9 @@
     showToast('🔍 خروجی فیلتر دانلود شد');
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // مکاتب (لیست کاربران)
+  // ═══════════════════════════════════════════════════════════
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -1313,18 +1578,6 @@
     } catch (err) { showToast('ارتباط برقرار نشد', true); }
   }
 
-  async function deleteSchool(id) {
-    if (!confirm('⚠️ مطمئن هستید؟')) return;
-    try {
-      const res = await fetch('/api/users/' + id, {
-        method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
-      if (res.ok) { showToast('🗑️ حذف شد'); loadSchoolsList(); loadAllRecords(); }
-      else { showToast('خطا', true); }
-    } catch (e) { showToast('ارتباط برقرار نشد', true); }
-  }
-
   function logout() {
     localStorage.removeItem('hr_token');
     localStorage.removeItem('hr_user');
@@ -1336,10 +1589,10 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
-  // ⭐ ترتیب اصلاح‌شده: اول لیست مکاتب، بعد تنظیمات
+  // ⭐ ترتیب: اول مکاتب، بعد تنظیمات، بعد رکوردها
   (async function init() {
-    await loadSchoolsList();        // ⭐ اول لیست مکاتب
-    await loadSchoolSettings();     // ⭐ بعد تنظیمات (برای استفاده از allSchoolsList)
+    await loadSchoolsList();
+    await loadSchoolSettings();
     await loadAllRecords();
   })();
 </script>

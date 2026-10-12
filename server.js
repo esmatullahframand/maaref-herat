@@ -9,11 +9,14 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ⭐ JWT_SECRET ثابت — نه از Environment
+// ⭐ حل خطای X-Forwarded-For
+app.set('trust proxy', 1);
+
+// ⭐ JWT_SECRET ثابت — بدون process.env
 const SECRET = 'maaref-secret-key-12345';
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'admin123';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -116,12 +119,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// ⭐ Rate Limiter با trust proxy
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است. ۱۵ دقیقه بعد تلاش کنید.' }
+  validate: { xForwardedForHeader: false, trustProxy: false },
+  message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است.' }
 });
 
 function authRequired(req, res, next) {
@@ -132,8 +137,8 @@ function authRequired(req, res, next) {
     req.user = jwt.verify(token, SECRET);
     next();
   } catch (e) {
-    console.error('Token verify error:', e.message);
-    res.status(401).json({ error: 'توکن نامعتبر است: ' + e.message });
+    console.error('❌ Token verify error:', e.message);
+    res.status(401).json({ error: 'توکن نامعتبر است' });
   }
 }
 
@@ -194,7 +199,7 @@ async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
 // لاگین
 // ═══════════════════════════════════════════════════════════
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
-  const clientIp = req.headers['x-forwarded-for'] || req.ip || 'unknown';
+  const clientIp = req.ip || 'unknown';
   try {
     const { username, password } = req.body || {};
     if (!username || !password) {
@@ -205,6 +210,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       await logLoginAttempt(clientIp, username, true);
       const adminUser = { id: 0, username: 'admin', role: 'admin' };
       const token = jwt.sign(adminUser, SECRET, { expiresIn: '7d' });
+      console.log('✅ Admin token issued:', token.substring(0, 40) + '...');
       return res.json({
         token,
         user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' },
@@ -224,12 +230,12 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     }
 
     await logLoginAttempt(clientIp, username, true);
-    // ⭐ فقط اطلاعات ضروری در توکن
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       SECRET,
       { expiresIn: '7d' }
     );
+    console.log('✅ School token issued for:', username, '| role:', user.role);
     res.json({
       token,
       user: {
@@ -371,9 +377,6 @@ async function validateRecordBody(body, excludeId = null) {
   return null;
 }
 
-// ═══════════════════════════════════════════════════════════
-// POST /api/records
-// ═══════════════════════════════════════════════════════════
 app.post('/api/records', authRequired, async (req, res) => {
   try {
     const body = req.body || {};
@@ -405,9 +408,6 @@ app.post('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// PUT /api/records/:id
-// ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب اجازه ویرایش دارد' });
@@ -433,9 +433,8 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// school_settings endpoints
+// school_settings
 // ═══════════════════════════════════════════════════════════
-
 app.get('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -622,10 +621,12 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 app.get('/api/test', (req, res) => {
   res.json({
     ok: true,
-    message: 'Server running with FIXED JWT_SECRET',
-    version: '3.0.0',
-    secret: SECRET.substring(0, 10) + '...',
+    message: 'Server VERSION 4.0 - FIXED JWT_SECRET + trust proxy',
+    version: '4.0.0',
+    secret_preview: SECRET.substring(0, 15),
+    secret_length: SECRET.length,
     has_school_settings: true,
+    trust_proxy: app.get('trust proxy'),
     timestamp: new Date().toISOString()
   });
 });
@@ -639,9 +640,9 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server running on port ' + PORT);
-  console.log('📌 Version: 3.0.0');
-  console.log('📌 JWT_SECRET (fixed): ' + SECRET.substring(0, 10) + '...');
-  console.log('📌 Has /api/school-settings: YES');
+  console.log('🚀 Server V4 running on port ' + PORT);
+  console.log('📌 JWT_SECRET: ' + SECRET);
+  console.log('📌 Length: ' + SECRET.length);
+  console.log('📌 trust proxy: ' + app.get('trust proxy'));
   console.log('═══════════════════════════════════════');
 });

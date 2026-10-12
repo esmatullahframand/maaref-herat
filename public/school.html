@@ -81,6 +81,7 @@
   .form-group-edit label { font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px; }
   .form-control-edit { padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; width:100%; }
   .form-control-edit:focus { border-color:#10b981; outline:none; box-shadow:0 0 0 3px rgba(16,185,129,0.15); }
+  .form-control-edit[readonly] { background:#f1f5f9; cursor:not-allowed; color:#64748b; }
   @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
   @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; direction: rtl; } .no-print { display: none !important; } }
 </style>
@@ -328,7 +329,7 @@
   </div>
 </div>
 
-<!-- ═══════════ Modal ویرایش رکورد ═══════════ -->
+<!-- ═══════════ Modal ویرایش رکورد (فقط مکتب) ═══════════ -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box" style="max-width: 1000px;">
     <h3>✏️ ویرایش معلومات کارمند</h3>
@@ -571,7 +572,6 @@
           ? '<span class="status-badge status-approved">✅ تایید</span>'
           : '<span class="status-badge status-pending">⏳ انتظار</span>';
 
-        // ⭐ دکمه ویرایش فقط برای رکوردهای در انتظار تایید
         let editBtn = '';
         if (row.status !== 'approved') {
           editBtn = `<button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>`;
@@ -825,12 +825,12 @@
           <input type="text" id="eCurrentPositionDate" class="form-control-edit" value="${escapeHtml(info.currentPositionDate || '')}">
         </div>
         <div class="form-group-edit">
-          <label>درجه تحصیلی</label>
-          <input type="text" id="eDegree" class="form-control-edit" value="${escapeHtml(info.degree || '')}">
+          <label>درجه تحصیلی (غیرقابل ویرایش)</label>
+          <input type="text" id="eDegree" class="form-control-edit" value="${escapeHtml(info.degree || '')}" readonly>
         </div>
         <div class="form-group-edit">
-          <label>رشته تحصیلی</label>
-          <input type="text" id="eMajor" class="form-control-edit" value="${escapeHtml(info.major || '')}">
+          <label>رشته تحصیلی (غیرقابل ویرایش)</label>
+          <input type="text" id="eMajor" class="form-control-edit" value="${escapeHtml(info.major || '')}" readonly>
         </div>
         <div class="form-group-edit">
           <label>مضمون تدریس</label>
@@ -897,8 +897,9 @@
       bust: document.getElementById('eBust').value.trim(),
       grade: document.getElementById('eGrade').value.trim(),
       currentPositionDate: document.getElementById('eCurrentPositionDate').value.trim(),
-      degree: document.getElementById('eDegree').value.trim(),
-      major: document.getElementById('eMajor').value.trim(),
+      // ⭐ درجه و رشته تحصیلی از رکورد اصلی (غیرقابل ویرایش)
+      degree: rec.data.degree || '',
+      major: rec.data.major || '',
       subjectTeaching: document.getElementById('eSubjectTeaching').value.trim(),
       workshopStatus: document.getElementById('eWorkshopStatus').value,
       workshopTitle: document.getElementById('eWorkshopTitle').value.trim(),
@@ -906,7 +907,7 @@
       totalTeachingHours: document.getElementById('eTotalTeachingHours').value.trim(),
       evaluationScore: document.getElementById('eEvaluationScore').value.trim(),
       agreement: true,
-      // فیلدهای حفظ شده از رکورد اصلی
+      // فیلدهای حفظ شده
       tazkiraPage: rec.data.tazkiraPage || '',
       tazkiraVolume: rec.data.tazkiraVolume || '',
       birthPlace: rec.data.birthPlace || '',
@@ -960,7 +961,7 @@
 
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    showToast('❌ ابتدا کد کامل school.html را از چت دریافت کنید', true);
+    showToast('❌ ثبت کارمند جدید هنوز فعال نشده است', true);
   });
 
   function logout() {

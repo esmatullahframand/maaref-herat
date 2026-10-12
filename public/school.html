@@ -27,9 +27,6 @@
   label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #4a5568; }
   input[type="text"], select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; background-color: #fff; width: 100%; }
   input:focus, select:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
-  input.valid { border-color: #10b981 !important; background: #f0fdf4; }
-  input.invalid { border-color: #ef4444 !important; background: #fff5f5; }
-  .auto-detect-badge { display: inline-block; background: #94a3b8; color: #fff; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 10px; margin-top: 5px; align-self: flex-start; }
   .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background-color: #10b981; font-family: inherit; font-size: 14px; }
   .btn:hover { background-color: #059669; }
   .btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
@@ -80,7 +77,10 @@
   .info-item { background: #f8fafc; padding: 10px 14px; border-radius: 6px; border-right: 4px solid #10b981; }
   .info-item .label { font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
   .info-item .value { font-size: 13px; color: #1e293b; font-weight: bold; word-break: break-word; }
-  .info-section-title { grid-column: 1 / -1; background: #10b981; color: #fff; padding: 8px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; margin-top: 10px; }
+  .form-group-edit { display:flex; flex-direction:column; }
+  .form-group-edit label { font-size:12px; font-weight:bold; color:#475569; margin-bottom:4px; }
+  .form-control-edit { padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; width:100%; }
+  .form-control-edit:focus { border-color:#10b981; outline:none; box-shadow:0 0 0 3px rgba(16,185,129,0.15); }
   @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
   @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; direction: rtl; } .no-print { display: none !important; } }
 </style>
@@ -328,18 +328,28 @@
   </div>
 </div>
 
+<!-- ═══════════ Modal ویرایش رکورد ═══════════ -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box" style="max-width: 1000px;">
+    <h3>✏️ ویرایش معلومات کارمند</h3>
+    <div id="editContent"></div>
+    <div class="modal-actions no-print">
+      <button class="btn-modal btn-modal-close" onclick="closeModal('editModal')">انصراف</button>
+      <button class="btn-modal" style="background:#f59e0b; color:#fff;" onclick="saveEditedRecord()">💾 ذخیره تغییرات</button>
+    </div>
+  </div>
+</div>
+
 <div id="printArea" style="display:none;"></div>
 <div class="toast" id="toast"></div>
 
 <script>
-  // ⭐ بررسی توکن — فقط یک بار
   const token = localStorage.getItem('hr_token');
   const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
   if (!user.schoolname) user.schoolname = localStorage.getItem('hr_schoolname') || '';
   if (!user.district) user.district = localStorage.getItem('hr_district') || '';
 
-  // ⭐ اگر توکن نبود یا نامعتبر بود، به لاگین برو
   if (!token || token === 'undefined' || token === 'null') {
     localStorage.clear();
     window.location.href = '/';
@@ -350,8 +360,16 @@
     `${user.username || '-'} | ${user.schoolname || ''} (${user.district || ''})`;
 
   let cachedRecords = [];
+  let editingRecordId = null;
 
-  // ⭐ توابع کمکی
+  const JOB_TITLES_LIST = [
+    'آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار',
+    'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین',
+    'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش',
+    'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی',
+    'معتمد جنسی (تحویلدار)', 'سایر'
+  ];
+
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -429,7 +447,6 @@
       });
 
       if (res.status === 401 || res.status === 403) {
-        console.log('⚠️ Settings API error:', res.status);
         localStorage.clear();
         window.location.href = '/';
         return;
@@ -521,7 +538,6 @@
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
 
       if (res.status === 401 || res.status === 403) {
-        console.log('⚠️ Records API error:', res.status);
         localStorage.clear();
         window.location.href = '/';
         return;
@@ -555,6 +571,12 @@
           ? '<span class="status-badge status-approved">✅ تایید</span>'
           : '<span class="status-badge status-pending">⏳ انتظار</span>';
 
+        // ⭐ دکمه ویرایش فقط برای رکوردهای در انتظار تایید
+        let editBtn = '';
+        if (row.status !== 'approved') {
+          editBtn = `<button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>`;
+        }
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row.id}</td>
@@ -565,6 +587,7 @@
           <td>${escapeHtml(info.degree || '-')}</td>
           <td>${statusHtml}</td>
           <td>
+            ${editBtn}
             <button class="btn-action btn-view" onclick="viewRecord(${row.id})">👁️</button>
             <button class="btn-action btn-print" onclick="printRecord(${row.id})">🖨️</button>
           </td>
@@ -686,6 +709,249 @@
   }
   window.printRecord = printRecord;
 
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ ویرایش رکورد توسط مکتب
+  // ═══════════════════════════════════════════════════════════
+  function editRecord(id) {
+    const rec = cachedRecords.find(r => r.id === id);
+    if (!rec) { showToast('رکورد یافت نشد', true); return; }
+    
+    if (rec.status === 'approved') {
+      showToast('❌ رکورد تایید شده قابل ویرایش نیست', true);
+      return;
+    }
+
+    editingRecordId = id;
+    const info = rec.data || {};
+
+    let jobOptions = '<option value="">— انتخاب کنید —</option>';
+    JOB_TITLES_LIST.forEach(j => {
+      const selected = (info.jobTitle === j) ? 'selected' : '';
+      jobOptions += `<option value="${j}" ${selected}>${j}</option>`;
+    });
+
+    const html = `
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+        
+        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold;">۱. هویت و اسناد تذکره</div>
+        
+        <div class="form-group-edit">
+          <label>عنوان بست *</label>
+          <select id="eJobTitle" class="form-control-edit">${jobOptions}</select>
+        </div>
+        <div class="form-group-edit">
+          <label>کُد بست</label>
+          <input type="text" id="eJobCode" class="form-control-edit" value="${escapeHtml(info.jobCode || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>اسم *</label>
+          <input type="text" id="eFirstName" class="form-control-edit" value="${escapeHtml(info.firstName || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>تخلص</label>
+          <input type="text" id="eLastName" class="form-control-edit" value="${escapeHtml(info.lastName || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>ولد *</label>
+          <input type="text" id="eFatherName" class="form-control-edit" value="${escapeHtml(info.fatherName || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>ولدیت *</label>
+          <input type="text" id="eGrandfatherName" class="form-control-edit" value="${escapeHtml(info.grandfatherName || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>تذکره الکترونیکی</label>
+          <input type="text" id="eETazkira" class="form-control-edit" value="${escapeHtml(info.eTazkira || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>تذکره کاغذی</label>
+          <input type="text" id="ePaperTazkira" class="form-control-edit" value="${escapeHtml(info.paperTazkira || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>قومیت *</label>
+          <input type="text" id="eEthnicity" class="form-control-edit" value="${escapeHtml(info.ethnicity || '')}">
+        </div>
+
+        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">۲. اطلاعات شخصی و تماس</div>
+
+        <div class="form-group-edit">
+          <label>جنسیت *</label>
+          <select id="eGender" class="form-control-edit">
+            <option value="">انتخاب کنید</option>
+            <option value="مرد" ${info.gender === 'مرد' ? 'selected' : ''}>مرد</option>
+            <option value="زن" ${info.gender === 'زن' ? 'selected' : ''}>زن</option>
+          </select>
+        </div>
+        <div class="form-group-edit">
+          <label>تاریخ تولد *</label>
+          <input type="text" id="eBirthDate" class="form-control-edit" value="${escapeHtml(info.birthDate || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>سکونت اصلی *</label>
+          <input type="text" id="eOriginAddress" class="form-control-edit" value="${escapeHtml(info.originAddress || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>سکونت فعلی *</label>
+          <input type="text" id="eCurrentAddress" class="form-control-edit" value="${escapeHtml(info.currentAddress || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>تاریخ اولین تقرر *</label>
+          <input type="text" id="eFirstAppointmentDate" class="form-control-edit" value="${escapeHtml(info.firstAppointmentDate || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>شماره تماس *</label>
+          <input type="text" id="ePhone" class="form-control-edit" value="${escapeHtml(info.phone || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>معلولیت *</label>
+          <select id="eDisability" class="form-control-edit">
+            <option value="نخیر" ${info.disability === 'نخیر' ? 'selected' : ''}>نخیر</option>
+            <option value="بلی" ${info.disability === 'بلی' ? 'selected' : ''}>بلی</option>
+          </select>
+        </div>
+
+        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">۳. معلومات وظیفوی و تحصیلی</div>
+
+        <div class="form-group-edit">
+          <label>بست</label>
+          <input type="text" id="eBust" class="form-control-edit" value="${escapeHtml(info.bust || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>قدم</label>
+          <input type="text" id="eGrade" class="form-control-edit" value="${escapeHtml(info.grade || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>تاریخ تقرر فعلی *</label>
+          <input type="text" id="eCurrentPositionDate" class="form-control-edit" value="${escapeHtml(info.currentPositionDate || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>درجه تحصیلی</label>
+          <input type="text" id="eDegree" class="form-control-edit" value="${escapeHtml(info.degree || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>رشته تحصیلی</label>
+          <input type="text" id="eMajor" class="form-control-edit" value="${escapeHtml(info.major || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>مضمون تدریس</label>
+          <input type="text" id="eSubjectTeaching" class="form-control-edit" value="${escapeHtml(info.subjectTeaching || '')}">
+        </div>
+
+        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">۴. ورکشاپ، ساعت درسی و ارزیابی</div>
+
+        <div class="form-group-edit">
+          <label>ورکشاپ اخذ کرده؟</label>
+          <select id="eWorkshopStatus" class="form-control-edit">
+            <option value="نخیر" ${info.workshopStatus === 'نخیر' ? 'selected' : ''}>نخیر</option>
+            <option value="بلی" ${info.workshopStatus === 'بلی' ? 'selected' : ''}>بلی</option>
+          </select>
+        </div>
+        <div class="form-group-edit">
+          <label>عنوان ورکشاپ</label>
+          <input type="text" id="eWorkshopTitle" class="form-control-edit" value="${escapeHtml(info.workshopTitle || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>مدت ورکشاپ</label>
+          <input type="text" id="eWorkshopDuration" class="form-control-edit" value="${escapeHtml(info.workshopDuration || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>مجموعه ساعت درسی</label>
+          <input type="text" id="eTotalTeachingHours" class="form-control-edit" value="${escapeHtml(info.totalTeachingHours || '')}">
+        </div>
+        <div class="form-group-edit">
+          <label>نمره ارزیابی</label>
+          <input type="text" id="eEvaluationScore" class="form-control-edit" value="${escapeHtml(info.evaluationScore || '')}">
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById('editContent').innerHTML = html;
+    document.getElementById('editModal').classList.add('active');
+  }
+  window.editRecord = editRecord;
+
+  async function saveEditedRecord() {
+    if (!editingRecordId) return;
+
+    const rec = cachedRecords.find(r => r.id === editingRecordId);
+    if (!rec) { showToast('رکورد یافت نشد', true); return; }
+
+    const body = {
+      jobTitle: document.getElementById('eJobTitle').value.trim(),
+      jobCode: document.getElementById('eJobCode').value.trim(),
+      firstName: document.getElementById('eFirstName').value.trim(),
+      lastName: document.getElementById('eLastName').value.trim(),
+      fatherName: document.getElementById('eFatherName').value.trim(),
+      grandfatherName: document.getElementById('eGrandfatherName').value.trim(),
+      eTazkira: document.getElementById('eETazkira').value.trim(),
+      paperTazkira: document.getElementById('ePaperTazkira').value.trim(),
+      ethnicity: document.getElementById('eEthnicity').value.trim(),
+      gender: document.getElementById('eGender').value,
+      birthDate: document.getElementById('eBirthDate').value.trim(),
+      originAddress: document.getElementById('eOriginAddress').value.trim(),
+      currentAddress: document.getElementById('eCurrentAddress').value.trim(),
+      firstAppointmentDate: document.getElementById('eFirstAppointmentDate').value.trim(),
+      phone: document.getElementById('ePhone').value.trim(),
+      disability: document.getElementById('eDisability').value,
+      bust: document.getElementById('eBust').value.trim(),
+      grade: document.getElementById('eGrade').value.trim(),
+      currentPositionDate: document.getElementById('eCurrentPositionDate').value.trim(),
+      degree: document.getElementById('eDegree').value.trim(),
+      major: document.getElementById('eMajor').value.trim(),
+      subjectTeaching: document.getElementById('eSubjectTeaching').value.trim(),
+      workshopStatus: document.getElementById('eWorkshopStatus').value,
+      workshopTitle: document.getElementById('eWorkshopTitle').value.trim(),
+      workshopDuration: document.getElementById('eWorkshopDuration').value.trim(),
+      totalTeachingHours: document.getElementById('eTotalTeachingHours').value.trim(),
+      evaluationScore: document.getElementById('eEvaluationScore').value.trim(),
+      agreement: true,
+      // فیلدهای حفظ شده از رکورد اصلی
+      tazkiraPage: rec.data.tazkiraPage || '',
+      tazkiraVolume: rec.data.tazkiraVolume || '',
+      birthPlace: rec.data.birthPlace || '',
+      positionType: rec.data.positionType || '',
+      employmentType: rec.data.employmentType || '',
+      eduInstitute: rec.data.eduInstitute || '',
+      eduInstituteLocation: rec.data.eduInstituteLocation || '',
+      enrollmentDate: rec.data.enrollmentDate || '',
+      graduationDate: rec.data.graduationDate || ''
+    };
+
+    if (!body.jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
+    if (!body.firstName) { showToast('❌ اسم الزامی است', true); return; }
+    if (!body.fatherName) { showToast('❌ ولد الزامی است', true); return; }
+    if (!body.grandfatherName) { showToast('❌ ولدیت الزامی است', true); return; }
+
+    try {
+      const res = await fetch('/api/records/' + editingRecordId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(body)
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        showToast('✅ تغییرات ذخیره شد');
+        closeModal('editModal');
+        loadSchoolRecords();
+      } else {
+        showToast('❌ ' + (data.error || 'خطا در ذخیره'), true);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('❌ ارتباط با سرور برقرار نشد', true);
+    }
+  }
+  window.saveEditedRecord = saveEditedRecord;
+
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   window.closeModal = closeModal;
 
@@ -706,7 +972,6 @@
   }
   window.logout = logout;
 
-  // ⭐ اجرای اولیه
   loadInitialSettings();
   loadSchoolRecords();
 </script>

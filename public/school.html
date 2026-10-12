@@ -85,7 +85,6 @@
   .form-control-edit:focus { border-color:#10b981; outline:none; box-shadow:0 0 0 3px rgba(16,185,129,0.15); }
   .form-control-edit[readonly] { background:#f1f5f9; cursor:not-allowed; color:#64748b; }
   
-  /* ⭐ استایل موافقت‌نامه */
   .agreement-box {
     background: #fef3c7;
     border: 2px solid #f59e0b;
@@ -243,7 +242,7 @@
             </div>
             <div class="form-group">
               <label>کُد بست</label>
-              <input type="text" id="jobCode" placeholder="27-32-02-13056">
+              <input type="text" id="jobCode" placeholder="13056-02-32-27">
             </div>
             <div class="form-group"><label>اسم *</label><input type="text" id="firstName" required></div>
             <div class="form-group"><label>تخلص</label><input type="text" id="lastName"></div>
@@ -297,11 +296,11 @@
             <div class="form-group"><label>قدم</label><input type="text" id="grade"></div>
             <div class="form-group"><label>تاریخ تقرر فعلی *</label><input type="text" id="currentPositionDate" placeholder="1400/03/20" required></div>
             <div class="form-group" id="degreeGroup"><label id="degreeLabel">درجه تحصیلی *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
-            <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی</label><input type="text" id="major"></div>
-            <div class="form-group"><label>مرجع تعلیمی</label><input type="text" id="eduInstitute"></div>
-            <div class="form-group"><label>موقعیت مرجع</label><input type="text" id="eduInstituteLocation"></div>
-            <div class="form-group"><label>تاریخ شمولیت</label><input type="text" id="enrollmentDate"></div>
-            <div class="form-group"><label>تاریخ فراغت</label><input type="text" id="graduationDate"></div>
+            <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی *</label><input type="text" id="major"></div>
+            <div class="form-group" id="eduInstituteGroup"><label id="eduInstituteLabel">مرجع تعلیمی *</label><input type="text" id="eduInstitute"></div>
+            <div class="form-group" id="eduInstituteLocationGroup"><label id="eduInstituteLocationLabel">موقعیت مرجع *</label><input type="text" id="eduInstituteLocation"></div>
+            <div class="form-group" id="enrollmentDateGroup"><label id="enrollmentDateLabel">تاریخ شمولیت *</label><input type="text" id="enrollmentDate" placeholder="1397/01/01"></div>
+            <div class="form-group" id="graduationDateGroup"><label id="graduationDateLabel">تاریخ فراغت *</label><input type="text" id="graduationDate" placeholder="1399/01/01"></div>
             <div class="form-group"><label>مضمون تدریس</label><input type="text" id="subjectTeaching"></div>
           </div>
         </div>
@@ -326,7 +325,6 @@
           </div>
         </div>
 
-        <!-- ⭐ تیک موافقت‌نامه -->
         <div class="agreement-box" id="agreementBox" onclick="toggleAgreement()">
           <input type="checkbox" id="agreementCheckbox" onclick="event.stopPropagation(); toggleAgreement();">
           <div class="agreement-text">
@@ -423,7 +421,6 @@
     'معتمد جنسی (تحویلدار)', 'سایر'
   ];
 
-  // ⭐ عناوینی که تحصیلات برایشان اختیاری است
   const SERVICE_TITLES = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
 
   function showToast(msg, isError = false) {
@@ -449,7 +446,6 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
-  // ⭐ تبدیل اعداد فارسی/عربی به انگلیسی
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -509,6 +505,23 @@
     return { valid: true, formatted: cleaned };
   }
 
+  // ⭐ اعتبارسنجی کد بست
+  function validateJobCode(jobCode) {
+    if (!jobCode) return { valid: false, error: 'کُد بست الزامی است' };
+    
+    const cleaned = normalizeDigits(jobCode).trim();
+    const pattern = /^\d{4,5}-\d{2}-\d{2}-\d{2}$/;
+    
+    if (!pattern.test(cleaned)) {
+      return { 
+        valid: false, 
+        error: 'فرمت کُد بست باید XXXXX-XX-XX-XX باشد (مثلاً 13056-02-32-27)' 
+      };
+    }
+    
+    return { valid: true, formatted: cleaned };
+  }
+
   // ⭐ اعتبارسنجی زنده
   function attachLiveValidation(inputId, validateFn) {
     const input = document.getElementById(inputId);
@@ -539,12 +552,13 @@
     });
   }
 
-  // اتصال به فیلدهای تاریخ
+  // اتصال به فیلدها
   ['birthDate', 'firstAppointmentDate', 'currentPositionDate', 'enrollmentDate', 'graduationDate'].forEach(id => {
     attachLiveValidation(id, validateShamsiDate);
   });
   attachLiveValidation('eTazkira', validateTazkira);
   attachLiveValidation('eETazkira', validateTazkira);
+  attachLiveValidation('jobCode', validateJobCode);
 
   // ⭐ تشخیص کارمند خدماتی یا معتمد جنسی
   function isServiceOrSupport(jobTitle) {
@@ -557,19 +571,33 @@
     const jobTitle = document.getElementById('jobTitle').value;
     const isService = isServiceOrSupport(jobTitle);
     
-    const degreeLabel = document.getElementById('degreeLabel');
-    const degreeInput = document.getElementById('degree');
+    const eduFields = [
+      { id: 'degree', labelId: 'degreeLabel', label: 'درجه تحصیلی' },
+      { id: 'major', labelId: 'majorLabel', label: 'رشته تحصیلی' },
+      { id: 'eduInstitute', labelId: 'eduInstituteLabel', label: 'مرجع تعلیمی' },
+      { id: 'eduInstituteLocation', labelId: 'eduInstituteLocationLabel', label: 'موقعیت مرجع' },
+      { id: 'enrollmentDate', labelId: 'enrollmentDateLabel', label: 'تاریخ شمولیت' },
+      { id: 'graduationDate', labelId: 'graduationDateLabel', label: 'تاریخ فراغت' }
+    ];
     
-    if (isService && jobTitle) {
-      degreeLabel.innerHTML = 'درجه تحصیلی <span style="color:#10b981; font-size:11px;">(اختیاری)</span>';
-      degreeInput.removeAttribute('required');
-    } else {
-      degreeLabel.innerHTML = 'درجه تحصیلی <span style="color:#ef4444;">*</span>';
-      degreeInput.setAttribute('required', 'required');
-    }
+    eduFields.forEach(field => {
+      const input = document.getElementById(field.id);
+      const label = document.getElementById(field.labelId);
+      
+      if (isService && jobTitle) {
+        input.removeAttribute('required');
+        if (label) {
+          label.innerHTML = `${field.label} <span style="color:#10b981; font-size:11px;">(اختیاری)</span>`;
+        }
+      } else {
+        input.setAttribute('required', 'required');
+        if (label) {
+          label.innerHTML = `${field.label} <span style="color:#ef4444;">*</span>`;
+        }
+      }
+    });
   }
 
-  // اتصال به تغییر عنوان بست
   document.getElementById('jobTitle').addEventListener('change', updateEducationFields);
 
   // ⭐ توگل موافقت‌نامه
@@ -1115,7 +1143,17 @@
     if (!body.fatherName) { showToast('❌ ولد الزامی است', true); return; }
     if (!body.grandfatherName) { showToast('❌ ولدیت الزامی است', true); return; }
 
-    // ⭐ اعتبارسنجی تذکره الکترونیکی
+    // اعتبارسنجی کد بست
+    if (body.jobCode) {
+      const jobCodeResult = validateJobCode(body.jobCode);
+      if (!jobCodeResult.valid) {
+        showToast('❌ ' + jobCodeResult.error, true);
+        return;
+      }
+      body.jobCode = jobCodeResult.formatted;
+    }
+
+    // اعتبارسنجی تذکره
     if (body.eTazkira) {
       const tazResult = validateTazkira(body.eTazkira);
       if (!tazResult.valid) {
@@ -1125,7 +1163,7 @@
       body.eTazkira = tazResult.formatted;
     }
 
-    // ⭐ اعتبارسنجی تاریخ‌ها
+    // اعتبارسنجی تاریخ‌ها
     const dateFields = [
       { id: 'eBirthDate', key: 'birthDate', label: 'تاریخ تولد', required: true },
       { id: 'eFirstAppointmentDate', key: 'firstAppointmentDate', label: 'تاریخ اولین تقرر', required: true },
@@ -1187,7 +1225,6 @@
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // بررسی موافقت‌نامه
     if (!document.getElementById('agreementCheckbox').checked) {
       showToast('❌ لطفاً تیک موافقت‌نامه را بزنید', true);
       return;
@@ -1253,12 +1290,28 @@
     if (!body.eTazkira && !body.paperTazkira) { showToast('❌ حداقل یکی از تذکره‌ها الزامی است', true); resetSubmitBtn(); return; }
     if (!body.jobCode) { showToast('❌ کُد بست الزامی است', true); resetSubmitBtn(); return; }
     
+    // ⭐ اعتبارسنجی کد بست
+    if (body.jobCode) {
+      const jobCodeResult = validateJobCode(body.jobCode);
+      if (!jobCodeResult.valid) {
+        showToast('❌ ' + jobCodeResult.error, true);
+        resetSubmitBtn();
+        return;
+      }
+      body.jobCode = jobCodeResult.formatted;
+    }
+
     // ⭐ اعتبارسنجی تحصیلی شرطی
     const isService = SERVICE_TITLES.includes(body.jobTitle);
-    if (!isService && !body.degree) {
-      showToast('❌ درجه تحصیلی برای این عنوان الزامی است', true);
-      resetSubmitBtn();
-      return;
+    
+    if (!isService) {
+      if (!body.degree) { showToast('❌ درجه تحصیلی برای این عنوان الزامی است', true); resetSubmitBtn(); return; }
+      if (!body.major) { showToast('❌ رشته تحصیلی برای این عنوان الزامی است', true); resetSubmitBtn(); return; }
+      if (body.major.length < 2) { showToast('❌ رشته تحصیلی باید حداقل ۲ حرف باشد', true); resetSubmitBtn(); return; }
+      if (!body.eduInstitute) { showToast('❌ مرجع تعلیمی برای این عنوان الزامی است', true); resetSubmitBtn(); return; }
+      if (!body.eduInstituteLocation) { showToast('❌ موقعیت مرجع تعلیمی برای این عنوان الزامی است', true); resetSubmitBtn(); return; }
+      if (!body.enrollmentDate) { showToast('❌ تاریخ شمولیت برای این عنوان الزامی است', true); resetSubmitBtn(); return; }
+      if (!body.graduationDate) { showToast('❌ تاریخ فراغت برای این عنوان الزامی است', true); resetSubmitBtn(); return; }
     }
     
     if (body.workshopStatus === 'بلی') {
@@ -1266,7 +1319,7 @@
       if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
     }
 
-    // ⭐ اعتبارسنجی تذکره الکترونیکی
+    // اعتبارسنجی تذکره
     if (body.eTazkira) {
       const tazResult = validateTazkira(body.eTazkira);
       if (!tazResult.valid) {
@@ -1277,13 +1330,13 @@
       body.eTazkira = tazResult.formatted;
     }
 
-    // ⭐ اعتبارسنجی تاریخ‌های شمسی
+    // اعتبارسنجی تاریخ‌ها
     const dateFields = [
       { id: 'birthDate', key: 'birthDate', label: 'تاریخ تولد', required: true },
       { id: 'firstAppointmentDate', key: 'firstAppointmentDate', label: 'تاریخ اولین تقرر', required: true },
       { id: 'currentPositionDate', key: 'currentPositionDate', label: 'تاریخ تقرر فعلی', required: true },
-      { id: 'enrollmentDate', key: 'enrollmentDate', label: 'تاریخ شمولیت', required: false },
-      { id: 'graduationDate', key: 'graduationDate', label: 'تاریخ فراغت', required: false }
+      { id: 'enrollmentDate', key: 'enrollmentDate', label: 'تاریخ شمولیت', required: !isService },
+      { id: 'graduationDate', key: 'graduationDate', label: 'تاریخ فراغت', required: !isService }
     ];
 
     for (const df of dateFields) {
@@ -1324,12 +1377,10 @@
         document.getElementById('workshopTitleGroup').style.display = 'none';
         document.getElementById('workshopDurationGroup').style.display = 'none';
         
-        // ⭐ ریست موافقت‌نامه
         document.getElementById('agreementCheckbox').checked = false;
         document.getElementById('agreementBox').classList.remove('checked');
         document.getElementById('submitBtn').disabled = true;
         
-        // انتقال به تب لیست
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('tab-list').classList.add('active');

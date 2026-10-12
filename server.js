@@ -9,16 +9,18 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ⭐⭐⭐ JWT_SECRET ثابت — همه جا از این استفاده می‌شود
+// ⭐⭐⭐ JWT_SECRET ثابت — همه جا فقط از این استفاده می‌شود
 const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
+const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 JWT_SECRET_CONSTANT =', JSON.stringify(JWT_SECRET_CONSTANT));
-console.log('🔐 Length:', JWT_SECRET_CONSTANT.length);
+console.log('🔐 Server V6.0 starting...');
+console.log('🔐 JWT_SECRET:', JSON.stringify(JWT_SECRET_CONSTANT));
+console.log('🔐 SECRET Length:', JWT_SECRET_CONSTANT.length);
+console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
-
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const pool = new Pool({
@@ -132,15 +134,26 @@ const loginLimiter = rateLimit({
   message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است.' }
 });
 
+// ═══════════════════════════════════════════════════════════
+// احراز هویت — با algorithms مشخص و trim توکن
+// ═══════════════════════════════════════════════════════════
 function authRequired(req, res, next) {
   let token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
   if (!token && req.query.token) token = req.query.token;
   if (!token) return res.status(401).json({ error: 'وارد نشده‌اید' });
+
+  token = String(token).trim().replace(/^["']|["']$/g, '');
+
   try {
-    req.user = jwt.verify(token, JWT_SECRET_CONSTANT);
+    const decoded = jwt.verify(token, JWT_SECRET_CONSTANT, {
+      algorithms: [JWT_ALGORITHM]
+    });
+    req.user = decoded;
     next();
   } catch (e) {
     console.error('❌ Token verify error:', e.message);
+    console.error('   Token length:', token.length);
+    console.error('   Token preview:', token.substring(0, 40));
     res.status(401).json({ error: 'توکن نامعتبر است' });
   }
 }
@@ -209,11 +222,24 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
     }
 
+    // ادمین
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
-      const adminUser = { id: 0, username: 'admin', role: 'admin' };
-      const token = jwt.sign(adminUser, JWT_SECRET_CONSTANT, { expiresIn: '7d' });
-      console.log('✅ Admin token issued');
+
+      const payload = { id: 0, username: 'admin', role: 'admin' };
+      const token = jwt.sign(payload, JWT_SECRET_CONSTANT, {
+        expiresIn: '7d',
+        algorithm: JWT_ALGORITHM
+      });
+
+      // ⭐ Self-verify
+      try {
+        const verified = jwt.verify(token, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
+        console.log('✅ Admin token issued and verified:', verified.username);
+      } catch (e) {
+        console.error('❌❌❌ ADMIN SELF-VERIFY FAILED:', e.message);
+      }
+
       return res.json({
         token,
         user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' },
@@ -221,6 +247,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       });
     }
 
+    // مکتب
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length === 0) {
       await logLoginAttempt(clientIp, username, false);
@@ -233,20 +260,27 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     }
 
     await logLoginAttempt(clientIp, username, true);
-    const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
-      JWT_SECRET_CONSTANT,
-      { expiresIn: '7d' }
-    );
-    console.log('✅ School token issued for:', username, '| role:', user.role);
 
-    // ⭐ Verify immediately after sign — برای دیباگ
+    const payload = { id: user.id, username: user.username, role: user.role };
+    const token = jwt.sign(payload, JWT_SECRET_CONSTANT, {
+      expiresIn: '7d',
+      algorithm: JWT_ALGORITHM
+    });
+
+    console.log('═══════════════════════════════════════');
+    console.log('✅ School token issued for:', username, '| role:', user.role);
+    console.log('   Secret used:', JSON.stringify(JWT_SECRET_CONSTANT));
+    console.log('   Token length:', token.length);
+    console.log('   Token preview:', token.substring(0, 40) + '...');
+
+    // ⭐⭐ Self-verify
     try {
-      const verified = jwt.verify(token, JWT_SECRET_CONSTANT);
-      console.log('✅ Token self-verify OK for:', verified.username);
+      const verified = jwt.verify(token, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
+      console.log('   ✅ Self-verify OK:', verified.username);
     } catch (e) {
-      console.error('❌❌❌ CRITICAL: Token self-verify FAILED:', e.message);
+      console.error('   ❌❌❌ SELF-VERIFY FAILED:', e.message);
     }
+    console.log('═══════════════════════════════════════');
 
     res.json({
       token,
@@ -321,6 +355,9 @@ app.get('/api/records', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// اعتبارسنجی رکورد
+// ═══════════════════════════════════════════════════════════
 async function validateRecordBody(body, excludeId = null) {
   const job = String(body.jobTitle || '').trim();
   const firstName = String(body.firstName || '').trim();
@@ -385,6 +422,9 @@ async function validateRecordBody(body, excludeId = null) {
   return null;
 }
 
+// ═══════════════════════════════════════════════════════════
+// POST /api/records
+// ═══════════════════════════════════════════════════════════
 app.post('/api/records', authRequired, async (req, res) => {
   try {
     const body = req.body || {};
@@ -416,6 +456,9 @@ app.post('/api/records', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// PUT /api/records/:id
+// ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب اجازه ویرایش دارد' });
@@ -624,25 +667,44 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// تست
+// تست کامل
 // ═══════════════════════════════════════════════════════════
 app.get('/api/test', (req, res) => {
-  // یک توکن تست بساز و بلافاصله verify کن
   const testPayload = { id: 999, username: 'test', role: 'school' };
-  const testToken = jwt.sign(testPayload, JWT_SECRET_CONSTANT, { expiresIn: '1h' });
-  let verifyResult = 'OK';
+  const testToken = jwt.sign(testPayload, JWT_SECRET_CONSTANT, {
+    expiresIn: '1h',
+    algorithm: JWT_ALGORITHM
+  });
+
+  let selfVerify = 'OK';
+  let selfVerifyError = null;
   try {
-    jwt.verify(testToken, JWT_SECRET_CONSTANT);
+    jwt.verify(testToken, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
   } catch (e) {
-    verifyResult = 'FAILED: ' + e.message;
+    selfVerify = 'FAILED';
+    selfVerifyError = e.message;
+  }
+
+  let headerTokenStatus = 'NO_TOKEN';
+  const headerToken = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  if (headerToken) {
+    try {
+      const decoded = jwt.verify(headerToken, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
+      headerTokenStatus = 'VALID: ' + decoded.username + ' (' + decoded.role + ')';
+    } catch (e) {
+      headerTokenStatus = 'INVALID: ' + e.message;
+    }
   }
 
   res.json({
     ok: true,
-    version: '5.0.0',
+    version: '6.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_secret_length: JWT_SECRET_CONSTANT.length,
-    self_verify: verifyResult,
+    jwt_algorithm: JWT_ALGORITHM,
+    self_verify: selfVerify,
+    self_verify_error: selfVerifyError,
+    header_token_status: headerTokenStatus,
     has_school_settings: true,
     trust_proxy: app.get('trust proxy'),
     timestamp: new Date().toISOString()
@@ -658,9 +720,10 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V5 running on port ' + PORT);
-  console.log('📌 JWT_SECRET_CONSTANT: ' + JWT_SECRET_CONSTANT);
-  console.log('📌 Length: ' + JWT_SECRET_CONSTANT.length);
-  console.log('📌 All jwt.sign/verify use this constant');
+  console.log('🚀 Server V6.0 live on port ' + PORT);
+  console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
+  console.log('📌 Length:', JWT_SECRET_CONSTANT.length);
+  console.log('📌 Algorithm:', JWT_ALGORITHM);
+  console.log('📌 All sign/verify use algorithms: [HS256]');
   console.log('═══════════════════════════════════════');
 });

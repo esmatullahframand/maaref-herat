@@ -556,11 +556,31 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
+// ⭐ تابع اصلاح‌شده: استفاده از COALESCE برای پر کردن schoolname و district
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
     const result = await pool.query(
-      `SELECT s.*, u.username 
+      `SELECT 
+         s.id,
+         s.userid,
+         s.time_type,
+         s.academic_member,
+         s.branches_total,
+         s.branches_1_3,
+         s.branches_4_6,
+         s.branches_7_9,
+         s.branches_10_12,
+         s.budget_status,
+         s.extra_bust_count,
+         s.extra_bust_field,
+         s.lack_bust_count,
+         s.lack_bust_field,
+         s.createdat,
+         s.updatedat,
+         u.username,
+         COALESCE(NULLIF(s.schoolname, ''), u.schoolname) AS schoolname,
+         COALESCE(NULLIF(s.district, ''), u.district) AS district
        FROM school_settings s 
        LEFT JOIN users u ON u.id = s.userid 
        ORDER BY s.id DESC`

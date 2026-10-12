@@ -35,9 +35,6 @@
   .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 15px; background: #f8fafc; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
   .filter-item label { font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; display: block; }
   .filter-item select, .filter-item input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; }
-  .stats-grid-sm { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 15px; }
-  .stat-sm { background: #f8fafc; padding: 8px; border-radius: 6px; text-align: center; border: 1px solid #e2e8f0; font-size: 11px; }
-  .stat-sm .num { font-size: 18px; font-weight: bold; color: #1e293b; }
 </style>
 </head>
 <body>
@@ -93,24 +90,12 @@
         <span id="searchBadge" class="badge-search-active" style="display:none;">🔍 حالت فیلتر</span>
       </h5>
       <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-primary fw-bold btn-sm px-3" onclick="printList()">
-          🖨️ چاپ لیست کامل
-        </button>
-        <button class="btn btn-warning fw-bold btn-sm px-3" onclick="printFiltered()">
-          🖨️ چاپ فیلتر شده
-        </button>
-        <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportFull()">
-          📊 خروجی کامل
-        </button>
-        <button class="btn btn-info fw-bold btn-sm px-3 text-white" onclick="exportTashkeel()">
-          📋 خروجی تشکیل
-        </button>
-        <button class="btn btn-secondary fw-bold btn-sm px-3" onclick="exportFiltered()">
-          🔍 خروجی فیلتر
-        </button>
-        <button class="btn btn-purple fw-bold btn-sm px-3" onclick="showSchoolSettings()">
-          🏫 مدیریت مکاتب
-        </button>
+        <button class="btn btn-primary fw-bold btn-sm px-3" onclick="printList()">🖨️ چاپ لیست کامل</button>
+        <button class="btn btn-warning fw-bold btn-sm px-3" onclick="printFiltered()">🖨️ چاپ فیلتر شده</button>
+        <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportFull()">📊 خروجی کامل</button>
+        <button class="btn btn-info fw-bold btn-sm px-3 text-white" onclick="exportTashkeel()">📋 خروجی تشکیل</button>
+        <button class="btn btn-secondary fw-bold btn-sm px-3" onclick="exportFiltered()">🔍 خروجی فیلتر</button>
+        <button class="btn btn-purple fw-bold btn-sm px-3" onclick="showSchoolSettings()">🏫 مدیریت مکاتب</button>
       </div>
     </div>
 
@@ -119,7 +104,7 @@
       رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> یا <strong>فیلتر</strong> نمایش داده می‌شوند.
     </div>
 
-    <!-- ═══ فیلترها ═══ -->
+    <!-- فیلترها -->
     <div class="filter-grid">
       <div class="filter-item">
         <label>🔍 جستجو</label>
@@ -238,12 +223,11 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- Modal مدیریت مکاتب -->
 <div class="modal fade" id="schoolSettingsModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header bg-purple text-white">
-        <h5 class="modal-title">🏫 مدیریت مکاتب</h5>
+        <h5 class="modal-title text-white">🏫 مدیریت مکاتب</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body" id="schoolSettingsModalBody">
@@ -270,7 +254,6 @@
   let schoolSettingsModal = null;
   const RETIREMENT_AGE = 65;
 
-  // ═══ دسته‌بندی ═══
   const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
   const TEACHER_KEYWORDS = ['معلم', 'آموزگار', 'استاد', 'مدرس'];
   const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'معتمد جنسی', 'معتمد', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
@@ -283,7 +266,6 @@
     return 'admin_staff';
   }
 
-  // ═══ تاریخ شمسی ═══
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -362,7 +344,6 @@
   }
   const debouncedLoad = debounce(loadAllRecords, 400);
 
-  // ═══ فیلترها ═══
   function getActiveFilters() {
     return {
       search: document.getElementById('searchInput').value.trim(),
@@ -381,7 +362,6 @@
     return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.academicMember || f.workshop || f.budget || f.empStatus);
   }
 
-  // ═══ لود رکوردها ═══
   async function loadAllRecords() {
     const f = getActiveFilters();
     document.getElementById('searchBadge').style.display = hasAnyFilter(f) ? 'inline-block' : 'none';
@@ -398,51 +378,39 @@
 
       let records = await res.json();
 
-      // فیلترها در سمت کلاینت
       if (f.schoolType) {
-        records = records.filter(row => {
-          const sn = row.schoolname || '';
-          return sn.includes(f.schoolType);
-        });
+        records = records.filter(row => (row.schoolname || '').includes(f.schoolType));
       }
-
       if (f.jobTitle) {
         records = records.filter(row => {
           const info = row.data || {};
           return (info.jobTitle || info.job || '') === f.jobTitle;
         });
       }
-
       if (f.gender) {
         records = records.filter(row => {
           const info = row.data || {};
           return (info.gender || '') === f.gender;
         });
       }
-
       if (f.academicMember) {
         records = records.filter(row => {
           const settings = allSchoolSettings.find(s => s.schoolname === row.schoolname);
           return settings && settings.academic_member === f.academicMember;
         });
       }
-
       if (f.workshop) {
         records = records.filter(row => {
           const info = row.data || {};
-          const ws = info.workshopStatus || 'نخیر';
-          return ws === f.workshop;
+          return (info.workshopStatus || 'نخیر') === f.workshop;
         });
       }
-
       if (f.budget) {
         records = records.filter(row => {
           const settings = allSchoolSettings.find(s => s.schoolname === row.schoolname);
-          if (!settings) return false;
-          return settings.budget_status === f.budget;
+          return settings && settings.budget_status === f.budget;
         });
       }
-
       if (f.empStatus) {
         records = records.filter(row => {
           const info = row.data || {};
@@ -558,7 +526,6 @@
     tbody.appendChild(fragment);
   }
 
-  // ═══ تایید / حذف ═══
   async function approveRecord(id) {
     if (!confirm('آیا این رکورد تایید شود؟')) return;
     try {
@@ -631,10 +598,9 @@
 
     const empStatus = getEmployeeStatus(info);
     const win = window.open('', '_blank');
-    win.document.write(`
-      <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>مشاهده کارمند</title>
+    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>مشاهده</title>
       <style>
-        body { font-family: Tahoma, Arial, sans-serif; padding: 20px; background: #f0f4f8; direction: rtl; }
+        body { font-family: Tahoma; padding: 20px; background: #f0f4f8; direction: rtl; }
         h2 { color: #7c3aed; text-align: center; }
         .box { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; }
         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -658,8 +624,7 @@
             <button class="btn btn-print" onclick="window.print()">🖨️ پرنت</button>
             <button class="btn btn-close" onclick="window.close()">بستن</button>
           </div>
-        </div></body></html>
-    `);
+        </div></body></html>`);
     win.document.close();
   }
 
@@ -689,7 +654,7 @@
 
     let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
       <h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2>
-      <h4 style="margin:5px 0 0 0; font-size:13px; color:#555;">فورم معلومات کارمند</h4>
+      <h4 style="margin:5px 0 0 0; font-size:13px;">فورم معلومات کارمند</h4>
     </div>
     <table style="width:100%; border-collapse:collapse; font-size:12px;">`;
     for (let i = 0; i < rows.length; i += 2) {
@@ -716,7 +681,6 @@
     win.document.close();
   }
 
-  // ═══ چاپ لیست کامل (۳ ردیف در هر کارمند) ═══
   function printList() {
     const records = loadedRecordsCache || [];
     if (records.length === 0) { showToast('رکوردی برای چاپ نیست', true); return; }
@@ -824,7 +788,6 @@
     win.document.close();
   }
 
-  // ═══ چاپ فیلتر شده (جدول افقی) ═══
   function printFiltered() {
     const records = loadedRecordsCache || [];
     if (records.length === 0) { showToast('رکوردی برای چاپ نیست', true); return; }
@@ -920,22 +883,19 @@
     win.document.close();
   }
 
-  // ═══ خروجی کامل (CSV) ═══
   function exportFull() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
-
     const headers = [
-      'ID', 'مکتب', 'ولسوالی', 'کُد بست', 'عنوان بست', 'اسم', 'تخلص', 'ولد', 'ولدیت',
-      'تذکره برقی', 'تذکره کاغذی', 'صفحه', 'جلد', 'قومیت', 'جنسیت',
-      'تاریخ تولد', 'محل تولد', 'سکونت اصلی', 'سکونت فعلی',
-      'تاریخ اولین تقرر', 'شماره تماس', 'معلولیت', 'موقف', 'نوع استخدام',
-      'بست', 'قدم', 'تاریخ تقرر فعلی', 'درجه تحصیلی', 'رشته تحصیلی',
-      'مرجع تعلیمی', 'موقعیت مرجع', 'تاریخ شمولیت', 'تاریخ فراغت',
-      'مضمون تدریس', 'ورکشاپ', 'عنوان ورکشاپ', 'مدت ورکشاپ',
-      'مجموعه ساعت درسی', 'نمره ارزیابی', 'سن', 'وضعیت کارمند', 'وضعیت تایید'
+      'ID','مکتب','ولسوالی','کُد بست','عنوان بست','اسم','تخلص','ولد','ولدیت',
+      'تذکره برقی','تذکره کاغذی','صفحه','جلد','قومیت','جنسیت',
+      'تاریخ تولد','محل تولد','سکونت اصلی','سکونت فعلی',
+      'تاریخ اولین تقرر','شماره تماس','معلولیت','موقف','نوع استخدام',
+      'بست','قدم','تاریخ تقرر فعلی','درجه تحصیلی','رشته تحصیلی',
+      'مرجع تعلیمی','موقعیت مرجع','تاریخ شمولیت','تاریخ فراغت',
+      'مضمون تدریس','ورکشاپ','عنوان ورکشاپ','مدت ورکشاپ',
+      'مجموعه ساعت درسی','نمره ارزیابی','سن','وضعیت کارمند','وضعیت تایید'
     ];
-
     const rows = records.map(r => {
       const info = r.data || {};
       const emp = getEmployeeStatus(info);
@@ -963,11 +923,9 @@
         r.status === 'approved' ? 'تایید شده' : 'در انتظار'
       ];
     });
-
     const csv = '\uFEFF' + [headers, ...rows]
       .map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
       .join('\n');
-
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -978,19 +936,16 @@
     showToast('📊 خروجی کامل دانلود شد');
   }
 
-  // ═══ خروجی تشکیل ═══
   function exportTashkeel() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
-
     const headers = [
-      'اسم', 'ولد', 'ولدیت', 'تخلص',
-      'عنوان وظیفه', 'درجه تحصیل', 'رشته تحصیل', 'رشته تدریس',
-      '', '', '', '',
-      'بست', 'قدم', 'تاریخ تقرر', 'تاریخ تولد', 'نمبر تذکره', 'جنسیت', 'قومیت', 'کود بست',
-      'محل وظیفه یا مکتب', 'آمریت معارف'
+      'اسم','ولد','ولدیت','تخلص',
+      'عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس',
+      '','','','',
+      'بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود بست',
+      'محل وظیفه یا مکتب','آمریت معارف'
     ];
-
     const rows = records.map(r => {
       const info = r.data || {};
       return [
@@ -1006,11 +961,9 @@
         info.jobCode || '', r.schoolname || '', 'معارف هرات'
       ];
     });
-
     const csv = '\uFEFF' + [headers, ...rows]
       .map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
       .join('\n');
-
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1021,13 +974,10 @@
     showToast('📋 خروجی تشکیل دانلود شد');
   }
 
-  // ═══ خروجی فیلتر ═══
   function exportFiltered() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
-
-    const f = getActiveFilters();
-    const headers = ['ID', 'مکتب', 'نام', 'ولد', 'عنوان بست', 'کُد بست', 'درجه', 'جنسیت', 'سن', 'وضعیت', 'تایید'];
+    const headers = ['ID','مکتب','نام','ولد','عنوان بست','کُد بست','درجه','جنسیت','سن','وضعیت','تایید'];
     const rows = records.map(r => {
       const info = r.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '');
@@ -1040,11 +990,9 @@
         r.status === 'approved' ? 'تایید شده' : 'در انتظار'
       ];
     });
-
     const csv = '\uFEFF' + [headers, ...rows]
       .map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
       .join('\n');
-
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1055,7 +1003,6 @@
     showToast('🔍 خروجی فیلتر دانلود شد');
   }
 
-  // ═══ مدیریت مکاتب ═══
   async function loadSchoolSettings() {
     try {
       const res = await fetch('/api/all-school-settings', {
@@ -1069,7 +1016,6 @@
     if (!schoolSettingsModal) {
       schoolSettingsModal = new bootstrap.Modal(document.getElementById('schoolSettingsModal'));
     }
-
     const body = document.getElementById('schoolSettingsModalBody');
     if (allSchoolSettings.length === 0) {
       body.innerHTML = '<p class="text-muted text-center p-4">هیچ مکتبی اطلاعات خود را ثبت نکرده است.</p>';
@@ -1083,11 +1029,8 @@
         </thead><tbody>`;
       allSchoolSettings.forEach((s, idx) => {
         let budgetInfo = s.budget_status || 'عادی';
-        if (s.budget_status === 'اضافه بست') {
-          budgetInfo = `➕ ${s.extra_bust_count} (${s.extra_bust_field || '—'})`;
-        } else if (s.budget_status === 'کمبود بست') {
-          budgetInfo = `➖ ${s.lack_bust_count} (${s.lack_bust_field || '—'})`;
-        }
+        if (s.budget_status === 'اضافه بست') budgetInfo = `➕ ${s.extra_bust_count} (${s.extra_bust_field || '—'})`;
+        else if (s.budget_status === 'کمبود بست') budgetInfo = `➖ ${s.lack_bust_count} (${s.lack_bust_field || '—'})`;
         html += `<tr>
           <td>${idx + 1}</td>
           <td><strong>${escapeHtml(s.schoolname || '-')}</strong></td>
@@ -1101,11 +1044,9 @@
       html += '</tbody></table>';
       body.innerHTML = html;
     }
-
     schoolSettingsModal.show();
   }
 
-  // ═══ مکاتب ═══
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -1126,7 +1067,6 @@
         });
       }
 
-      // فیلتر عضو علمی
       const acSelect = document.getElementById('academicMemberFilter');
       if (acSelect) {
         const members = [...new Set(allSchoolSettings.map(s => s.academic_member).filter(Boolean))];
@@ -1191,7 +1131,7 @@
   }
 
   async function deleteSchool(id) {
-    if (!confirm('⚠️ مطمئن هستید؟ تمام رکوردها حذف می‌شوند.')) return;
+    if (!confirm('⚠️ مطمئن هستید؟')) return;
     try {
       const res = await fetch('/api/users/' + id, {
         method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
@@ -1212,7 +1152,6 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
-  // ═══ لود اولیه ═══
   (async function init() {
     await loadSchoolSettings();
     await loadSchoolsList();

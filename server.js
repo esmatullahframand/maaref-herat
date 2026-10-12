@@ -199,9 +199,13 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
-      const adminUser = { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' };
+      const adminUser = { id: 0, username: 'admin', role: 'admin' };
       const token = jwt.sign(adminUser, SECRET, { expiresIn: '7d' });
-      return res.json({ token, user: adminUser, redirect: '/admin.html' });
+      return res.json({
+        token,
+        user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' },
+        redirect: '/admin.html'
+      });
     }
 
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
@@ -216,14 +220,21 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     }
 
     await logLoginAttempt(clientIp, username, true);
+    // ⭐ توکن فقط با اطلاعات ضروری — بدون کاراکترهای فارسی
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district },
+      { id: user.id, username: user.username, role: user.role },
       SECRET,
       { expiresIn: '7d' }
     );
     res.json({
       token,
-      user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname, district: user.district },
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        schoolname: user.schoolname || '',
+        district: user.district || ''
+      },
       redirect: '/school.html'
     });
   } catch (e) {
@@ -421,7 +432,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 // school_settings endpoints
 // ═══════════════════════════════════════════════════════════
 
-// GET /api/school-settings — تنظیمات مکتب خود
 app.get('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -434,7 +444,6 @@ app.get('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
-// POST /api/school-settings — ذخیره تنظیمات مکتب
 app.post('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -507,20 +516,6 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
-// GET /api/school-settings/:userid — تنظیمات یک مکتب (ادمین)
-app.get('/api/school-settings/:userid', authRequired, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    const result = await pool.query('SELECT * FROM school_settings WHERE userid = $1', [req.params.userid]);
-    if (result.rows.length === 0) return res.json({ exists: false, settings: null });
-    res.json({ exists: true, settings: result.rows[0] });
-  } catch (err) {
-    console.error('School settings (admin) GET Error:', err.message);
-    res.status(500).json({ error: 'خطا در دریافت تنظیمات مکتب' });
-  }
-});
-
-// GET /api/all-school-settings — همه تنظیمات (ادمین)
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -617,9 +612,6 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// Fallback
-// ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V9.0 starting...');
+console.log('🔐 Server V10.0 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
@@ -32,7 +32,6 @@ const pool = new Pool({
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'admin123';
 
-// ⭐ معلم قراردادی و افتخاری حذف شدند
 const JOB_TITLES = [
   'آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار',
   'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین',
@@ -41,10 +40,7 @@ const JOB_TITLES = [
   'معتمد جنسی (تحویلدار)', 'سایر'
 ];
 const NO_CODE_TITLES = [];
-
-// ⭐ عناوینی که تحصیلات برایشان اختیاری است
 const SERVICE_TITLES = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
-
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
 async function initDB() {
@@ -114,9 +110,6 @@ async function initDB() {
 }
 initDB();
 
-// ═══════════════════════════════════════════════════════════
-// Middleware
-// ═══════════════════════════════════════════════════════════
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -184,7 +177,6 @@ async function logLoginAttempt(ip, username, success) {
 // ⭐ توابع کمکی
 // ═══════════════════════════════════════════════════════════
 
-// تبدیل اعداد فارسی/عربی به انگلیسی
 function normalizeDigits(str) {
   if (!str) return '';
   const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -195,7 +187,7 @@ function normalizeDigits(str) {
   }).join('');
 }
 
-// اعتبارسنجی تاریخ شمسی
+// ⭐ اعتبارسنجی تاریخ شمسی
 function validateShamsiDateServer(dateStr, fieldName) {
   if (!dateStr) return null;
   
@@ -233,7 +225,7 @@ function validateShamsiDateServer(dateStr, fieldName) {
   return null;
 }
 
-// اعتبارسنجی تذکره الکترونیکی
+// ⭐ اعتبارسنجی تذکره الکترونیکی
 function validateTazkiraServer(tazkiraStr) {
   if (!tazkiraStr) return null;
   
@@ -247,9 +239,25 @@ function validateTazkiraServer(tazkiraStr) {
   return null;
 }
 
+// ⭐ اعتبارسنجی کد بست
+function validateJobCodeServer(jobCode) {
+  if (!jobCode) return null;
+  
+  const cleaned = normalizeDigits(jobCode).trim();
+  const pattern = /^\d{4,5}-\d{2}-\d{2}-\d{2}$/;
+  
+  if (!pattern.test(cleaned)) {
+    return 'فرمت کُد بست باید XXXXX-XX-XX-XX باشد (مثلاً 13056-02-32-27)';
+  }
+  
+  return null;
+}
+
+// تابع قدیمی برای سازگاری
 function isValidJobCode(jobCode) {
   if (!jobCode) return false;
-  return /^27-32-02-\d+$/.test(jobCode.trim());
+  const cleaned = normalizeDigits(jobCode).trim();
+  return /^\d{4,5}-\d{2}-\d{2}-\d{2}$/.test(cleaned);
 }
 
 function isNoCodeTitle(jobTitle) {
@@ -261,7 +269,6 @@ function isServiceStaff(jobTitle) {
   return SERVICE_KEYWORDS.some(kw => jobTitle.includes(kw)) || jobTitle === 'کارکن خدماتی';
 }
 
-// ⭐ تشخیص کارمند خدماتی یا معتمد جنسی (برای تحصیلات اختیاری)
 function isServiceOrSupport(jobTitle) {
   if (!jobTitle) return false;
   return SERVICE_TITLES.includes(jobTitle);
@@ -422,6 +429,9 @@ async function validateRecordBody(body, excludeId = null) {
   const eTazkira = String(body.eTazkira || '').trim();
   const paperTazkira = String(body.paperTazkira || '').trim();
   const degree = String(body.degree || '').trim();
+  const majorVal = String(body.major || '').trim();
+  const eduInstituteVal = String(body.eduInstitute || '').trim();
+  const eduInstituteLocationVal = String(body.eduInstituteLocation || '').trim();
   const birthDate = String(body.birthDate || '').trim();
   const firstAppointmentDate = String(body.firstAppointmentDate || '').trim();
   const currentPositionDate = String(body.currentPositionDate || '').trim();
@@ -437,6 +447,7 @@ async function validateRecordBody(body, excludeId = null) {
   if (!grandfatherName) return 'ولدیت الزامی است';
 
   const isContract = isNoCodeTitle(job);
+  const isService = isServiceOrSupport(job);
 
   if (isContract) {
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
@@ -446,18 +457,29 @@ async function validateRecordBody(body, excludeId = null) {
     if (!phone) return 'شماره تماس الزامی است';
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
     if (!jobCode) return 'کُد بست الزامی است';
-    if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید 27-32-02-XXXXX باشد';
+    if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید 13056-02-32-27 باشد';
     const isDuplicate = await isJobCodeDuplicate(jobCode, excludeId);
     if (isDuplicate) return `❌ کُد بست «${jobCode}» قبلاً ثبت شده است`;
     if (!birthDate) return 'تاریخ تولد الزامی است';
     if (!firstAppointmentDate) return 'تاریخ اولین تقرر الزامی است';
     if (!currentPositionDate) return 'تاریخ تقرر فعلی الزامی است';
     
-    // ⭐ درجه تحصیلی فقط برای غیرخدماتی الزامی است
-    const isService = isServiceOrSupport(job);
-    if (!isService && !degree) {
-      return 'درجه تحصیلی برای این عنوان الزامی است';
+    // ⭐ اعتبارسنجی تحصیلی برای غیرخدماتی
+    if (!isService) {
+      if (!degree) return 'درجه تحصیلی برای این عنوان الزامی است';
+      if (!majorVal) return 'رشته تحصیلی برای این عنوان الزامی است';
+      if (majorVal.length < 2) return 'رشته تحصیلی باید حداقل ۲ حرف باشد';
+      if (!eduInstituteVal) return 'مرجع تعلیمی برای این عنوان الزامی است';
+      if (!eduInstituteLocationVal) return 'موقعیت مرجع تعلیمی برای این عنوان الزامی است';
+      if (!enrollmentDate) return 'تاریخ شمولیت برای این عنوان الزامی است';
+      if (!graduationDate) return 'تاریخ فراغت برای این عنوان الزامی است';
     }
+  }
+
+  // ⭐ اعتبارسنجی کد بست
+  if (jobCode) {
+    const err = validateJobCodeServer(jobCode);
+    if (err) return '❌ ' + err;
   }
 
   // ⭐ اعتبارسنجی تذکره الکترونیکی
@@ -684,7 +706,6 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ استفاده از COALESCE برای پر کردن schoolname و district
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -800,9 +821,6 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// تست
-// ═══════════════════════════════════════════════════════════
 app.get('/api/test', (req, res) => {
   const testPayload = { id: 999, username: 'test', role: 'school' };
   const testToken = jwt.sign(testPayload, JWT_SECRET_CONSTANT, {
@@ -829,7 +847,7 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '9.0.0',
+    version: '10.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_algorithm: JWT_ALGORITHM,
     self_verify: verifyResult,
@@ -840,9 +858,6 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// ═══════════════════════════════════════════════════════════
-// Fallback
-// ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.setHeader('Pragma', 'no-cache');
@@ -852,7 +867,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V9.0 live on port ' + PORT);
+  console.log('🚀 Server V10.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
   console.log('📌 Cache-Control: enabled for HTML');

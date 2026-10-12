@@ -93,38 +93,10 @@
   @media (max-width: 600px) { .info-grid, .edit-grid { grid-template-columns: 1fr; } }
   @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; direction: rtl; } .no-print { display: none !important; } }
 
-  .agreement-box {
-    background: #fef3c7;
-    border: 2px solid #f59e0b;
-    border-radius: 8px;
-    padding: 15px;
-    margin: 20px 0;
-    text-align: center;
-  }
-  .agreement-text {
-    font-size: 14px;
-    font-weight: bold;
-    color: #78350f;
-    text-decoration: underline;
-    margin-bottom: 12px;
-    line-height: 1.8;
-  }
-  .agreement-check {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #1e293b;
-    cursor: pointer;
-  }
-  .agreement-check input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
-    cursor: pointer;
-    accent-color: #10b981;
-  }
+  .agreement-box { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center; }
+  .agreement-text { font-size: 14px; font-weight: bold; color: #78350f; text-decoration: underline; margin-bottom: 12px; line-height: 1.8; }
+  .agreement-check { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; }
+  .agreement-check input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #10b981; }
 </style>
 </head>
 <body>
@@ -140,12 +112,88 @@
 <div class="container">
 
   <div class="tabs no-print">
-    <button class="tab-btn active" onclick="switchTab('form', this)">➕ ثبت کارمند جدید</button>
+    <button class="tab-btn active" onclick="switchTab('settings', this)">🏫 مدیریت مکتب</button>
+    <button class="tab-btn" onclick="switchTab('form', this)">➕ ثبت کارمند جدید</button>
     <button class="tab-btn" onclick="switchTab('list', this)">📋 لیست کارمندان</button>
   </div>
 
-  <!-- تب فرم -->
-  <div class="tab-content active" id="tab-form">
+  <!-- ═══════════ تب مدیریت مکتب ═══════════ -->
+  <div class="tab-content active" id="tab-settings">
+    <div class="card">
+      <h4>🏫 مدیریت مکتب</h4>
+
+      <div class="info-banner" id="settingsBanner">
+        ⚠️ <strong>توجه:</strong> تا زمانیکه اطلاعات مکتب را ثبت نکنید، نمی‌توانید کارمند جدید ثبت کنید.
+      </div>
+
+      <form id="settingsForm">
+        <div class="form-section">
+          <h5>۱. اطلاعات عمومی مکتب</h5>
+          <div class="grid-4">
+            <div class="form-group">
+              <label>تایم مکتب *</label>
+              <select id="sTimeType" required>
+                <option value="یک تایم">یک تایم</option>
+                <option value="دو تایم">دو تایم</option>
+                <option value="سه تایم">سه تایم</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>عضو علمی مکتب (نام و تخلص) *</label>
+              <input type="text" id="sAcademicMember" placeholder="نام و تخلص عضو علمی" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h5>۲. شعبات درسی</h5>
+          <div class="grid-4">
+            <div class="form-group"><label>تعداد کل شعبات</label><input type="text" id="sBranchesTotal" placeholder="مثال: 12" inputmode="numeric"></div>
+            <div class="form-group"><label>شعبات اول تا سوم</label><input type="text" id="sBranches13" placeholder="مثال: 3" inputmode="numeric"></div>
+            <div class="form-group"><label>شعبات چهارم تا ششم</label><input type="text" id="sBranches46" placeholder="مثال: 3" inputmode="numeric"></div>
+            <div class="form-group"><label>شعبات هفتم تا نهم</label><input type="text" id="sBranches79" placeholder="مثال: 3" inputmode="numeric"></div>
+            <div class="form-group"><label>شعبات دهم تا دوازدهم</label><input type="text" id="sBranches1012" placeholder="مثال: 3" inputmode="numeric"></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h5>۳. وضعیت بست</h5>
+          <div class="grid-4">
+            <div class="form-group">
+              <label>وضعیت بست *</label>
+              <select id="sBudgetStatus" onchange="toggleBudgetFields()" required>
+                <option value="عادی">عادی</option>
+                <option value="اضافه بست">اضافه بست</option>
+                <option value="کمبود بست">کمبود بست</option>
+              </select>
+              <span class="auto-detect-badge" id="budgetBadge">🔍 وضعیت بست را انتخاب کنید</span>
+            </div>
+            <div class="form-group" id="extraBustCountGroup" style="display:none;">
+              <label>تعداد اضافه بست *</label>
+              <input type="text" id="sExtraBustCount" placeholder="مثال: 2" inputmode="numeric">
+            </div>
+            <div class="form-group" id="extraBustFieldGroup" style="display:none;">
+              <label>رشته اضافه بست *</label>
+              <input type="text" id="sExtraBustField" placeholder="مثال: ریاضی، دری">
+            </div>
+            <div class="form-group" id="lackBustCountGroup" style="display:none;">
+              <label>تعداد کمبود بست *</label>
+              <input type="text" id="sLackBustCount" placeholder="مثال: 3" inputmode="numeric">
+            </div>
+            <div class="form-group" id="lackBustFieldGroup" style="display:none;">
+              <label>رشته کمبود بست *</label>
+              <input type="text" id="sLackBustField" placeholder="مثال: فزیک، کیمیا">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="settingsSubmitBtn" class="btn btn-submit">💾 ذخیره اطلاعات مکتب</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════ تب فرم ثبت کارمند ═══════════ -->
+  <div class="tab-content" id="tab-form">
     <div class="card">
       <h4 id="formTitle">➕ ثبت کارمند جدید</h4>
       <form id="recordForm">
@@ -275,7 +323,6 @@
           </div>
         </div>
 
-        <!-- ═══ بخش ۴: ورکشاپ، ساعت درسی، ارزیابی ═══ -->
         <div class="form-section">
           <h5>۴. ورکشاپ، ساعت درسی و ارزیابی</h5>
           <div class="grid-4">
@@ -308,7 +355,6 @@
           </div>
         </div>
 
-        <!-- ═══ دکمه موافقت ═══ -->
         <div class="agreement-box">
           <div class="agreement-text">
             من موافقت می‌کنم تمام معلومات دقیق بوده در قبال هر گونه معلومات نادرست مسئول و پاسخگو می‌باشم
@@ -325,7 +371,7 @@
     </div>
   </div>
 
-  <!-- تب لیست -->
+  <!-- ═══════════ تب لیست کارمندان ═══════════ -->
   <div class="tab-content" id="tab-list">
     <div class="card">
       <h4>📋 لیست کارمندان</h4>
@@ -343,8 +389,7 @@
       </div>
 
       <div class="info-banner">
-        ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند. رکوردهای <strong>تایید‌شده</strong> فقط با جستجو نمایش داده می‌شوند.<br>
-        🖨️ برای چاپ هر کارمند، روی دکمه <strong>پرنت</strong> کلیک کنید.
+        ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند. رکوردهای <strong>تایید‌شده</strong> فقط با جستجو نمایش داده می‌شوند.
       </div>
       <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو...">
       <div class="table-responsive">
@@ -371,7 +416,6 @@
 
 </div>
 
-<!-- Modal مشاهده -->
 <div class="modal-overlay" id="viewModal">
   <div class="modal-box">
     <h3>📄 مشاهده معلومات کارمند</h3>
@@ -383,14 +427,14 @@
   </div>
 </div>
 
-<!-- Modal ویرایش -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3>✏️ ویرایش معلومات کارمند</h3>
+    <p style="color:#64748b; font-size:13px;">فقط فیلدهای مجاز قابل ویرایش هستند. تغییرات به معارف ارسال می‌شود.</p>
     <div class="edit-grid" id="editFieldsGrid"></div>
     <div class="modal-actions">
       <button class="btn-modal btn-modal-close" onclick="closeModal('editModal')">انصراف</button>
-      <button class="btn-modal btn-modal-save" onclick="saveEdit()">💾 ذخیره تغییرات</button>
+      <button class="btn-modal btn-modal-save" onclick="saveEdit()">💾 ذخیره و ارسال به معارف</button>
     </div>
   </div>
 </div>
@@ -407,6 +451,7 @@
 
   let cachedRecords = [];
   let editingRecordId = null;
+  let schoolSettingsExists = false;
 
   const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
   const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
@@ -418,7 +463,6 @@
     if (!jobTitle) return false;
     return SERVICE_KEYWORDS.some(kw => jobTitle.includes(kw)) || jobTitle === 'کارکن خدماتی';
   }
-
   function getJobCategory(jobTitle) {
     if (!jobTitle) return 'admin_staff';
     if (SERVICE_KEYWORDS.some(kw => jobTitle.includes(kw)) || jobTitle === 'کارکن خدماتی') return 'service';
@@ -426,12 +470,10 @@
     if (TEACHER_KEYWORDS.some(kw => jobTitle.includes(kw))) return 'teacher';
     return 'admin_staff';
   }
-
   function isValidJobCode(jobCode) {
     if (!jobCode) return false;
     return /^27-32-02-\d+$/.test(jobCode.trim());
   }
-
   function isValidETazkira(eTazkira) {
     if (!eTazkira) return false;
     return /^\d+-\d+-\d+$/.test(eTazkira.trim());
@@ -443,6 +485,7 @@
     document.getElementById('tab-' + name).classList.add('active');
     btn.classList.add('active');
     if (name === 'list') loadSchoolRecords();
+    if (name === 'settings') loadSchoolSettings();
   }
 
   function showToast(msg, isError = false) {
@@ -490,7 +533,6 @@
     if (day < 1 || day > 31) return null;
     return { year, month, day };
   }
-
   function isValidShamsiDate(s) { return parseShamsiDate(s) !== null; }
   function formatShamsi(d) { return `${d.year}/${String(d.month).padStart(2,'0')}/${String(d.day).padStart(2,'0')}`; }
 
@@ -549,7 +591,6 @@
     if (input) input.addEventListener('blur', () => updateDateBadge(id, id.replace('Date', 'Badge'), ['birthDate','firstAppointmentDate','currentPositionDate'].includes(id)));
   });
 
-  // ═══ عنوان بست ═══
   const jobTitleInput = document.getElementById('jobTitle');
   const jobCodeInput = document.getElementById('jobCode');
   const jobCodeBadge = document.getElementById('jobCodeBadge');
@@ -557,7 +598,19 @@
   const jobTitleBadge = document.getElementById('jobTitleBadge');
   const degreeRequiredMark = document.getElementById('degreeRequired');
   const degreeHint = document.getElementById('degreeHint');
-  const degreeInput = document.getElementById('degree');
+
+  function resetRequiredMarks() {
+    document.getElementById('grandRequired').textContent = '*';
+    document.getElementById('ethRequired').textContent = '*';
+    document.getElementById('genderRequired').textContent = '*';
+    document.getElementById('birthRequired').textContent = '*';
+    document.getElementById('originRequired').textContent = '*';
+    document.getElementById('currentRequired').textContent = '*';
+    document.getElementById('appointRequired').textContent = '*';
+    document.getElementById('phoneRequired').textContent = '*';
+    document.getElementById('disRequired').textContent = '*';
+    document.getElementById('currentPosRequired').textContent = '*';
+  }
 
   function updateFormByJobTitle() {
     const job = jobTitleInput.value.trim();
@@ -614,22 +667,8 @@
     updateAgreementButton();
   }
 
-  function resetRequiredMarks() {
-    document.getElementById('grandRequired').textContent = '*';
-    document.getElementById('ethRequired').textContent = '*';
-    document.getElementById('genderRequired').textContent = '*';
-    document.getElementById('birthRequired').textContent = '*';
-    document.getElementById('originRequired').textContent = '*';
-    document.getElementById('currentRequired').textContent = '*';
-    document.getElementById('appointRequired').textContent = '*';
-    document.getElementById('phoneRequired').textContent = '*';
-    document.getElementById('disRequired').textContent = '*';
-    document.getElementById('currentPosRequired').textContent = '*';
-  }
-
   jobTitleInput.addEventListener('change', updateFormByJobTitle);
 
-  // ═══ ورکشاپ ═══
   function toggleWorkshopFields() {
     const status = document.getElementById('workshopStatus').value;
     const titleGroup = document.getElementById('workshopTitleGroup');
@@ -652,7 +691,6 @@
   }
   window.toggleWorkshopFields = toggleWorkshopFields;
 
-  // ═══ دکمه موافقت ═══
   const agreementCheck = document.getElementById('agreementCheck');
   const submitBtn = document.getElementById('submitBtn');
 
@@ -662,7 +700,6 @@
   agreementCheck.addEventListener('change', updateAgreementButton);
   updateAgreementButton();
 
-  // ═══ Badge کد بست ═══
   jobCodeInput.addEventListener('blur', () => {
     const v = jobCodeInput.value.trim();
     if (!v) {
@@ -679,7 +716,6 @@
     }
   });
 
-  // ═══ Badge تذکره ═══
   const eTazkiraInput = document.getElementById('eTazkira');
   const eTazkiraBadge = document.getElementById('eTazkiraBadge');
   eTazkiraInput.addEventListener('blur', () => {
@@ -698,7 +734,6 @@
     }
   });
 
-  // ═══ جمع‌آوری فرم ═══
   function collectForm() {
     const val = id => {
       const el = document.getElementById(id);
@@ -710,29 +745,23 @@
       fatherName: val('fatherName'), grandfatherName: val('grandfatherName'),
       eTazkira: val('eTazkira'), paperTazkira: val('paperTazkira'),
       tazkiraPage: val('tazkiraPage'), tazkiraVolume: val('tazkiraVolume'),
-      ethnicity: val('ethnicity'),
-      gender: val('gender'),
+      ethnicity: val('ethnicity'), gender: val('gender'),
       birthDate: val('birthDate'), birthPlace: val('birthPlace'),
       originAddress: val('originAddress'), currentAddress: val('currentAddress'),
       firstAppointmentDate: val('firstAppointmentDate'), phone: val('phone'),
-      disability: val('disability'),
-      positionType: val('positionType'),
-      employmentType: val('employmentType'),
-      bust: val('bust'), grade: val('grade'),
+      disability: val('disability'), positionType: val('positionType'),
+      employmentType: val('employmentType'), bust: val('bust'), grade: val('grade'),
       currentPositionDate: val('currentPositionDate'),
       degree: val('degree'), major: val('major'),
       eduInstitute: val('eduInstitute'), eduInstituteLocation: val('eduInstituteLocation'),
       enrollmentDate: val('enrollmentDate'), graduationDate: val('graduationDate'),
       subjectTeaching: val('subjectTeaching'),
       workshopStatus: val('workshopStatus'),
-      workshopTitle: val('workshopTitle'),
-      workshopDuration: val('workshopDuration'),
-      totalTeachingHours: val('totalTeachingHours'),
-      evaluationScore: val('evaluationScore'),
+      workshopTitle: val('workshopTitle'), workshopDuration: val('workshopDuration'),
+      totalTeachingHours: val('totalTeachingHours'), evaluationScore: val('evaluationScore'),
       name: (val('firstName') + ' ' + val('lastName')).trim(),
       job: val('jobTitle'),
-      schoolName: user.schoolname || '',
-      district: user.district || '',
+      schoolName: user.schoolname || '', district: user.district || '',
       agreement: agreementCheck.checked
     };
   }
@@ -772,19 +801,16 @@
       }
     }
 
-    // ورکشاپ
     if (body.workshopStatus === 'بلی') {
       if (!body.workshopTitle) errors.push('عنوان ورکشاپ الزامی است');
       if (!body.workshopDuration) errors.push('مدت ورکشاپ الزامی است');
     }
 
-    // نمره ارزیابی
     if (body.evaluationScore) {
       const num = Number(body.evaluationScore);
       if (isNaN(num) || num < 0 || num > 100) errors.push('نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد');
     }
 
-    // مجموعه ساعت درسی
     if (body.totalTeachingHours) {
       const num = Number(body.totalTeachingHours);
       if (isNaN(num) || num < 0) errors.push('مجموعه ساعت درسی باید عددی مثبت باشد');
@@ -831,7 +857,7 @@
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('tab-list').classList.add('active');
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
         loadSchoolRecords();
       } else {
         showToast('❌ ' + (data.error || 'خطا'), true);
@@ -942,8 +968,7 @@
     const info = rec.data || {};
     const sections = [
       { title: '۱. هویت و اسناد تذکره', fields: [
-        ['عنوان بست', info.jobTitle],
-        ['کُد بست', info.jobCode || '—'],
+        ['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode || '—'],
         ['اسم', info.firstName], ['تخلص', info.lastName],
         ['ولد', info.fatherName], ['ولدیت', info.grandfatherName],
         ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira],
@@ -952,8 +977,8 @@
       ]},
       { title: '۲. اطلاعات شخصی و تماس', fields: [
         ['جنسیت', info.gender], ['تاریخ تولد', info.birthDate],
-        ['محل تولد', info.birthPlace],
-        ['سکونت اصلی', info.originAddress], ['سکونت فعلی', info.currentAddress],
+        ['محل تولد', info.birthPlace], ['سکونت اصلی', info.originAddress],
+        ['سکونت فعلی', info.currentAddress],
         ['تاریخ اولین تقرر', info.firstAppointmentDate],
         ['شماره تماس', info.phone], ['معلولیت', info.disability],
         ['موقف وظیفوی', info.positionType], ['نوع استخدام', info.employmentType]
@@ -995,87 +1020,92 @@
 
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+  // ⭐ ویرایش فقط فیلدهای مجاز
   function editRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) return;
     editingRecordId = id;
     const info = rec.data || {};
+
     const fields = [
-      ['jobTitle', 'عنوان بست'], ['jobCode', 'کُد بست'],
-      ['firstName', 'اسم'], ['lastName', 'تخلص'],
-      ['fatherName', 'ولد'], ['grandfatherName', 'ولدیت'],
-      ['eTazkira', 'تذکره الکترونیکی'], ['paperTazkira', 'تذکره کاغذی'],
-      ['tazkiraPage', 'صفحه تذکره'], ['tazkiraVolume', 'جلد تذکره'],
-      ['ethnicity', 'قومیت'], ['birthDate', 'تاریخ تولد'],
-      ['birthPlace', 'محل تولد'], ['originAddress', 'سکونت اصلی'],
-      ['currentAddress', 'سکونت فعلی'], ['firstAppointmentDate', 'تاریخ اولین تقرر'],
-      ['phone', 'شماره تماس'], ['bust', 'بست'], ['grade', 'قدم'],
-      ['currentPositionDate', 'تاریخ تقرر فعلی'], ['degree', 'درجه تحصیلی'],
-      ['major', 'رشته تحصیلی'], ['eduInstitute', 'مرجع تعلیمی'],
-      ['eduInstituteLocation', 'موقعیت مرجع'],
-      ['enrollmentDate', 'تاریخ شمولیت'], ['graduationDate', 'تاریخ فراغت'],
-      ['subjectTeaching', 'مضمون تدریس'],
-      ['workshopTitle', 'عنوان ورکشاپ'],
-      ['workshopDuration', 'مدت ورکشاپ'],
+      ['jobTitle', 'عنوان بست / نوع بست'],
+      ['bust', 'بست'],
+      ['grade', 'قدم'],
       ['totalTeachingHours', 'مجموعه ساعت درسی'],
-      ['evaluationScore', 'نمره ارزیابی']
+      ['evaluationScore', 'نمره ارزیابی'],
+      ['workshopStatus', 'وضعیت ورکشاپ'],
+      ['workshopTitle', 'عنوان ورکشاپ'],
+      ['workshopDuration', 'مدت ورکشاپ']
     ];
+
     let html = '';
     fields.forEach(([key, label]) => {
-      html += `<div class="form-group"><label>${label}</label><input type="text" id="edit_${key}" value="${escapeHtml(info[key] || '')}"></div>`;
+      if (key === 'jobTitle') {
+        const options = [
+          'آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار',
+          'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین',
+          'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش',
+          'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی',
+          'معتمد جنسی (تحویلدار)', 'معلم قراردادی', 'معلم افتخاری', 'سایر'
+        ];
+        let opts = '<option value="">انتخاب کنید</option>';
+        options.forEach(o => {
+          opts += `<option value="${o}" ${info[key] === o ? 'selected' : ''}>${o}</option>`;
+        });
+        html += `<div class="form-group"><label>${label}</label><select id="edit_${key}">${opts}</select></div>`;
+      } else if (key === 'workshopStatus') {
+        const opts = ['نخیر', 'بلی'].map(o =>
+          `<option value="${o}" ${info[key] === o ? 'selected' : ''}>${o}</option>`
+        ).join('');
+        html += `<div class="form-group"><label>${label}</label><select id="edit_${key}">${opts}</select></div>`;
+      } else {
+        html += `<div class="form-group"><label>${label}</label><input type="text" id="edit_${key}" value="${escapeHtml(info[key] || '')}"></div>`;
+      }
     });
-    const selects = [
-      ['gender', 'جنسیت', ['', 'مرد', 'زن']],
-      ['disability', 'معلولیت', ['نخیر', 'بلی']],
-      ['positionType', 'موقف وظیفوی', ['', 'اصلی', 'سرپرستی']],
-      ['employmentType', 'نوع استخدام', ['', 'حکمی', 'رقابتی']],
-      ['workshopStatus', 'وضعیت ورکشاپ', ['نخیر', 'بلی']]
-    ];
-    selects.forEach(([key, label, options]) => {
-      let opts = '';
-      options.forEach(o => { opts += `<option value="${o}" ${info[key] === o ? 'selected' : ''}>${o || 'انتخاب کنید'}</option>`; });
-      html += `<div class="form-group"><label>${label}</label><select id="edit_${key}">${opts}</select></div>`;
-    });
+
     document.getElementById('editFieldsGrid').innerHTML = html;
     document.getElementById('editModal').classList.add('active');
   }
 
   async function saveEdit() {
     if (!editingRecordId) return;
-    const getVal = id => { const el = document.getElementById('edit_' + id); return el ? el.value.trim() : ''; };
+    const originalRec = cachedRecords.find(r => r.id === editingRecordId);
+    if (!originalRec) return;
+    const originalInfo = originalRec.data || {};
+
+    const getVal = id => {
+      const el = document.getElementById('edit_' + id);
+      return el ? el.value.trim() : '';
+    };
+
     const body = {
-      jobTitle: getVal('jobTitle'), jobCode: getVal('jobCode'),
-      firstName: getVal('firstName'), lastName: getVal('lastName'),
-      fatherName: getVal('fatherName'), grandfatherName: getVal('grandfatherName'),
-      eTazkira: getVal('eTazkira'), paperTazkira: getVal('paperTazkira'),
-      tazkiraPage: getVal('tazkiraPage'), tazkiraVolume: getVal('tazkiraVolume'),
-      ethnicity: getVal('ethnicity'),
-      gender: getVal('gender'),
-      birthDate: getVal('birthDate'), birthPlace: getVal('birthPlace'),
-      originAddress: getVal('originAddress'), currentAddress: getVal('currentAddress'),
-      firstAppointmentDate: getVal('firstAppointmentDate'), phone: getVal('phone'),
-      disability: getVal('disability'),
-      positionType: getVal('positionType'),
-      employmentType: getVal('employmentType'),
-      bust: getVal('bust'), grade: getVal('grade'),
-      currentPositionDate: getVal('currentPositionDate'),
-      degree: getVal('degree'), major: getVal('major'),
-      eduInstitute: getVal('eduInstitute'), eduInstituteLocation: getVal('eduInstituteLocation'),
-      enrollmentDate: getVal('enrollmentDate'), graduationDate: getVal('graduationDate'),
-      subjectTeaching: getVal('subjectTeaching'),
+      ...originalInfo,
+      jobTitle: getVal('jobTitle'),
+      job: getVal('jobTitle'),
+      bust: getVal('bust'),
+      grade: getVal('grade'),
+      totalTeachingHours: getVal('totalTeachingHours'),
+      evaluationScore: getVal('evaluationScore'),
       workshopStatus: getVal('workshopStatus'),
       workshopTitle: getVal('workshopTitle'),
       workshopDuration: getVal('workshopDuration'),
-      totalTeachingHours: getVal('totalTeachingHours'),
-      evaluationScore: getVal('evaluationScore'),
-      name: (getVal('firstName') + ' ' + getVal('lastName')).trim(),
-      job: getVal('jobTitle'),
-      schoolName: user.schoolname || '',
-      district: user.district || '',
       agreement: true
     };
-    const errors = validateBody(body);
-    if (errors.length > 0) { showToast('❌ ' + errors[0], true); return; }
+
+    if (body.workshopStatus === 'بلی') {
+      if (!body.workshopTitle || !body.workshopDuration) {
+        showToast('❌ عنوان و مدت ورکشاپ الزامی است', true);
+        return;
+      }
+    }
+    if (body.evaluationScore) {
+      const num = Number(body.evaluationScore);
+      if (isNaN(num) || num < 0 || num > 100) {
+        showToast('❌ نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد', true);
+        return;
+      }
+    }
+
     try {
       const res = await fetch('/api/records/' + editingRecordId, {
         method: 'PUT',
@@ -1084,14 +1114,16 @@
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        showToast('✅ ویرایش ذخیره شد');
+        showToast('✅ ویرایش ذخیره شد و برای تایید به معارف ارسال شد');
         closeModal('editModal');
         editingRecordId = null;
         loadSchoolRecords();
       } else {
         showToast('❌ ' + (data.error || 'خطا'), true);
       }
-    } catch (e) { showToast('❌ ارتباط با سرور برقرار نشد', true); }
+    } catch (e) {
+      showToast('❌ ارتباط با سرور برقرار نشد', true);
+    }
   }
 
   function buildPrintHTML(info, rec) {
@@ -1144,6 +1176,164 @@
   }
 
   document.getElementById('searchInput').addEventListener('input', debounce(loadSchoolRecords, 400));
+
+  // ═══════════════════════════════════════════════════════════
+  // مدیریت مکتب
+  // ═══════════════════════════════════════════════════════════
+  function toggleBudgetFields() {
+    const status = document.getElementById('sBudgetStatus').value;
+    const extraCountGroup = document.getElementById('extraBustCountGroup');
+    const extraFieldGroup = document.getElementById('extraBustFieldGroup');
+    const lackCountGroup = document.getElementById('lackBustCountGroup');
+    const lackFieldGroup = document.getElementById('lackBustFieldGroup');
+    const badge = document.getElementById('budgetBadge');
+
+    extraCountGroup.style.display = 'none';
+    extraFieldGroup.style.display = 'none';
+    lackCountGroup.style.display = 'none';
+    lackFieldGroup.style.display = 'none';
+    document.getElementById('sExtraBustCount').value = '';
+    document.getElementById('sExtraBustField').value = '';
+    document.getElementById('sLackBustCount').value = '';
+    document.getElementById('sLackBustField').value = '';
+
+    if (status === 'اضافه بست') {
+      extraCountGroup.style.display = 'flex';
+      extraFieldGroup.style.display = 'flex';
+      badge.textContent = '✅ تعداد و رشته اضافه بست الزامی است';
+      badge.style.background = '#ef4444';
+    } else if (status === 'کمبود بست') {
+      lackCountGroup.style.display = 'flex';
+      lackFieldGroup.style.display = 'flex';
+      badge.textContent = '✅ تعداد و رشته کمبود بست الزامی است';
+      badge.style.background = '#ef4444';
+    } else {
+      badge.textContent = '🔍 وضعیت عادی';
+      badge.style.background = '#10b981';
+    }
+  }
+  window.toggleBudgetFields = toggleBudgetFields;
+
+  async function loadSchoolSettings() {
+    try {
+      const res = await fetch('/api/school-settings', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+
+      if (data.exists && data.settings) {
+        schoolSettingsExists = true;
+        const s = data.settings;
+        document.getElementById('sTimeType').value = s.time_type || 'یک تایم';
+        document.getElementById('sAcademicMember').value = s.academic_member || '';
+        document.getElementById('sBranchesTotal').value = s.branches_total || '';
+        document.getElementById('sBranches13').value = s.branches_1_3 || '';
+        document.getElementById('sBranches46').value = s.branches_4_6 || '';
+        document.getElementById('sBranches79').value = s.branches_7_9 || '';
+        document.getElementById('sBranches1012').value = s.branches_10_12 || '';
+        document.getElementById('sBudgetStatus').value = s.budget_status || 'عادی';
+        document.getElementById('sExtraBustCount').value = s.extra_bust_count || '';
+        document.getElementById('sExtraBustField').value = s.extra_bust_field || '';
+        document.getElementById('sLackBustCount').value = s.lack_bust_count || '';
+        document.getElementById('sLackBustField').value = s.lack_bust_field || '';
+
+        toggleBudgetFields();
+
+        document.getElementById('settingsBanner').innerHTML = '✅ اطلاعات مکتب شما ثبت شده است. می‌توانید آن را ویرایش کنید.';
+        document.getElementById('settingsBanner').style.background = '#dcfce7';
+        document.getElementById('settingsBanner').style.borderRightColor = '#10b981';
+        document.getElementById('settingsBanner').style.color = '#15803d';
+        document.getElementById('settingsSubmitBtn').innerText = '💾 به‌روزرسانی اطلاعات مکتب';
+      } else {
+        schoolSettingsExists = false;
+        document.getElementById('settingsBanner').innerHTML = '⚠️ <strong>توجه:</strong> تا زمانیکه اطلاعات مکتب را ثبت نکنید، نمی‌توانید کارمند جدید ثبت کنید.';
+        document.getElementById('settingsBanner').style.background = '#fef3c7';
+        document.getElementById('settingsBanner').style.borderRightColor = '#f59e0b';
+        document.getElementById('settingsBanner').style.color = '#78350f';
+        document.getElementById('settingsSubmitBtn').innerText = '💾 ذخیره اطلاعات مکتب';
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const body = {
+      timeType: document.getElementById('sTimeType').value,
+      academicMember: document.getElementById('sAcademicMember').value.trim(),
+      branchesTotal: document.getElementById('sBranchesTotal').value.trim(),
+      branches13: document.getElementById('sBranches13').value.trim(),
+      branches46: document.getElementById('sBranches46').value.trim(),
+      branches79: document.getElementById('sBranches79').value.trim(),
+      branches1012: document.getElementById('sBranches1012').value.trim(),
+      budgetStatus: document.getElementById('sBudgetStatus').value,
+      extraBustCount: document.getElementById('sExtraBustCount').value.trim(),
+      extraBustField: document.getElementById('sExtraBustField').value.trim(),
+      lackBustCount: document.getElementById('sLackBustCount').value.trim(),
+      lackBustField: document.getElementById('sLackBustField').value.trim()
+    };
+
+    if (!body.academicMember) {
+      showToast('❌ نام و تخلص عضو علمی الزامی است', true);
+      return;
+    }
+    if (body.budgetStatus === 'اضافه بست') {
+      if (!body.extraBustCount || !body.extraBustField) {
+        showToast('❌ تعداد و رشته اضافه بست الزامی است', true);
+        return;
+      }
+    }
+    if (body.budgetStatus === 'کمبود بست') {
+      if (!body.lackBustCount || !body.lackBustField) {
+        showToast('❌ تعداد و رشته کمبود بست الزامی است', true);
+        return;
+      }
+    }
+
+    const btn = document.getElementById('settingsSubmitBtn');
+    btn.disabled = true;
+    btn.innerText = '⏳ در حال ذخیره...';
+
+    try {
+      const res = await fetch('/api/school-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast('✅ اطلاعات مکتب ذخیره شد');
+        await loadSchoolSettings();
+      } else {
+        showToast('❌ ' + (data.error || 'خطا'), true);
+      }
+    } catch (e) {
+      showToast('❌ ارتباط با سرور برقرار نشد', true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ═══ بررسی تنظیمات در زمان لود ═══
+  (async function checkSchoolSettings() {
+    try {
+      const res = await fetch('/api/school-settings', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!data.exists) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-settings').classList.add('active');
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        loadSchoolSettings();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  })();
 
   function logout() {
     localStorage.removeItem('hr_token');

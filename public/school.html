@@ -456,7 +456,6 @@
     }).join('');
   }
 
-  // ⭐ اعتبارسنجی تاریخ شمسی
   function validateShamsiDate(dateStr) {
     if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
     
@@ -488,7 +487,6 @@
     return { valid: true, formatted };
   }
 
-  // ⭐ اعتبارسنجی تذکره الکترونیکی
   function validateTazkira(tazkiraStr) {
     if (!tazkiraStr) return { valid: false, error: 'تذکره الکترونیکی الزامی است' };
     
@@ -505,7 +503,6 @@
     return { valid: true, formatted: cleaned };
   }
 
-  // ⭐ اعتبارسنجی کد بست
   function validateJobCode(jobCode) {
     if (!jobCode) return { valid: false, error: 'کُد بست الزامی است' };
     
@@ -522,7 +519,6 @@
     return { valid: true, formatted: cleaned };
   }
 
-  // ⭐ اعتبارسنجی زنده
   function attachLiveValidation(inputId, validateFn) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -552,7 +548,6 @@
     });
   }
 
-  // اتصال به فیلدها
   ['birthDate', 'firstAppointmentDate', 'currentPositionDate', 'enrollmentDate', 'graduationDate'].forEach(id => {
     attachLiveValidation(id, validateShamsiDate);
   });
@@ -560,13 +555,11 @@
   attachLiveValidation('eETazkira', validateTazkira);
   attachLiveValidation('jobCode', validateJobCode);
 
-  // ⭐ تشخیص کارمند خدماتی یا معتمد جنسی
   function isServiceOrSupport(jobTitle) {
     if (!jobTitle) return false;
     return SERVICE_TITLES.includes(jobTitle);
   }
 
-  // ⭐ تغییر وضعیت فیلدهای تحصیلی بر اساس عنوان بست
   function updateEducationFields() {
     const jobTitle = document.getElementById('jobTitle').value;
     const isService = isServiceOrSupport(jobTitle);
@@ -600,7 +593,6 @@
 
   document.getElementById('jobTitle').addEventListener('change', updateEducationFields);
 
-  // ⭐ توگل موافقت‌نامه
   function toggleAgreement() {
     const checkbox = document.getElementById('agreementCheckbox');
     const box = document.getElementById('agreementBox');
@@ -796,10 +788,8 @@
           ? '<span class="status-badge status-approved">✅ تایید</span>'
           : '<span class="status-badge status-pending">⏳ انتظار</span>';
 
-        let editBtn = '';
-        if (row.status !== 'approved') {
-          editBtn = `<button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>`;
-        }
+        // ⭐ دکمه ویرایش برای همه (تایید شده و در انتظار)
+        const editBtn = `<button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>`;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -933,14 +923,12 @@
   }
   window.printRecord = printRecord;
 
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ ویرایش رکورد — فقط ۷ فیلد قابل ویرایش
+  // ═══════════════════════════════════════════════════════════
   function editRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) { showToast('رکورد یافت نشد', true); return; }
-    
-    if (rec.status === 'approved') {
-      showToast('❌ رکورد تایید شده قابل ویرایش نیست', true);
-      return;
-    }
 
     editingRecordId = id;
     const info = rec.data || {};
@@ -951,134 +939,66 @@
       jobOptions += `<option value="${j}" ${selected}>${j}</option>`;
     });
 
+    const statusText = rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
+    const statusColor = rec.status === 'approved' ? '#dcfce7' : '#fef3c7';
+
     const html = `
+      <div style="background:${statusColor}; padding:10px 15px; border-radius:6px; margin-bottom:15px; font-size:13px; text-align:center;">
+        <strong>👤 کارمند:</strong> ${escapeHtml(info.firstName || '-')} ${escapeHtml(info.lastName || '')} | 
+        <strong>وضعیت:</strong> ${statusText}
+      </div>
+
+      <div style="background:#dbeafe; padding:12px 15px; border-radius:6px; margin-bottom:15px; font-size:13px; color:#1e3a8a;">
+        ℹ️ <strong>توجه:</strong> فقط فیلدهای زیر قابل ویرایش هستند. برای ویرایش بقیه فیلدها، با ریاست معارف تماس بگیرید.
+      </div>
+
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
         
-        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold;">۱. هویت و اسناد تذکره</div>
-        
         <div class="form-group-edit">
-          <label>عنوان بست *</label>
+          <label>👨‍🏫 عنوان بست *</label>
           <select id="eJobTitle" class="form-control-edit">${jobOptions}</select>
         </div>
+        
         <div class="form-group-edit">
-          <label>کُد بست</label>
-          <input type="text" id="eJobCode" class="form-control-edit" value="${escapeHtml(info.jobCode || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>اسم *</label>
-          <input type="text" id="eFirstName" class="form-control-edit" value="${escapeHtml(info.firstName || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>تخلص</label>
-          <input type="text" id="eLastName" class="form-control-edit" value="${escapeHtml(info.lastName || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>ولد *</label>
-          <input type="text" id="eFatherName" class="form-control-edit" value="${escapeHtml(info.fatherName || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>ولدیت *</label>
-          <input type="text" id="eGrandfatherName" class="form-control-edit" value="${escapeHtml(info.grandfatherName || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>تذکره الکترونیکی</label>
-          <input type="text" id="eETazkira" class="form-control-edit" placeholder="32434-32323-3232" value="${escapeHtml(info.eTazkira || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>تذکره کاغذی</label>
-          <input type="text" id="ePaperTazkira" class="form-control-edit" value="${escapeHtml(info.paperTazkira || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>قومیت *</label>
-          <input type="text" id="eEthnicity" class="form-control-edit" value="${escapeHtml(info.ethnicity || '')}">
-        </div>
-
-        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">۲. اطلاعات شخصی و تماس</div>
-
-        <div class="form-group-edit">
-          <label>جنسیت *</label>
-          <select id="eGender" class="form-control-edit">
-            <option value="">انتخاب کنید</option>
-            <option value="مرد" ${info.gender === 'مرد' ? 'selected' : ''}>مرد</option>
-            <option value="زن" ${info.gender === 'زن' ? 'selected' : ''}>زن</option>
-          </select>
-        </div>
-        <div class="form-group-edit">
-          <label>تاریخ تولد *</label>
-          <input type="text" id="eBirthDate" class="form-control-edit" value="${escapeHtml(info.birthDate || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>سکونت اصلی *</label>
-          <input type="text" id="eOriginAddress" class="form-control-edit" value="${escapeHtml(info.originAddress || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>سکونت فعلی *</label>
-          <input type="text" id="eCurrentAddress" class="form-control-edit" value="${escapeHtml(info.currentAddress || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>تاریخ اولین تقرر *</label>
-          <input type="text" id="eFirstAppointmentDate" class="form-control-edit" value="${escapeHtml(info.firstAppointmentDate || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>شماره تماس *</label>
-          <input type="text" id="ePhone" class="form-control-edit" value="${escapeHtml(info.phone || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>معلولیت *</label>
-          <select id="eDisability" class="form-control-edit">
-            <option value="نخیر" ${info.disability === 'نخیر' ? 'selected' : ''}>نخیر</option>
-            <option value="بلی" ${info.disability === 'بلی' ? 'selected' : ''}>بلی</option>
-          </select>
-        </div>
-
-        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">۳. معلومات وظیفوی و تحصیلی</div>
-
-        <div class="form-group-edit">
-          <label>بست</label>
+          <label>💼 بست</label>
           <input type="text" id="eBust" class="form-control-edit" value="${escapeHtml(info.bust || '')}">
         </div>
+        
         <div class="form-group-edit">
-          <label>قدم</label>
+          <label>📊 قدم</label>
           <input type="text" id="eGrade" class="form-control-edit" value="${escapeHtml(info.grade || '')}">
         </div>
+        
         <div class="form-group-edit">
-          <label>تاریخ تقرر فعلی *</label>
-          <input type="text" id="eCurrentPositionDate" class="form-control-edit" value="${escapeHtml(info.currentPositionDate || '')}">
-        </div>
-        <div class="form-group-edit">
-          <label>درجه تحصیلی (غیرقابل ویرایش)</label>
-          <input type="text" id="eDegree" class="form-control-edit" value="${escapeHtml(info.degree || '')}" readonly>
-        </div>
-        <div class="form-group-edit">
-          <label>رشته تحصیلی (غیرقابل ویرایش)</label>
-          <input type="text" id="eMajor" class="form-control-edit" value="${escapeHtml(info.major || '')}" readonly>
-        </div>
-        <div class="form-group-edit">
-          <label>مضمون تدریس</label>
+          <label>📚 مضمون تدریس</label>
           <input type="text" id="eSubjectTeaching" class="form-control-edit" value="${escapeHtml(info.subjectTeaching || '')}">
         </div>
 
-        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">۴. ورکشاپ، ساعت درسی و ارزیابی</div>
+        <div style="grid-column:1/-1; background:#10b981; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">📚 ورکشاپ، ساعت درسی و ارزیابی</div>
 
         <div class="form-group-edit">
           <label>ورکشاپ اخذ کرده؟</label>
-          <select id="eWorkshopStatus" class="form-control-edit">
+          <select id="eWorkshopStatus" class="form-control-edit" onchange="toggleEditWorkshopFields()">
             <option value="نخیر" ${info.workshopStatus === 'نخیر' ? 'selected' : ''}>نخیر</option>
             <option value="بلی" ${info.workshopStatus === 'بلی' ? 'selected' : ''}>بلی</option>
           </select>
         </div>
-        <div class="form-group-edit">
+        
+        <div class="form-group-edit" id="eWorkshopTitleGroup" style="${info.workshopStatus === 'بلی' ? 'display:flex;' : 'display:none;'} flex-direction:column;">
           <label>عنوان ورکشاپ</label>
           <input type="text" id="eWorkshopTitle" class="form-control-edit" value="${escapeHtml(info.workshopTitle || '')}">
         </div>
-        <div class="form-group-edit">
+        
+        <div class="form-group-edit" id="eWorkshopDurationGroup" style="${info.workshopStatus === 'بلی' ? 'display:flex;' : 'display:none;'} flex-direction:column;">
           <label>مدت ورکشاپ</label>
           <input type="text" id="eWorkshopDuration" class="form-control-edit" value="${escapeHtml(info.workshopDuration || '')}">
         </div>
+        
         <div class="form-group-edit">
           <label>مجموعه ساعت درسی</label>
           <input type="text" id="eTotalTeachingHours" class="form-control-edit" value="${escapeHtml(info.totalTeachingHours || '')}">
         </div>
+        
         <div class="form-group-edit">
           <label>نمره ارزیابی</label>
           <input type="text" id="eEvaluationScore" class="form-control-edit" value="${escapeHtml(info.evaluationScore || '')}">
@@ -1092,6 +1012,21 @@
   }
   window.editRecord = editRecord;
 
+  function toggleEditWorkshopFields() {
+    const status = document.getElementById('eWorkshopStatus').value;
+    const titleGroup = document.getElementById('eWorkshopTitleGroup');
+    const durationGroup = document.getElementById('eWorkshopDurationGroup');
+    
+    if (status === 'بلی') {
+      titleGroup.style.display = 'flex';
+      durationGroup.style.display = 'flex';
+    } else {
+      titleGroup.style.display = 'none';
+      durationGroup.style.display = 'none';
+    }
+  }
+  window.toggleEditWorkshopFields = toggleEditWorkshopFields;
+
   async function saveEditedRecord() {
     if (!editingRecordId) return;
 
@@ -1100,88 +1035,38 @@
 
     const body = {
       jobTitle: document.getElementById('eJobTitle').value.trim(),
-      jobCode: document.getElementById('eJobCode').value.trim(),
-      firstName: document.getElementById('eFirstName').value.trim(),
-      lastName: document.getElementById('eLastName').value.trim(),
-      fatherName: document.getElementById('eFatherName').value.trim(),
-      grandfatherName: document.getElementById('eGrandfatherName').value.trim(),
-      eTazkira: document.getElementById('eETazkira').value.trim(),
-      paperTazkira: document.getElementById('ePaperTazkira').value.trim(),
-      ethnicity: document.getElementById('eEthnicity').value.trim(),
-      gender: document.getElementById('eGender').value,
-      birthDate: document.getElementById('eBirthDate').value.trim(),
-      originAddress: document.getElementById('eOriginAddress').value.trim(),
-      currentAddress: document.getElementById('eCurrentAddress').value.trim(),
-      firstAppointmentDate: document.getElementById('eFirstAppointmentDate').value.trim(),
-      phone: document.getElementById('ePhone').value.trim(),
-      disability: document.getElementById('eDisability').value,
       bust: document.getElementById('eBust').value.trim(),
       grade: document.getElementById('eGrade').value.trim(),
-      currentPositionDate: document.getElementById('eCurrentPositionDate').value.trim(),
-      degree: rec.data.degree || '',
-      major: rec.data.major || '',
       subjectTeaching: document.getElementById('eSubjectTeaching').value.trim(),
       workshopStatus: document.getElementById('eWorkshopStatus').value,
       workshopTitle: document.getElementById('eWorkshopTitle').value.trim(),
       workshopDuration: document.getElementById('eWorkshopDuration').value.trim(),
       totalTeachingHours: document.getElementById('eTotalTeachingHours').value.trim(),
       evaluationScore: document.getElementById('eEvaluationScore').value.trim(),
-      agreement: true,
-      tazkiraPage: rec.data.tazkiraPage || '',
-      tazkiraVolume: rec.data.tazkiraVolume || '',
-      birthPlace: rec.data.birthPlace || '',
-      positionType: rec.data.positionType || '',
-      employmentType: rec.data.employmentType || '',
-      eduInstitute: rec.data.eduInstitute || '',
-      eduInstituteLocation: rec.data.eduInstituteLocation || '',
-      enrollmentDate: rec.data.enrollmentDate || '',
-      graduationDate: rec.data.graduationDate || ''
+      agreement: true
     };
 
     if (!body.jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
-    if (!body.firstName) { showToast('❌ اسم الزامی است', true); return; }
-    if (!body.fatherName) { showToast('❌ ولد الزامی است', true); return; }
-    if (!body.grandfatherName) { showToast('❌ ولدیت الزامی است', true); return; }
 
-    // اعتبارسنجی کد بست
-    if (body.jobCode) {
-      const jobCodeResult = validateJobCode(body.jobCode);
-      if (!jobCodeResult.valid) {
-        showToast('❌ ' + jobCodeResult.error, true);
-        return;
-      }
-      body.jobCode = jobCodeResult.formatted;
+    if (body.workshopStatus === 'بلی') {
+      if (!body.workshopTitle) { showToast('❌ عنوان ورکشاپ الزامی است', true); return; }
+      if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); return; }
     }
 
-    // اعتبارسنجی تذکره
-    if (body.eTazkira) {
-      const tazResult = validateTazkira(body.eTazkira);
-      if (!tazResult.valid) {
-        showToast('❌ ' + tazResult.error, true);
+    if (body.evaluationScore) {
+      const num = Number(normalizeDigits(body.evaluationScore));
+      if (isNaN(num) || num < 0 || num > 100) {
+        showToast('❌ نمره ارزیابی باید بین ۰ تا ۱۰۰ باشد', true);
         return;
       }
-      body.eTazkira = tazResult.formatted;
     }
 
-    // اعتبارسنجی تاریخ‌ها
-    const dateFields = [
-      { id: 'eBirthDate', key: 'birthDate', label: 'تاریخ تولد', required: true },
-      { id: 'eFirstAppointmentDate', key: 'firstAppointmentDate', label: 'تاریخ اولین تقرر', required: true },
-      { id: 'eCurrentPositionDate', key: 'currentPositionDate', label: 'تاریخ تقرر فعلی', required: true }
-    ];
-
-    for (const df of dateFields) {
-      const val = document.getElementById(df.id).value.trim();
-      if (!val && df.required) {
-        showToast(`❌ ${df.label} الزامی است`, true);
+    if (body.totalTeachingHours) {
+      const num = Number(normalizeDigits(body.totalTeachingHours));
+      if (isNaN(num) || num < 0) {
+        showToast('❌ مجموعه ساعت درسی باید عددی مثبت باشد', true);
         return;
       }
-      const result = validateShamsiDate(val);
-      if (!result.valid) {
-        showToast(`❌ ${df.label}: ${result.error}`, true);
-        return;
-      }
-      body[df.key] = result.formatted;
     }
 
     try {
@@ -1274,7 +1159,6 @@
       agreement: true
     };
 
-    // اعتبارسنجی
     if (!body.jobTitle) { showToast('❌ عنوان بست الزامی است', true); resetSubmitBtn(); return; }
     if (!body.firstName) { showToast('❌ اسم الزامی است', true); resetSubmitBtn(); return; }
     if (!body.fatherName) { showToast('❌ ولد الزامی است', true); resetSubmitBtn(); return; }
@@ -1290,7 +1174,6 @@
     if (!body.eTazkira && !body.paperTazkira) { showToast('❌ حداقل یکی از تذکره‌ها الزامی است', true); resetSubmitBtn(); return; }
     if (!body.jobCode) { showToast('❌ کُد بست الزامی است', true); resetSubmitBtn(); return; }
     
-    // ⭐ اعتبارسنجی کد بست
     if (body.jobCode) {
       const jobCodeResult = validateJobCode(body.jobCode);
       if (!jobCodeResult.valid) {
@@ -1301,7 +1184,6 @@
       body.jobCode = jobCodeResult.formatted;
     }
 
-    // ⭐ اعتبارسنجی تحصیلی شرطی
     const isService = SERVICE_TITLES.includes(body.jobTitle);
     
     if (!isService) {
@@ -1319,7 +1201,6 @@
       if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
     }
 
-    // اعتبارسنجی تذکره
     if (body.eTazkira) {
       const tazResult = validateTazkira(body.eTazkira);
       if (!tazResult.valid) {
@@ -1330,7 +1211,6 @@
       body.eTazkira = tazResult.formatted;
     }
 
-    // اعتبارسنجی تاریخ‌ها
     const dateFields = [
       { id: 'birthDate', key: 'birthDate', label: 'تاریخ تولد', required: true },
       { id: 'firstAppointmentDate', key: 'firstAppointmentDate', label: 'تاریخ اولین تقرر', required: true },

@@ -9,7 +9,6 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345';
-
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
@@ -23,9 +22,6 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000
 });
 
-// ═══════════════════════════════════════════════════════════
-// عناوین بست
-// ═══════════════════════════════════════════════════════════
 const JOB_TITLES = [
   'آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار',
   'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین',
@@ -33,14 +29,9 @@ const JOB_TITLES = [
   'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی',
   'معتمد جنسی (تحویلدار)', 'معلم قراردادی', 'معلم افتخاری', 'سایر'
 ];
-
 const NO_CODE_TITLES = ['معلم قراردادی', 'معلم افتخاری'];
-
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
-// ═══════════════════════════════════════════════════════════
-// ایجاد جداول
-// ═══════════════════════════════════════════════════════════
 async function initDB() {
   try {
     const client = await pool.connect();
@@ -94,7 +85,6 @@ async function initDB() {
           extra_bust_field TEXT,
           lack_bust_count INTEGER DEFAULT 0,
           lack_bust_field TEXT,
-          status TEXT DEFAULT 'pending',
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -109,9 +99,6 @@ async function initDB() {
 }
 initDB();
 
-// ═══════════════════════════════════════════════════════════
-// Middleware
-// ═══════════════════════════════════════════════════════════
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -131,7 +118,7 @@ const loginLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است. لطفاً ۱۵ دقیقه بعد تلاش کنید.' }
+  message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است. ۱۵ دقیقه بعد تلاش کنید.' }
 });
 
 function authRequired(req, res, next) {
@@ -157,9 +144,6 @@ async function logLoginAttempt(ip, username, success) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// توابع اعتبارسنجی
-// ═══════════════════════════════════════════════════════════
 function isValidJobCode(jobCode) {
   if (!jobCode) return false;
   return /^27-32-02-\d+$/.test(jobCode.trim());
@@ -305,7 +289,7 @@ app.get('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// اعتبارسنجی مشترک
+// اعتبارسنجی رکورد
 // ═══════════════════════════════════════════════════════════
 async function validateRecordBody(body, excludeId = null) {
   const job = String(body.jobTitle || '').trim();
@@ -332,23 +316,20 @@ async function validateRecordBody(body, excludeId = null) {
 
   if (isContract) {
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
-    if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است (مثال: 1399-1200-2434)';
+    if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است';
     if (!birthDate) return 'تاریخ تولد الزامی است';
   } else {
     if (!ethnicity) return 'قومیت الزامی است';
     if (!phone) return 'شماره تماس الزامی است';
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
     if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است';
-
     if (!jobCode) return 'کُد بست الزامی است';
-    if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید به شکل 27-32-02-XXXXX باشد';
+    if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید 27-32-02-XXXXX باشد';
     const isDuplicate = await isJobCodeDuplicate(jobCode, excludeId);
-    if (isDuplicate) return `❌ کُد بست «${jobCode}» قبلاً در سیستم ثبت شده است`;
-
+    if (isDuplicate) return `❌ کُد بست «${jobCode}» قبلاً ثبت شده است`;
     if (!birthDate) return 'تاریخ تولد الزامی است';
     if (!firstAppointmentDate) return 'تاریخ اولین تقرر الزامی است';
     if (!currentPositionDate) return 'تاریخ تقرر فعلی الزامی است';
-
     if (!isServiceStaff(job) && !degree) return 'درجه تحصیلی برای این عنوان الزامی است';
   }
 
@@ -384,7 +365,6 @@ app.post('/api/records', authRequired, async (req, res) => {
     const schoolName = body.schoolName || req.user.schoolname || '';
     const district = body.district || req.user.district || '';
 
-    // بررسی تنظیمات مکتب
     const settingsCheck = await pool.query(
       'SELECT id FROM school_settings WHERE userid = $1',
       [req.user.id]
@@ -416,20 +396,15 @@ app.post('/api/records', authRequired, async (req, res) => {
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب اجازه ویرایش دارد' });
-
     const id = req.params.id;
     const body = req.body || {};
-
     const check = await pool.query('SELECT * FROM records WHERE id = $1 AND userid = $2', [id, req.user.id]);
     if (check.rows.length === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
     if (check.rows[0].status === 'approved') return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
-
     const error = await validateRecordBody(body, id);
     if (error) return res.status(400).json({ error });
-
     const schoolName = body.schoolName || req.user.schoolname || '';
     const district = body.district || req.user.district || '';
-
     await pool.query(
       `UPDATE records SET schoolname = $1, district = $2, data = $3
        WHERE id = $4 AND userid = $5`,
@@ -459,11 +434,10 @@ app.get('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
-// POST /api/school-settings — ذخیره/به‌روزرسانی تنظیمات مکتب
+// POST /api/school-settings — ذخیره تنظیمات مکتب
 app.post('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
-
     const body = req.body || {};
     const timeType = String(body.timeType || 'یک تایم').trim();
     const academicMember = String(body.academicMember || '').trim();
@@ -493,7 +467,6 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
 
     const schoolName = req.user.schoolname || '';
     const district = req.user.district || '';
-
     const check = await pool.query('SELECT id FROM school_settings WHERE userid = $1', [req.user.id]);
 
     if (check.rows.length > 0) {
@@ -534,19 +507,6 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
-// GET /api/school-settings/:userid — تنظیمات یک مکتب (ادمین)
-app.get('/api/school-settings/:userid', authRequired, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    const result = await pool.query('SELECT * FROM school_settings WHERE userid = $1', [req.params.userid]);
-    if (result.rows.length === 0) return res.json({ exists: false, settings: null });
-    res.json({ exists: true, settings: result.rows[0] });
-  } catch (err) {
-    console.error('School settings (admin) GET Error:', err.message);
-    res.status(500).json({ error: 'خطا در دریافت تنظیمات مکتب' });
-  }
-});
-
 // GET /api/all-school-settings — همه تنظیمات (ادمین)
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {
@@ -565,7 +525,7 @@ app.get('/api/all-school-settings', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// تایید رکورد (فقط ادمین)
+// تایید / حذف / کاربران
 // ═══════════════════════════════════════════════════════════
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
@@ -579,9 +539,6 @@ app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// حذف رکورد (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.delete('/api/records/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
@@ -594,9 +551,6 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// افزودن مکتب (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.post('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه افزودن مکتب دارد' });
@@ -616,9 +570,6 @@ app.post('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// لیست مکاتب (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.get('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -630,9 +581,6 @@ app.get('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// حذف مکتب (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین اجازه حذف دارد' });
@@ -645,9 +593,6 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// لاگ تلاش‌های ورود (فقط ادمین)
-// ═══════════════════════════════════════════════════════════
 app.get('/api/login-attempts', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -666,10 +611,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ═══════════════════════════════════════════════════════════
-// اجرا
-// ═══════════════════════════════════════════════════════════
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🔒 Rate limiting: 10 login attempts per 15 minutes`);
 });

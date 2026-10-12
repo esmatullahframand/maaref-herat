@@ -9,14 +9,13 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ⭐⭐⭐ JWT_SECRET ثابت — همه جا فقط از این استفاده می‌شود
+// ⭐ JWT_SECRET ثابت
 const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V6.0 starting...');
-console.log('🔐 JWT_SECRET:', JSON.stringify(JWT_SECRET_CONSTANT));
-console.log('🔐 SECRET Length:', JWT_SECRET_CONSTANT.length);
+console.log('🔐 Server V7.0 starting...');
+console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
 
@@ -111,9 +110,23 @@ async function initDB() {
 }
 initDB();
 
+// ═══════════════════════════════════════════════════════════
+// ⭐ Middleware — ترتیب مهم است!
+// ═══════════════════════════════════════════════════════════
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// ⭐ جلوگیری از کش شدن HTML — قبل از static
+app.use((req, res, next) => {
+  if (req.url.endsWith('.html') || req.url === '/' || req.url.startsWith('/?')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
@@ -134,9 +147,6 @@ const loginLimiter = rateLimit({
   message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است.' }
 });
 
-// ═══════════════════════════════════════════════════════════
-// احراز هویت — با algorithms مشخص و trim توکن
-// ═══════════════════════════════════════════════════════════
 function authRequired(req, res, next) {
   let token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
   if (!token && req.query.token) token = req.query.token;
@@ -152,8 +162,6 @@ function authRequired(req, res, next) {
     next();
   } catch (e) {
     console.error('❌ Token verify error:', e.message);
-    console.error('   Token length:', token.length);
-    console.error('   Token preview:', token.substring(0, 40));
     res.status(401).json({ error: 'توکن نامعتبر است' });
   }
 }
@@ -225,21 +233,12 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     // ادمین
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
-
       const payload = { id: 0, username: 'admin', role: 'admin' };
       const token = jwt.sign(payload, JWT_SECRET_CONSTANT, {
         expiresIn: '7d',
         algorithm: JWT_ALGORITHM
       });
-
-      // ⭐ Self-verify
-      try {
-        const verified = jwt.verify(token, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
-        console.log('✅ Admin token issued and verified:', verified.username);
-      } catch (e) {
-        console.error('❌❌❌ ADMIN SELF-VERIFY FAILED:', e.message);
-      }
-
+      console.log('✅ Admin token issued');
       return res.json({
         token,
         user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' },
@@ -267,20 +266,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       algorithm: JWT_ALGORITHM
     });
 
-    console.log('═══════════════════════════════════════');
-    console.log('✅ School token issued for:', username, '| role:', user.role);
-    console.log('   Secret used:', JSON.stringify(JWT_SECRET_CONSTANT));
-    console.log('   Token length:', token.length);
-    console.log('   Token preview:', token.substring(0, 40) + '...');
-
-    // ⭐⭐ Self-verify
-    try {
-      const verified = jwt.verify(token, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
-      console.log('   ✅ Self-verify OK:', verified.username);
-    } catch (e) {
-      console.error('   ❌❌❌ SELF-VERIFY FAILED:', e.message);
-    }
-    console.log('═══════════════════════════════════════');
+    console.log('✅ School token issued:', username, '| role:', user.role);
 
     res.json({
       token,
@@ -667,7 +653,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// تست کامل
+// تست
 // ═══════════════════════════════════════════════════════════
 app.get('/api/test', (req, res) => {
   const testPayload = { id: 999, username: 'test', role: 'school' };
@@ -675,14 +661,11 @@ app.get('/api/test', (req, res) => {
     expiresIn: '1h',
     algorithm: JWT_ALGORITHM
   });
-
-  let selfVerify = 'OK';
-  let selfVerifyError = null;
+  let verifyResult = 'OK';
   try {
     jwt.verify(testToken, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
   } catch (e) {
-    selfVerify = 'FAILED';
-    selfVerifyError = e.message;
+    verifyResult = 'FAILED: ' + e.message;
   }
 
   let headerTokenStatus = 'NO_TOKEN';
@@ -690,7 +673,7 @@ app.get('/api/test', (req, res) => {
   if (headerToken) {
     try {
       const decoded = jwt.verify(headerToken, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
-      headerTokenStatus = 'VALID: ' + decoded.username + ' (' + decoded.role + ')';
+      headerTokenStatus = 'VALID: ' + decoded.username;
     } catch (e) {
       headerTokenStatus = 'INVALID: ' + e.message;
     }
@@ -698,12 +681,10 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '6.0.0',
+    version: '7.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
-    jwt_secret_length: JWT_SECRET_CONSTANT.length,
     jwt_algorithm: JWT_ALGORITHM,
-    self_verify: selfVerify,
-    self_verify_error: selfVerifyError,
+    self_verify: verifyResult,
     header_token_status: headerTokenStatus,
     has_school_settings: true,
     trust_proxy: app.get('trust proxy'),
@@ -715,15 +696,17 @@ app.get('/api/test', (req, res) => {
 // Fallback
 // ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V6.0 live on port ' + PORT);
+  console.log('🚀 Server V7.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
-  console.log('📌 Length:', JWT_SECRET_CONSTANT.length);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
-  console.log('📌 All sign/verify use algorithms: [HS256]');
+  console.log('📌 Cache-Control: enabled for HTML');
   console.log('═══════════════════════════════════════');
 });

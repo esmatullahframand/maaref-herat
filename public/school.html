@@ -27,9 +27,11 @@
   label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #4a5568; }
   input[type="text"], select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; background-color: #fff; width: 100%; }
   input:focus, select:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+  input.valid { border-color: #10b981 !important; background: #f0fdf4; }
+  input.invalid { border-color: #ef4444 !important; background: #fff5f5; }
   .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background-color: #10b981; font-family: inherit; font-size: 14px; }
   .btn:hover { background-color: #059669; }
-  .btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
+  .btn:disabled { background-color: #94a3b8; cursor: not-allowed; opacity: 0.6; }
   .btn-submit { width: 100%; padding: 14px; font-size: 16px; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 15px; }
   th, td { padding: 10px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; white-space: nowrap; }
@@ -82,6 +84,47 @@
   .form-control-edit { padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; width:100%; }
   .form-control-edit:focus { border-color:#10b981; outline:none; box-shadow:0 0 0 3px rgba(16,185,129,0.15); }
   .form-control-edit[readonly] { background:#f1f5f9; cursor:not-allowed; color:#64748b; }
+  
+  /* ⭐ استایل موافقت‌نامه */
+  .agreement-box {
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 20px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .agreement-box:hover {
+    background: #fde68a;
+    border-color: #d97706;
+  }
+  .agreement-box.checked {
+    background: #dcfce7;
+    border-color: #10b981;
+  }
+  .agreement-box input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    accent-color: #10b981;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .agreement-text {
+    font-size: 14px;
+    color: #78350f;
+    font-weight: bold;
+    line-height: 1.6;
+    text-align: right;
+  }
+  .agreement-box.checked .agreement-text {
+    color: #065f46;
+  }
+  
   @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
   @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; direction: rtl; } .no-print { display: none !important; } }
 </style>
@@ -206,7 +249,7 @@
             <div class="form-group"><label>تخلص</label><input type="text" id="lastName"></div>
             <div class="form-group"><label>ولد *</label><input type="text" id="fatherName" required></div>
             <div class="form-group"><label>ولدیت *</label><input type="text" id="grandfatherName" required></div>
-            <div class="form-group"><label>تذکره الکترونیکی</label><input type="text" id="eTazkira" placeholder="1399-1200-2434"></div>
+            <div class="form-group"><label>تذکره الکترونیکی</label><input type="text" id="eTazkira" placeholder="32434-32323-3232"></div>
             <div class="form-group"><label>تذکره کاغذی</label><input type="text" id="paperTazkira"></div>
             <div class="form-group"><label>صفحه تذکره</label><input type="text" id="tazkiraPage"></div>
             <div class="form-group"><label>جلد تذکره</label><input type="text" id="tazkiraVolume"></div>
@@ -253,8 +296,8 @@
             <div class="form-group"><label>بست</label><input type="text" id="bust"></div>
             <div class="form-group"><label>قدم</label><input type="text" id="grade"></div>
             <div class="form-group"><label>تاریخ تقرر فعلی *</label><input type="text" id="currentPositionDate" placeholder="1400/03/20" required></div>
-            <div class="form-group"><label>درجه تحصیلی</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
-            <div class="form-group"><label>رشته تحصیلی</label><input type="text" id="major"></div>
+            <div class="form-group" id="degreeGroup"><label id="degreeLabel">درجه تحصیلی *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
+            <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی</label><input type="text" id="major"></div>
             <div class="form-group"><label>مرجع تعلیمی</label><input type="text" id="eduInstitute"></div>
             <div class="form-group"><label>موقعیت مرجع</label><input type="text" id="eduInstituteLocation"></div>
             <div class="form-group"><label>تاریخ شمولیت</label><input type="text" id="enrollmentDate"></div>
@@ -282,7 +325,17 @@
             <div class="form-group"><label>نمره ارزیابی</label><input type="text" id="evaluationScore"></div>
           </div>
         </div>
-        <button type="submit" id="submitBtn" class="btn btn-submit">💾 ذخیره و ارسال به معارف</button>
+
+        <!-- ⭐ تیک موافقت‌نامه -->
+        <div class="agreement-box" id="agreementBox" onclick="toggleAgreement()">
+          <input type="checkbox" id="agreementCheckbox" onclick="event.stopPropagation(); toggleAgreement();">
+          <div class="agreement-text">
+            ✅ <strong>تعهد و موافقت:</strong><br>
+            تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد و این مکتب در قبال هر گونه معلومات نادرست و اشتباه، مسئول و پاسخگو می‌باشد.
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-submit" disabled>💾 ذخیره و ارسال به معارف</button>
       </form>
     </div>
   </div>
@@ -329,7 +382,6 @@
   </div>
 </div>
 
-<!-- ═══════════ Modal ویرایش رکورد ═══════════ -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box" style="max-width: 1000px;">
     <h3>✏️ ویرایش معلومات کارمند</h3>
@@ -371,6 +423,9 @@
     'معتمد جنسی (تحویلدار)', 'سایر'
   ];
 
+  // ⭐ عناوینی که تحصیلات برایشان اختیاری است
+  const SERVICE_TITLES = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
+
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -393,6 +448,147 @@
     if (s === null || s === undefined) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
+
+  // ⭐ تبدیل اعداد فارسی/عربی به انگلیسی
+  function normalizeDigits(str) {
+    if (!str) return '';
+    const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
+    return String(str).split('').map(ch => {
+      const pi = p.indexOf(ch); if (pi !== -1) return pi;
+      const ai = a.indexOf(ch); if (ai !== -1) return ai;
+      return ch;
+    }).join('');
+  }
+
+  // ⭐ اعتبارسنجی تاریخ شمسی
+  function validateShamsiDate(dateStr) {
+    if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
+    
+    const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
+    const parts = cleaned.split('/');
+    
+    if (parts.length !== 3) {
+      return { valid: false, error: 'فرمت تاریخ باید YYYY/MM/DD باشد (مثلاً 1399/02/23)' };
+    }
+    
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]);
+    const day = parseInt(parts[2]);
+    
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+      return { valid: false, error: 'تاریخ باید فقط شامل اعداد باشد' };
+    }
+    
+    if (year < 1300 || year > 1450) return { valid: false, error: 'سال باید بین ۱۳۰۰ تا ۱۴۵۰ باشد' };
+    if (month < 1 || month > 12) return { valid: false, error: 'ماه باید بین ۱ تا ۱۲ باشد' };
+    
+    let maxDay = 31;
+    if (month >= 7 && month <= 11) maxDay = 30;
+    if (month === 12) maxDay = 29;
+    
+    if (day < 1 || day > maxDay) return { valid: false, error: `روز باید بین ۱ تا ${maxDay} باشد` };
+    
+    const formatted = `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+    return { valid: true, formatted };
+  }
+
+  // ⭐ اعتبارسنجی تذکره الکترونیکی
+  function validateTazkira(tazkiraStr) {
+    if (!tazkiraStr) return { valid: false, error: 'تذکره الکترونیکی الزامی است' };
+    
+    const cleaned = normalizeDigits(tazkiraStr).trim();
+    const pattern = /^\d+-\d+-\d+$/;
+    
+    if (!pattern.test(cleaned)) {
+      return { 
+        valid: false, 
+        error: 'فرمت تذکره الکترونیکی باید XXXXX-XXXXX-XXXX باشد (مثلاً 32434-32323-3232)' 
+      };
+    }
+    
+    return { valid: true, formatted: cleaned };
+  }
+
+  // ⭐ اعتبارسنجی زنده
+  function attachLiveValidation(inputId, validateFn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    input.addEventListener('input', function() {
+      if (!this.value.trim()) {
+        this.classList.remove('valid', 'invalid');
+        return;
+      }
+      const result = validateFn(this.value);
+      if (result.valid) {
+        this.classList.add('valid');
+        this.classList.remove('invalid');
+      } else {
+        this.classList.add('invalid');
+        this.classList.remove('valid');
+      }
+    });
+    
+    input.addEventListener('blur', function() {
+      if (this.value.trim()) {
+        const result = validateFn(this.value);
+        if (result.valid) {
+          this.value = result.formatted;
+        }
+      }
+    });
+  }
+
+  // اتصال به فیلدهای تاریخ
+  ['birthDate', 'firstAppointmentDate', 'currentPositionDate', 'enrollmentDate', 'graduationDate'].forEach(id => {
+    attachLiveValidation(id, validateShamsiDate);
+  });
+  attachLiveValidation('eTazkira', validateTazkira);
+  attachLiveValidation('eETazkira', validateTazkira);
+
+  // ⭐ تشخیص کارمند خدماتی یا معتمد جنسی
+  function isServiceOrSupport(jobTitle) {
+    if (!jobTitle) return false;
+    return SERVICE_TITLES.includes(jobTitle);
+  }
+
+  // ⭐ تغییر وضعیت فیلدهای تحصیلی بر اساس عنوان بست
+  function updateEducationFields() {
+    const jobTitle = document.getElementById('jobTitle').value;
+    const isService = isServiceOrSupport(jobTitle);
+    
+    const degreeLabel = document.getElementById('degreeLabel');
+    const degreeInput = document.getElementById('degree');
+    
+    if (isService && jobTitle) {
+      degreeLabel.innerHTML = 'درجه تحصیلی <span style="color:#10b981; font-size:11px;">(اختیاری)</span>';
+      degreeInput.removeAttribute('required');
+    } else {
+      degreeLabel.innerHTML = 'درجه تحصیلی <span style="color:#ef4444;">*</span>';
+      degreeInput.setAttribute('required', 'required');
+    }
+  }
+
+  // اتصال به تغییر عنوان بست
+  document.getElementById('jobTitle').addEventListener('change', updateEducationFields);
+
+  // ⭐ توگل موافقت‌نامه
+  function toggleAgreement() {
+    const checkbox = document.getElementById('agreementCheckbox');
+    const box = document.getElementById('agreementBox');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    checkbox.checked = !checkbox.checked;
+    
+    if (checkbox.checked) {
+      box.classList.add('checked');
+      submitBtn.disabled = false;
+    } else {
+      box.classList.remove('checked');
+      submitBtn.disabled = true;
+    }
+  }
+  window.toggleAgreement = toggleAgreement;
 
   function switchTab(name, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -709,9 +905,6 @@
   }
   window.printRecord = printRecord;
 
-  // ═══════════════════════════════════════════════════════════
-  // ⭐ ویرایش رکورد
-  // ═══════════════════════════════════════════════════════════
   function editRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) { showToast('رکورد یافت نشد', true); return; }
@@ -761,7 +954,7 @@
         </div>
         <div class="form-group-edit">
           <label>تذکره الکترونیکی</label>
-          <input type="text" id="eETazkira" class="form-control-edit" value="${escapeHtml(info.eTazkira || '')}">
+          <input type="text" id="eETazkira" class="form-control-edit" placeholder="32434-32323-3232" value="${escapeHtml(info.eTazkira || '')}">
         </div>
         <div class="form-group-edit">
           <label>تذکره کاغذی</label>
@@ -922,6 +1115,37 @@
     if (!body.fatherName) { showToast('❌ ولد الزامی است', true); return; }
     if (!body.grandfatherName) { showToast('❌ ولدیت الزامی است', true); return; }
 
+    // ⭐ اعتبارسنجی تذکره الکترونیکی
+    if (body.eTazkira) {
+      const tazResult = validateTazkira(body.eTazkira);
+      if (!tazResult.valid) {
+        showToast('❌ ' + tazResult.error, true);
+        return;
+      }
+      body.eTazkira = tazResult.formatted;
+    }
+
+    // ⭐ اعتبارسنجی تاریخ‌ها
+    const dateFields = [
+      { id: 'eBirthDate', key: 'birthDate', label: 'تاریخ تولد', required: true },
+      { id: 'eFirstAppointmentDate', key: 'firstAppointmentDate', label: 'تاریخ اولین تقرر', required: true },
+      { id: 'eCurrentPositionDate', key: 'currentPositionDate', label: 'تاریخ تقرر فعلی', required: true }
+    ];
+
+    for (const df of dateFields) {
+      const val = document.getElementById(df.id).value.trim();
+      if (!val && df.required) {
+        showToast(`❌ ${df.label} الزامی است`, true);
+        return;
+      }
+      const result = validateShamsiDate(val);
+      if (!result.valid) {
+        showToast(`❌ ${df.label}: ${result.error}`, true);
+        return;
+      }
+      body[df.key] = result.formatted;
+    }
+
     try {
       const res = await fetch('/api/records/' + editingRecordId, {
         method: 'PUT',
@@ -962,6 +1186,13 @@
   // ═══════════════════════════════════════════════════════════
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // بررسی موافقت‌نامه
+    if (!document.getElementById('agreementCheckbox').checked) {
+      showToast('❌ لطفاً تیک موافقت‌نامه را بزنید', true);
+      return;
+    }
+    
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.innerText = '⏳ در حال ذخیره...';
@@ -1022,9 +1253,54 @@
     if (!body.eTazkira && !body.paperTazkira) { showToast('❌ حداقل یکی از تذکره‌ها الزامی است', true); resetSubmitBtn(); return; }
     if (!body.jobCode) { showToast('❌ کُد بست الزامی است', true); resetSubmitBtn(); return; }
     
+    // ⭐ اعتبارسنجی تحصیلی شرطی
+    const isService = SERVICE_TITLES.includes(body.jobTitle);
+    if (!isService && !body.degree) {
+      showToast('❌ درجه تحصیلی برای این عنوان الزامی است', true);
+      resetSubmitBtn();
+      return;
+    }
+    
     if (body.workshopStatus === 'بلی') {
       if (!body.workshopTitle) { showToast('❌ عنوان ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
       if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
+    }
+
+    // ⭐ اعتبارسنجی تذکره الکترونیکی
+    if (body.eTazkira) {
+      const tazResult = validateTazkira(body.eTazkira);
+      if (!tazResult.valid) {
+        showToast('❌ ' + tazResult.error, true);
+        resetSubmitBtn();
+        return;
+      }
+      body.eTazkira = tazResult.formatted;
+    }
+
+    // ⭐ اعتبارسنجی تاریخ‌های شمسی
+    const dateFields = [
+      { id: 'birthDate', key: 'birthDate', label: 'تاریخ تولد', required: true },
+      { id: 'firstAppointmentDate', key: 'firstAppointmentDate', label: 'تاریخ اولین تقرر', required: true },
+      { id: 'currentPositionDate', key: 'currentPositionDate', label: 'تاریخ تقرر فعلی', required: true },
+      { id: 'enrollmentDate', key: 'enrollmentDate', label: 'تاریخ شمولیت', required: false },
+      { id: 'graduationDate', key: 'graduationDate', label: 'تاریخ فراغت', required: false }
+    ];
+
+    for (const df of dateFields) {
+      const val = document.getElementById(df.id).value.trim();
+      if (!val && !df.required) continue;
+      if (!val && df.required) {
+        showToast(`❌ ${df.label} الزامی است`, true);
+        resetSubmitBtn();
+        return;
+      }
+      const result = validateShamsiDate(val);
+      if (!result.valid) {
+        showToast(`❌ ${df.label}: ${result.error}`, true);
+        resetSubmitBtn();
+        return;
+      }
+      body[df.key] = result.formatted;
     }
 
     try {
@@ -1047,6 +1323,11 @@
         document.getElementById('recordForm').reset();
         document.getElementById('workshopTitleGroup').style.display = 'none';
         document.getElementById('workshopDurationGroup').style.display = 'none';
+        
+        // ⭐ ریست موافقت‌نامه
+        document.getElementById('agreementCheckbox').checked = false;
+        document.getElementById('agreementBox').classList.remove('checked');
+        document.getElementById('submitBtn').disabled = true;
         
         // انتقال به تب لیست
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));

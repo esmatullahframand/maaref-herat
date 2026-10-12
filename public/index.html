@@ -3,70 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ریاست معارف ولایت هرات - ورود به سیستم</title>
+<title>ورود - معارف هرات</title>
 <style>
-  * { box-sizing: border-box; transition: all 0.2s ease; }
-  body {
-    font-family: Tahoma, Arial, sans-serif;
-    background-color: #f0f4f8;
-    margin: 0; padding: 0; color: #333;
-    direction: rtl;
-    display: flex; align-items: center; justify-content: center;
-    min-height: 100vh;
-  }
-  .login-card {
-    background: #fff; border-radius: 12px; padding: 30px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    width: 100%; max-width: 420px; text-align: center;
-  }
+  * { box-sizing: border-box; }
+  body { font-family: Tahoma, Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 0; direction: rtl; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .login-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 420px; text-align: center; }
   .login-card h2 { color: #0056b3; margin-bottom: 5px; font-size: 20px; }
   .login-card h4 { color: #666; margin-bottom: 25px; font-weight: normal; font-size: 14px; }
   .form-group { text-align: right; margin-bottom: 15px; display: flex; flex-direction: column; }
   .form-group label { font-size: 13px; font-weight: bold; color: #4a5568; margin-bottom: 6px; }
-  .form-control {
-    width: 100%; padding: 10px 14px;
-    border: 1.5px solid #cbd5e1; border-radius: 8px;
-    font-size: 14px; outline: none;
-    font-family: Tahoma, sans-serif;
-  }
+  .form-control { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; font-family: Tahoma, sans-serif; }
   .form-control:focus { border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0,86,179,0.15); }
-  .btn {
-    padding: 10px 20px; border: none; border-radius: 8px;
-    font-weight: bold; cursor: pointer; font-size: 14px;
-    width: 100%; background-color: #0056b3; color: white;
-    font-family: Tahoma, sans-serif;
-  }
-  .btn:hover { background-color: #004085; }
+  .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; background-color: #0056b3; color: white; font-family: Tahoma, sans-serif; }
   .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
-  .error-box {
-    background-color: #fff5f5; border: 1px solid #fed7d7;
-    color: #c53030; border-radius: 8px;
-    padding: 10px; margin-bottom: 15px;
-    font-size: 13px; text-align: right; display: none;
-  }
-
+  .error-box { background-color: #fff5f5; border: 1px solid #fed7d7; color: #c53030; border-radius: 8px; padding: 10px; margin-bottom: 15px; font-size: 13px; text-align: right; display: none; }
   .captcha-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .captcha-canvas {
-    background: #f1f5f9; border: 2px solid #cbd5e1;
-    border-radius: 8px; cursor: pointer; user-select: none;
-    flex-shrink: 0; height: 50px;
-  }
-  .captcha-refresh {
-    background: #10b981; color: #fff;
-    border: none; border-radius: 8px;
-    width: 50px; height: 50px;
-    font-size: 22px; cursor: pointer;
-    flex-shrink: 0; font-family: inherit;
-  }
-  .captcha-refresh:hover { background: #059669; }
+  .captcha-canvas { background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px; cursor: pointer; user-select: none; flex-shrink: 0; height: 50px; }
+  .captcha-refresh { background: #10b981; color: #fff; border: none; border-radius: 8px; width: 50px; height: 50px; font-size: 22px; cursor: pointer; flex-shrink: 0; }
   .captcha-hint { font-size: 11px; color: #64748b; text-align: right; margin-top: 4px; font-style: italic; }
-
-  .locked-info {
-    background: #fef3c7; border: 1px solid #fcd34d;
-    color: #78350f; border-radius: 8px;
-    padding: 10px; margin-bottom: 15px;
-    font-size: 12px; text-align: center; display: none;
-  }
 </style>
 </head>
 <body>
@@ -75,47 +29,46 @@
   <h2>ریاست معارف ولایت هرات</h2>
   <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
 
-  <div id="lockedInfo" class="locked-info"></div>
   <div id="errorBox" class="error-box"></div>
 
   <form id="loginForm" autocomplete="off">
     <div class="form-group">
       <label>نام کاربری</label>
-      <input type="text" id="username" class="form-control" required placeholder="نام کاربری خود را وارد کنید" autocomplete="username">
+      <input type="text" id="username" class="form-control" required placeholder="نام کاربری">
     </div>
     <div class="form-group">
       <label>رمز عبور</label>
-      <input type="password" id="password" class="form-control" required placeholder="رمز عبور خود را وارد کنید" autocomplete="current-password">
+      <input type="password" id="password" class="form-control" required placeholder="رمز عبور">
     </div>
 
     <div class="form-group">
       <label>🔒 کد امنیتی</label>
       <div class="captcha-wrapper">
-        <canvas id="captchaCanvas" class="captcha-canvas" width="200" height="50" title="برای تغییر، کلیک کنید"></canvas>
-        <button type="button" class="captcha-refresh" id="captchaRefresh" title="تغییر کد">🔄</button>
+        <canvas id="captchaCanvas" class="captcha-canvas" width="200" height="50"></canvas>
+        <button type="button" class="captcha-refresh" id="captchaRefresh">🔄</button>
       </div>
-      <input type="text" id="captchaAnswer" class="form-control" required placeholder="پاسخ سوال بالا را وارد کنید" autocomplete="off" inputmode="numeric">
-      <div class="captcha-hint">🔍 برای تغییر سوال، روی تصویر یا دکمه 🔄 کلیک کنید</div>
+      <input type="text" id="captchaAnswer" class="form-control" required placeholder="پاسخ سوال" autocomplete="off" inputmode="numeric">
+      <div class="captcha-hint">🔍 برای تغییر سوال، روی تصویر یا 🔄 کلیک کنید</div>
     </div>
 
-    <button type="submit" id="submitBtn" class="btn">ورود به پنل مدیریت</button>
+    <button type="submit" id="submitBtn" class="btn">ورود به سیستم</button>
   </form>
 </div>
 
 <script>
+  // ⭐⭐⭐ پاک کردن localStorage در هر بار لود صفحه
+  localStorage.clear();
+  console.log('🧹 localStorage cleared on page load');
+
   const loginForm = document.getElementById('loginForm');
   const submitBtn = document.getElementById('submitBtn');
   const errorBox = document.getElementById('errorBox');
   const captchaCanvas = document.getElementById('captchaCanvas');
   const captchaRefresh = document.getElementById('captchaRefresh');
   const captchaAnswer = document.getElementById('captchaAnswer');
-  const lockedInfo = document.getElementById('lockedInfo');
 
   let captchaCorrectAnswer = null;
 
-  // ═══════════════════════════════════════════════
-  // کپچا
-  // ═══════════════════════════════════════════════
   function generateCaptcha() {
     const ops = ['+', '-', '×'];
     const op = ops[Math.floor(Math.random() * ops.length)];
@@ -184,64 +137,14 @@
   captchaRefresh.addEventListener('click', generateCaptcha);
   generateCaptcha();
 
-  // ═══════════════════════════════════════════════
-  // قفل موقت
-  // ═══════════════════════════════════════════════
-  let failedAttempts = parseInt(localStorage.getItem('hr_failed_attempts') || '0');
-  let lockUntil = parseInt(localStorage.getItem('hr_lock_until') || '0');
-
-  function checkLock() {
-    const now = Date.now();
-    if (lockUntil > now) {
-      const remaining = Math.ceil((lockUntil - now) / 1000);
-      const minutes = Math.floor(remaining / 60);
-      const seconds = remaining % 60;
-      lockedInfo.textContent = `🔒 حساب شما قفل شده است. لطفاً ${minutes} دقیقه و ${seconds} ثانیه دیگر تلاش کنید.`;
-      lockedInfo.style.display = 'block';
-      submitBtn.disabled = true;
-      setTimeout(checkLock, 1000);
-      return true;
-    } else {
-      lockedInfo.style.display = 'none';
-      submitBtn.disabled = false;
-      return false;
-    }
-  }
-
-  function recordFailedAttempt() {
-    failedAttempts++;
-    localStorage.setItem('hr_failed_attempts', failedAttempts.toString());
-    if (failedAttempts >= 3) {
-      lockUntil = Date.now() + 5 * 60 * 1000;
-      localStorage.setItem('hr_lock_until', lockUntil.toString());
-      failedAttempts = 0;
-      localStorage.setItem('hr_failed_attempts', '0');
-      checkLock();
-    }
-  }
-
-  function resetFailedAttempts() {
-    failedAttempts = 0;
-    localStorage.removeItem('hr_failed_attempts');
-    localStorage.removeItem('hr_lock_until');
-  }
-
-  checkLock();
-
-  // ═══════════════════════════════════════════════
-  // ارسال فرم
-  // ═══════════════════════════════════════════════
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (checkLock()) return;
-
     errorBox.style.display = 'none';
 
     const userAnswer = parseInt(captchaAnswer.value.trim());
     if (isNaN(userAnswer) || userAnswer !== captchaCorrectAnswer) {
-      showError('❌ کد امنیتی اشتباه است. لطفاً دوباره تلاش کنید.');
+      showError('❌ کد امنیتی اشتباه است');
       generateCaptcha();
-      captchaAnswer.focus();
       return;
     }
 
@@ -252,6 +155,9 @@
     const password = document.getElementById('password').value;
 
     try {
+      // ⭐ پاک کردن localStorage قبل از لاگین
+      localStorage.clear();
+
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -261,15 +167,10 @@
       const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        resetFailedAttempts();
-
-        // ⭐ ذخیره توکن
+        // ⭐ ذخیره توکن جدید
         localStorage.setItem('hr_token', data.token);
-
-        // ⭐ ذخیره اطلاعات کاربر (شامل schoolname فارسی)
         localStorage.setItem('hr_user', JSON.stringify(data.user || {}));
 
-        // ⭐ ذخیره جداگانه schoolname و district (برای اطمینان بیشتر)
         if (data.user && data.user.schoolname) {
           localStorage.setItem('hr_schoolname', data.user.schoolname);
         }
@@ -277,24 +178,19 @@
           localStorage.setItem('hr_district', data.user.district);
         }
 
+        console.log('✅ Login successful, redirecting...');
+
         const redirectTo = data.redirect ||
           (data.user && data.user.role === 'admin' ? '/admin.html' : '/school.html');
 
         window.location.href = redirectTo;
       } else {
-        if (res.status === 429) {
-          lockUntil = Date.now() + 15 * 60 * 1000;
-          localStorage.setItem('hr_lock_until', lockUntil.toString());
-          checkLock();
-        } else {
-          recordFailedAttempt();
-        }
         showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
         generateCaptcha();
       }
     } catch (err) {
       console.error(err);
-      showError('خطا در ارتباط با سرور. لطفاً اینترنت خود را بررسی کنید.');
+      showError('خطا در ارتباط با سرور');
       generateCaptcha();
     }
   });
@@ -302,10 +198,8 @@
   function showError(message) {
     errorBox.innerText = message;
     errorBox.style.display = 'block';
-    if (!checkLock()) {
-      submitBtn.disabled = false;
-      submitBtn.innerText = 'ورود به پنل مدیریت';
-    }
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'ورود به سیستم';
   }
 </script>
 

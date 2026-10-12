@@ -329,7 +329,7 @@
   </div>
 </div>
 
-<!-- ═══════════ Modal ویرایش رکورد (فقط مکتب) ═══════════ -->
+<!-- ═══════════ Modal ویرایش رکورد ═══════════ -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box" style="max-width: 1000px;">
     <h3>✏️ ویرایش معلومات کارمند</h3>
@@ -572,7 +572,6 @@
           ? '<span class="status-badge status-approved">✅ تایید</span>'
           : '<span class="status-badge status-pending">⏳ انتظار</span>';
 
-        // ⭐ دکمه ویرایش فقط برای رکوردهای در انتظار تایید
         let editBtn = '';
         if (row.status !== 'approved') {
           editBtn = `<button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>`;
@@ -711,7 +710,7 @@
   window.printRecord = printRecord;
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ ویرایش رکورد توسط مکتب
+  // ⭐ ویرایش رکورد
   // ═══════════════════════════════════════════════════════════
   function editRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
@@ -898,7 +897,6 @@
       bust: document.getElementById('eBust').value.trim(),
       grade: document.getElementById('eGrade').value.trim(),
       currentPositionDate: document.getElementById('eCurrentPositionDate').value.trim(),
-      // ⭐ درجه و رشته تحصیلی از رکورد اصلی
       degree: rec.data.degree || '',
       major: rec.data.major || '',
       subjectTeaching: document.getElementById('eSubjectTeaching').value.trim(),
@@ -959,9 +957,118 @@
   function printFromView() { closeModal('viewModal'); }
   window.printFromView = printFromView;
 
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ ثبت کارمند جدید
+  // ═══════════════════════════════════════════════════════════
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    showToast('❌ ثبت کارمند جدید هنوز فعال نشده است', true);
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerText = '⏳ در حال ذخیره...';
+
+    const body = {
+      jobTitle: document.getElementById('jobTitle').value.trim(),
+      jobCode: document.getElementById('jobCode').value.trim(),
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName: document.getElementById('lastName').value.trim(),
+      fatherName: document.getElementById('fatherName').value.trim(),
+      grandfatherName: document.getElementById('grandfatherName').value.trim(),
+      eTazkira: document.getElementById('eTazkira').value.trim(),
+      paperTazkira: document.getElementById('paperTazkira').value.trim(),
+      tazkiraPage: document.getElementById('tazkiraPage').value.trim(),
+      tazkiraVolume: document.getElementById('tazkiraVolume').value.trim(),
+      ethnicity: document.getElementById('ethnicity').value.trim(),
+      gender: document.getElementById('gender').value,
+      birthDate: document.getElementById('birthDate').value.trim(),
+      birthPlace: document.getElementById('birthPlace').value.trim(),
+      originAddress: document.getElementById('originAddress').value.trim(),
+      currentAddress: document.getElementById('currentAddress').value.trim(),
+      firstAppointmentDate: document.getElementById('firstAppointmentDate').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      disability: document.getElementById('disability').value,
+      positionType: document.getElementById('positionType').value,
+      employmentType: document.getElementById('employmentType').value,
+      bust: document.getElementById('bust').value.trim(),
+      grade: document.getElementById('grade').value.trim(),
+      currentPositionDate: document.getElementById('currentPositionDate').value.trim(),
+      degree: document.getElementById('degree').value.trim(),
+      major: document.getElementById('major').value.trim(),
+      eduInstitute: document.getElementById('eduInstitute').value.trim(),
+      eduInstituteLocation: document.getElementById('eduInstituteLocation').value.trim(),
+      enrollmentDate: document.getElementById('enrollmentDate').value.trim(),
+      graduationDate: document.getElementById('graduationDate').value.trim(),
+      subjectTeaching: document.getElementById('subjectTeaching').value.trim(),
+      workshopStatus: document.getElementById('workshopStatus').value,
+      workshopTitle: document.getElementById('workshopTitle').value.trim(),
+      workshopDuration: document.getElementById('workshopDuration').value.trim(),
+      totalTeachingHours: document.getElementById('totalTeachingHours').value.trim(),
+      evaluationScore: document.getElementById('evaluationScore').value.trim(),
+      agreement: true
+    };
+
+    // اعتبارسنجی
+    if (!body.jobTitle) { showToast('❌ عنوان بست الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.firstName) { showToast('❌ اسم الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.fatherName) { showToast('❌ ولد الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.grandfatherName) { showToast('❌ ولدیت الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.ethnicity) { showToast('❌ قومیت الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.gender) { showToast('❌ جنسیت الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.birthDate) { showToast('❌ تاریخ تولد الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.originAddress) { showToast('❌ سکونت اصلی الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.currentAddress) { showToast('❌ سکونت فعلی الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.firstAppointmentDate) { showToast('❌ تاریخ اولین تقرر الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.phone) { showToast('❌ شماره تماس الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.currentPositionDate) { showToast('❌ تاریخ تقرر فعلی الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.eTazkira && !body.paperTazkira) { showToast('❌ حداقل یکی از تذکره‌ها الزامی است', true); resetSubmitBtn(); return; }
+    if (!body.jobCode) { showToast('❌ کُد بست الزامی است', true); resetSubmitBtn(); return; }
+    
+    if (body.workshopStatus === 'بلی') {
+      if (!body.workshopTitle) { showToast('❌ عنوان ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
+      if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
+    }
+
+    try {
+      const res = await fetch('/api/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(body)
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        showToast('✅ کارمند با موفقیت ثبت شد و به معارف ارسال گردید');
+        document.getElementById('recordForm').reset();
+        document.getElementById('workshopTitleGroup').style.display = 'none';
+        document.getElementById('workshopDurationGroup').style.display = 'none';
+        
+        // انتقال به تب لیست
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-list').classList.add('active');
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        
+        loadSchoolRecords();
+      } else {
+        showToast('❌ ' + (data.error || 'خطا در ثبت کارمند'), true);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('❌ ارتباط با سرور برقرار نشد', true);
+    } finally {
+      resetSubmitBtn();
+    }
+
+    function resetSubmitBtn() {
+      btn.disabled = false;
+      btn.innerText = '💾 ذخیره و ارسال به معارف';
+    }
   });
 
   function logout() {

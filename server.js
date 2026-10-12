@@ -507,6 +507,19 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   }
 });
 
+// GET /api/school-settings/:userid — تنظیمات یک مکتب (ادمین)
+app.get('/api/school-settings/:userid', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const result = await pool.query('SELECT * FROM school_settings WHERE userid = $1', [req.params.userid]);
+    if (result.rows.length === 0) return res.json({ exists: false, settings: null });
+    res.json({ exists: true, settings: result.rows[0] });
+  } catch (err) {
+    console.error('School settings (admin) GET Error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت تنظیمات مکتب' });
+  }
+});
+
 // GET /api/all-school-settings — همه تنظیمات (ادمین)
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {

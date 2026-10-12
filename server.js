@@ -9,14 +9,15 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ⭐ حل خطای X-Forwarded-For
+// ⭐⭐⭐ JWT_SECRET ثابت — همه جا از این استفاده می‌شود
+const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
+
+console.log('═══════════════════════════════════════');
+console.log('🔐 JWT_SECRET_CONSTANT =', JSON.stringify(JWT_SECRET_CONSTANT));
+console.log('🔐 Length:', JWT_SECRET_CONSTANT.length);
+console.log('═══════════════════════════════════════');
+
 app.set('trust proxy', 1);
-
-// ⭐ JWT_SECRET ثابت — بدون process.env
-const SECRET = 'maaref-secret-key-12345';
-
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin123';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -27,6 +28,9 @@ const pool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000
 });
+
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'admin123';
 
 const JOB_TITLES = [
   'آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار',
@@ -119,7 +123,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// ⭐ Rate Limiter با trust proxy
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -134,7 +137,7 @@ function authRequired(req, res, next) {
   if (!token && req.query.token) token = req.query.token;
   if (!token) return res.status(401).json({ error: 'وارد نشده‌اید' });
   try {
-    req.user = jwt.verify(token, SECRET);
+    req.user = jwt.verify(token, JWT_SECRET_CONSTANT);
     next();
   } catch (e) {
     console.error('❌ Token verify error:', e.message);
@@ -209,8 +212,8 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
       const adminUser = { id: 0, username: 'admin', role: 'admin' };
-      const token = jwt.sign(adminUser, SECRET, { expiresIn: '7d' });
-      console.log('✅ Admin token issued:', token.substring(0, 40) + '...');
+      const token = jwt.sign(adminUser, JWT_SECRET_CONSTANT, { expiresIn: '7d' });
+      console.log('✅ Admin token issued');
       return res.json({
         token,
         user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' },
@@ -232,10 +235,19 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     await logLoginAttempt(clientIp, username, true);
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
-      SECRET,
+      JWT_SECRET_CONSTANT,
       { expiresIn: '7d' }
     );
     console.log('✅ School token issued for:', username, '| role:', user.role);
+
+    // ⭐ Verify immediately after sign — برای دیباگ
+    try {
+      const verified = jwt.verify(token, JWT_SECRET_CONSTANT);
+      console.log('✅ Token self-verify OK for:', verified.username);
+    } catch (e) {
+      console.error('❌❌❌ CRITICAL: Token self-verify FAILED:', e.message);
+    }
+
     res.json({
       token,
       user: {
@@ -309,9 +321,6 @@ app.get('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// اعتبارسنجی رکورد
-// ═══════════════════════════════════════════════════════════
 async function validateRecordBody(body, excludeId = null) {
   const job = String(body.jobTitle || '').trim();
   const firstName = String(body.firstName || '').trim();
@@ -373,7 +382,6 @@ async function validateRecordBody(body, excludeId = null) {
   }
 
   if (excludeId === null && !body.agreement) return '❌ شما باید موافقت خود را اعلام کنید';
-
   return null;
 }
 
@@ -619,12 +627,22 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 // تست
 // ═══════════════════════════════════════════════════════════
 app.get('/api/test', (req, res) => {
+  // یک توکن تست بساز و بلافاصله verify کن
+  const testPayload = { id: 999, username: 'test', role: 'school' };
+  const testToken = jwt.sign(testPayload, JWT_SECRET_CONSTANT, { expiresIn: '1h' });
+  let verifyResult = 'OK';
+  try {
+    jwt.verify(testToken, JWT_SECRET_CONSTANT);
+  } catch (e) {
+    verifyResult = 'FAILED: ' + e.message;
+  }
+
   res.json({
     ok: true,
-    message: 'Server VERSION 4.0 - FIXED JWT_SECRET + trust proxy',
-    version: '4.0.0',
-    secret_preview: SECRET.substring(0, 15),
-    secret_length: SECRET.length,
+    version: '5.0.0',
+    jwt_secret: JWT_SECRET_CONSTANT,
+    jwt_secret_length: JWT_SECRET_CONSTANT.length,
+    self_verify: verifyResult,
     has_school_settings: true,
     trust_proxy: app.get('trust proxy'),
     timestamp: new Date().toISOString()
@@ -640,9 +658,9 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V4 running on port ' + PORT);
-  console.log('📌 JWT_SECRET: ' + SECRET);
-  console.log('📌 Length: ' + SECRET.length);
-  console.log('📌 trust proxy: ' + app.get('trust proxy'));
+  console.log('🚀 Server V5 running on port ' + PORT);
+  console.log('📌 JWT_SECRET_CONSTANT: ' + JWT_SECRET_CONSTANT);
+  console.log('📌 Length: ' + JWT_SECRET_CONSTANT.length);
+  console.log('📌 All jwt.sign/verify use this constant');
   console.log('═══════════════════════════════════════');
 });

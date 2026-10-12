@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V8.0 starting...');
+console.log('🔐 Server V9.0 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
@@ -41,6 +41,10 @@ const JOB_TITLES = [
   'معتمد جنسی (تحویلدار)', 'سایر'
 ];
 const NO_CODE_TITLES = [];
+
+// ⭐ عناوینی که تحصیلات برایشان اختیاری است
+const SERVICE_TITLES = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
+
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
 async function initDB() {
@@ -110,6 +114,9 @@ async function initDB() {
 }
 initDB();
 
+// ═══════════════════════════════════════════════════════════
+// Middleware
+// ═══════════════════════════════════════════════════════════
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -173,14 +180,76 @@ async function logLoginAttempt(ip, username, success) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+// ⭐ توابع کمکی
+// ═══════════════════════════════════════════════════════════
+
+// تبدیل اعداد فارسی/عربی به انگلیسی
+function normalizeDigits(str) {
+  if (!str) return '';
+  const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
+  return String(str).split('').map(ch => {
+    const pi = p.indexOf(ch); if (pi !== -1) return pi;
+    const ai = a.indexOf(ch); if (ai !== -1) return ai;
+    return ch;
+  }).join('');
+}
+
+// اعتبارسنجی تاریخ شمسی
+function validateShamsiDateServer(dateStr, fieldName) {
+  if (!dateStr) return null;
+  
+  const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
+  const parts = cleaned.split('/');
+  
+  if (parts.length !== 3) {
+    return `${fieldName} باید فرمت YYYY/MM/DD داشته باشد (مثلاً 1399/02/23)`;
+  }
+  
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]);
+  const day = parseInt(parts[2]);
+  
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    return `${fieldName} باید فقط شامل اعداد باشد`;
+  }
+  
+  if (year < 1300 || year > 1450) {
+    return `${fieldName}: سال باید بین ۱۳۰۰ تا ۱۴۵۰ باشد`;
+  }
+  
+  if (month < 1 || month > 12) {
+    return `${fieldName}: ماه باید بین ۱ تا ۱۲ باشد`;
+  }
+  
+  let maxDay = 31;
+  if (month >= 7 && month <= 11) maxDay = 30;
+  if (month === 12) maxDay = 29;
+  
+  if (day < 1 || day > maxDay) {
+    return `${fieldName}: روز باید بین ۱ تا ${maxDay} باشد`;
+  }
+  
+  return null;
+}
+
+// اعتبارسنجی تذکره الکترونیکی
+function validateTazkiraServer(tazkiraStr) {
+  if (!tazkiraStr) return null;
+  
+  const cleaned = normalizeDigits(tazkiraStr).trim();
+  const pattern = /^\d+-\d+-\d+$/;
+  
+  if (!pattern.test(cleaned)) {
+    return 'فرمت تذکره الکترونیکی باید XXXXX-XXXXX-XXXX باشد (مثلاً 32434-32323-3232)';
+  }
+  
+  return null;
+}
+
 function isValidJobCode(jobCode) {
   if (!jobCode) return false;
   return /^27-32-02-\d+$/.test(jobCode.trim());
-}
-
-function isValidETazkira(eTazkira) {
-  if (!eTazkira) return false;
-  return /^\d+-\d+-\d+$/.test(eTazkira.trim());
 }
 
 function isNoCodeTitle(jobTitle) {
@@ -190,6 +259,12 @@ function isNoCodeTitle(jobTitle) {
 function isServiceStaff(jobTitle) {
   if (!jobTitle) return false;
   return SERVICE_KEYWORDS.some(kw => jobTitle.includes(kw)) || jobTitle === 'کارکن خدماتی';
+}
+
+// ⭐ تشخیص کارمند خدماتی یا معتمد جنسی (برای تحصیلات اختیاری)
+function isServiceOrSupport(jobTitle) {
+  if (!jobTitle) return false;
+  return SERVICE_TITLES.includes(jobTitle);
 }
 
 async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
@@ -352,6 +427,8 @@ async function validateRecordBody(body, excludeId = null) {
   const currentPositionDate = String(body.currentPositionDate || '').trim();
   const ethnicity = String(body.ethnicity || '').trim();
   const phone = String(body.phone || '').trim();
+  const enrollmentDate = String(body.enrollmentDate || '').trim();
+  const graduationDate = String(body.graduationDate || '').trim();
 
   if (!job) return 'عنوان بست الزامی است';
   if (!JOB_TITLES.includes(job)) return '❌ عنوان بست انتخابی معتبر نیست';
@@ -363,13 +440,11 @@ async function validateRecordBody(body, excludeId = null) {
 
   if (isContract) {
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
-    if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است';
     if (!birthDate) return 'تاریخ تولد الزامی است';
   } else {
     if (!ethnicity) return 'قومیت الزامی است';
     if (!phone) return 'شماره تماس الزامی است';
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
-    if (eTazkira && !isValidETazkira(eTazkira)) return '❌ فرمت تذکره برقی اشتباه است';
     if (!jobCode) return 'کُد بست الزامی است';
     if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید 27-32-02-XXXXX باشد';
     const isDuplicate = await isJobCodeDuplicate(jobCode, excludeId);
@@ -377,7 +452,44 @@ async function validateRecordBody(body, excludeId = null) {
     if (!birthDate) return 'تاریخ تولد الزامی است';
     if (!firstAppointmentDate) return 'تاریخ اولین تقرر الزامی است';
     if (!currentPositionDate) return 'تاریخ تقرر فعلی الزامی است';
-    if (!isServiceStaff(job) && !degree) return 'درجه تحصیلی برای این عنوان الزامی است';
+    
+    // ⭐ درجه تحصیلی فقط برای غیرخدماتی الزامی است
+    const isService = isServiceOrSupport(job);
+    if (!isService && !degree) {
+      return 'درجه تحصیلی برای این عنوان الزامی است';
+    }
+  }
+
+  // ⭐ اعتبارسنجی تذکره الکترونیکی
+  if (eTazkira) {
+    const err = validateTazkiraServer(eTazkira);
+    if (err) return '❌ ' + err;
+  }
+
+  // ⭐ اعتبارسنجی تاریخ‌های شمسی
+  if (birthDate) {
+    const err = validateShamsiDateServer(birthDate, 'تاریخ تولد');
+    if (err) return '❌ ' + err;
+  }
+  
+  if (firstAppointmentDate) {
+    const err = validateShamsiDateServer(firstAppointmentDate, 'تاریخ اولین تقرر');
+    if (err) return '❌ ' + err;
+  }
+  
+  if (currentPositionDate) {
+    const err = validateShamsiDateServer(currentPositionDate, 'تاریخ تقرر فعلی');
+    if (err) return '❌ ' + err;
+  }
+  
+  if (enrollmentDate) {
+    const err = validateShamsiDateServer(enrollmentDate, 'تاریخ شمولیت');
+    if (err) return '❌ ' + err;
+  }
+  
+  if (graduationDate) {
+    const err = validateShamsiDateServer(graduationDate, 'تاریخ فراغت');
+    if (err) return '❌ ' + err;
   }
 
   const workshopStatus = String(body.workshopStatus || '').trim();
@@ -388,13 +500,13 @@ async function validateRecordBody(body, excludeId = null) {
 
   const evaluationScore = String(body.evaluationScore || '').trim();
   if (evaluationScore) {
-    const num = Number(evaluationScore);
+    const num = Number(normalizeDigits(evaluationScore));
     if (isNaN(num) || num < 0 || num > 100) return '❌ نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد';
   }
 
   const totalTeachingHours = String(body.totalTeachingHours || '').trim();
   if (totalTeachingHours) {
-    const num = Number(totalTeachingHours);
+    const num = Number(normalizeDigits(totalTeachingHours));
     if (isNaN(num) || num < 0) return '❌ مجموعه ساعت درسی باید عددی مثبت باشد';
   }
 
@@ -437,7 +549,7 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ PUT /api/records/:id — ویرایش توسط ادمین (حتی رکوردهای تایید شده)
+// PUT /api/records/:id
 // ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
@@ -446,18 +558,15 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
     let check;
 
     if (req.user.role === 'admin') {
-      // ⭐ ادمین: هر رکوردی را می‌تواند ویرایش کند
       check = await pool.query('SELECT * FROM records WHERE id = $1', [id]);
     } else if (req.user.role === 'school') {
-      // مکتب: فقط رکوردهای خودش
       check = await pool.query('SELECT * FROM records WHERE id = $1 AND userid = $2', [id, req.user.id]);
     } else {
       return res.status(403).json({ error: 'دسترسی غیرمجاز' });
     }
 
     if (check.rows.length === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
-
-    // مکتب نمی‌تواند رکورد تایید شده را ویرایش کند
+    
     if (req.user.role === 'school' && check.rows[0].status === 'approved') {
       return res.status(403).json({ error: 'رکورد تایید شده قابل ویرایش نیست' });
     }
@@ -509,15 +618,15 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
     const body = req.body || {};
     const timeType = String(body.timeType || 'یک تایم').trim();
     const academicMember = String(body.academicMember || '').trim();
-    const branchesTotal = parseInt(body.branchesTotal || 0) || 0;
-    const branches13 = parseInt(body.branches13 || 0) || 0;
-    const branches46 = parseInt(body.branches46 || 0) || 0;
-    const branches79 = parseInt(body.branches79 || 0) || 0;
-    const branches1012 = parseInt(body.branches1012 || 0) || 0;
+    const branchesTotal = parseInt(normalizeDigits(body.branchesTotal || 0)) || 0;
+    const branches13 = parseInt(normalizeDigits(body.branches13 || 0)) || 0;
+    const branches46 = parseInt(normalizeDigits(body.branches46 || 0)) || 0;
+    const branches79 = parseInt(normalizeDigits(body.branches79 || 0)) || 0;
+    const branches1012 = parseInt(normalizeDigits(body.branches1012 || 0)) || 0;
     const budgetStatus = String(body.budgetStatus || 'عادی').trim();
-    const extraBustCount = parseInt(body.extraBustCount || 0) || 0;
+    const extraBustCount = parseInt(normalizeDigits(body.extraBustCount || 0)) || 0;
     const extraBustField = String(body.extraBustField || '').trim();
-    const lackBustCount = parseInt(body.lackBustCount || 0) || 0;
+    const lackBustCount = parseInt(normalizeDigits(body.lackBustCount || 0)) || 0;
     const lackBustField = String(body.lackBustField || '').trim();
 
     if (!academicMember) return res.status(400).json({ error: 'نام و تخلص عضو علمی الزامی است' });
@@ -691,6 +800,9 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// تست
+// ═══════════════════════════════════════════════════════════
 app.get('/api/test', (req, res) => {
   const testPayload = { id: 999, username: 'test', role: 'school' };
   const testToken = jwt.sign(testPayload, JWT_SECRET_CONSTANT, {
@@ -717,7 +829,7 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '8.0.0',
+    version: '9.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_algorithm: JWT_ALGORITHM,
     self_verify: verifyResult,
@@ -728,6 +840,9 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// ═══════════════════════════════════════════════════════════
+// Fallback
+// ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.setHeader('Pragma', 'no-cache');
@@ -737,7 +852,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V8.0 live on port ' + PORT);
+  console.log('🚀 Server V9.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
   console.log('📌 Cache-Control: enabled for HTML');

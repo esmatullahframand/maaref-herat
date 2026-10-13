@@ -25,6 +25,8 @@
   .badge-budget-normal { background: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .badge-budget-extra { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .badge-budget-lack { background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .badge-service-yes { background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .badge-service-no { background: #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
   .btn-action { padding: 4px 10px; font-size: 12px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; margin: 0 2px; }
   .btn-approve { background: #10b981; color: #fff; }
   .btn-delete-row { background: #dc2626; color: #fff; }
@@ -182,6 +184,15 @@
           <option value="retired">🎖️ متقاعد</option>
         </select>
       </div>
+      <!-- ⭐ فیلتر خدمتی رفته -->
+      <div class="filter-item">
+        <label>🏢 خدمتی رفته</label>
+        <select id="serviceFilter" onchange="loadAllRecords()">
+          <option value="">📋 همه</option>
+          <option value="بلی">✅ خدمتی رفته</option>
+          <option value="نخیر">❌ خدمتی نرفته</option>
+        </select>
+      </div>
     </div>
 
     <div id="filterInfoBar"></div>
@@ -200,12 +211,13 @@
             <th>جنسیت</th>
             <th>سن</th>
             <th>وضعیت</th>
+            <th>خدمتی</th>
             <th>تایید</th>
             <th>عملیات</th>
           </tr>
         </thead>
         <tbody id="allTableBody">
-          <tr><td colspan="12" class="text-muted p-4">در حال بارگذاری...</td></tr>
+          <tr><td colspan="13" class="text-muted p-4">در حال بارگذاری...</td></tr>
         </tbody>
       </table>
     </div>
@@ -381,7 +393,7 @@
   const TEACHER_KEYWORDS = ['معلم', 'آموزگار', 'استاد', 'مدرس'];
   const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'معتمد جنسی', 'معتمد', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
-  // ⭐ توابع کمکی: پیدا کردن نام مکتب و ولسوالی از userid
+  // ⭐ توابع کمکی
   function getSchoolNameById(userid) {
     if (!userid || !allSchoolsList) return null;
     const school = allSchoolsList.find(s => s.id === userid);
@@ -489,12 +501,13 @@
       gender: document.getElementById('genderFilter').value,
       workshop: document.getElementById('workshopFilter').value,
       budget: document.getElementById('budgetFilter').value,
-      empStatus: document.getElementById('empStatusFilter').value
+      empStatus: document.getElementById('empStatusFilter').value,
+      service: document.getElementById('serviceFilter').value
     };
   }
 
   function hasAnyFilter(f) {
-    return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus);
+    return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service);
   }
 
   async function loadAllRecords() {
@@ -555,6 +568,14 @@
           return true;
         });
       }
+      // ⭐ فیلتر خدمتی رفته
+      if (f.service) {
+        records = records.filter(row => {
+          const info = row.data || {};
+          const serviceStatus = info.serviceStatus || 'نخیر';
+          return serviceStatus === f.service;
+        });
+      }
 
       loadedRecordsCache = records;
       renderRecords(records);
@@ -562,7 +583,7 @@
     } catch (e) {
       console.error(e);
       document.getElementById('allTableBody').innerHTML =
-        '<tr><td colspan="12" class="text-danger p-4">خطا در بارگذاری</td></tr>';
+        '<tr><td colspan="13" class="text-danger p-4">خطا در بارگذاری</td></tr>';
     }
   }
 
@@ -610,6 +631,7 @@
     if (f.workshop) activeFilters.push(`📚 ورکشاپ: <strong>${f.workshop}</strong>`);
     if (f.budget) activeFilters.push(`💼 بست: <strong>${f.budget}</strong>`);
     if (f.empStatus) activeFilters.push(`وضعیت: <strong>${f.empStatus === 'active' ? 'فعال' : 'متقاعد'}</strong>`);
+    if (f.service) activeFilters.push(`🏢 خدمتی: <strong>${f.service === 'بلی' ? 'رفته' : 'نرفته'}</strong>`);
     if (f.search) activeFilters.push(`🔍 جستجو: <strong>${escapeHtml(f.search)}</strong>`);
 
     if (activeFilters.length > 0) {
@@ -622,7 +644,7 @@
     }
 
     if (!Array.isArray(records) || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="12" class="text-muted p-4">هیچ رکوردی یافت نشد</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="13" class="text-muted p-4">هیچ رکوردی یافت نشد</td></tr>`;
       return;
     }
 
@@ -638,6 +660,11 @@
 
       const empStatusHtml = `<span class="${empStatus.cls}">${empStatus.status}</span>`;
 
+      // ⭐ ستون خدمتی
+      const serviceHtml = info.serviceStatus === 'بلی'
+        ? '<span class="badge-service-yes">🏢 رفته</span>'
+        : '<span class="badge-service-no">—</span>';
+
       let actionsHtml = '';
       if (row.status === 'pending') {
         actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})">✔️</button>`;
@@ -646,7 +673,6 @@
       actionsHtml += `<button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})">🖨️</button>`;
       actionsHtml += `<button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})">🗑️</button>`;
 
-      // ⭐ تغییر اصلی: اگر schoolname/district خالی بود، از userid استفاده کن
       const schoolName = row.schoolname || getSchoolNameById(row.userid) || '—';
       const district = row.district || getDistrictById(row.userid) || '—';
 
@@ -662,6 +688,7 @@
         <td>${escapeHtml(info.gender || '-')}</td>
         <td><strong>${empStatus.age}</strong></td>
         <td>${empStatusHtml}</td>
+        <td>${serviceHtml}</td>
         <td>${approvalHtml}</td>
         <td>${actionsHtml}</td>
       `;
@@ -728,6 +755,12 @@
         ['مدت ورکشاپ', info.workshopDuration],
         ['مجموعه ساعت درسی', info.totalTeachingHours],
         ['نمره ارزیابی', info.evaluationScore]
+      ]},
+      { title: '۵. خدمتی رفته', fields: [
+        ['خدمتی رفته', info.serviceStatus || 'نخیر'],
+        ['نام ولسوالی خدمتی', info.serviceDistrict],
+        ['نام مکتب خدمتی', info.serviceSchool],
+        ['تاریخ خدمتی', info.serviceDate]
       ]}
     ];
 
@@ -795,7 +828,10 @@
       ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate],
       ['مضمون تدریس', info.subjectTeaching], ['ورکشاپ', info.workshopStatus || 'نخیر'],
       ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration],
-      ['مجموعه ساعت درسی', info.totalTeachingHours], ['نمره ارزیابی', info.evaluationScore]
+      ['مجموعه ساعت درسی', info.totalTeachingHours], ['نمره ارزیابی', info.evaluationScore],
+      ['خدمتی رفته', info.serviceStatus || 'نخیر'],
+      ['ولسوالی خدمتی', info.serviceDistrict], ['مکتب خدمتی', info.serviceSchool],
+      ['تاریخ خدمتی', info.serviceDate]
     ];
 
     let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
@@ -1042,7 +1078,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ مدیریت لیست مکاتب
+  // مدیریت لیست مکاتب
   // ═══════════════════════════════════════════════════════════
   async function showManageSchools() {
     if (!manageSchoolsModal) {
@@ -1332,6 +1368,7 @@
     if (f.workshop) filterDesc.push('ورکشاپ: ' + f.workshop);
     if (f.budget) filterDesc.push('بست: ' + f.budget);
     if (f.empStatus) filterDesc.push('وضعیت: ' + (f.empStatus === 'active' ? 'فعال' : 'متقاعد'));
+    if (f.service) filterDesc.push('خدمتی: ' + (f.service === 'بلی' ? 'رفته' : 'نرفته'));
     if (f.search) filterDesc.push('جستجو: ' + f.search);
 
     let rowsHtml = '';
@@ -1340,6 +1377,7 @@
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
       const empStatus = getEmployeeStatus(info);
       const schoolName = row.schoolname || getSchoolNameById(row.userid) || '-';
+      const serviceText = info.serviceStatus === 'بلی' ? '🏢 رفته' : '—';
 
       rowsHtml += `
         <tr>
@@ -1360,6 +1398,7 @@
           <td>${escapeHtml(info.evaluationScore || '-')}</td>
           <td>${empStatus.age}</td>
           <td>${empStatus.status}</td>
+          <td>${serviceText}</td>
         </tr>
       `;
     });
@@ -1401,7 +1440,7 @@
               <th>عنوان بست</th><th>کُد بست</th><th>درجه</th><th>رشته</th>
               <th>جنسیت</th><th>تاریخ تولد</th><th>تماس</th>
               <th>ورکشاپ</th><th>ساعت درسی</th><th>نمره</th>
-              <th>سن</th><th>وضعیت</th>
+              <th>سن</th><th>وضعیت</th><th>خدمتی</th>
             </tr>
           </thead>
           <tbody>${rowsHtml}</tbody>
@@ -1426,7 +1465,9 @@
       'بست','قدم','تاریخ تقرر فعلی','درجه تحصیلی','رشته تحصیلی',
       'مرجع تعلیمی','موقعیت مرجع','تاریخ شمولیت','تاریخ فراغت',
       'مضمون تدریس','ورکشاپ','عنوان ورکشاپ','مدت ورکشاپ',
-      'مجموعه ساعت درسی','نمره ارزیابی','سن','وضعیت کارمند','وضعیت تایید'
+      'مجموعه ساعت درسی','نمره ارزیابی',
+      'خدمتی رفته','ولسوالی خدمتی','مکتب خدمتی','تاریخ خدمتی',
+      'سن','وضعیت کارمند','وضعیت تایید'
     ];
     const rows = records.map(r => {
       const info = r.data || {};
@@ -1453,7 +1494,11 @@
         info.subjectTeaching || '',
         info.workshopStatus || 'نخیر', info.workshopTitle || '',
         info.workshopDuration || '', info.totalTeachingHours || '',
-        info.evaluationScore || '', emp.age, emp.status,
+        info.evaluationScore || '',
+        info.serviceStatus || 'نخیر',
+        info.serviceDistrict || '', info.serviceSchool || '',
+        info.serviceDate || '',
+        emp.age, emp.status,
         r.status === 'approved' ? 'تایید شده' : 'در انتظار'
       ];
     });
@@ -1512,7 +1557,7 @@
   function exportFiltered() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
-    const headers = ['ID','مکتب','نام','ولد','عنوان بست','کُد بست','درجه','جنسیت','سن','وضعیت','تایید'];
+    const headers = ['ID','مکتب','نام','ولد','عنوان بست','کُد بست','درجه','جنسیت','سن','وضعیت','خدمتی','تایید'];
     const rows = records.map(r => {
       const info = r.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '');
@@ -1523,6 +1568,7 @@
         info.jobTitle || info.job || '', info.jobCode || '',
         info.degree || '', info.gender || '',
         emp.age, emp.status,
+        info.serviceStatus === 'بلی' ? 'رفته' : 'نرفته',
         r.status === 'approved' ? 'تایید شده' : 'در انتظار'
       ];
     });

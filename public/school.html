@@ -147,7 +147,6 @@
     line-height: 1.4;
   }
   
-  /* ⭐ بخش خدمتی رفته */
   .service-section {
     background: #fef3c7;
     border-right: 5px solid #f59e0b;
@@ -557,6 +556,43 @@
       const ai = a.indexOf(ch); if (ai !== -1) return ai;
       return ch;
     }).join('');
+  }
+
+  // ⭐ محاسبه سن از تاریخ شمسی
+  function calculateAge(birthDateStr) {
+    if (!birthDateStr) return null;
+    const cleaned = normalizeDigits(birthDateStr).replace(/[.\-]/g, '/').trim();
+    const parts = cleaned.split('/').map(p => p.trim());
+    if (parts.length !== 3) return null;
+    const p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]);
+    if (isNaN(p1) || isNaN(p2) || isNaN(p3)) return null;
+    
+    let year, month, day;
+    if (parts[0].length === 4 || (p1 >= 1300 && p1 <= 1450)) {
+      year = p1; month = p2; day = p3;
+    } else if (parts[2].length === 4 || (p3 >= 1300 && p3 <= 1450)) {
+      year = p3; month = p2; day = p1;
+    } else return null;
+    
+    const now = new Date();
+    const gy = now.getFullYear();
+    const gm = now.getMonth() + 1;
+    const gd = now.getDate();
+    
+    const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+    let jy = (gy <= 1600) ? 0 : 979;
+    let _gy = gy - ((gy <= 1600) ? 621 : 1600);
+    const gy2 = (gm > 2) ? (_gy + 1) : _gy;
+    let days = (365*_gy) + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) + Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1];
+    jy += 33 * Math.floor(days/12053); days %= 12053;
+    jy += 4 * Math.floor(days/1461); days %= 1461;
+    if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
+    const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
+    const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30));
+    
+    let age = jy - year;
+    if (jm < month || (jm === month && jd < day)) age--;
+    return age >= 0 ? age : null;
   }
 
   function validateShamsiDate(dateStr) {
@@ -1041,18 +1077,57 @@
 
       if (!Array.isArray(records) || records.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="empty-state">هیچ رکوردی یافت نشد</td></tr>';
+        // ⭐ ریست آمار
+        document.getElementById('statTotal').textContent = '0';
+        document.getElementById('statApproved').textContent = '0';
+        document.getElementById('statPending').textContent = '0';
+        document.getElementById('statTeachers').textContent = '0';
+        document.getElementById('statManagers').textContent = '0';
+        document.getElementById('statActive').textContent = '0';
+        document.getElementById('statRetired').textContent = '0';
         return;
       }
 
+      // ⭐ محاسبه آمار کامل
       let total = records.length;
       let approved = 0, pending = 0;
+      let teachers = 0, managers = 0, active = 0, retired = 0;
+      
+      const teacherKeywords = ['معلم', 'آموزگار', 'استاد', 'مدرس', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت'];
+      const managerKeywords = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
+      
       records.forEach((row) => {
         if (row.status === 'approved') approved++;
         else pending++;
+        
+        const info = row.data || {};
+        const jobTitle = info.jobTitle || info.job || '';
+        
+        // ⭐ تشخیص معلم
+        if (teacherKeywords.some(kw => jobTitle.includes(kw))) {
+          teachers++;
+        }
+        
+        // ⭐ تشخیص مدیر
+        if (managerKeywords.some(kw => jobTitle.includes(kw))) {
+          managers++;
+        }
+        
+        // ⭐ تشخیص فعال/متقاعد
+        const age = calculateAge(info.birthDate);
+        if (age !== null) {
+          if (age >= 65) retired++;
+          else active++;
+        }
       });
+      
       document.getElementById('statTotal').textContent = total;
       document.getElementById('statApproved').textContent = approved;
       document.getElementById('statPending').textContent = pending;
+      document.getElementById('statTeachers').textContent = teachers;
+      document.getElementById('statManagers').textContent = managers;
+      document.getElementById('statActive').textContent = active;
+      document.getElementById('statRetired').textContent = retired;
 
       const fragment = document.createDocumentFragment();
       records.forEach((row) => {
@@ -1282,7 +1357,6 @@
           <input type="text" id="eEvaluationScore" class="form-control-edit" value="${escapeHtml(info.evaluationScore || '')}">
         </div>
 
-        <!-- ⭐ بخش خدمتی رفته در ویرایش -->
         <div style="grid-column:1/-1; background:#f59e0b; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; margin-top:10px;">🏢 خدمتی رفته</div>
         
         <div class="form-group-edit">
@@ -1553,7 +1627,6 @@
       if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
     }
 
-    // ⭐ اعتبارسنجی خدمتی رفته
     if (body.serviceStatus === 'بلی') {
       if (!body.serviceDistrict) { showToast('❌ نام ولسوالی خدمتی الزامی است', true); resetSubmitBtn(); return; }
       if (!body.serviceSchool) { showToast('❌ نام مکتب خدمتی الزامی است', true); resetSubmitBtn(); return; }

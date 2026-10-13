@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V14.0 starting...');
+console.log('🔐 Server V15.0 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
@@ -183,7 +183,6 @@ function normalizeDigits(str) {
   }).join('');
 }
 
-// ⭐ اعتبارسنجی تاریخ شمسی (پشتیبانی از دو فرمت)
 function validateShamsiDateServer(dateStr, fieldName) {
   if (!dateStr) return null;
   
@@ -234,7 +233,6 @@ function validateTazkiraServer(tazkiraStr) {
   return null;
 }
 
-// ⭐ اعتبارسنجی کد بست (فرمت 27-XX-XX-XXXXX)
 function validateJobCodeServer(jobCode) {
   if (!jobCode) return null;
   const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
@@ -260,7 +258,6 @@ function isServiceOrSupport(jobTitle) {
   return SERVICE_TITLES.includes(jobTitle);
 }
 
-// ⭐ بررسی تکراری بودن کد بست با نمایش نام مکتب از users
 async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
   if (!jobCode) return { duplicate: false, schoolname: null };
   try {
@@ -527,6 +524,17 @@ async function validateRecordBody(body, excludeId = null) {
     if (!String(body.workshopDuration || '').trim()) return '❌ مدت ورکشاپ الزامی است';
   }
 
+  // ⭐ اعتبارسنجی خدمتی رفته
+  const serviceStatus = String(body.serviceStatus || '').trim();
+  if (serviceStatus === 'بلی') {
+    if (!String(body.serviceDistrict || '').trim()) return '❌ نام ولسوالی خدمتی الزامی است';
+    if (!String(body.serviceSchool || '').trim()) return '❌ نام مکتب خدمتی الزامی است';
+    if (!String(body.serviceDate || '').trim()) return '❌ تاریخ خدمتی الزامی است';
+    
+    const dateErr = validateShamsiDateServer(body.serviceDate, 'تاریخ خدمتی');
+    if (dateErr) return '❌ ' + dateErr;
+  }
+
   const evaluationScore = String(body.evaluationScore || '').trim();
   if (evaluationScore) {
     const num = Number(normalizeDigits(evaluationScore));
@@ -577,7 +585,7 @@ app.post('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ بررسی فوری تکراری بودن کد بست (با نمایش نام مکتب درست)
+// ⭐ بررسی فوری تکراری بودن کد بست
 app.post('/api/check-jobcode', authRequired, async (req, res) => {
   try {
     const { jobCode } = req.body || {};
@@ -643,6 +651,12 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
         workshopDuration: body.workshopDuration !== undefined ? String(body.workshopDuration).trim() : originalData.workshopDuration,
         totalTeachingHours: body.totalTeachingHours !== undefined ? String(body.totalTeachingHours).trim() : originalData.totalTeachingHours,
         evaluationScore: body.evaluationScore !== undefined ? String(body.evaluationScore).trim() : originalData.evaluationScore,
+        
+        // ⭐ فیلدهای خدمتی رفته (قابل ویرایش توسط مکتب)
+        serviceStatus: body.serviceStatus !== undefined ? body.serviceStatus : (originalData.serviceStatus || 'نخیر'),
+        serviceDistrict: body.serviceDistrict !== undefined ? String(body.serviceDistrict).trim() : (originalData.serviceDistrict || ''),
+        serviceSchool: body.serviceSchool !== undefined ? String(body.serviceSchool).trim() : (originalData.serviceSchool || ''),
+        serviceDate: body.serviceDate !== undefined ? String(body.serviceDate).trim() : (originalData.serviceDate || ''),
         
         firstName: originalData.firstName,
         lastName: originalData.lastName,
@@ -968,7 +982,7 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '14.0.0',
+    version: '15.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_algorithm: JWT_ALGORITHM,
     self_verify: verifyResult,
@@ -988,7 +1002,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V14.0 live on port ' + PORT);
+  console.log('🚀 Server V15.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
   console.log('📌 Cache-Control: enabled for HTML');

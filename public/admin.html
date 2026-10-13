@@ -101,8 +101,7 @@
     </div>
 
     <div class="info-banner">
-      ℹ️ رکوردهای <strong>در انتظار تایید</strong> همیشه نمایش داده می‌شوند.<br>
-      رکوردهای <strong>تایید‌شده</strong> فقط با <strong>جستجو</strong> یا <strong>فیلتر</strong> نمایش داده می‌شوند.<br>
+      ℹ️ تمام رکوردها (اعم از <strong>تایید شده</strong> و <strong>در انتظار</strong>) در هر صورت نمایش داده می‌شوند.<br>
       ✏️ ویرایش توسط مکتب انجام می‌شود (ادمین فقط تایید، مشاهده، پرنت و حذف).
     </div>
 
@@ -517,7 +516,7 @@
       const params = [];
       if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
-      if (!hasAnyFilter(f)) params.push('status=pending');
+      // ⭐ حذف شد: حالا همه رکوردها (تایید شده + در انتظار) نمایش داده می‌شوند
 
       const url = '/api/records?' + params.join('&');
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });

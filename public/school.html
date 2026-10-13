@@ -85,6 +85,7 @@
   .form-control-edit:focus { border-color:#10b981; outline:none; box-shadow:0 0 0 3px rgba(16,185,129,0.15); }
   .form-control-edit[readonly] { background:#f1f5f9; cursor:not-allowed; color:#64748b; }
   
+  /* ⭐ کادر موافقت‌نامه */
   .agreement-box {
     background: #fef3c7;
     border: 2px solid #f59e0b;
@@ -96,6 +97,7 @@
     gap: 12px;
     cursor: pointer;
     transition: all 0.2s;
+    user-select: none;
   }
   .agreement-box:hover {
     background: #fde68a;
@@ -112,6 +114,7 @@
     accent-color: #10b981;
     margin-top: 3px;
     flex-shrink: 0;
+    pointer-events: none;
   }
   .agreement-text {
     font-size: 14px;
@@ -124,7 +127,7 @@
     color: #065f46;
   }
   
-  /* ⭐ پیام زیر فیلد تاریخ */
+  /* ⭐ پیام زیر فیلد */
   .date-msg {
     display: block;
     font-size: 11px;
@@ -136,6 +139,16 @@
   .date-msg.pending { color: #f59e0b; }
   .date-msg.valid { color: #10b981; }
   .date-msg.invalid { color: #ef4444; }
+  
+  /* ⭐ راهنمای کد بست */
+  .field-hint {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+    font-style: italic;
+    line-height: 1.4;
+  }
   
   @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
   @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; direction: rtl; } .no-print { display: none !important; } }
@@ -220,9 +233,8 @@
           </div>
         </div>
 
-        <!-- ⭐ تیک موافقت‌نامه مدیریت مکتب -->
         <div class="agreement-box" id="settingsAgreementBox" onclick="toggleSettingsAgreement()">
-          <input type="checkbox" id="settingsAgreementCheckbox" onclick="event.stopPropagation(); toggleSettingsAgreement();">
+          <input type="checkbox" id="settingsAgreementCheckbox">
           <div class="agreement-text">
             ✅ <strong>تعهد و موافقت:</strong><br>
             تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد و این مکتب در قبال هر گونه معلومات نادرست و اشتباه، مسئول و پاسخگو می‌باشد.
@@ -268,6 +280,8 @@
             <div class="form-group">
               <label>کُد بست</label>
               <input type="text" id="jobCode" placeholder="27-32-02-13056">
+              <small id="jobCodeMsg" class="date-msg"></small>
+              <small class="field-hint">🔒 کد بست باید در تمام معارف یکتا باشد و قبلاً توسط هیچ مکتب دیگری ثبت نشده باشد.</small>
             </div>
             <div class="form-group"><label>اسم *</label><input type="text" id="firstName" required></div>
             <div class="form-group"><label>تخلص</label><input type="text" id="lastName"></div>
@@ -370,9 +384,8 @@
           </div>
         </div>
 
-        <!-- ⭐ تیک موافقت‌نامه ثبت کارمند -->
         <div class="agreement-box" id="agreementBox" onclick="toggleAgreement()">
-          <input type="checkbox" id="agreementCheckbox" onclick="event.stopPropagation(); toggleAgreement();">
+          <input type="checkbox" id="agreementCheckbox">
           <div class="agreement-text">
             ✅ <strong>تعهد و موافقت:</strong><br>
             تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد و این مکتب در قبال هر گونه معلومات نادرست و اشتباه، مسئول و پاسخگو می‌باشد.
@@ -459,6 +472,7 @@
 
   let cachedRecords = [];
   let editingRecordId = null;
+  let jobCodeIsDuplicate = false;  // ⭐ ردیابی وضعیت کد بست تکراری
 
   const JOB_TITLES_LIST = [
     'آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار',
@@ -503,7 +517,6 @@
     }).join('');
   }
 
-  // ⭐ اعتبارسنجی تاریخ شمسی (پشتیبانی از دو فرمت)
   function validateShamsiDate(dateStr) {
     if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
     
@@ -555,7 +568,6 @@
     return { valid: true, formatted };
   }
 
-  // ⭐ اعتبارسنجی تذکره الکترونیکی
   function validateTazkira(tazkiraStr) {
     if (!tazkiraStr) return { valid: false, error: 'تذکره الکترونیکی الزامی است' };
     
@@ -572,7 +584,6 @@
     return { valid: true, formatted: cleaned };
   }
 
-  // ⭐ اعتبارسنجی کد بست (فرمت 27-XX-XX-XXXXX)
   function validateJobCode(jobCode) {
     if (!jobCode) return { valid: false, error: 'کُد بست الزامی است' };
     
@@ -589,7 +600,6 @@
     return { valid: true, formatted: cleaned };
   }
 
-  // ⭐ اعتبارسنجی زنده با پیام زیر فیلد
   function attachLiveValidation(inputId, validateFn, msgId) {
     const input = document.getElementById(inputId);
     const msg = msgId ? document.getElementById(msgId) : null;
@@ -615,7 +625,7 @@
         this.classList.add('valid');
         this.classList.remove('invalid');
         if (msg) {
-          msg.textContent = '✅ تاریخ معتبر است: ' + result.formatted;
+          msg.textContent = '✅ معتبر است: ' + result.formatted;
           msg.className = 'date-msg valid';
         }
       } else {
@@ -634,7 +644,7 @@
         if (result.valid) {
           this.value = result.formatted;
           if (msg) {
-            msg.textContent = '✅ تاریخ معتبر است: ' + result.formatted;
+            msg.textContent = '✅ معتبر است: ' + result.formatted;
             msg.className = 'date-msg valid';
           }
         }
@@ -649,20 +659,41 @@
   attachLiveValidation('enrollmentDate', validateShamsiDate, 'enrollmentDateMsg');
   attachLiveValidation('graduationDate', validateShamsiDate, 'graduationDateMsg');
 
+  // اتصال کد بست (با پیام)
+  attachLiveValidation('jobCode', validateJobCode, 'jobCodeMsg');
+
   // اتصال سایر فیلدها (بدون پیام)
   attachLiveValidation('eTazkira', validateTazkira);
   attachLiveValidation('eETazkira', validateTazkira);
-  attachLiveValidation('jobCode', validateJobCode);
+
+  // ⭐ ریست وضعیت تکراری هنگام تایپ
+  document.getElementById('jobCode').addEventListener('input', function() {
+    jobCodeIsDuplicate = false;
+  });
 
   // ⭐ بررسی زنده تکراری بودن کد بست
   document.getElementById('jobCode').addEventListener('blur', async function() {
     const val = this.value.trim();
-    if (!val) return;
+    
+    if (!val) {
+      jobCodeIsDuplicate = false;
+      return;
+    }
     
     const result = validateJobCode(val);
-    if (!result.valid) return;
+    if (!result.valid) {
+      jobCodeIsDuplicate = false;
+      return;
+    }
     
     this.value = result.formatted;
+    
+    const msg = document.getElementById('jobCodeMsg');
+    
+    if (msg) {
+      msg.textContent = '⏳ در حال بررسی یکتا بودن در سیستم...';
+      msg.className = 'date-msg pending';
+    }
     
     try {
       const res = await fetch('/api/check-jobcode', {
@@ -673,15 +704,30 @@
       const data = await res.json();
       
       if (data.exists) {
+        jobCodeIsDuplicate = true;
         this.classList.remove('valid');
         this.classList.add('invalid');
+        if (msg) {
+          msg.textContent = `❌ این کد بست قبلاً در مکتب «${data.schoolname}» ثبت شده است`;
+          msg.className = 'date-msg invalid';
+        }
         showToast(`❌ کُد بست «${result.formatted}» قبلاً در مکتب «${data.schoolname}» ثبت شده است`, true);
       } else {
+        jobCodeIsDuplicate = false;
         this.classList.remove('invalid');
         this.classList.add('valid');
+        if (msg) {
+          msg.textContent = `✅ این کد بست یکتاست و قابل استفاده می‌باشد`;
+          msg.className = 'date-msg valid';
+        }
       }
     } catch (e) {
       console.error('Error checking jobcode:', e);
+      jobCodeIsDuplicate = false;
+      if (msg) {
+        msg.textContent = '⚠️ خطا در بررسی کد بست';
+        msg.className = 'date-msg invalid';
+      }
     }
   });
 
@@ -723,7 +769,6 @@
 
   document.getElementById('jobTitle').addEventListener('change', updateEducationFields);
 
-  // ⭐ توگل موافقت‌نامه ثبت کارمند
   function toggleAgreement() {
     const checkbox = document.getElementById('agreementCheckbox');
     const box = document.getElementById('agreementBox');
@@ -741,7 +786,6 @@
   }
   window.toggleAgreement = toggleAgreement;
 
-  // ⭐ توگل موافقت‌نامه مدیریت مکتب
   function toggleSettingsAgreement() {
     const checkbox = document.getElementById('settingsAgreementCheckbox');
     const box = document.getElementById('settingsAgreementBox');
@@ -837,12 +881,10 @@
         document.getElementById('settingsBanner').style.color = '#15803d';
         document.getElementById('settingsSubmitBtn').innerText = '💾 به‌روزرسانی اطلاعات مکتب';
         
-        // ⭐ فعال کردن دکمه ذخیره و تیک خودکار
         document.getElementById('settingsSubmitBtn').disabled = false;
         document.getElementById('settingsAgreementCheckbox').checked = true;
         document.getElementById('settingsAgreementBox').classList.add('checked');
       } else {
-        // ⭐ ریست
         document.getElementById('settingsSubmitBtn').disabled = true;
         document.getElementById('settingsAgreementCheckbox').checked = false;
         document.getElementById('settingsAgreementBox').classList.remove('checked');
@@ -855,7 +897,6 @@
   document.getElementById('settingsForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // ⭐ بررسی تیک موافقت‌نامه
     if (!document.getElementById('settingsAgreementCheckbox').checked) {
       showToast('❌ لطفاً تیک موافقت‌نامه را بزنید', true);
       return;
@@ -904,7 +945,6 @@
       if (res.ok) {
         showToast('✅ اطلاعات مکتب ذخیره شد');
         
-        // ⭐ ریست تیک
         document.getElementById('settingsAgreementCheckbox').checked = false;
         document.getElementById('settingsAgreementBox').classList.remove('checked');
         document.getElementById('settingsSubmitBtn').disabled = true;
@@ -1287,6 +1327,30 @@
     btn.disabled = true;
     btn.innerText = '⏳ در حال ذخیره...';
 
+    // ⭐ بررسی نهایی تکراری بودن کد بست در سرور
+    const jobCodeVal = document.getElementById('jobCode').value.trim();
+    if (jobCodeVal) {
+      const jcResult = validateJobCode(jobCodeVal);
+      if (jcResult.valid) {
+        try {
+          const chkRes = await fetch('/api/check-jobcode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ jobCode: jcResult.formatted })
+          });
+          const chkData = await chkRes.json();
+          if (chkData.exists) {
+            showToast(`❌ کُد بست «${jcResult.formatted}» قبلاً در مکتب «${chkData.schoolname}» ثبت شده است. لطفاً کد دیگری وارد کنید.`, true);
+            btn.disabled = false;
+            btn.innerText = '💾 ذخیره و ارسال به معارف';
+            return;
+          }
+        } catch (e) {
+          console.error('Error checking jobcode:', e);
+        }
+      }
+    }
+
     const body = {
       jobTitle: document.getElementById('jobTitle').value.trim(),
       jobCode: document.getElementById('jobCode').value.trim(),
@@ -1350,6 +1414,13 @@
         return;
       }
       body.jobCode = jobCodeResult.formatted;
+    }
+
+    // ⭐ بررسی نهایی متغیر تکراری بودن
+    if (jobCodeIsDuplicate) {
+      showToast('❌ کُد بست تکراری است. لطفاً کد دیگری وارد کنید', true);
+      resetSubmitBtn();
+      return;
     }
 
     const isService = SERVICE_TITLES.includes(body.jobTitle);
@@ -1428,6 +1499,9 @@
         document.getElementById('agreementCheckbox').checked = false;
         document.getElementById('agreementBox').classList.remove('checked');
         document.getElementById('submitBtn').disabled = true;
+        
+        // ⭐ ریست متغیر تکراری
+        jobCodeIsDuplicate = false;
         
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));

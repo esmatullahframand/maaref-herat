@@ -39,6 +39,8 @@
   .filter-item select, .filter-item input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; }
   .modal-header-purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; }
   .modal-header-purple .btn-close { filter: invert(1); }
+  .modal-header-orange { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+  .modal-header-orange .btn-close { filter: invert(1); }
 </style>
 </head>
 <body>
@@ -313,9 +315,9 @@
 <div class="modal fade" id="editSchoolModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header" style="background:#f59e0b; color:#fff;">
+      <div class="modal-header modal-header-orange">
         <h5 class="modal-title">✏️ ویرایش مکتب</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="editSchoolId">
@@ -343,7 +345,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-        <button type="button" class="btn fw-bold" style="background:#f59e0b; color:#fff;" onclick="saveSchoolEdit()">💾 ذخیره تغییرات</button>
+        <button type="button" class="btn btn-warning fw-bold text-white" onclick="saveSchoolEdit()">💾 ذخیره تغییرات</button>
       </div>
     </div>
   </div>
@@ -378,6 +380,19 @@
   const MANAGER_KEYWORDS = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
   const TEACHER_KEYWORDS = ['معلم', 'آموزگار', 'استاد', 'مدرس'];
   const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'معتمد جنسی', 'معتمد', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
+
+  // ⭐ توابع کمکی: پیدا کردن نام مکتب و ولسوالی از userid
+  function getSchoolNameById(userid) {
+    if (!userid || !allSchoolsList) return null;
+    const school = allSchoolsList.find(s => s.id === userid);
+    return school ? school.schoolname : null;
+  }
+
+  function getDistrictById(userid) {
+    if (!userid || !allSchoolsList) return null;
+    const school = allSchoolsList.find(s => s.id === userid);
+    return school ? school.district : null;
+  }
 
   function getJobCategory(jobTitle) {
     if (!jobTitle) return 'admin_staff';
@@ -631,11 +646,15 @@
       actionsHtml += `<button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})">🖨️</button>`;
       actionsHtml += `<button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})">🗑️</button>`;
 
+      // ⭐ تغییر اصلی: اگر schoolname/district خالی بود، از userid استفاده کن
+      const schoolName = row.schoolname || getSchoolNameById(row.userid) || '—';
+      const district = row.district || getDistrictById(row.userid) || '—';
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${row.id}</td>
-        <td><strong>${escapeHtml(row.schoolname || '-')}</strong></td>
-        <td>${escapeHtml(row.district || '-')}</td>
+        <td><strong>${escapeHtml(schoolName)}</strong></td>
+        <td>${escapeHtml(district)}</td>
         <td>${escapeHtml(name)}</td>
         <td>${escapeHtml(info.fatherName || '-')}</td>
         <td><span class="badge bg-light text-dark">${escapeHtml(info.jobTitle || info.job || '-')}</span></td>
@@ -742,7 +761,7 @@
           <h2>📄 معلومات کارمند</h2>
           <div class="info-header">
             <strong>آی‌دی:</strong> ${rec.id} |
-            مکتب: <strong>${escapeHtml(rec.schoolname || '-')}</strong> |
+            مکتب: <strong>${escapeHtml(rec.schoolname || getSchoolNameById(rec.userid) || '-')}</strong> |
             سن: <strong>${empStatus.age}</strong> |
             وضعیت: <strong>${empStatus.status}</strong>
           </div>
@@ -1023,7 +1042,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ مدیریت لیست مکاتب (جدید)
+  // ⭐ مدیریت لیست مکاتب
   // ═══════════════════════════════════════════════════════════
   async function showManageSchools() {
     if (!manageSchoolsModal) {
@@ -1320,11 +1339,12 @@
       const info = row.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '-');
       const empStatus = getEmployeeStatus(info);
+      const schoolName = row.schoolname || getSchoolNameById(row.userid) || '-';
 
       rowsHtml += `
         <tr>
           <td>${idx + 1}</td>
-          <td>${escapeHtml(row.schoolname || '-')}</td>
+          <td>${escapeHtml(schoolName)}</td>
           <td>${escapeHtml(name)}</td>
           <td>${escapeHtml(info.fatherName || '-')}</td>
           <td>${escapeHtml(info.grandfatherName || '-')}</td>
@@ -1411,8 +1431,10 @@
     const rows = records.map(r => {
       const info = r.data || {};
       const emp = getEmployeeStatus(info);
+      const schoolName = r.schoolname || getSchoolNameById(r.userid) || '';
+      const district = r.district || getDistrictById(r.userid) || '';
       return [
-        r.id, r.schoolname || '', r.district || '',
+        r.id, schoolName, district,
         info.jobCode || '', info.jobTitle || info.job || '',
         info.firstName || '', info.lastName || '',
         info.fatherName || '', info.grandfatherName || '',
@@ -1460,6 +1482,7 @@
     ];
     const rows = records.map(r => {
       const info = r.data || {};
+      const schoolName = r.schoolname || getSchoolNameById(r.userid) || '';
       return [
         info.firstName || '', info.fatherName || '',
         info.grandfatherName || '', info.lastName || '',
@@ -1470,7 +1493,7 @@
         info.currentPositionDate || '', info.birthDate || '',
         info.eTazkira || info.paperTazkira || '',
         info.gender || '', info.ethnicity || '',
-        info.jobCode || '', r.schoolname || '', 'معارف هرات'
+        info.jobCode || '', schoolName, 'معارف هرات'
       ];
     });
     const csv = '\uFEFF' + [headers, ...rows]
@@ -1494,8 +1517,9 @@
       const info = r.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : (info.name || '');
       const emp = getEmployeeStatus(info);
+      const schoolName = r.schoolname || getSchoolNameById(r.userid) || '';
       return [
-        r.id, r.schoolname || '', name, info.fatherName || '',
+        r.id, schoolName, name, info.fatherName || '',
         info.jobTitle || info.job || '', info.jobCode || '',
         info.degree || '', info.gender || '',
         emp.age, emp.status,
@@ -1515,9 +1539,6 @@
     showToast('🔍 خروجی فیلتر دانلود شد');
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // مکاتب (لیست کاربران) - تابع اصلی
-  // ═══════════════════════════════════════════════════════════
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });

@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V13.0 starting...');
+console.log('🔐 Server V14.0 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
@@ -260,33 +260,47 @@ function isServiceOrSupport(jobTitle) {
   return SERVICE_TITLES.includes(jobTitle);
 }
 
+// ⭐ بررسی تکراری بودن کد بست با نمایش نام مکتب از users
 async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
-  if (!jobCode) return false;
+  if (!jobCode) return { duplicate: false, schoolname: null };
   try {
     const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
     
     let result;
     if (excludeRecordId) {
       result = await pool.query(
-        `SELECT id, schoolname FROM records 
-         WHERE CAST(data AS TEXT) LIKE $1 
-           AND id != $2 
+        `SELECT r.id, 
+                COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname
+         FROM records r
+         LEFT JOIN users u ON u.id = r.userid
+         WHERE CAST(r.data AS TEXT) LIKE $1 
+           AND r.id != $2 
          LIMIT 1`,
         [`%"jobCode":"${normalizedCode}"%`, excludeRecordId]
       );
     } else {
       result = await pool.query(
-        `SELECT id, schoolname FROM records 
-         WHERE CAST(data AS TEXT) LIKE $1 
+        `SELECT r.id, 
+                COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname
+         FROM records r
+         LEFT JOIN users u ON u.id = r.userid
+         WHERE CAST(r.data AS TEXT) LIKE $1 
          LIMIT 1`,
         [`%"jobCode":"${normalizedCode}"%`]
       );
     }
     
-    return result.rows.length > 0;
+    if (result.rows.length > 0) {
+      return { 
+        duplicate: true, 
+        schoolname: result.rows[0].schoolname || 'نامشخص' 
+      };
+    }
+    
+    return { duplicate: false, schoolname: null };
   } catch (err) {
     console.error('Duplicate check error:', err.message);
-    return false;
+    return { duplicate: false, schoolname: null };
   }
 }
 
@@ -452,9 +466,9 @@ async function validateRecordBody(body, excludeId = null) {
     if (!jobCode) return 'کُد بست الزامی است';
     if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید 27-XX-XX-XXXXX باشد (مثلاً 27-32-02-13056)';
     
-    const isDuplicate = await isJobCodeDuplicate(jobCode, excludeId);
-    if (isDuplicate) {
-      return `❌ کُد بست «${normalizeDigits(jobCode).trim().replace(/\s+/g, '')}» قبلاً در سیستم ثبت شده است. لطفاً کد دیگری وارد کنید.`;
+    const dupResult = await isJobCodeDuplicate(jobCode, excludeId);
+    if (dupResult.duplicate) {
+      return `❌ کُد بست «${normalizeDigits(jobCode).trim().replace(/\s+/g, '')}» قبلاً در مکتب «${dupResult.schoolname}» ثبت شده است. لطفاً کد دیگری وارد کنید.`;
     }
     
     if (!birthDate) return 'تاریخ تولد الزامی است';
@@ -563,7 +577,7 @@ app.post('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ بررسی فوری تکراری بودن کد بست
+// ⭐ بررسی فوری تکراری بودن کد بست (با نمایش نام مکتب درست)
 app.post('/api/check-jobcode', authRequired, async (req, res) => {
   try {
     const { jobCode } = req.body || {};
@@ -572,8 +586,11 @@ app.post('/api/check-jobcode', authRequired, async (req, res) => {
     const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
     
     const result = await pool.query(
-      `SELECT id, schoolname FROM records 
-       WHERE CAST(data AS TEXT) LIKE $1 
+      `SELECT r.id, 
+              COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname
+       FROM records r
+       LEFT JOIN users u ON u.id = r.userid
+       WHERE CAST(r.data AS TEXT) LIKE $1 
        LIMIT 1`,
       [`%"jobCode":"${normalizedCode}"%`]
     );
@@ -951,7 +968,7 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '13.0.0',
+    version: '14.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_algorithm: JWT_ALGORITHM,
     self_verify: verifyResult,
@@ -971,7 +988,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V13.0 live on port ' + PORT);
+  console.log('🚀 Server V14.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
   console.log('📌 Cache-Control: enabled for HTML');

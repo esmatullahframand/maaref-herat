@@ -1061,7 +1061,7 @@
   async function loadSchoolRecords() {
     const searchVal = document.getElementById('searchInput').value.trim();
     try {
-      const url = searchVal ? `/api/records?search=${encodeURIComponent(searchVal)}` : `/api/records?status=pending`;
+      const url = searchVal ? `/api/records?search=${encodeURIComponent(searchVal)}` : `/api/records`;
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
 
       if (res.status === 401 || res.status === 403) {
@@ -1077,7 +1077,6 @@
 
       if (!Array.isArray(records) || records.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="empty-state">هیچ رکوردی یافت نشد</td></tr>';
-        // ⭐ ریست آمار
         document.getElementById('statTotal').textContent = '0';
         document.getElementById('statApproved').textContent = '0';
         document.getElementById('statPending').textContent = '0';
@@ -1451,7 +1450,6 @@
       }
     }
 
-    // ⭐ اعتبارسنجی خدمتی رفته
     if (body.serviceStatus === 'بلی') {
       if (!body.serviceDistrict) { showToast('❌ نام ولسوالی خدمتی الزامی است', true); return; }
       if (!body.serviceSchool) { showToast('❌ نام مکتب خدمتی الزامی است', true); return; }

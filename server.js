@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V12.0 starting...');
+console.log('🔐 Server V13.0 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
@@ -183,22 +183,33 @@ function normalizeDigits(str) {
   }).join('');
 }
 
+// ⭐ اعتبارسنجی تاریخ شمسی (پشتیبانی از دو فرمت)
 function validateShamsiDateServer(dateStr, fieldName) {
   if (!dateStr) return null;
   
   const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
-  const parts = cleaned.split('/');
+  const parts = cleaned.split('/').map(p => p.trim());
   
   if (parts.length !== 3) {
-    return `${fieldName} باید فرمت YYYY/MM/DD داشته باشد (مثلاً 1399/02/23)`;
+    return `${fieldName} باید فرمت YYYY/MM/DD یا DD/MM/YYYY داشته باشد (مثلاً 1360/02/22 یا 22/02/1360)`;
   }
   
-  const year = parseInt(parts[0]);
-  const month = parseInt(parts[1]);
-  const day = parseInt(parts[2]);
+  const p1 = parseInt(parts[0]);
+  const p2 = parseInt(parts[1]);
+  const p3 = parseInt(parts[2]);
   
-  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+  if (isNaN(p1) || isNaN(p2) || isNaN(p3)) {
     return `${fieldName} باید فقط شامل اعداد باشد`;
+  }
+  
+  let year, month, day;
+  
+  if (parts[0].length === 4 || (p1 >= 1300 && p1 <= 1450)) {
+    year = p1; month = p2; day = p3;
+  } else if (parts[2].length === 4 || (p3 >= 1300 && p3 <= 1450)) {
+    year = p3; month = p2; day = p1;
+  } else {
+    return `${fieldName}: سال باید بین ۱۳۰۰ تا ۱۴۵۰ باشد`;
   }
   
   if (year < 1300 || year > 1450) return `${fieldName}: سال باید بین ۱۳۰۰ تا ۱۴۵۰ باشد`;
@@ -223,20 +234,21 @@ function validateTazkiraServer(tazkiraStr) {
   return null;
 }
 
+// ⭐ اعتبارسنجی کد بست (فرمت 27-XX-XX-XXXXX)
 function validateJobCodeServer(jobCode) {
   if (!jobCode) return null;
-  const cleaned = normalizeDigits(jobCode).trim();
-  const pattern = /^\d{4,5}-\d{2}-\d{2}-\d{2}$/;
+  const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
+  const pattern = /^27-\d{1,3}-\d{1,3}-\d{3,6}$/;
   if (!pattern.test(cleaned)) {
-    return 'فرمت کُد بست باید XXXXX-XX-XX-XX باشد (مثلاً 13056-02-32-27)';
+    return 'فرمت کُد بست باید 27-XX-XX-XXXXX باشد (مثلاً 27-32-02-13056)';
   }
   return null;
 }
 
 function isValidJobCode(jobCode) {
   if (!jobCode) return false;
-  const cleaned = normalizeDigits(jobCode).trim();
-  return /^\d{4,5}-\d{2}-\d{2}-\d{2}$/.test(cleaned);
+  const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
+  return /^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned);
 }
 
 function isNoCodeTitle(jobTitle) {
@@ -251,19 +263,26 @@ function isServiceOrSupport(jobTitle) {
 async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
   if (!jobCode) return false;
   try {
-    const searchPattern = `%"jobCode":"${jobCode}"%`;
+    const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
+    
     let result;
     if (excludeRecordId) {
       result = await pool.query(
-        `SELECT id FROM records WHERE CAST(data AS TEXT) LIKE $1 AND id != $2 LIMIT 1`,
-        [searchPattern, excludeRecordId]
+        `SELECT id, schoolname FROM records 
+         WHERE CAST(data AS TEXT) LIKE $1 
+           AND id != $2 
+         LIMIT 1`,
+        [`%"jobCode":"${normalizedCode}"%`, excludeRecordId]
       );
     } else {
       result = await pool.query(
-        `SELECT id FROM records WHERE CAST(data AS TEXT) LIKE $1 LIMIT 1`,
-        [searchPattern]
+        `SELECT id, schoolname FROM records 
+         WHERE CAST(data AS TEXT) LIKE $1 
+         LIMIT 1`,
+        [`%"jobCode":"${normalizedCode}"%`]
       );
     }
+    
     return result.rows.length > 0;
   } catch (err) {
     console.error('Duplicate check error:', err.message);
@@ -431,9 +450,13 @@ async function validateRecordBody(body, excludeId = null) {
     if (!phone) return 'شماره تماس الزامی است';
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
     if (!jobCode) return 'کُد بست الزامی است';
-    if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید 13056-02-32-27 باشد';
+    if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است. باید 27-XX-XX-XXXXX باشد (مثلاً 27-32-02-13056)';
+    
     const isDuplicate = await isJobCodeDuplicate(jobCode, excludeId);
-    if (isDuplicate) return `❌ کُد بست «${jobCode}» قبلاً ثبت شده است`;
+    if (isDuplicate) {
+      return `❌ کُد بست «${normalizeDigits(jobCode).trim().replace(/\s+/g, '')}» قبلاً در سیستم ثبت شده است. لطفاً کد دیگری وارد کنید.`;
+    }
+    
     if (!birthDate) return 'تاریخ تولد الزامی است';
     if (!firstAppointmentDate) return 'تاریخ اولین تقرر الزامی است';
     if (!currentPositionDate) return 'تاریخ تقرر فعلی الزامی است';
@@ -537,6 +560,35 @@ app.post('/api/records', authRequired, async (req, res) => {
   } catch (err) {
     console.error('Records POST Error:', err.message);
     res.status(500).json({ error: 'خطا در ثبت رکورد: ' + err.message });
+  }
+});
+
+// ⭐ بررسی فوری تکراری بودن کد بست
+app.post('/api/check-jobcode', authRequired, async (req, res) => {
+  try {
+    const { jobCode } = req.body || {};
+    if (!jobCode) return res.json({ exists: false });
+    
+    const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
+    
+    const result = await pool.query(
+      `SELECT id, schoolname FROM records 
+       WHERE CAST(data AS TEXT) LIKE $1 
+       LIMIT 1`,
+      [`%"jobCode":"${normalizedCode}"%`]
+    );
+    
+    if (result.rows.length > 0) {
+      return res.json({ 
+        exists: true, 
+        schoolname: result.rows[0].schoolname || 'نامشخص'
+      });
+    }
+    
+    res.json({ exists: false });
+  } catch (err) {
+    console.error('Check jobcode error:', err.message);
+    res.status(500).json({ error: 'خطا در بررسی کد بست' });
   }
 });
 
@@ -793,7 +845,6 @@ app.post('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ ویرایش مکتب
 app.put('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -900,7 +951,7 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '12.0.0',
+    version: '13.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_algorithm: JWT_ALGORITHM,
     self_verify: verifyResult,
@@ -920,7 +971,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V12.0 live on port ' + PORT);
+  console.log('🚀 Server V13.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
   console.log('📌 Cache-Control: enabled for HTML');

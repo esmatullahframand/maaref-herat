@@ -442,6 +442,8 @@
   <div class="tab-content" id="tab-list">
     <div class="card">
       <h4>📋 لیست کارمندان</h4>
+
+      <!-- ⭐ آمار — همیشه نمایش داده می‌شود -->
       <div class="stats-grid">
         <div class="stat-box total"><div class="stat-label">👥 کل</div><div class="stat-value" id="statTotal">0</div></div>
         <div class="stat-box teacher"><div class="stat-label">👨‍🏫 معلمان</div><div class="stat-value" id="statTeachers">0</div></div>
@@ -451,7 +453,10 @@
         <div class="stat-box approved"><div class="stat-label">✅ تایید‌شده</div><div class="stat-value" id="statApproved">0</div></div>
         <div class="stat-box pending"><div class="stat-label">⏳ در انتظار</div><div class="stat-value" id="statPending">0</div></div>
       </div>
-      <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو..." oninput="debouncedLoad()">
+
+      <!-- ⭐ کادر جستجو -->
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو در لیست کارمندان (نام، ولد، کُد بست، عنوان بست)..." oninput="debouncedLoad()">
+
       <div class="table-responsive">
         <table>
           <thead>
@@ -832,7 +837,6 @@
 
   document.getElementById('jobTitle').addEventListener('change', updateEducationFields);
 
-  // ⭐ توگل بخش خدمتی رفته
   function toggleServiceFields() {
     const status = document.getElementById('serviceStatus').value;
     const details = document.getElementById('serviceDetails');
@@ -848,7 +852,6 @@
   }
   window.toggleServiceFields = toggleServiceFields;
 
-  // ⭐ توگل بخش خدمتی رفته در ویرایش
   function toggleEditServiceFields() {
     const status = document.getElementById('eServiceStatus').value;
     const districtGroup = document.getElementById('eServiceDistrictGroup');
@@ -947,6 +950,57 @@
     }
   }
   window.toggleWorkshopFields = toggleWorkshopFields;
+
+  // ⭐ تابع محاسبه و نمایش آمار
+  function updateStats(records) {
+    if (!Array.isArray(records) || records.length === 0) {
+      document.getElementById('statTotal').textContent = '0';
+      document.getElementById('statApproved').textContent = '0';
+      document.getElementById('statPending').textContent = '0';
+      document.getElementById('statTeachers').textContent = '0';
+      document.getElementById('statManagers').textContent = '0';
+      document.getElementById('statActive').textContent = '0';
+      document.getElementById('statRetired').textContent = '0';
+      return;
+    }
+    
+    let total = records.length;
+    let approved = 0, pending = 0;
+    let teachers = 0, managers = 0, active = 0, retired = 0;
+    
+    const teacherKeywords = ['معلم', 'آموزگار', 'استاد', 'مدرس', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت'];
+    const managerKeywords = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
+    
+    records.forEach((row) => {
+      if (row.status === 'approved') approved++;
+      else pending++;
+      
+      const info = row.data || {};
+      const jobTitle = info.jobTitle || info.job || '';
+      
+      if (teacherKeywords.some(kw => jobTitle.includes(kw))) {
+        teachers++;
+      }
+      
+      if (managerKeywords.some(kw => jobTitle.includes(kw))) {
+        managers++;
+      }
+      
+      const age = calculateAge(info.birthDate);
+      if (age !== null) {
+        if (age >= 65) retired++;
+        else active++;
+      }
+    });
+    
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statApproved').textContent = approved;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statTeachers').textContent = teachers;
+    document.getElementById('statManagers').textContent = managers;
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statRetired').textContent = retired;
+  }
 
   async function loadSchoolSettings() {
     try {
@@ -1061,7 +1115,36 @@
   async function loadSchoolRecords() {
     const searchVal = document.getElementById('searchInput').value.trim();
     try {
-      const url = searchVal ? `/api/records?search=${encodeURIComponent(searchVal)}` : `/api/records`;
+      // ⭐ اگر جستجو خالی است، فقط آمار را نمایش بده و لیست را خالی نگه دار
+      if (!searchVal) {
+        const statRes = await fetch('/api/records', { 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        
+        if (statRes.status === 401 || statRes.status === 403) {
+          localStorage.clear();
+          window.location.href = '/';
+          return;
+        }
+        
+        const allRecords = await statRes.json();
+        cachedRecords = Array.isArray(allRecords) ? allRecords : [];
+        
+        updateStats(cachedRecords);
+        
+        const tbody = document.getElementById('schoolTableBody');
+        tbody.innerHTML = 
+          '<tr><td colspan="8" class="empty-state">' +
+          '<div style="padding:30px;">' +
+          '<div style="font-size:45px; margin-bottom:10px;">🔍</div>' +
+          '<div style="font-size:15px; font-weight:bold; color:#475569;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div>' +
+          '<div style="font-size:12px; color:#94a3b8; margin-top:8px;">می‌توانید نام، ولد، کُد بست یا عنوان بست را جستجو کنید</div>' +
+          '</div>' +
+          '</td></tr>';
+        return;
+      }
+
+      const url = `/api/records?search=${encodeURIComponent(searchVal)}`;
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
 
       if (res.status === 401 || res.status === 403) {
@@ -1077,56 +1160,11 @@
 
       if (!Array.isArray(records) || records.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="empty-state">هیچ رکوردی یافت نشد</td></tr>';
-        document.getElementById('statTotal').textContent = '0';
-        document.getElementById('statApproved').textContent = '0';
-        document.getElementById('statPending').textContent = '0';
-        document.getElementById('statTeachers').textContent = '0';
-        document.getElementById('statManagers').textContent = '0';
-        document.getElementById('statActive').textContent = '0';
-        document.getElementById('statRetired').textContent = '0';
         return;
       }
 
-      // ⭐ محاسبه آمار کامل
-      let total = records.length;
-      let approved = 0, pending = 0;
-      let teachers = 0, managers = 0, active = 0, retired = 0;
-      
-      const teacherKeywords = ['معلم', 'آموزگار', 'استاد', 'مدرس', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت'];
-      const managerKeywords = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
-      
-      records.forEach((row) => {
-        if (row.status === 'approved') approved++;
-        else pending++;
-        
-        const info = row.data || {};
-        const jobTitle = info.jobTitle || info.job || '';
-        
-        // ⭐ تشخیص معلم
-        if (teacherKeywords.some(kw => jobTitle.includes(kw))) {
-          teachers++;
-        }
-        
-        // ⭐ تشخیص مدیر
-        if (managerKeywords.some(kw => jobTitle.includes(kw))) {
-          managers++;
-        }
-        
-        // ⭐ تشخیص فعال/متقاعد
-        const age = calculateAge(info.birthDate);
-        if (age !== null) {
-          if (age >= 65) retired++;
-          else active++;
-        }
-      });
-      
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statApproved').textContent = approved;
-      document.getElementById('statPending').textContent = pending;
-      document.getElementById('statTeachers').textContent = teachers;
-      document.getElementById('statManagers').textContent = managers;
-      document.getElementById('statActive').textContent = active;
-      document.getElementById('statRetired').textContent = retired;
+      // آمار بر اساس نتایج جستجو
+      updateStats(records);
 
       const fragment = document.createDocumentFragment();
       records.forEach((row) => {

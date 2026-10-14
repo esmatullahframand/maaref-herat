@@ -43,6 +43,11 @@
   .modal-header-purple .btn-close { filter: invert(1); }
   .modal-header-orange { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
   .modal-header-orange .btn-close { filter: invert(1); }
+  .empty-search-state { text-align: center; padding: 40px 20px; }
+  .empty-search-state .icon { font-size: 50px; margin-bottom: 15px; }
+  .empty-search-state .title { font-size: 16px; font-weight: bold; color: #475569; margin-bottom: 8px; }
+  .empty-search-state .subtitle { font-size: 13px; color: #94a3b8; }
+  .empty-search-state .filters-list { font-size: 12px; color: #64748b; margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; display: inline-block; }
 </style>
 </head>
 <body>
@@ -101,7 +106,7 @@
     </div>
 
     <div class="info-banner">
-      ℹ️ تمام رکوردها (اعم از <strong>تایید شده</strong> و <strong>در انتظار</strong>) در هر صورت نمایش داده می‌شوند.<br>
+      ℹ️ <strong>توجه:</strong> برای مشاهده لیست کارمندان، از <strong>فیلترها</strong> یا <strong>جستجو</strong> استفاده کنید.<br>
       ✏️ ویرایش توسط مکتب انجام می‌شود (ادمین فقط تایید، مشاهده، پرنت و حذف).
     </div>
 
@@ -109,7 +114,7 @@
     <div class="filter-grid">
       <div class="filter-item">
         <label>🔍 جستجو</label>
-        <input class="form-control" id="searchInput" placeholder="نام، وظیفه..." oninput="debouncedLoad()">
+        <input class="form-control" id="searchInput" placeholder="نام، وظیفه، کد بست..." oninput="debouncedLoad()">
       </div>
       <div class="filter-item">
         <label>🏫 مکتب / مدرسه</label>
@@ -215,7 +220,18 @@
           </tr>
         </thead>
         <tbody id="allTableBody">
-          <tr><td colspan="13" class="text-muted p-4">در حال بارگذاری...</td></tr>
+          <tr>
+            <td colspan="13" class="p-0">
+              <div class="empty-search-state">
+                <div class="icon">🔍</div>
+                <div class="title">برای مشاهده لیست کارمندان، از فیلترها یا جستجو استفاده کنید</div>
+                <div class="subtitle">لطفاً یکی از فیلترهای زیر را انتخاب کنید یا در کادر جستجو تایپ کنید</div>
+                <div class="filters-list">
+                  🏫 مکتب · 📖 نوع مکتب · 👨‍🏫 عنوان بست · 👤 جنسیت · 📚 ورکشاپ · 💼 وضعیت بست · 👤 وضعیت کارمند · 🏢 خدمتی رفته
+                </div>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -391,7 +407,6 @@
   const TEACHER_KEYWORDS = ['معلم', 'آموزگار', 'استاد', 'مدرس', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت'];
   const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'معتمد جنسی', 'معتمد', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
-  // ⭐ توابع کمکی
   function getSchoolNameById(userid) {
     if (!userid || !allSchoolsList) return null;
     const school = allSchoolsList.find(s => s.id === userid);
@@ -512,11 +527,29 @@
     const f = getActiveFilters();
     document.getElementById('searchBadge').style.display = hasAnyFilter(f) ? 'inline-block' : 'none';
 
+    // ⭐ اگر هیچ فیلتری فعال نیست، لیست خالی با پیام راهنما
+    if (!hasAnyFilter(f)) {
+      loadedRecordsCache = [];
+      document.getElementById('allTableBody').innerHTML = 
+        '<tr><td colspan="13" class="p-0">' +
+        '<div class="empty-search-state">' +
+        '<div class="icon">🔍</div>' +
+        '<div class="title">برای مشاهده لیست کارمندان، از فیلترها یا جستجو استفاده کنید</div>' +
+        '<div class="subtitle">لطفاً یکی از فیلترهای زیر را انتخاب کنید یا در کادر جستجو تایپ کنید</div>' +
+        '<div class="filters-list">' +
+        '🏫 مکتب · 📖 نوع مکتب · 👨‍🏫 عنوان بست · 👤 جنسیت · 📚 ورکشاپ · 💼 وضعیت بست · 👤 وضعیت کارمند · 🏢 خدمتی رفته' +
+        '</div>' +
+        '</div>' +
+        '</td></tr>';
+      document.getElementById('filterInfoBar').innerHTML = '';
+      loadStats();
+      return;
+    }
+
     try {
       const params = [];
       if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
-      // ⭐ حذف شد: حالا همه رکوردها (تایید شده + در انتظار) نمایش داده می‌شوند
 
       const url = '/api/records?' + params.join('&');
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
@@ -641,7 +674,7 @@
     }
 
     if (!Array.isArray(records) || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="13" class="text-muted p-4">هیچ رکوردی یافت نشد</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="13" class="text-muted p-4">هیچ رکوردی با این فیلتر یافت نشد</td></tr>`;
       return;
     }
 
@@ -859,9 +892,6 @@
     win.document.close();
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // مدیریت مکاتب (اطلاعات)
-  // ═══════════════════════════════════════════════════════════
   async function loadSchoolSettings() {
     try {
       const res = await fetch('/api/all-school-settings', {
@@ -1073,9 +1103,6 @@
     showToast('📊 خروجی CSV دانلود شد');
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // مدیریت لیست مکاتب
-  // ═══════════════════════════════════════════════════════════
   async function showManageSchools() {
     if (!manageSchoolsModal) {
       manageSchoolsModal = new bootstrap.Modal(document.getElementById('manageSchoolsModal'));
@@ -1243,9 +1270,6 @@
   }
   window.deleteSchoolAdmin = deleteSchoolAdmin;
 
-  // ═══════════════════════════════════════════════════════════
-  // پرنت و خروجی لیست کارمندان
-  // ═══════════════════════════════════════════════════════════
   function printList() {
     const records = loadedRecordsCache || [];
     if (records.length === 0) { showToast('رکوردی برای چاپ نیست', true); return; }

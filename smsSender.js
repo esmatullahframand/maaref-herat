@@ -1,5 +1,5 @@
 // smsSender.js
-const SMS_GATEWAY_URL = process.env.SMS_GATEWAY_URL || 'http://192.168.137.168:8080';
+const SMS_GATEWAY_URL = process.env.SMS_GATEWAY_URL || 'http://192.168.137.74:8080';
 const SMS_USERNAME = process.env.SMS_USERNAME || 'sms';
 const SMS_PASSWORD = process.env.SMS_PASSWORD || 'ZZEF6dep';
 const DEFAULT_DELAY_MS = 15000;

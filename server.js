@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const { sendBulkSMS, checkGatewayHealth } = require('./smsSender');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,7 +14,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V15.0 starting...');
+console.log('🔐 Server V16.0 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('🔐 Algorithm:', JWT_ALGORITHM);
 console.log('═══════════════════════════════════════');
@@ -42,6 +43,8 @@ const JOB_TITLES = [
 const NO_CODE_TITLES = [];
 const SERVICE_TITLES = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
+
+const SMS_CATEGORIES = ['لیسه', 'متوسطه', 'ابتداییه', 'مدارس', 'هسته مرکزی'];
 
 async function initDB() {
   try {
@@ -98,6 +101,29 @@ async function initDB() {
           lack_bust_field TEXT,
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      // ⭐ جدول شماره‌های پیامک
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS sms_contacts (
+          id SERIAL PRIMARY KEY,
+          category TEXT NOT NULL,
+          phone_number TEXT NOT NULL,
+          name TEXT,
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(category, phone_number)
+        );
+      `);
+      // ⭐ جدول تاریخچه پیامک
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS sms_history (
+          id SERIAL PRIMARY KEY,
+          category TEXT NOT NULL,
+          phone_number TEXT NOT NULL,
+          message TEXT NOT NULL,
+          status TEXT DEFAULT 'pending',
+          error TEXT,
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
       console.log('✅ جداول دیتابیس آماده شدند.');
@@ -652,7 +678,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
         totalTeachingHours: body.totalTeachingHours !== undefined ? String(body.totalTeachingHours).trim() : originalData.totalTeachingHours,
         evaluationScore: body.evaluationScore !== undefined ? String(body.evaluationScore).trim() : originalData.evaluationScore,
         
-        // ⭐ فیلدهای خدمتی رفته (قابل ویرایش توسط مکتب)
         serviceStatus: body.serviceStatus !== undefined ? body.serviceStatus : (originalData.serviceStatus || 'نخیر'),
         serviceDistrict: body.serviceDistrict !== undefined ? String(body.serviceDistrict).trim() : (originalData.serviceDistrict || ''),
         serviceSchool: body.serviceSchool !== undefined ? String(body.serviceSchool).trim() : (originalData.serviceSchool || ''),
@@ -828,6 +853,257 @@ app.get('/api/all-school-settings', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+// ⭐ مدیریت شماره‌های پیامک
+// ═══════════════════════════════════════════════════════════
+
+// دریافت شماره‌های یک کتگوری
+app.get('/api/sms-contacts/:category', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const category = decodeURIComponent(req.params.category);
+    
+    if (!SMS_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: 'کتگوری معتبر نیست' });
+    }
+    
+    const result = await pool.query(
+      'SELECT * FROM sms_contacts WHERE category = $1 ORDER BY id DESC',
+      [category]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('SMS contacts GET error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت شماره‌ها' });
+  }
+});
+
+// دریافت آمار کتگوری‌ها
+app.get('/api/sms-categories-stats', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const result = await pool.query(
+      `SELECT category, COUNT(*)::int as count 
+       FROM sms_contacts 
+       GROUP BY category`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('SMS stats error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت آمار' });
+  }
+});
+
+// افزودن شماره به کتگوری
+app.post('/api/sms-contacts', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    
+    const { category, phones } = req.body;
+    
+    if (!category || !phones || !Array.isArray(phones)) {
+      return res.status(400).json({ error: 'کتگوری و شماره‌ها الزامی است' });
+    }
+    
+    if (!SMS_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: 'کتگوری معتبر نیست' });
+    }
+    
+    let added = 0;
+    let skipped = 0;
+    let invalid = 0;
+    
+    for (const phone of phones) {
+      const normalized = normalizePhoneNumber(phone);
+      if (!normalized) {
+        invalid++;
+        continue;
+      }
+      
+      try {
+        const result = await pool.query(
+          `INSERT INTO sms_contacts (category, phone_number) 
+           VALUES ($1, $2) 
+           ON CONFLICT (category, phone_number) DO NOTHING
+           RETURNING id`,
+          [category, normalized]
+        );
+        if (result.rowCount > 0) added++;
+        else skipped++;
+      } catch (e) {
+        skipped++;
+      }
+    }
+    
+    res.json({ ok: true, added, skipped, invalid });
+  } catch (err) {
+    console.error('SMS contacts POST error:', err.message);
+    res.status(500).json({ error: 'خطا در ذخیره شماره‌ها: ' + err.message });
+  }
+});
+
+// حذف شماره
+app.delete('/api/sms-contacts/:id', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const result = await pool.query('DELETE FROM sms_contacts WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'شماره یافت نشد' });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('SMS contact DELETE error:', err.message);
+    res.status(500).json({ error: 'خطا در حذف شماره' });
+  }
+});
+
+// حذف همه شماره‌های یک کتگوری
+app.delete('/api/sms-contacts-category/:category', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const category = decodeURIComponent(req.params.category);
+    
+    const result = await pool.query('DELETE FROM sms_contacts WHERE category = $1', [category]);
+    res.json({ ok: true, deleted: result.rowCount });
+  } catch (err) {
+    console.error('SMS category DELETE error:', err.message);
+    res.status(500).json({ error: 'خطا در حذف شماره‌ها' });
+  }
+});
+
+// ⭐ ارسال پیامک به یک کتگوری
+app.post('/api/send-bulk-sms', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    
+    const { category, message, delayMs } = req.body;
+    
+    if (!category || !message) {
+      return res.status(400).json({ error: 'کتگوری و متن پیام الزامی است' });
+    }
+    
+    if (!SMS_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: 'کتگوری معتبر نیست' });
+    }
+    
+    const contacts = await pool.query(
+      'SELECT phone_number FROM sms_contacts WHERE category = $1',
+      [category]
+    );
+    
+    if (contacts.rows.length === 0) {
+      return res.status(400).json({ error: 'هیچ شماره‌ای در این کتگوری ثبت نشده است' });
+    }
+    
+    const phoneNumbers = contacts.rows.map(r => r.phone_number);
+    const finalDelay = parseInt(delayMs) || 15000;
+    
+    // ⭐ پاسخ فوری به کلاینت
+    res.json({ 
+      ok: true, 
+      count: phoneNumbers.length,
+      message: 'ارسال در پس‌زمینه شروع شد',
+      estimatedTime: Math.round((phoneNumbers.length * finalDelay) / 60000)
+    });
+    
+    // ⭐ ارسال در پس‌زمینه
+    console.log(`📱 شروع ارسال به کتگوری «${category}» — ${phoneNumbers.length} شماره`);
+    
+    sendBulkSMS(phoneNumbers, message, {
+      delayMs: finalDelay,
+      onProgress: async (progress) => {
+        // ذخیره در تاریخچه
+        try {
+          const lastResult = progress.results[progress.results.length - 1];
+          await pool.query(
+            `INSERT INTO sms_history (category, phone_number, message, status, error) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [
+              category, 
+              lastResult.phone, 
+              message, 
+              lastResult.success ? 'sent' : 'failed', 
+              lastResult.error || null
+            ]
+          );
+        } catch (e) {
+          console.error('Save history error:', e.message);
+        }
+      },
+      onComplete: async (summary) => {
+        console.log(`✅ ارسال کتگوری «${category}» کامل شد`);
+        console.log(`   موفق: ${summary.success} | ناموفق: ${summary.failed}`);
+      }
+    }).catch(err => {
+      console.error('Bulk SMS background error:', err);
+    });
+    
+  } catch (err) {
+    console.error('Send bulk SMS error:', err.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'خطا در ارسال پیامک' });
+    }
+  }
+});
+
+// ⭐ بررسی سلامت اتصال به SMS Gateway
+app.get('/api/sms-health', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const health = await checkGatewayHealth();
+    res.json(health);
+  } catch (err) {
+    console.error('SMS health error:', err.message);
+    res.status(500).json({ error: 'خطا در بررسی سلامت' });
+  }
+});
+
+// ⭐ تاریخچه ارسال پیامک
+app.get('/api/sms-history', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
+    const category = req.query.category ? decodeURIComponent(req.query.category) : null;
+    
+    let result;
+    if (category) {
+      result = await pool.query(
+        'SELECT * FROM sms_history WHERE category = $1 ORDER BY id DESC LIMIT 200',
+        [category]
+      );
+    } else {
+      result = await pool.query('SELECT * FROM sms_history ORDER BY id DESC LIMIT 200');
+    }
+    res.json(result.rows);
+  } catch (err) {
+    console.error('SMS history error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت تاریخچه' });
+  }
+});
+
+// ⭐ تابع کمکی برای نرمال‌سازی شماره
+function normalizePhoneNumber(phone) {
+  if (!phone) return null;
+  
+  let cleaned = String(phone).trim();
+  
+  // حذف فاصله و خط تیره
+  cleaned = cleaned.replace(/[\s\-\(\)]/g, '');
+  
+  // تبدیل اعداد فارسی به انگلیسی
+  cleaned = normalizeDigits(cleaned);
+  
+  // حذف +93 یا 0093 یا 93
+  if (cleaned.startsWith('+93')) cleaned = '0' + cleaned.substring(3);
+  else if (cleaned.startsWith('0093')) cleaned = '0' + cleaned.substring(4);
+  else if (cleaned.startsWith('93') && cleaned.length === 11) cleaned = '0' + cleaned.substring(2);
+  
+  // افزودن 0 اگر ندارد
+  if (!cleaned.startsWith('0')) cleaned = '0' + cleaned;
+  
+  // بررسی فرمت نهایی: 10 رقم با شروع 0
+  if (!/^0\d{9}$/.test(cleaned)) return null;
+  
+  return cleaned;
+}
+
+// ═══════════════════════════════════════════════════════════
 // تایید / حذف رکوردها
 // ═══════════════════════════════════════════════════════════
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
@@ -982,7 +1258,7 @@ app.get('/api/test', (req, res) => {
 
   res.json({
     ok: true,
-    version: '15.0.0',
+    version: '16.0.0',
     jwt_secret: JWT_SECRET_CONSTANT,
     jwt_algorithm: JWT_ALGORITHM,
     self_verify: verifyResult,
@@ -1002,7 +1278,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V15.0 live on port ' + PORT);
+  console.log('🚀 Server V16.0 live on port ' + PORT);
   console.log('📌 JWT_SECRET:', JWT_SECRET_CONSTANT);
   console.log('📌 Algorithm:', JWT_ALGORITHM);
   console.log('📌 Cache-Control: enabled for HTML');

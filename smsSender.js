@@ -1,17 +1,19 @@
 // smsSender.js
 // ═══════════════════════════════════════════════════════════
 // سیستم ارسال پیامک گروهی از طریق SMS Gateway for Android
+// نسخه سازگار با Node.js 18+ (fetch داخلی)
 // ═══════════════════════════════════════════════════════════
 
-const fetch = require('node-fetch');
+// ⭐ در Node.js 18+ تابع fetch به صورت داخلی موجود است — نیازی به node-fetch نیست
+// اگر روی Node.js قدیمی‌تر اجرا می‌کنید، خط زیر را از کامنت خارج کنید:
+// const fetch = require('node-fetch');
 
 // ⭐ اطلاعات اتصال به گوشی (SMS Gateway)
-// این مقادیر را با اطلاعات واقعی خودتان جایگزین کنید
 const SMS_GATEWAY_URL = process.env.SMS_GATEWAY_URL || 'http://192.168.137.168:8080';
 const SMS_USERNAME = process.env.SMS_USERNAME || 'sms';
 const SMS_PASSWORD = process.env.SMS_PASSWORD || 'ZZEF6dep';
 
-// ⭐ فاصله پیش‌فرض بین پیام‌ها (۱۵ ثانیه = 15000 میلی‌ثانیه)
+// ⭐ فاصله پیش‌فرض بین پیام‌ها (۱۵ ثانیه)
 const DEFAULT_DELAY_MS = 15000;
 
 // ⭐ حداکثر تلاش مجدد برای هر شماره
@@ -23,11 +25,11 @@ const MAX_RETRIES = 2;
 async function sendSingleSMS(phoneNumber, message, retries = 0) {
   const pair = `${SMS_USERNAME}:${SMS_PASSWORD}`;
   const encoded = Buffer.from(pair).toString('base64');
-  
+
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // ۳۰ ثانیه timeout
-    
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
     const res = await fetch(`${SMS_GATEWAY_URL}/message`, {
       method: 'POST',
       headers: {
@@ -40,46 +42,44 @@ async function sendSingleSMS(phoneNumber, message, retries = 0) {
       }),
       signal: controller.signal
     });
-    
+
     clearTimeout(timeout);
-    
+
     let data;
     try {
       data = await res.json();
     } catch (e) {
       data = {};
     }
-    
+
     if (res.ok) {
-      return { 
-        success: true, 
-        id: data.id || null, 
-        state: data.state || 'Pending' 
+      return {
+        success: true,
+        id: data.id || null,
+        state: data.state || 'Pending'
       };
     } else {
-      // اگر خطای موقت بود و تلاش مجدد ممکن است
       if (retries < MAX_RETRIES && (res.status === 500 || res.status === 503)) {
         console.log(`   ⏳ تلاش مجدد (${retries + 1}/${MAX_RETRIES})...`);
         await new Promise(r => setTimeout(r, 5000));
         return sendSingleSMS(phoneNumber, message, retries + 1);
       }
-      
-      return { 
-        success: false, 
-        error: data.message || data.error || `HTTP ${res.status}` 
+
+      return {
+        success: false,
+        error: data.message || data.error || `HTTP ${res.status}`
       };
     }
   } catch (err) {
-    // خطای شبکه یا timeout
     if (retries < MAX_RETRIES) {
       console.log(`   ⏳ تلاش مجدد (${retries + 1}/${MAX_RETRIES})...`);
       await new Promise(r => setTimeout(r, 5000));
       return sendSingleSMS(phoneNumber, message, retries + 1);
     }
-    
-    return { 
-      success: false, 
-      error: err.name === 'AbortError' ? 'Timeout' : err.message 
+
+    return {
+      success: false,
+      error: err.name === 'AbortError' ? 'Timeout' : err.message
     };
   }
 }
@@ -91,46 +91,45 @@ async function sendBulkSMS(phoneNumbers, message, options = {}) {
   const delayMs = options.delayMs || DEFAULT_DELAY_MS;
   const onProgress = options.onProgress || null;
   const onComplete = options.onComplete || null;
-  
+
   const results = [];
   const total = phoneNumbers.length;
   const startTime = Date.now();
-  
+
   console.log('═══════════════════════════════════════');
   console.log(`🚀 شروع ارسال پیامک گروهی`);
   console.log(`📊 تعداد شماره‌ها: ${total}`);
   console.log(`⏱️  فاصله بین پیام‌ها: ${delayMs / 1000} ثانیه`);
   console.log(`⏳ زمان تقریبی: ${Math.round((total * delayMs) / 60000)} دقیقه`);
   console.log('═══════════════════════════════════════');
-  
+
   for (let i = 0; i < phoneNumbers.length; i++) {
     const phone = phoneNumbers[i];
     const progress = `[${i + 1}/${total}]`;
-    
+
     console.log(`📤 ${progress} ارسال به ${phone}...`);
-    
+
     const result = await sendSingleSMS(phone, message);
-    
+
     if (result.success) {
       console.log(`   ✅ موفق — ID: ${result.id || 'N/A'}`);
-      results.push({ 
-        phone, 
-        success: true, 
+      results.push({
+        phone,
+        success: true,
         id: result.id,
         state: result.state,
         timestamp: new Date().toISOString()
       });
     } else {
       console.log(`   ❌ خطا: ${result.error}`);
-      results.push({ 
-        phone, 
-        success: false, 
+      results.push({
+        phone,
+        success: false,
         error: result.error,
         timestamp: new Date().toISOString()
       });
     }
-    
-    // ⭐ فراخوانی callback پیشرفت
+
     if (onProgress && typeof onProgress === 'function') {
       try {
         await onProgress({
@@ -145,24 +144,23 @@ async function sendBulkSMS(phoneNumbers, message, options = {}) {
         console.error('onProgress callback error:', e.message);
       }
     }
-    
-    // ⭐ تأخیر بین پیام‌ها (به جز پیام آخر)
+
     if (i < phoneNumbers.length - 1) {
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
-  
+
   const endTime = Date.now();
   const duration = Math.round((endTime - startTime) / 1000);
   const successCount = results.filter(r => r.success).length;
   const failCount = results.filter(r => !r.success).length;
-  
+
   console.log('═══════════════════════════════════════');
   console.log(`✅ ارسال کامل شد در ${duration} ثانیه`);
   console.log(`✅ موفق: ${successCount}`);
   console.log(`❌ ناموفق: ${failCount}`);
   console.log('═══════════════════════════════════════');
-  
+
   const summary = {
     total: total,
     success: successCount,
@@ -172,8 +170,7 @@ async function sendBulkSMS(phoneNumbers, message, options = {}) {
     startTime: new Date(startTime).toISOString(),
     endTime: new Date(endTime).toISOString()
   };
-  
-  // ⭐ فراخوانی callback اتمام
+
   if (onComplete && typeof onComplete === 'function') {
     try {
       await onComplete(summary);
@@ -181,7 +178,7 @@ async function sendBulkSMS(phoneNumbers, message, options = {}) {
       console.error('onComplete callback error:', e.message);
     }
   }
-  
+
   return summary;
 }
 
@@ -191,11 +188,11 @@ async function sendBulkSMS(phoneNumbers, message, options = {}) {
 async function checkGatewayHealth() {
   const pair = `${SMS_USERNAME}:${SMS_PASSWORD}`;
   const encoded = Buffer.from(pair).toString('base64');
-  
+
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
-    
+
     const res = await fetch(`${SMS_GATEWAY_URL}/health`, {
       method: 'GET',
       headers: {
@@ -203,28 +200,28 @@ async function checkGatewayHealth() {
       },
       signal: controller.signal
     });
-    
+
     clearTimeout(timeout);
-    
+
     if (res.ok) {
       const data = await res.json().catch(() => ({}));
-      return { 
-        ok: true, 
+      return {
+        ok: true,
         status: 'online',
-        data: data 
+        data: data
       };
     }
-    
-    return { 
-      ok: false, 
+
+    return {
+      ok: false,
       status: 'error',
-      error: `HTTP ${res.status}` 
+      error: `HTTP ${res.status}`
     };
   } catch (err) {
-    return { 
-      ok: false, 
+    return {
+      ok: false,
       status: 'offline',
-      error: err.name === 'AbortError' ? 'Timeout' : err.message 
+      error: err.name === 'AbortError' ? 'Timeout' : err.message
     };
   }
 }

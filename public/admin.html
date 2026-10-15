@@ -48,6 +48,8 @@
   .empty-search-state .title { font-size: 16px; font-weight: bold; color: #475569; margin-bottom: 8px; }
   .empty-search-state .subtitle { font-size: 13px; color: #94a3b8; }
   .empty-search-state .filters-list { font-size: 12px; color: #64748b; margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; display: inline-block; }
+  .budget-info-bar { background: #fef3c7; border-right: 5px solid #f59e0b; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #78350f; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .budget-info-bar strong { color: #92400e; }
 </style>
 </head>
 <body>
@@ -106,7 +108,7 @@
     </div>
 
     <div class="info-banner">
-      ℹ️ <strong>توجه:</strong> برای مشاهده لیست کارمندان، از <strong>فیلترها</strong> یا <strong>جستجو</strong> استفاده کنید.<br>
+      ℹ️ برای مشاهده لیست کارمندان، از <strong>فیلترها</strong> یا <strong>جستجو</strong> استفاده کنید.<br>
       ✏️ ویرایش توسط مکتب انجام می‌شود (ادمین فقط تایید، مشاهده، پرنت و حذف).
     </div>
 
@@ -197,6 +199,9 @@
         </select>
       </div>
     </div>
+
+    <!-- ⭐ نمایش مکاتب فیلتر شده -->
+    <div id="budgetSchoolsInfo"></div>
 
     <div id="filterInfoBar"></div>
 
@@ -542,6 +547,7 @@
         '</div>' +
         '</td></tr>';
       document.getElementById('filterInfoBar').innerHTML = '';
+      document.getElementById('budgetSchoolsInfo').innerHTML = '';
       loadStats();
       return;
     }
@@ -583,12 +589,29 @@
           return (info.workshopStatus || 'نخیر') === f.workshop;
         });
       }
+      // ⭐ فیلتر وضعیت بست (بر اساس مکتب)
       if (f.budget) {
+        // پیدا کردن مکاتب با این وضعیت بست
+        const schoolsWithBudget = allSchoolSettings.filter(s => s.budget_status === f.budget);
+        const schoolNames = schoolsWithBudget.map(s => s.schoolname);
+        
+        // نمایش اطلاعات مکاتب فیلتر شده
+        showBudgetSchoolsInfo(f.budget, schoolsWithBudget);
+        
+        // فیلتر کارمندان بر اساس مکتب
         records = records.filter(row => {
-          const settings = allSchoolSettings.find(s => s.schoolname === row.schoolname);
-          return settings && settings.budget_status === f.budget;
+          let schoolName = row.schoolname;
+          if (!schoolName && row.userid) {
+            const user = allSchoolsList.find(u => u.id === row.userid);
+            if (user) schoolName = user.schoolname;
+          }
+          if (!schoolName) return false;
+          return schoolNames.includes(schoolName);
         });
+      } else {
+        document.getElementById('budgetSchoolsInfo').innerHTML = '';
       }
+      
       if (f.empStatus) {
         records = records.filter(row => {
           const info = row.data || {};
@@ -615,6 +638,45 @@
       document.getElementById('allTableBody').innerHTML =
         '<tr><td colspan="13" class="text-danger p-4">خطا در بارگذاری</td></tr>';
     }
+  }
+
+  // ⭐ نمایش مکاتب با وضعیت بست خاص
+  function showBudgetSchoolsInfo(budgetStatus, schools) {
+    const infoEl = document.getElementById('budgetSchoolsInfo');
+    
+    if (!schools || schools.length === 0) {
+      infoEl.innerHTML = `<div class="budget-info-bar">
+        <span>⚠️ هیچ مکتبی با وضعیت <strong>${escapeHtml(budgetStatus)}</strong> ثبت نشده است</span>
+      </div>`;
+      return;
+    }
+    
+    const budgetText = budgetStatus === 'اضافه بست' ? '➕ اضافه بست' : 
+                       budgetStatus === 'کمبود بست' ? '➖ کمبود بست' : 
+                       '⚖️ عادی';
+    
+    let schoolsHtml = schools.map(s => {
+      let details = '';
+      if (budgetStatus === 'اضافه بست') {
+        details = `${s.extra_bust_count || 0} بست (${s.extra_bust_field || '—'})`;
+      } else if (budgetStatus === 'کمبود بست') {
+        details = `${s.lack_bust_count || 0} بست (${s.lack_bust_field || '—'})`;
+      }
+      return `<span style="background:#fff; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:bold; border:1px solid #f59e0b; margin:2px;">
+        🏫 ${escapeHtml(s.schoolname || '—')} ${details ? '- ' + details : ''}
+      </span>`;
+    }).join('');
+    
+    infoEl.innerHTML = `<div class="budget-info-bar">
+      <div style="flex:1;">
+        <div style="margin-bottom:8px;">
+          <strong>${budgetText}</strong> — تعداد مکاتب: <strong>${schools.length}</strong>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+          ${schoolsHtml}
+        </div>
+      </div>
+    </div>`;
   }
 
   async function loadStats() {
@@ -1386,7 +1448,7 @@
     if (f.jobTitle) filterDesc.push('عنوان بست: ' + f.jobTitle);
     if (f.gender) filterDesc.push('جنسیت: ' + f.gender);
     if (f.workshop) filterDesc.push('ورکشاپ: ' + f.workshop);
-    if (f.budget) filterDesc.push('بست: ' + f.budget);
+    if (f.budget) filterDesc.push('وضعیت بست: ' + f.budget);
     if (f.empStatus) filterDesc.push('وضعیت: ' + (f.empStatus === 'active' ? 'فعال' : 'متقاعد'));
     if (f.service) filterDesc.push('خدمتی: ' + (f.service === 'بلی' ? 'رفته' : 'نرفته'));
     if (f.search) filterDesc.push('جستجو: ' + f.search);

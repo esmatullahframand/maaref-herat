@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ارسال پیامک — معارف هرات</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<style>
+  body { font-family: Tahoma, Arial, sans-serif; background: #f0f4f8; margin: 0; direction: rtl; }
+  .topbar { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .card-custom { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,.04); margin-bottom: 25px; }
+  .text-purple { color: #7c3aed !important; }
+  .btn-purple { background-color: #7c3aed; color: white; border: none; }
+  .btn-purple:hover { background-color: #6d28d9; color: white; }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 8px; font-weight: bold; z-index: 9999; display: none; max-width: 90%; text-align: center; }
+  .toast.error { background: #ef4444; }
+  .info-banner { background: #f3e8ff; border-right: 5px solid #7c3aed; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #5b21b6; }
+  .modal-header-purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; }
+  .modal-header-purple .btn-close { filter: invert(1); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h5 class="mb-0 fw-bold">📱 ارسال پیامک گروهی — معارف هرات</h5>
+    <small class="opacity-75">مدیریت شماره‌ها و ارسال پیام</small>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="/admin.html" class="btn btn-light btn-sm fw-bold px-3">↩️ بازگشت به پنل</a>
+    <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
+  </div>
+</div>
+
+<div class="container-fluid px-4 py-4">
+
+  <div class="card card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h5 class="text-purple m-0 fw-bold">📱 کتگوری‌های پیامک</h5>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-purple fw-bold btn-sm px-3" onclick="showSmsHistory()">📜 تاریخچه ارسال</button>
+        <button class="btn btn-outline-primary fw-bold btn-sm px-3" onclick="checkSmsHealth()">🔄 بررسی اتصال گوشی</button>
+      </div>
+    </div>
+
+    <div class="info-banner">
+      ℹ️ برای هر کتگوری می‌توانید شماره‌ها را ذخیره، حذف و پیامک گروهی ارسال کنید.<br>
+      📌 شماره‌ها به‌صورت دائمی در دیتابیس ذخیره می‌شوند.
+    </div>
+
+    <div id="smsHealthBox" style="background:#f8fafc; padding:12px 16px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border:1px solid #e2e8f0;">
+      <span id="smsHealthText" style="font-size:14px;">🔄 در حال بررسی اتصال به گوشی...</span>
+      <button class="btn btn-purple btn-sm fw-bold" onclick="checkSmsHealth()">🔄 بررسی مجدد</button>
+    </div>
+
+    <div id="smsCategoriesList" class="row g-3"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal مدیریت شماره‌ها -->
+<div class="modal fade" id="smsContactsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-purple">
+        <h5 class="modal-title" id="smsContactsModalTitle">📋 مدیریت شماره‌ها</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label fw-bold">➕ شماره‌های جدید (هر خط یک شماره):</label>
+        <textarea id="newPhonesInput" class="form-control" rows="5" placeholder="0798525880&#10;07900123456&#10;07200123456" style="font-family:monospace; direction:ltr; text-align:left;"></textarea>
+        <small class="text-muted">💡 می‌توانید با ویرگول یا کاما هم جدا کنید. هر دو فرمت ۰۷۹... و +۹۳... پشتیبانی می‌شود.</small>
+        <div class="mt-3">
+          <button class="btn btn-purple fw-bold" onclick="addPhonesToCategory()">➕ افزودن به لیست</button>
+        </div>
+        <div id="addPhonesResult" class="mt-3"></div>
+        <hr class="my-4">
+        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+          <label class="form-label fw-bold m-0">📋 لیست شماره‌های ذخیره‌شده (<span id="contactsCount">0</span>):</label>
+          <button class="btn btn-danger btn-sm fw-bold" onclick="deleteAllPhonesInCategory()">🗑️ حذف همه</button>
+        </div>
+        <div id="contactsList" style="max-height:350px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ارسال پیامک -->
+<div class="modal fade" id="smsSendModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#059669,#047857); color:#fff;">
+        <h5 class="modal-title" id="smsSendModalTitle">📤 ارسال پیامک</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#eff6ff; padding:12px; border-radius:8px; margin-bottom:16px; font-size:14px;">
+          📊 تعداد شماره‌ها: <strong id="sendCount">0</strong>
+        </div>
+        <label class="form-label fw-bold">✍️ متن پیام:</label>
+        <textarea id="smsMessageText" class="form-control" rows="5" placeholder="سلام، این یک پیام تست است..." style="font-family:inherit;"></textarea>
+        <small class="text-muted">💡 طول پیام: <span id="smsCharCount">0</span> کاراکتر</small>
+        <label class="form-label fw-bold mt-3">⏱️ فاصله بین پیام‌ها:</label>
+        <select id="smsDelay" class="form-select">
+          <option value="10000">۱۰ ثانیه</option>
+          <option value="15000" selected>۱۵ ثانیه (پیشنهادی)</option>
+          <option value="20000">۲۰ ثانیه</option>
+          <option value="30000">۳۰ ثانیه</option>
+        </select>
+        <button id="sendSmsBtn" class="btn btn-success w-100 fw-bold mt-4 py-2" style="font-size:16px;" onclick="sendBulkSmsNow()">📤 ارسال پیامک</button>
+        <div id="sendSmsResult" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal تاریخچه -->
+<div class="modal fade" id="smsHistoryModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header modal-header-purple">
+        <h5 class="modal-title">📜 تاریخچه ارسال پیامک</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
+          <label class="fw-bold m-0">🔍 فیلتر کتگوری:</label>
+          <select id="smsHistoryCategoryFilter" class="form-select" style="max-width:200px;" onchange="loadSmsHistory()">
+            <option value="">📋 همه</option>
+            <option value="لیسه">🎓 لیسه</option>
+            <option value="متوسطه">🏫 متوسطه</option>
+            <option value="ابتداییه">📚 ابتداییه</option>
+            <option value="مدارس">🏢 مدارس</option>
+            <option value="هسته مرکزی">🏛️ هسته مرکزی</option>
+          </select>
+          <button class="btn btn-purple btn-sm fw-bold" onclick="loadSmsHistory()">🔄 بروزرسانی</button>
+        </div>
+        <div class="table-responsive border rounded">
+          <table class="table table-hover table-bordered align-middle mb-0" style="font-size:12px;">
+            <thead class="table-light">
+              <tr>
+                <th style="width:50px;">#</th>
+                <th>کتگوری</th>
+                <th>شماره</th>
+                <th style="max-width:350px;">متن پیام</th>
+                <th>وضعیت</th>
+                <th>زمان</th>
+              </tr>
+            </thead>
+            <tbody id="smsHistoryBody">
+              <tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const token = localStorage.getItem('hr_token');
+  const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
+
+  if (!token || token === 'undefined' || token === 'null') {
+    localStorage.clear();
+    location.href = '/';
+    throw new Error('No token');
+  }
+
+  if (currentUser.role !== 'admin') {
+    alert('دسترسی فقط برای ادمین');
+    location.href = '/school.html';
+    throw new Error('Not admin');
+  }
+
+  const SMS_CATEGORIES = ['لیسه', 'متوسطه', 'ابتداییه', 'مدارس', 'هسته مرکزی'];
+  const SMS_ICONS = { 'لیسه': '🎓', 'متوسطه': '🏫', 'ابتداییه': '📚', 'مدارس': '🏢', 'هسته مرکزی': '🏛️' };
+
+  let smsCurrentCategory = null;
+  let smsStats = {};
+  let smsContactsModal = null;
+  let smsSendModal = null;
+  let smsHistoryModal = null;
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isError ? ' error' : '');
+    t.style.display = 'block';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  function logout() {
+    localStorage.removeItem('hr_token');
+    localStorage.removeItem('hr_user');
+    location.href = '/';
+  }
+
+  async function checkSmsHealth() {
+    const box = document.getElementById('smsHealthText');
+    box.innerHTML = '🔄 در حال بررسی...';
+    try {
+      const res = await fetch('/api/sms-health', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      const data = await res.json();
+      if (data.ok) {
+        box.innerHTML = '✅ اتصال به گوشی برقرار است <span class="badge bg-success">online</span>';
+      } else {
+        box.innerHTML = '❌ اتصال برقرار نیست — ' + escapeHtml(data.error || data.status || 'خطا');
+      }
+    } catch (e) {
+      box.innerHTML = '❌ خطا در بررسی: ' + escapeHtml(e.message);
+    }
+  }
+
+  async function loadSmsCategories() {
+    try {
+      const res = await fetch('/api/sms-categories-stats', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      const stats = await res.json();
+      smsStats = {};
+      if (Array.isArray(stats)) stats.forEach(s => { smsStats[s.category] = s.count; });
+      renderSmsCategories();
+    } catch (e) { console.error(e); }
+  }
+
+  function renderSmsCategories() {
+    const container = document.getElementById('smsCategoriesList');
+    container.innerHTML = SMS_CATEGORIES.map(cat => {
+      const count = smsStats[cat] || 0;
+      const disabled = count === 0 ? 'disabled' : '';
+      const disabledStyle = count === 0 ? 'opacity:0.5;cursor:not-allowed;' : '';
+      return `
+        <div class="col-md-6 col-lg-4">
+          <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; box-shadow:0 2px 6px rgba(0,0,0,.04);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <div style="font-size:17px; font-weight:bold; color:#5b21b6;">${SMS_ICONS[cat]} ${escapeHtml(cat)}</div>
+                <div style="color:#64748b; font-size:13px; margin-top:4px;">${count} شماره</div>
+              </div>
+              <div style="font-size:32px; opacity:0.4;">${SMS_ICONS[cat]}</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-purple btn-sm fw-bold flex-fill" onclick="openContactsModal('${cat}')">📋 شماره‌ها</button>
+              <button class="btn btn-success btn-sm fw-bold flex-fill" ${disabled} style="${disabledStyle}" onclick="openSendModal('${cat}')">📤 ارسال</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function openContactsModal(category) {
+    smsCurrentCategory = category;
+    if (!smsContactsModal) smsContactsModal = new bootstrap.Modal(document.getElementById('smsContactsModal'));
+    document.getElementById('smsContactsModalTitle').textContent = `${SMS_ICONS[category]} ${category} — مدیریت شماره‌ها`;
+    document.getElementById('newPhonesInput').value = '';
+    document.getElementById('addPhonesResult').innerHTML = '';
+    smsContactsModal.show();
+    loadContactsList(category);
+  }
+  window.openContactsModal = openContactsModal;
+
+  async function loadContactsList(category) {
+    const list = document.getElementById('contactsList');
+    list.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b;">در حال بارگذاری...</div>';
+    try {
+      const res = await fetch('/api/sms-contacts/' + encodeURIComponent(category), { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      const contacts = await res.json();
+      document.getElementById('contactsCount').textContent = contacts.length;
+      if (contacts.length === 0) {
+        list.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b;">هیچ شماره‌ای ثبت نشده است</div>';
+        return;
+      }
+      list.innerHTML = contacts.map((c, i) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #f1f5f9;">
+          <span style="font-family:monospace; direction:ltr; font-size:14px; color:#1e293b;">${i + 1}. ${escapeHtml(c.phone_number)}</span>
+          <button class="btn btn-danger btn-sm fw-bold" style="padding:2px 10px; font-size:13px;" onclick="deleteContact(${c.id})">🗑️</button>
+        </div>
+      `).join('');
+    } catch (e) {
+      list.innerHTML = `<div style="padding:20px; color:#dc2626;">خطا: ${escapeHtml(e.message)}</div>`;
+    }
+  }
+
+  async function addPhonesToCategory() {
+    const raw = document.getElementById('newPhonesInput').value.trim();
+    const resultEl = document.getElementById('addPhonesResult');
+    if (!raw) {
+      resultEl.innerHTML = '<div class="alert alert-danger mb-0">❌ حداقل یک شماره وارد کنید</div>';
+      return;
+    }
+    const phones = raw.split(/[\n,،;]+/).map(p => p.trim()).filter(Boolean);
+    try {
+      const res = await fetch('/api/sms-contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ category: smsCurrentCategory, phones })
+      });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      const data = await res.json();
+      if (data.ok) {
+        resultEl.innerHTML = `<div class="alert alert-success mb-0">✅ افزوده شد: <strong>${data.added}</strong> | تکراری: <strong>${data.skipped}</strong> | نامعتبر: <strong>${data.invalid}</strong></div>`;
+        document.getElementById('newPhonesInput').value = '';
+        await loadContactsList(smsCurrentCategory);
+        await loadSmsCategories();
+      } else {
+        resultEl.innerHTML = `<div class="alert alert-danger mb-0">❌ ${escapeHtml(data.error)}</div>`;
+      }
+    } catch (e) {
+      resultEl.innerHTML = `<div class="alert alert-danger mb-0">❌ ${escapeHtml(e.message)}</div>`;
+    }
+  }
+  window.addPhonesToCategory = addPhonesToCategory;
+
+  async function deleteContact(id) {
+    if (!confirm('این شماره حذف شود؟')) return;
+    try {
+      const res = await fetch('/api/sms-contacts/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      await loadContactsList(smsCurrentCategory);
+      await loadSmsCategories();
+      showToast('🗑️ شماره حذف شد');
+    } catch (e) { showToast('خطا: ' + e.message, true); }
+  }
+  window.deleteContact = deleteContact;
+
+  async function deleteAllPhonesInCategory() {
+    if (!confirm(`⚠️ همه شماره‌های «${smsCurrentCategory}» حذف شوند؟`)) return;
+    try {
+      const res = await fetch('/api/sms-contacts-category/' + encodeURIComponent(smsCurrentCategory), {
+        method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      const data = await res.json();
+      await loadContactsList(smsCurrentCategory);
+      await loadSmsCategories();
+      showToast(`🗑️ ${data.deleted} شماره حذف شد`);
+    } catch (e) { showToast('خطا: ' + e.message, true); }
+  }
+  window.deleteAllPhonesInCategory = deleteAllPhonesInCategory;
+
+  function openSendModal(category) {
+    smsCurrentCategory = category;
+    if (!smsSendModal) smsSendModal = new bootstrap.Modal(document.getElementById('smsSendModal'));
+    document.getElementById('smsSendModalTitle').textContent = `${SMS_ICONS[category]} ارسال پیامک به ${category}`;
+    document.getElementById('sendCount').textContent = smsStats[category] || 0;
+    document.getElementById('smsMessageText').value = '';
+    document.getElementById('smsCharCount').textContent = '0';
+    document.getElementById('sendSmsResult').innerHTML = '';
+    smsSendModal.show();
+  }
+  window.openSendModal = openSendModal;
+
+  document.getElementById('smsMessageText').addEventListener('input', function() {
+    document.getElementById('smsCharCount').textContent = this.value.length;
+  });
+
+  async function sendBulkSmsNow() {
+    const message = document.getElementById('smsMessageText').value.trim();
+    const delayMs = parseInt(document.getElementById('smsDelay').value);
+    const resultEl = document.getElementById('sendSmsResult');
+    if (!message) {
+      resultEl.innerHTML = '<div class="alert alert-danger mb-0">❌ متن پیام الزامی است</div>';
+      return;
+    }
+    const count = smsStats[smsCurrentCategory] || 0;
+    const estimatedMin = Math.round((count * delayMs) / 60000);
+    if (!confirm(`📤 ارسال به ${count} شماره؟\n⏱️ زمان تقریبی: ${estimatedMin} دقیقه\n\nآیا مطمئن هستید؟`)) return;
+    const btn = document.getElementById('sendSmsBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ در حال ارسال...';
+    try {
+      const res = await fetch('/api/send-bulk-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ category: smsCurrentCategory, message, delayMs })
+      });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      const data = await res.json();
+      if (data.ok) {
+        resultEl.innerHTML = `<div class="alert alert-success mb-0">✅ ارسال در پس‌زمینه شروع شد<br>📊 تعداد: <strong>${data.count}</strong> شماره<br>⏱️ زمان تقریبی: <strong>${data.estimatedTime}</strong> دقیقه<br><small>💡 می‌توانید این پنجره را ببندید. ارسال ادامه می‌یابد.</small></div>`;
+        showToast('📤 ارسال شروع شد');
+      } else {
+        resultEl.innerHTML = `<div class="alert alert-danger mb-0">❌ ${escapeHtml(data.error)}</div>`;
+      }
+    } catch (e) {
+      resultEl.innerHTML = `<div class="alert alert-danger mb-0">❌ ${escapeHtml(e.message)}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📤 ارسال پیامک';
+    }
+  }
+  window.sendBulkSmsNow = sendBulkSmsNow;
+
+  function showSmsHistory() {
+    if (!smsHistoryModal) smsHistoryModal = new bootstrap.Modal(document.getElementById('smsHistoryModal'));
+    smsHistoryModal.show();
+    loadSmsHistory();
+  }
+  window.showSmsHistory = showSmsHistory;
+
+  async function loadSmsHistory() {
+    const tbody = document.getElementById('smsHistoryBody');
+    const category = document.getElementById('smsHistoryCategoryFilter').value;
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
+    try {
+      const url = '/api/sms-history' + (category ? '?category=' + encodeURIComponent(category) : '');
+      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      const history = await res.json();
+      if (!Array.isArray(history) || history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">هیچ سابقه‌ای یافت نشد</td></tr>';
+        return;
+      }
+      tbody.innerHTML = history.map((h, i) => {
+        const statusClass = h.status === 'sent' ? 'badge bg-success' : h.status === 'failed' ? 'badge bg-danger' : 'badge bg-warning text-dark';
+        const statusText = h.status === 'sent' ? '✅ ارسال شد' : h.status === 'failed' ? '❌ ناموفق' : '⏳ در انتظار';
+        const time = h.createdat ? new Date(h.createdat).toLocaleString('fa-IR') : '—';
+        const msgPreview = (h.message || '').length > 80 ? escapeHtml(h.message.substring(0, 80)) + '...' : escapeHtml(h.message || '');
+        return `<tr>
+          <td>${i + 1}</td>
+          <td><span class="badge bg-light text-dark">${escapeHtml(h.category || '-')}</span></td>
+          <td style="font-family:monospace; direction:ltr;">${escapeHtml(h.phone_number || '-')}</td>
+          <td style="font-size:11px;">${msgPreview}</td>
+          <td><span class="${statusClass}">${statusText}</span></td>
+          <td style="font-size:11px; color:#64748b;">${time}</td>
+        </tr>`;
+      }).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger p-4">خطا: ${escapeHtml(e.message)}</td></tr>`;
+    }
+  }
+  window.loadSmsHistory = loadSmsHistory;
+
+  (async function init() {
+    await checkSmsHealth();
+    await loadSmsCategories();
+  })();
+</script>
+
+</body>
+</html>

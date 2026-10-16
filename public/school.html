@@ -389,7 +389,25 @@
               <label>مدت ورکشاپ *</label><input type="text" id="workshopDuration">
             </div>
             <div class="form-group"><label>مجموعه ساعت درسی</label><input type="text" id="totalTeachingHours"></div>
-            <div class="form-group"><label>نمره ارزیابی</label><input type="text" id="evaluationScore"></div>
+            
+            <!-- ⭐ بخش ارزیابی -->
+            <div class="form-group">
+              <label>ارزیابی شده؟ *</label>
+              <select id="evaluationStatus" onchange="toggleEvaluationFields()">
+                <option value="نخیر">نخیر</option>
+                <option value="بلی">بلی</option>
+              </select>
+              <small class="field-hint">📌 فقط در صورت ارزیابی‌های سالانه درج شود</small>
+            </div>
+            <div class="form-group" id="evaluationDateGroup" style="display:none;">
+              <label>تاریخ ارزیابی (شمسی) *</label>
+              <input type="text" id="evaluationDate" placeholder="مثال: 1400/03/20 یا 20/03/1400">
+              <small id="evaluationDateMsg" class="date-msg"></small>
+            </div>
+            <div class="form-group" id="evaluationScoreGroup" style="display:none;">
+              <label>نمره ارزیابی *</label>
+              <input type="text" id="evaluationScore" placeholder="مثال: 85">
+            </div>
           </div>
         </div>
 
@@ -443,7 +461,6 @@
     <div class="card">
       <h4>📋 لیست کارمندان</h4>
 
-      <!-- ⭐ آمار — همیشه نمایش داده می‌شود -->
       <div class="stats-grid">
         <div class="stat-box total"><div class="stat-label">👥 کل</div><div class="stat-value" id="statTotal">0</div></div>
         <div class="stat-box teacher"><div class="stat-label">👨‍🏫 معلمان</div><div class="stat-value" id="statTeachers">0</div></div>
@@ -454,7 +471,6 @@
         <div class="stat-box pending"><div class="stat-label">⏳ در انتظار</div><div class="stat-value" id="statPending">0</div></div>
       </div>
 
-      <!-- ⭐ کادر جستجو -->
       <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو در لیست کارمندان (نام، ولد، کُد بست، عنوان بست)..." oninput="debouncedLoad()">
 
       <div class="table-responsive">
@@ -563,7 +579,6 @@
     }).join('');
   }
 
-  // ⭐ محاسبه سن از تاریخ شمسی
   function calculateAge(birthDateStr) {
     if (!birthDateStr) return null;
     const cleaned = normalizeDigits(birthDateStr).replace(/[.\-]/g, '/').trim();
@@ -732,9 +747,9 @@
   attachLiveValidation('enrollmentDate', validateShamsiDate, 'enrollmentDateMsg');
   attachLiveValidation('graduationDate', validateShamsiDate, 'graduationDateMsg');
   attachLiveValidation('serviceDate', validateShamsiDate, 'serviceDateMsg');
+  attachLiveValidation('evaluationDate', validateShamsiDate, 'evaluationDateMsg');
   attachLiveValidation('jobCode', validateJobCode, 'jobCodeMsg');
   attachLiveValidation('eTazkira', validateTazkira);
-  attachLiveValidation('eETazkira', validateTazkira);
 
   document.getElementById('jobCode').addEventListener('input', function() {
     jobCodeIsDuplicate = false;
@@ -951,7 +966,23 @@
   }
   window.toggleWorkshopFields = toggleWorkshopFields;
 
-  // ⭐ تابع محاسبه و نمایش آمار
+  function toggleEvaluationFields() {
+    const status = document.getElementById('evaluationStatus').value;
+    const dateGroup = document.getElementById('evaluationDateGroup');
+    const scoreGroup = document.getElementById('evaluationScoreGroup');
+    
+    if (status === 'بلی') {
+      dateGroup.style.display = 'flex';
+      scoreGroup.style.display = 'flex';
+    } else {
+      dateGroup.style.display = 'none';
+      scoreGroup.style.display = 'none';
+      document.getElementById('evaluationDate').value = '';
+      document.getElementById('evaluationScore').value = '';
+    }
+  }
+  window.toggleEvaluationFields = toggleEvaluationFields;
+
   function updateStats(records) {
     if (!Array.isArray(records) || records.length === 0) {
       document.getElementById('statTotal').textContent = '0';
@@ -1115,7 +1146,6 @@
   async function loadSchoolRecords() {
     const searchVal = document.getElementById('searchInput').value.trim();
     try {
-      // ⭐ اگر جستجو خالی است، فقط آمار را نمایش بده و لیست را خالی نگه دار
       if (!searchVal) {
         const statRes = await fetch('/api/records', { 
           headers: { 'Authorization': `Bearer ${token}` } 
@@ -1163,7 +1193,6 @@
         return;
       }
 
-      // آمار بر اساس نتایج جستجو
       updateStats(records);
 
       const fragment = document.createDocumentFragment();
@@ -1242,6 +1271,8 @@
       ['مضمون تدریس', info.subjectTeaching],
       ['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle],
       ['مدت ورکشاپ', info.workshopDuration], ['مجموعه ساعت درسی', info.totalTeachingHours],
+      ['ارزیابی شده', info.evaluationStatus || 'نخیر'],
+      ['تاریخ ارزیابی', info.evaluationDate],
       ['نمره ارزیابی', info.evaluationScore],
       ['خدمتی رفته', info.serviceStatus || 'نخیر'],
       ['ولسوالی خدمتی', info.serviceDistrict],
@@ -1279,6 +1310,8 @@
       ['درجه تحصیلی', info.degree], ['رشته', info.major],
       ['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle],
       ['مدت ورکشاپ', info.workshopDuration], ['ساعت درسی', info.totalTeachingHours],
+      ['ارزیابی شده', info.evaluationStatus || 'نخیر'],
+      ['تاریخ ارزیابی', info.evaluationDate],
       ['نمره ارزیابی', info.evaluationScore],
       ['خدمتی رفته', info.serviceStatus || 'نخیر'],
       ['ولسوالی خدمتی', info.serviceDistrict],
@@ -1388,8 +1421,22 @@
           <label>مجموعه ساعت درسی</label>
           <input type="text" id="eTotalTeachingHours" class="form-control-edit" value="${escapeHtml(info.totalTeachingHours || '')}">
         </div>
-        
+
         <div class="form-group-edit">
+          <label>ارزیابی شده؟</label>
+          <select id="eEvaluationStatus" class="form-control-edit" onchange="toggleEditEvaluationFields()">
+            <option value="نخیر" ${info.evaluationStatus === 'نخیر' || !info.evaluationStatus ? 'selected' : ''}>نخیر</option>
+            <option value="بلی" ${info.evaluationStatus === 'بلی' ? 'selected' : ''}>بلی</option>
+          </select>
+          <small class="field-hint">📌 فقط در صورت ارزیابی‌های سالانه درج شود</small>
+        </div>
+        
+        <div class="form-group-edit" id="eEvaluationDateGroup" style="${info.evaluationStatus === 'بلی' ? 'display:flex;' : 'display:none;'} flex-direction:column;">
+          <label>تاریخ ارزیابی</label>
+          <input type="text" id="eEvaluationDate" class="form-control-edit" value="${escapeHtml(info.evaluationDate || '')}">
+        </div>
+        
+        <div class="form-group-edit" id="eEvaluationScoreGroup" style="${info.evaluationStatus === 'بلی' ? 'display:flex;' : 'display:none;'} flex-direction:column;">
           <label>نمره ارزیابی</label>
           <input type="text" id="eEvaluationScore" class="form-control-edit" value="${escapeHtml(info.evaluationScore || '')}">
         </div>
@@ -1442,6 +1489,21 @@
   }
   window.toggleEditWorkshopFields = toggleEditWorkshopFields;
 
+  function toggleEditEvaluationFields() {
+    const status = document.getElementById('eEvaluationStatus').value;
+    const dateGroup = document.getElementById('eEvaluationDateGroup');
+    const scoreGroup = document.getElementById('eEvaluationScoreGroup');
+    
+    if (status === 'بلی') {
+      dateGroup.style.display = 'flex';
+      scoreGroup.style.display = 'flex';
+    } else {
+      dateGroup.style.display = 'none';
+      scoreGroup.style.display = 'none';
+    }
+  }
+  window.toggleEditEvaluationFields = toggleEditEvaluationFields;
+
   async function saveEditedRecord() {
     if (!editingRecordId) return;
 
@@ -1457,6 +1519,8 @@
       workshopTitle: document.getElementById('eWorkshopTitle').value.trim(),
       workshopDuration: document.getElementById('eWorkshopDuration').value.trim(),
       totalTeachingHours: document.getElementById('eTotalTeachingHours').value.trim(),
+      evaluationStatus: document.getElementById('eEvaluationStatus').value,
+      evaluationDate: document.getElementById('eEvaluationDate').value.trim(),
       evaluationScore: document.getElementById('eEvaluationScore').value.trim(),
       serviceStatus: document.getElementById('eServiceStatus').value,
       serviceDistrict: document.getElementById('eServiceDistrict').value.trim(),
@@ -1472,12 +1536,22 @@
       if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); return; }
     }
 
-    if (body.evaluationScore) {
+    if (body.evaluationStatus === 'بلی') {
+      if (!body.evaluationDate) { showToast('❌ تاریخ ارزیابی الزامی است', true); return; }
+      const evalDateResult = validateShamsiDate(body.evaluationDate);
+      if (!evalDateResult.valid) {
+        showToast('❌ تاریخ ارزیابی: ' + evalDateResult.error, true);
+        return;
+      }
+      body.evaluationDate = evalDateResult.formatted;
+
+      if (!body.evaluationScore) { showToast('❌ نمره ارزیابی الزامی است', true); return; }
       const num = Number(normalizeDigits(body.evaluationScore));
       if (isNaN(num) || num < 0 || num > 100) {
         showToast('❌ نمره ارزیابی باید بین ۰ تا ۱۰۰ باشد', true);
         return;
       }
+      body.evaluationScore = String(num);
     }
 
     if (body.totalTeachingHours) {
@@ -1607,6 +1681,8 @@
       workshopTitle: document.getElementById('workshopTitle').value.trim(),
       workshopDuration: document.getElementById('workshopDuration').value.trim(),
       totalTeachingHours: document.getElementById('totalTeachingHours').value.trim(),
+      evaluationStatus: document.getElementById('evaluationStatus').value,
+      evaluationDate: document.getElementById('evaluationDate').value.trim(),
       evaluationScore: document.getElementById('evaluationScore').value.trim(),
       serviceStatus: document.getElementById('serviceStatus').value,
       serviceDistrict: document.getElementById('serviceDistrict').value.trim(),
@@ -1661,6 +1737,26 @@
     if (body.workshopStatus === 'بلی') {
       if (!body.workshopTitle) { showToast('❌ عنوان ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
       if (!body.workshopDuration) { showToast('❌ مدت ورکشاپ الزامی است', true); resetSubmitBtn(); return; }
+    }
+
+    if (body.evaluationStatus === 'بلی') {
+      if (!body.evaluationDate) { showToast('❌ تاریخ ارزیابی الزامی است', true); resetSubmitBtn(); return; }
+      const evalDateResult = validateShamsiDate(body.evaluationDate);
+      if (!evalDateResult.valid) {
+        showToast('❌ تاریخ ارزیابی: ' + evalDateResult.error, true);
+        resetSubmitBtn();
+        return;
+      }
+      body.evaluationDate = evalDateResult.formatted;
+
+      if (!body.evaluationScore) { showToast('❌ نمره ارزیابی الزامی است', true); resetSubmitBtn(); return; }
+      const num = Number(normalizeDigits(body.evaluationScore));
+      if (isNaN(num) || num < 0 || num > 100) {
+        showToast('❌ نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد', true);
+        resetSubmitBtn();
+        return;
+      }
+      body.evaluationScore = String(num);
     }
 
     if (body.serviceStatus === 'بلی') {
@@ -1732,6 +1828,8 @@
         document.getElementById('recordForm').reset();
         document.getElementById('workshopTitleGroup').style.display = 'none';
         document.getElementById('workshopDurationGroup').style.display = 'none';
+        document.getElementById('evaluationDateGroup').style.display = 'none';
+        document.getElementById('evaluationScoreGroup').style.display = 'none';
         document.getElementById('serviceDetails').classList.remove('active');
         
         document.getElementById('agreementCheckbox').checked = false;

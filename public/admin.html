@@ -110,7 +110,7 @@
     </div>
 
     <div class="info-banner">
-      ℹ️ برای مشاهده لیست کارمندان، از <strong>فیلترها</strong> یا <strong>جستجو</strong> استفاده کنید.<br>
+      ℹ️ به‌صورت پیش‌فرض، کارمندان <strong>در انتظار تایید</strong> نمایش داده می‌شوند. برای فیلتر بیشتر از کادرهای زیر استفاده کنید.<br>
       ✏️ ویرایش توسط مکتب انجام می‌شود (ادمین فقط تایید، مشاهده، پرنت و حذف).
     </div>
 
@@ -200,6 +200,14 @@
           <option value="نخیر">❌ خدمتی نرفته</option>
         </select>
       </div>
+      <div class="filter-item">
+        <label>📊 وضعیت تایید</label>
+        <select id="approvalFilter" onchange="loadAllRecords()">
+          <option value="pending" selected>⏳ در انتظار تایید</option>
+          <option value="">📋 همه</option>
+          <option value="approved">✅ تایید شده</option>
+        </select>
+      </div>
     </div>
 
     <div id="budgetSchoolsInfo"></div>
@@ -225,18 +233,7 @@
           </tr>
         </thead>
         <tbody id="allTableBody">
-          <tr>
-            <td colspan="13" class="p-0">
-              <div class="empty-search-state">
-                <div class="icon">🔍</div>
-                <div class="title">برای مشاهده لیست کارمندان، از فیلترها یا جستجو استفاده کنید</div>
-                <div class="subtitle">لطفاً یکی از فیلترهای زیر را انتخاب کنید یا در کادر جستجو تایپ کنید</div>
-                <div class="filters-list">
-                  🏫 مکتب · 📖 نوع مکتب · 👨‍🏫 عنوان بست · 👤 جنسیت · 📚 ورکشاپ · 💼 وضعیت بست · 👤 وضعیت کارمند · 🏢 خدمتی رفته
-                </div>
-              </div>
-            </td>
-          </tr>
+          <tr><td colspan="13" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
         </tbody>
       </table>
     </div>
@@ -397,22 +394,18 @@
     if (!schoolName) return 'نامشخص';
     const name = String(schoolName).trim().replace(/\s+/g, ' ');
     
-    // بررسی لیسه
     if (name.includes('لیسه') || name.includes('لیسهٔ') || name.includes('لیسه‌') || 
         name.includes('لیسۀ') || name.includes('لیسه های')) {
       return 'لیسه';
     }
-    // بررسی متوسطه
     if (name.includes('متوسطه') || name.includes('متوسطۀ') || name.includes('متوسطه‌')) {
       return 'متوسطه';
     }
-    // بررسی ابتداییه
     if (name.includes('ابتداییه') || name.includes('ابتدائیه') || 
         name.includes('ابتدایی') || name.includes('ابتدائیه‌') ||
         name.includes('ابتدائی')) {
       return 'ابتداییه';
     }
-    // بررسی مدرسه
     if (name.includes('مدرسه') || name.includes('مکتب') || name.includes('دارالعلوم') || 
         name.includes('دارالحفاظ') || name.includes('مکتب خانه')) {
       return 'مدرسه';
@@ -520,7 +513,8 @@
       workshop: document.getElementById('workshopFilter').value,
       budget: document.getElementById('budgetFilter').value,
       empStatus: document.getElementById('empStatusFilter').value,
-      service: document.getElementById('serviceFilter').value
+      service: document.getElementById('serviceFilter').value,
+      approval: document.getElementById('approvalFilter').value
     };
   }
 
@@ -532,31 +526,16 @@
     const f = getActiveFilters();
     document.getElementById('searchBadge').style.display = hasAnyFilter(f) ? 'inline-block' : 'none';
 
-    if (!hasAnyFilter(f)) {
-      loadedRecordsCache = [];
-      document.getElementById('allTableBody').innerHTML = 
-        '<tr><td colspan="13" class="p-0">' +
-        '<div class="empty-search-state">' +
-        '<div class="icon">🔍</div>' +
-        '<div class="title">برای مشاهده لیست کارمندان، از فیلترها یا جستجو استفاده کنید</div>' +
-        '<div class="subtitle">لطفاً یکی از فیلترهای زیر را انتخاب کنید یا در کادر جستجو تایپ کنید</div>' +
-        '<div class="filters-list">' +
-        '🏫 مکتب · 📖 نوع مکتب · 👨‍🏫 عنوان بست · 👤 جنسیت · 📚 ورکشاپ · 💼 وضعیت بست · 👤 وضعیت کارمند · 🏢 خدمتی رفته' +
-        '</div>' +
-        '</div>' +
-        '</td></tr>';
-      document.getElementById('filterInfoBar').innerHTML = '';
-      document.getElementById('budgetSchoolsInfo').innerHTML = '';
-      loadStats();
-      return;
-    }
-
     try {
       const params = [];
       if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
+      // ⭐ فیلتر وضعیت تایید - همیشه از سمت سرور فیلتر می‌شود
+      if (f.approval === 'pending' || f.approval === 'approved') {
+        params.push('status=' + f.approval);
+      }
 
-      const url = '/api/records?' + params.join('&');
+      const url = '/api/records' + (params.length ? '?' + params.join('&') : '');
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
 
       if (res.status === 401 || res.status === 403) {
@@ -628,6 +607,22 @@
       }
 
       loadedRecordsCache = records;
+
+      if (!Array.isArray(records) || records.length === 0) {
+        document.getElementById('allTableBody').innerHTML = 
+          '<tr><td colspan="13" class="text-muted p-4">' +
+          (f.approval === 'pending' && !hasAnyFilter(f) 
+            ? '🎉 هیچ کارمندی در انتظار تایید نیست' 
+            : 'هیچ رکوردی با این فیلتر یافت نشد') +
+          '</td></tr>';
+        document.getElementById('filterInfoBar').innerHTML = 
+          (f.approval === 'pending' && !hasAnyFilter(f))
+            ? '<div style="background:#dcfce7; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#15803d; text-align:center;">✅ همه کارمندان تایید شده‌اند</div>'
+            : '';
+        loadStats();
+        return;
+      }
+
       renderRecords(records);
       loadStats();
     } catch (e) {
@@ -691,15 +686,35 @@
     if (f.empStatus) activeFilters.push(`وضعیت: <strong>${f.empStatus === 'active' ? 'فعال' : 'متقاعد'}</strong>`);
     if (f.service) activeFilters.push(`🏢 خدمتی: <strong>${f.service === 'بلی' ? 'رفته' : 'نرفته'}</strong>`);
     if (f.search) activeFilters.push(`🔍 جستجو: <strong>${escapeHtml(f.search)}</strong>`);
-    if (activeFilters.length > 0) {
-      filterBar.innerHTML = `<div style="background:#dbeafe; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#1e3a8a; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><span>🔍 فیلترهای فعال: ${activeFilters.join(' + ')}</span><span style="background:#3b82f6; color:#fff; padding:4px 14px; border-radius:20px; font-weight:bold;">تعداد: ${records.length} نفر</span></div>`;
+
+    // ⭐ نوار وضعیت
+    const isDefaultPending = !hasAnyFilter(f) && f.approval === 'pending';
+    const approvalText = f.approval === 'approved' ? '✅ تایید شده' : f.approval === 'pending' ? '⏳ در انتظار تایید' : '📋 همه';
+
+    if (isDefaultPending) {
+      // حالت پیش‌فرض: نمایش در انتظارها
+      filterBar.innerHTML = 
+        '<div style="background:#fef3c7; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#78350f; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">' +
+        '<span>⏳ <strong>حالت پیش‌فرض:</strong> فقط کارمندان «در انتظار تایید» نمایش داده می‌شوند</span>' +
+        '<span style="background:#f59e0b; color:#fff; padding:4px 14px; border-radius:20px; font-weight:bold;">' +
+        'تعداد: ' + records.length + ' نفر' +
+        '</span>' +
+        '</div>';
+    } else if (activeFilters.length > 0 || f.approval !== 'pending') {
+      let infoHtml = `<span>🔍 فیلترهای فعال: ${activeFilters.join(' + ')}`;
+      if (activeFilters.length > 0) infoHtml += ' + ';
+      infoHtml += `📊 وضعیت: <strong>${approvalText}</strong></span>`;
+      filterBar.innerHTML = 
+        '<div style="background:#dbeafe; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#1e3a8a; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">' +
+        infoHtml +
+        '<span style="background:#3b82f6; color:#fff; padding:4px 14px; border-radius:20px; font-weight:bold;">' +
+        'تعداد: ' + records.length + ' نفر' +
+        '</span>' +
+        '</div>';
     } else {
       filterBar.innerHTML = '';
     }
-    if (!Array.isArray(records) || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="13" class="text-muted p-4">هیچ رکوردی با این فیلتر یافت نشد</td></tr>`;
-      return;
-    }
+
     const fragment = document.createDocumentFragment();
     records.forEach((row) => {
       const info = row.data || {};
@@ -1046,6 +1061,8 @@
     if (f.empStatus) filterDesc.push('وضعیت: ' + (f.empStatus === 'active' ? 'فعال' : 'متقاعد'));
     if (f.service) filterDesc.push('خدمتی: ' + (f.service === 'بلی' ? 'رفته' : 'نرفته'));
     if (f.search) filterDesc.push('جستجو: ' + f.search);
+    if (f.approval === 'pending') filterDesc.push('وضعیت تایید: در انتظار');
+    if (f.approval === 'approved') filterDesc.push('وضعیت تایید: تایید شده');
     let rowsHtml = '';
     records.forEach((row, idx) => {
       const info = row.data || {};

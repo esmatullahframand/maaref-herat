@@ -50,6 +50,8 @@
   .empty-search-state .filters-list { font-size: 12px; color: #64748b; margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; display: inline-block; }
   .budget-info-bar { background: #fef3c7; border-right: 5px solid #f59e0b; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #78350f; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
   .budget-info-bar strong { color: #92400e; }
+  .stats-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 15px; }
+  .stats-card-item h6 { margin: 0 0 12px 0; font-weight: bold; font-size: 14px; border-bottom: 2px solid; padding-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -99,6 +101,7 @@
         <span id="searchBadge" class="badge-search-active" style="display:none;">🔍 حالت فیلتر</span>
       </h5>
       <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-dark fw-bold btn-sm px-3" onclick="showDetailedStats()">📊 آمار تفصیلی</button>
         <button class="btn btn-primary fw-bold btn-sm px-3" onclick="printList()">🖨️ چاپ لیست کامل</button>
         <button class="btn btn-warning fw-bold btn-sm px-3" onclick="printFiltered()">🖨️ چاپ فیلتر شده</button>
         <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportFull()">📊 خروجی کامل</button>
@@ -243,6 +246,21 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ═══════════ Modal آمار تفصیلی ═══════════ -->
+<div class="modal fade" id="detailedStatsModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff;">
+        <h5 class="modal-title">📊 آمار تفصیلی کارمندان</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
+      </div>
+      <div class="modal-body" id="detailedStatsBody" style="max-height:75vh; overflow-y:auto;">
+        <div class="text-center p-4 text-muted">در حال بارگذاری...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════ Modal مدیریت مکاتب (اطلاعات) ═══════════ -->
 <div class="modal fade" id="schoolSettingsModal" tabindex="-1">
   <div class="modal-dialog modal-xl">
@@ -386,10 +404,10 @@
   let schoolSettingsModal = null;
   let manageSchoolsModal = null;
   let editSchoolModal = null;
+  let detailedStatsModal = null;
   let manageSchoolsCache = [];
   const RETIREMENT_AGE = 65;
 
-  // ⭐ تابع تشخیص نوع مکتب از روی نام
   function detectSchoolType(schoolName) {
     if (!schoolName) return 'نامشخص';
     const name = String(schoolName).trim().replace(/\s+/g, ' ');
@@ -531,18 +549,12 @@
       if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
       
-      // ⭐ منطق جدید:
-      // - اگر کاربر خودش فیلتر approval را تغییر داد (pending/approved) → همان را بفرست
-      // - اگر روی «همه» است ولی فیلتر دیگری فعال نیست → فقط pending بفرست (حالت پیش‌فرض)
-      // - اگر روی «همه» است و فیلتر دیگری فعال است → هیچ status نفرست (همه)
       let statusToSend = '';
       if (f.approval === 'pending' || f.approval === 'approved') {
         statusToSend = f.approval;
       } else if (f.approval === '' && !hasAnyFilter(f)) {
-        // حالت پیش‌فرض: فقط pending
         statusToSend = 'pending';
       }
-      // در غیر این صورت (approval='' و فیلترها فعال): همه
       
       if (statusToSend) {
         params.push('status=' + statusToSend);
@@ -559,7 +571,6 @@
 
       let records = await res.json();
 
-      // ⭐ فیلتر نوع مکتب — تشخیص از روی نام مکتب
       if (f.schoolType) {
         records = records.filter(row => {
           let schoolName = row.schoolname;
@@ -699,7 +710,6 @@
     if (f.service) activeFilters.push(`🏢 خدمتی: <strong>${f.service === 'بلی' ? 'رفته' : 'نرفته'}</strong>`);
     if (f.search) activeFilters.push(`🔍 جستجو: <strong>${escapeHtml(f.search)}</strong>`);
 
-    // ⭐ حالت پیش‌فرض: فیلتر approval روی «همه» است ولی هیچ فیلتر دیگری فعال نیست
     const isDefaultMode = !hasAnyFilter(f) && f.approval === '';
     const approvalText = f.approval === 'approved' ? '✅ تایید شده' : f.approval === 'pending' ? '⏳ در انتظار تایید' : '📋 همه';
 
@@ -833,6 +843,181 @@
     const win = window.open('', '_blank');
     win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت</title><style>body { font-family: Tahoma; padding: 15px; direction: rtl; } @media print { .no-print { display:none; } }</style></head><body>${html}<div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; background:#7c3aed; color:#fff; border:none; border-radius:6px; cursor:pointer;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(), 400);<\/script></body></html>`);
     win.document.close();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 📊 آمار تفصیلی
+  // ═══════════════════════════════════════════════════════════
+  async function showDetailedStats() {
+    if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
+    document.getElementById('detailedStatsBody').innerHTML = '<div class="text-center p-4 text-muted">⏳ در حال بارگذاری آمار...</div>';
+    detailedStatsModal.show();
+    
+    try {
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
+      const records = await res.json();
+      
+      if (!Array.isArray(records) || records.length === 0) {
+        document.getElementById('detailedStatsBody').innerHTML = '<div class="alert alert-info">هیچ رکوردی برای نمایش آمار موجود نیست.</div>';
+        return;
+      }
+      
+      renderDetailedStats(records);
+    } catch (e) {
+      console.error(e);
+      document.getElementById('detailedStatsBody').innerHTML = '<div class="alert alert-danger">خطا در بارگذاری آمار</div>';
+    }
+  }
+  window.showDetailedStats = showDetailedStats;
+
+  function renderDetailedStats(records) {
+    const jobTitleCount = {};
+    const degreeCount = {};
+    const majorCount = {};
+    const genderCount = { 'مرد': 0, 'زن': 0, 'نامشخص': 0 };
+    const statusCount = { 'فعال': 0, 'متقاعد': 0, 'نامشخص': 0 };
+    const approvalCount = { 'تایید شده': 0, 'در انتظار': 0 };
+    const schoolTypeCount = { 'لیسه': 0, 'متوسطه': 0, 'ابتداییه': 0, 'مدرسه': 0, 'نامشخص': 0 };
+    const workshopCount = { 'دیده': 0, 'ندیده': 0 };
+    const serviceCount = { 'رفته': 0, 'نرفته': 0 };
+    const disabilityCount = { 'بلی': 0, 'نخیر': 0 };
+    const evalCount = { 'شده': 0, 'نشده': 0 };
+    let totalAge = 0;
+    let ageCount = 0;
+    
+    records.forEach(row => {
+      const info = row.data || {};
+      
+      const job = (info.jobTitle || info.job || 'نامشخص').trim();
+      jobTitleCount[job] = (jobTitleCount[job] || 0) + 1;
+      
+      const degree = (info.degree || 'نامشخص').trim();
+      degreeCount[degree] = (degreeCount[degree] || 0) + 1;
+      
+      const major = (info.major || 'نامشخص').trim();
+      if (major && major !== 'نامشخص') {
+        majorCount[major] = (majorCount[major] || 0) + 1;
+      }
+      
+      const gender = info.gender || 'نامشخص';
+      if (gender === 'مرد' || gender === 'زن') genderCount[gender]++;
+      else genderCount['نامشخص']++;
+      
+      const age = calculateAge(info.birthDate);
+      if (age === null) {
+        statusCount['نامشخص']++;
+      } else if (age >= RETIREMENT_AGE) {
+        statusCount['متقاعد']++;
+      } else {
+        statusCount['فعال']++;
+        totalAge += age;
+        ageCount++;
+      }
+      
+      if (row.status === 'approved') approvalCount['تایید شده']++;
+      else approvalCount['در انتظار']++;
+      
+      let schoolName = row.schoolname;
+      if (!schoolName && row.userid) {
+        const user = allSchoolsList.find(u => u.id === row.userid);
+        if (user) schoolName = user.schoolname;
+      }
+      if (schoolName) {
+        const type = detectSchoolType(schoolName);
+        if (schoolTypeCount[type] !== undefined) schoolTypeCount[type]++;
+        else schoolTypeCount['نامشخص']++;
+      } else {
+        schoolTypeCount['نامشخص']++;
+      }
+      
+      if ((info.workshopStatus || 'نخیر') === 'بلی') workshopCount['دیده']++;
+      else workshopCount['ندیده']++;
+      
+      if ((info.serviceStatus || 'نخیر') === 'بلی') serviceCount['رفته']++;
+      else serviceCount['نرفته']++;
+      
+      if (info.disability === 'بلی') disabilityCount['بلی']++;
+      else disabilityCount['نخیر']++;
+      
+      if (info.evaluationStatus === 'بلی') evalCount['شده']++;
+      else evalCount['نشده']++;
+    });
+    
+    const avgAge = ageCount > 0 ? Math.round(totalAge / ageCount) : 0;
+    const total = records.length;
+    
+    let html = `
+      <div style="background:linear-gradient(135deg,#7c3aed,#5b21b6); color:#fff; padding:20px; border-radius:10px; margin-bottom:20px; text-align:center;">
+        <div style="font-size:14px; opacity:0.9;">📊 مجموع کل کارمندان</div>
+        <div style="font-size:42px; font-weight:bold; margin:5px 0;">${total}</div>
+        <div style="font-size:13px; opacity:0.9;">میانگین سن: ${avgAge} سال</div>
+      </div>
+    `;
+    
+    function makeCard(title, icon, color, items) {
+      let itemsHtml = items.map(([label, count]) => {
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f1f5f9;">
+            <span style="font-size:13px; color:#334155;">${escapeHtml(label)}</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:11px; color:#94a3b8;">${pct}%</span>
+              <span style="background:${color}; color:#fff; padding:2px 12px; border-radius:12px; font-weight:bold; font-size:12px; min-width:40px; text-align:center;">${count}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      return `
+        <div class="stats-card-item">
+          <h6 style="color:${color}; border-bottom-color:${color};">
+            ${icon} ${title}
+          </h6>
+          ${itemsHtml}
+        </div>
+      `;
+    }
+    
+    const jobItems = Object.entries(jobTitleCount).sort((a, b) => b[1] - a[1]);
+    const degreeItems = Object.entries(degreeCount).sort((a, b) => b[1] - a[1]);
+    const genderItems = [['👨 مرد', genderCount['مرد']], ['👩 زن', genderCount['زن']]];
+    const statusItems = [['✅ فعال', statusCount['فعال']], ['🎖️ متقاعد', statusCount['متقاعد']]];
+    const approvalItems = [['✅ تایید شده', approvalCount['تایید شده']], ['⏳ در انتظار', approvalCount['در انتظار']]];
+    const schoolTypeItems = [
+      ['🎓 لیسه', schoolTypeCount['لیسه']],
+      ['🏫 متوسطه', schoolTypeCount['متوسطه']],
+      ['📚 ابتداییه', schoolTypeCount['ابتداییه']],
+      ['🏢 مدرسه', schoolTypeCount['مدرسه']],
+      ['❓ نامشخص', schoolTypeCount['نامشخص']]
+    ];
+    const workshopItems = [['✅ دیده', workshopCount['دیده']], ['❌ ندیده', workshopCount['ندیده']]];
+    const serviceItems = [['🏢 رفته', serviceCount['رفته']], ['— نرفته', serviceCount['نرفته']]];
+    const evalItems = [['✅ ارزیابی شده', evalCount['شده']], ['— ارزیابی نشده', evalCount['نشده']]];
+    const disabilityItems = [['✅ بلی', disabilityCount['بلی']], ['— نخیر', disabilityCount['نخیر']]];
+    
+    html += '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:15px;">';
+    
+    html += makeCard('عنوان بست', '👨‍🏫', '#7c3aed', jobItems);
+    html += makeCard('درجه تحصیلی', '🎓', '#0891b2', degreeItems);
+    
+    if (Object.keys(majorCount).length > 0) {
+      const majorItems = Object.entries(majorCount).sort((a, b) => b[1] - a[1]).slice(0, 15);
+      html += makeCard('رشته تحصیلی (۱۵ ردیف اول)', '📚', '#059669', majorItems);
+    }
+    
+    html += makeCard('جنسیت', '👥', '#ec4899', genderItems);
+    html += makeCard('وضعیت کارمند', '📊', '#f59e0b', statusItems);
+    html += makeCard('وضعیت تایید', '✔️', '#10b981', approvalItems);
+    html += makeCard('نوع مکتب', '🏫', '#3b82f6', schoolTypeItems);
+    html += makeCard('ورکشاپ', '📖', '#8b5cf6', workshopItems);
+    html += makeCard('خدمتی رفته', '🏢', '#dc2626', serviceItems);
+    html += makeCard('ارزیابی سالانه', '⭐', '#0ea5e9', evalItems);
+    html += makeCard('معلولیت', '♿', '#64748b', disabilityItems);
+    
+    html += '</div>';
+    
+    document.getElementById('detailedStatsBody').innerHTML = html;
   }
 
   async function loadSchoolSettings() {

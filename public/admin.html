@@ -392,6 +392,34 @@
   let manageSchoolsCache = [];
   const RETIREMENT_AGE = 65;
 
+  // ⭐ تابع تشخیص نوع مکتب از روی نام
+  function detectSchoolType(schoolName) {
+    if (!schoolName) return 'نامشخص';
+    const name = String(schoolName).trim().replace(/\s+/g, ' ');
+    
+    // بررسی لیسه
+    if (name.includes('لیسه') || name.includes('لیسهٔ') || name.includes('لیسه‌') || 
+        name.includes('لیسۀ') || name.includes('لیسه های')) {
+      return 'لیسه';
+    }
+    // بررسی متوسطه
+    if (name.includes('متوسطه') || name.includes('متوسطۀ') || name.includes('متوسطه‌')) {
+      return 'متوسطه';
+    }
+    // بررسی ابتداییه
+    if (name.includes('ابتداییه') || name.includes('ابتدائیه') || 
+        name.includes('ابتدایی') || name.includes('ابتدائیه‌') ||
+        name.includes('ابتدائی')) {
+      return 'ابتداییه';
+    }
+    // بررسی مدرسه
+    if (name.includes('مدرسه') || name.includes('مکتب') || name.includes('دارالعلوم') || 
+        name.includes('دارالحفاظ') || name.includes('مکتب خانه')) {
+      return 'مدرسه';
+    }
+    return 'نامشخص';
+  }
+
   function getSchoolNameById(userid) {
     if (!userid || !allSchoolsList) return null;
     const school = allSchoolsList.find(s => s.id === userid);
@@ -539,7 +567,20 @@
 
       let records = await res.json();
 
-      if (f.schoolType) records = records.filter(row => (row.schoolname || '').includes(f.schoolType));
+      // ⭐ فیلتر نوع مکتب — تشخیص از روی نام مکتب
+      if (f.schoolType) {
+        records = records.filter(row => {
+          let schoolName = row.schoolname;
+          if (!schoolName && row.userid) {
+            const user = allSchoolsList.find(u => u.id === row.userid);
+            if (user) schoolName = user.schoolname;
+          }
+          if (!schoolName) return false;
+          const detectedType = detectSchoolType(schoolName);
+          return detectedType === f.schoolType;
+        });
+      }
+
       if (f.jobTitle) records = records.filter(row => {
         const info = row.data || {};
         return (info.jobTitle || info.job || '') === f.jobTitle;
@@ -997,6 +1038,7 @@
     const f = getActiveFilters();
     const filterDesc = [];
     if (f.school) filterDesc.push('مکتب: ' + f.school);
+    if (f.schoolType) filterDesc.push('نوع مکتب: ' + f.schoolType);
     if (f.jobTitle) filterDesc.push('عنوان بست: ' + f.jobTitle);
     if (f.gender) filterDesc.push('جنسیت: ' + f.gender);
     if (f.workshop) filterDesc.push('ورکشاپ: ' + f.workshop);

@@ -110,7 +110,7 @@
     </div>
 
     <div class="info-banner">
-      ℹ️ به‌صورت پیش‌فرض، کارمندان <strong>در انتظار تایید</strong> نمایش داده می‌شوند. برای فیلتر بیشتر از کادرهای زیر استفاده کنید.<br>
+      ℹ️ به‌صورت پیش‌فرض، کارمندان <strong>در انتظار تایید</strong> نمایش داده می‌شوند. برای دیدن همه، فیلتر «وضعیت تایید» را روی <strong>همه</strong> بگذارید.<br>
       ✏️ ویرایش توسط مکتب انجام می‌شود (ادمین فقط تایید، مشاهده، پرنت و حذف).
     </div>
 
@@ -203,8 +203,8 @@
       <div class="filter-item">
         <label>📊 وضعیت تایید</label>
         <select id="approvalFilter" onchange="loadAllRecords()">
-          <option value="pending" selected>⏳ در انتظار تایید</option>
-          <option value="">📋 همه</option>
+          <option value="" selected>📋 همه</option>
+          <option value="pending">⏳ در انتظار تایید</option>
           <option value="approved">✅ تایید شده</option>
         </select>
       </div>
@@ -530,9 +530,22 @@
       const params = [];
       if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
-      // ⭐ فیلتر وضعیت تایید - همیشه از سمت سرور فیلتر می‌شود
+      
+      // ⭐ منطق جدید:
+      // - اگر کاربر خودش فیلتر approval را تغییر داد (pending/approved) → همان را بفرست
+      // - اگر روی «همه» است ولی فیلتر دیگری فعال نیست → فقط pending بفرست (حالت پیش‌فرض)
+      // - اگر روی «همه» است و فیلتر دیگری فعال است → هیچ status نفرست (همه)
+      let statusToSend = '';
       if (f.approval === 'pending' || f.approval === 'approved') {
-        params.push('status=' + f.approval);
+        statusToSend = f.approval;
+      } else if (f.approval === '' && !hasAnyFilter(f)) {
+        // حالت پیش‌فرض: فقط pending
+        statusToSend = 'pending';
+      }
+      // در غیر این صورت (approval='' و فیلترها فعال): همه
+      
+      if (statusToSend) {
+        params.push('status=' + statusToSend);
       }
 
       const url = '/api/records' + (params.length ? '?' + params.join('&') : '');
@@ -609,14 +622,13 @@
       loadedRecordsCache = records;
 
       if (!Array.isArray(records) || records.length === 0) {
+        const isEmptyDefault = !hasAnyFilter(f) && f.approval === '';
         document.getElementById('allTableBody').innerHTML = 
           '<tr><td colspan="13" class="text-muted p-4">' +
-          (f.approval === 'pending' && !hasAnyFilter(f) 
-            ? '🎉 هیچ کارمندی در انتظار تایید نیست' 
-            : 'هیچ رکوردی با این فیلتر یافت نشد') +
+          (isEmptyDefault ? '🎉 هیچ کارمندی در انتظار تایید نیست' : 'هیچ رکوردی با این فیلتر یافت نشد') +
           '</td></tr>';
         document.getElementById('filterInfoBar').innerHTML = 
-          (f.approval === 'pending' && !hasAnyFilter(f))
+          isEmptyDefault
             ? '<div style="background:#dcfce7; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#15803d; text-align:center;">✅ همه کارمندان تایید شده‌اند</div>'
             : '';
         loadStats();
@@ -687,20 +699,19 @@
     if (f.service) activeFilters.push(`🏢 خدمتی: <strong>${f.service === 'بلی' ? 'رفته' : 'نرفته'}</strong>`);
     if (f.search) activeFilters.push(`🔍 جستجو: <strong>${escapeHtml(f.search)}</strong>`);
 
-    // ⭐ نوار وضعیت
-    const isDefaultPending = !hasAnyFilter(f) && f.approval === 'pending';
+    // ⭐ حالت پیش‌فرض: فیلتر approval روی «همه» است ولی هیچ فیلتر دیگری فعال نیست
+    const isDefaultMode = !hasAnyFilter(f) && f.approval === '';
     const approvalText = f.approval === 'approved' ? '✅ تایید شده' : f.approval === 'pending' ? '⏳ در انتظار تایید' : '📋 همه';
 
-    if (isDefaultPending) {
-      // حالت پیش‌فرض: نمایش در انتظارها
+    if (isDefaultMode) {
       filterBar.innerHTML = 
         '<div style="background:#fef3c7; padding:10px 15px; border-radius:6px; margin-bottom:12px; font-size:13px; color:#78350f; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">' +
-        '<span>⏳ <strong>حالت پیش‌فرض:</strong> فقط کارمندان «در انتظار تایید» نمایش داده می‌شوند</span>' +
+        '<span>⏳ <strong>حالت پیش‌فرض:</strong> فقط کارمندان «در انتظار تایید» نمایش داده می‌شوند. برای مشاهده همه، فیلتر «وضعیت تایید» را روی «همه» بگذارید و فیلتر دیگری انتخاب کنید.</span>' +
         '<span style="background:#f59e0b; color:#fff; padding:4px 14px; border-radius:20px; font-weight:bold;">' +
         'تعداد: ' + records.length + ' نفر' +
         '</span>' +
         '</div>';
-    } else if (activeFilters.length > 0 || f.approval !== 'pending') {
+    } else if (activeFilters.length > 0 || f.approval !== '') {
       let infoHtml = `<span>🔍 فیلترهای فعال: ${activeFilters.join(' + ')}`;
       if (activeFilters.length > 0) infoHtml += ' + ';
       infoHtml += `📊 وضعیت: <strong>${approvalText}</strong></span>`;
@@ -778,7 +789,7 @@
       { title: '۱. هویت و اسناد تذکره', fields: [['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira], ['قومیت', info.ethnicity]]},
       { title: '۲. اطلاعات شخصی', fields: [['جنسیت', info.gender], ['تاریخ تولد', info.birthDate], ['سکونت اصلی', info.originAddress], ['سکونت فعلی', info.currentAddress], ['تاریخ اولین تقرر', info.firstAppointmentDate], ['شماره تماس', info.phone], ['معلولیت', info.disability]]},
       { title: '۳. معلومات وظیفوی و تحصیلی', fields: [['بست', info.bust], ['قدم', info.grade], ['تاریخ تقرر فعلی', info.currentPositionDate], ['درجه تحصیلی', info.degree], ['رشته', info.major], ['مرجع تعلیمی', info.eduInstitute], ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate], ['مضمون تدریس', info.subjectTeaching]]},
-      { title: '۴. ورکشاپ، ساعت درسی و ارزیابی', fields: [['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration], ['مجموعه ساعت درسی', info.totalTeachingHours], ['نمره ارزیابی', info.evaluationScore]]},
+      { title: '۴. ورکشاپ، ساعت درسی و ارزیابی', fields: [['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration], ['مجموعه ساعت درسی', info.totalTeachingHours], ['ارزیابی شده', info.evaluationStatus || 'نخیر'], ['تاریخ ارزیابی', info.evaluationDate], ['نمره ارزیابی', info.evaluationScore]]},
       { title: '۵. خدمتی رفته', fields: [['خدمتی رفته', info.serviceStatus || 'نخیر'], ['نام ولسوالی خدمتی', info.serviceDistrict], ['نام مکتب خدمتی', info.serviceSchool], ['تاریخ خدمتی', info.serviceDate]]}
     ];
     let html = '';
@@ -807,7 +818,7 @@
       ['قدم', info.grade], ['تاریخ تقرر فعلی', info.currentPositionDate], ['درجه تحصیلی', info.degree], ['رشته', info.major],
       ['مرجع تعلیمی', info.eduInstitute], ['موقعیت مرجع', info.eduInstituteLocation], ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate],
       ['مضمون تدریس', info.subjectTeaching], ['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration],
-      ['مجموعه ساعت درسی', info.totalTeachingHours], ['نمره ارزیابی', info.evaluationScore],
+      ['مجموعه ساعت درسی', info.totalTeachingHours], ['ارزیابی شده', info.evaluationStatus || 'نخیر'], ['تاریخ ارزیابی', info.evaluationDate], ['نمره ارزیابی', info.evaluationScore],
       ['خدمتی رفته', info.serviceStatus || 'نخیر'], ['ولسوالی خدمتی', info.serviceDistrict], ['مکتب خدمتی', info.serviceSchool], ['تاریخ خدمتی', info.serviceDate]
     ];
     let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;"><h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2><h4 style="margin:5px 0 0 0; font-size:13px;">فورم معلومات کارمند</h4></div><table style="width:100%; border-collapse:collapse; font-size:12px;">`;
@@ -1081,13 +1092,13 @@
   function exportFull() {
     const records = loadedRecordsCache || [];
     if (!records.length) { showToast('رکوردی برای خروجی نیست', true); return; }
-    const headers = ['ID','مکتب','ولسوالی','کُد بست','عنوان بست','اسم','تخلص','ولد','ولدیت','تذکره برقی','تذکره کاغذی','صفحه','جلد','قومیت','جنسیت','تاریخ تولد','محل تولد','سکونت اصلی','سکونت فعلی','تاریخ اولین تقرر','شماره تماس','معلولیت','موقف','نوع استخدام','بست','قدم','تاریخ تقرر فعلی','درجه تحصیلی','رشته تحصیلی','مرجع تعلیمی','موقعیت مرجع','تاریخ شمولیت','تاریخ فراغت','مضمون تدریس','ورکشاپ','عنوان ورکشاپ','مدت ورکشاپ','مجموعه ساعت درسی','نمره ارزیابی','خدمتی رفته','ولسوالی خدمتی','مکتب خدمتی','تاریخ خدمتی','سن','وضعیت کارمند','وضعیت تایید'];
+    const headers = ['ID','مکتب','ولسوالی','کُد بست','عنوان بست','اسم','تخلص','ولد','ولدیت','تذکره برقی','تذکره کاغذی','صفحه','جلد','قومیت','جنسیت','تاریخ تولد','محل تولد','سکونت اصلی','سکونت فعلی','تاریخ اولین تقرر','شماره تماس','معلولیت','موقف','نوع استخدام','بست','قدم','تاریخ تقرر فعلی','درجه تحصیلی','رشته تحصیلی','مرجع تعلیمی','موقعیت مرجع','تاریخ شمولیت','تاریخ فراغت','مضمون تدریس','ورکشاپ','عنوان ورکشاپ','مدت ورکشاپ','مجموعه ساعت درسی','ارزیابی شده','تاریخ ارزیابی','نمره ارزیابی','خدمتی رفته','ولسوالی خدمتی','مکتب خدمتی','تاریخ خدمتی','سن','وضعیت کارمند','وضعیت تایید'];
     const rows = records.map(r => {
       const info = r.data || {};
       const emp = getEmployeeStatus(info);
       const schoolName = r.schoolname || getSchoolNameById(r.userid) || '';
       const district = r.district || getDistrictById(r.userid) || '';
-      return [r.id, schoolName, district, info.jobCode || '', info.jobTitle || info.job || '', info.firstName || '', info.lastName || '', info.fatherName || '', info.grandfatherName || '', info.eTazkira || '', info.paperTazkira || '', info.tazkiraPage || '', info.tazkiraVolume || '', info.ethnicity || '', info.gender || '', info.birthDate || '', info.birthPlace || '', info.originAddress || '', info.currentAddress || '', info.firstAppointmentDate || '', info.phone || '', info.disability || '', info.positionType || '', info.employmentType || '', info.bust || '', info.grade || '', info.currentPositionDate || '', info.degree || '', info.major || '', info.eduInstitute || '', info.eduInstituteLocation || '', info.enrollmentDate || '', info.graduationDate || '', info.subjectTeaching || '', info.workshopStatus || 'نخیر', info.workshopTitle || '', info.workshopDuration || '', info.totalTeachingHours || '', info.evaluationScore || '', info.serviceStatus || 'نخیر', info.serviceDistrict || '', info.serviceSchool || '', info.serviceDate || '', emp.age, emp.status, r.status === 'approved' ? 'تایید شده' : 'در انتظار'];
+      return [r.id, schoolName, district, info.jobCode || '', info.jobTitle || info.job || '', info.firstName || '', info.lastName || '', info.fatherName || '', info.grandfatherName || '', info.eTazkira || '', info.paperTazkira || '', info.tazkiraPage || '', info.tazkiraVolume || '', info.ethnicity || '', info.gender || '', info.birthDate || '', info.birthPlace || '', info.originAddress || '', info.currentAddress || '', info.firstAppointmentDate || '', info.phone || '', info.disability || '', info.positionType || '', info.employmentType || '', info.bust || '', info.grade || '', info.currentPositionDate || '', info.degree || '', info.major || '', info.eduInstitute || '', info.eduInstituteLocation || '', info.enrollmentDate || '', info.graduationDate || '', info.subjectTeaching || '', info.workshopStatus || 'نخیر', info.workshopTitle || '', info.workshopDuration || '', info.totalTeachingHours || '', info.evaluationStatus || 'نخیر', info.evaluationDate || '', info.evaluationScore || '', info.serviceStatus || 'نخیر', info.serviceDistrict || '', info.serviceSchool || '', info.serviceDate || '', emp.age, emp.status, r.status === 'approved' ? 'تایید شده' : 'در انتظار'];
     });
     const csv = '\uFEFF' + [headers, ...rows].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

@@ -524,6 +524,22 @@ async function validateRecordBody(body, excludeId = null) {
     if (!String(body.workshopDuration || '').trim()) return '❌ مدت ورکشاپ الزامی است';
   }
 
+  // ⭐ اعتبارسنجی ارزیابی (جدید)
+  const evaluationStatus = String(body.evaluationStatus || 'نخیر').trim();
+  if (evaluationStatus === 'بلی') {
+    const evaluationDate = String(body.evaluationDate || '').trim();
+    if (!evaluationDate) return '❌ تاریخ ارزیابی الزامی است';
+    
+    const evalDateErr = validateShamsiDateServer(evaluationDate, 'تاریخ ارزیابی');
+    if (evalDateErr) return '❌ ' + evalDateErr;
+    
+    const evaluationScore = String(body.evaluationScore || '').trim();
+    if (!evaluationScore) return '❌ نمره ارزیابی الزامی است';
+    
+    const num = Number(normalizeDigits(evaluationScore));
+    if (isNaN(num) || num < 0 || num > 100) return '❌ نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد';
+  }
+
   // ⭐ اعتبارسنجی خدمتی رفته
   const serviceStatus = String(body.serviceStatus || '').trim();
   if (serviceStatus === 'بلی') {
@@ -533,12 +549,6 @@ async function validateRecordBody(body, excludeId = null) {
     
     const dateErr = validateShamsiDateServer(body.serviceDate, 'تاریخ خدمتی');
     if (dateErr) return '❌ ' + dateErr;
-  }
-
-  const evaluationScore = String(body.evaluationScore || '').trim();
-  if (evaluationScore) {
-    const num = Number(normalizeDigits(evaluationScore));
-    if (isNaN(num) || num < 0 || num > 100) return '❌ نمره ارزیابی باید عددی بین ۰ تا ۱۰۰ باشد';
   }
 
   const totalTeachingHours = String(body.totalTeachingHours || '').trim();
@@ -650,7 +660,11 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
         workshopTitle: body.workshopTitle !== undefined ? String(body.workshopTitle).trim() : originalData.workshopTitle,
         workshopDuration: body.workshopDuration !== undefined ? String(body.workshopDuration).trim() : originalData.workshopDuration,
         totalTeachingHours: body.totalTeachingHours !== undefined ? String(body.totalTeachingHours).trim() : originalData.totalTeachingHours,
-        evaluationScore: body.evaluationScore !== undefined ? String(body.evaluationScore).trim() : originalData.evaluationScore,
+        
+        // ⭐ ارزیابی
+        evaluationStatus: body.evaluationStatus !== undefined ? body.evaluationStatus : (originalData.evaluationStatus || 'نخیر'),
+        evaluationDate: body.evaluationDate !== undefined ? String(body.evaluationDate).trim() : (originalData.evaluationDate || ''),
+        evaluationScore: body.evaluationScore !== undefined ? String(body.evaluationScore).trim() : (originalData.evaluationScore || ''),
         
         serviceStatus: body.serviceStatus !== undefined ? body.serviceStatus : (originalData.serviceStatus || 'نخیر'),
         serviceDistrict: body.serviceDistrict !== undefined ? String(body.serviceDistrict).trim() : (originalData.serviceDistrict || ''),

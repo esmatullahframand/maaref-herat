@@ -78,7 +78,6 @@
   .result-badge-good { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
   .result-badge-weak { background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
 
-  /* استایل سوییچ نمایش/عدم نمایش */
   .toggle-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; padding: 8px 14px; background: #f1f5f9; border-radius: 8px; border: 2px solid #cbd5e1; font-weight: bold; font-size: 13px; transition: all 0.2s; }
   .toggle-switch:hover { background: #e2e8f0; }
   .toggle-switch input { width: 18px; height: 18px; cursor: pointer; accent-color: #10b981; }
@@ -323,7 +322,6 @@
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <h5 class="text-purple m-0 fw-bold">📋 لیست ارزیابی‌های کارمندان</h5>
       <div class="d-flex gap-2 flex-wrap align-items-center">
-        <!-- سوییچ نمایش / عدم نمایش -->
         <label class="toggle-switch active" id="evalListToggleLabel" onclick="toggleEvalListVisibility(event)">
           <input type="checkbox" id="evalShowToggle" checked>
           <span id="evalToggleText">👁️ نمایش لیست</span>
@@ -331,6 +329,24 @@
         
         <button class="btn" style="background:#7c3aed; color:#fff; padding:8px 18px; font-weight:bold;" onclick="printEvalAdmin()">🖨️ پرنت ارزیابی</button>
         <button class="btn" style="background:#059669; color:#fff; padding:8px 18px; font-weight:bold;" onclick="exportEvalAdminExcel()">📊 خروجی اکسل</button>
+      </div>
+    </div>
+
+    <!-- فیلترهای ارزیابی -->
+    <div class="filter-grid mb-3" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
+      <div class="filter-item">
+        <label>🏫 نوع (مکاتب / مدارس)</label>
+        <select id="evalSchoolTypeFilter" onchange="applyEvalFilters()" class="form-control">
+          <option value="">📋 همه</option>
+          <option value="مکاتب">🏫 مکاتب (لیسه، متوسطه، ابتداییه)</option>
+          <option value="مدارس">🏛️ مدارس</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>🏫 انتخاب مکتب خاص</label>
+        <select id="evalSchoolNameFilter" onchange="applyEvalFilters()" class="form-control">
+          <option value="">📋 همه مکاتب</option>
+        </select>
       </div>
     </div>
 
@@ -480,6 +496,7 @@
   let allSchoolsList = [];
   let allSchoolSettings = [];
   let cachedEvaluations = [];
+  let filteredEvaluations = [];
   let detailedStatsModal = null;
   let schoolSettingsModal = null;
   let manageSchoolsModal = null;
@@ -859,50 +876,91 @@
       let evals = await res.json();
       cachedEvaluations = Array.isArray(evals) ? evals : [];
       
-      let excellent = 0, good = 0, weak = 0;
-      cachedEvaluations.forEach(e => {
-        if (e.eval_result === 'عالی') excellent++;
-        else if (e.eval_result === 'خوب') good++;
-        else if (e.eval_result === 'ضعیف') weak++;
-      });
-      document.getElementById('evalStatTotal').textContent = cachedEvaluations.length;
-      document.getElementById('evalStatExcellent').textContent = excellent;
-      document.getElementById('evalStatGood').textContent = good;
-      document.getElementById('evalStatWeak').textContent = weak;
+      populateEvalSchoolDropdown();
+      applyEvalFilters();
       
-      if (cachedEvaluations.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center p-4 text-muted">هیچ ارزیابی‌ای یافت نشد</td></tr>';
-        return;
-      }
-      
-      const fragment = document.createDocumentFragment();
-      cachedEvaluations.forEach((e, idx) => {
-        let resultBadge = '<span style="color:#94a3b8;">—</span>';
-        if (e.eval_result === 'عالی') resultBadge = '<span class="result-badge-excellent">🌟 عالی</span>';
-        else if (e.eval_result === 'خوب') resultBadge = '<span class="result-badge-good">✅ خوب</span>';
-        else if (e.eval_result === 'ضعیف') resultBadge = '<span class="result-badge-weak">⚠️ ضعیف</span>';
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${idx + 1}</td>
-          <td><b>${escapeHtml(e.first_name || '-')}</b></td>
-          <td>${escapeHtml(e.father_name || '-')}</td>
-          <td>${escapeHtml(e.job_title || '-')}</td>
-          <td><code>${escapeHtml(e.job_code || '—')}</code></td>
-          <td>${escapeHtml(e.schoolname || '-')}</td>
-          <td>${escapeHtml(e.appointment_date || '-')}</td>
-          <td>${escapeHtml(e.eval_date || '-')}</td>
-          <td><strong>${e.eval_score}</strong></td>
-          <td>${resultBadge}</td>
-          <td><button class="btn-action btn-delete-row" onclick="deleteEvalAdmin(${e.id})">🗑️</button></td>
-        `;
-        fragment.appendChild(tr);
-      });
-      tbody.appendChild(fragment);
     } catch (err) {
       tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger p-4">خطا</td></tr>';
     }
   }
   window.loadAdminEvaluations = loadAdminEvaluations;
+
+  function populateEvalSchoolDropdown() {
+    const select = document.getElementById('evalSchoolNameFilter');
+    if (!select) return;
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">📋 همه مکاتب</option>';
+    const uniqueSchools = [...new Set(cachedEvaluations.map(e => e.schoolname).filter(Boolean))].sort();
+    uniqueSchools.forEach(school => {
+      const opt = document.createElement('option');
+      opt.value = school;
+      opt.textContent = `🏫 ${school}`;
+      if (school === currentVal) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
+  function applyEvalFilters() {
+    const tbody = document.getElementById('evalAdminTableBody');
+    const schoolTypeFilter = document.getElementById('evalSchoolTypeFilter').value;
+    const schoolNameFilter = document.getElementById('evalSchoolNameFilter').value;
+
+    filteredEvaluations = cachedEvaluations.filter(e => {
+      if (schoolNameFilter && e.schoolname !== schoolNameFilter) return false;
+      if (schoolTypeFilter) {
+        const type = detectSchoolType(e.schoolname);
+        if (schoolTypeFilter === 'مکاتب') {
+          if (type !== 'لیسه' && type !== 'متوسطه' && type !== 'ابتداییه') return false;
+        } else if (schoolTypeFilter === 'مدارس') {
+          if (type !== 'مدرسه' && type !== 'نامشخص') return false;
+        }
+      }
+      return true;
+    });
+
+    let excellent = 0, good = 0, weak = 0;
+    filteredEvaluations.forEach(e => {
+      if (e.eval_result === 'عالی') excellent++;
+      else if (e.eval_result === 'خوب') good++;
+      else if (e.eval_result === 'ضعیف') weak++;
+    });
+    document.getElementById('evalStatTotal').textContent = filteredEvaluations.length;
+    document.getElementById('evalStatExcellent').textContent = excellent;
+    document.getElementById('evalStatGood').textContent = good;
+    document.getElementById('evalStatWeak').textContent = weak;
+
+    if (filteredEvaluations.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center p-4 text-muted">هیچ ارزیابی‌ای با این فیلترها یافت نشد</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    filteredEvaluations.forEach((e, idx) => {
+      let resultBadge = '<span style="color:#94a3b8;">—</span>';
+      if (e.eval_result === 'عالی') resultBadge = '<span class="result-badge-excellent">🌟 عالی</span>';
+      else if (e.eval_result === 'خوب') resultBadge = '<span class="result-badge-good">✅ خوب</span>';
+      else if (e.eval_result === 'ضعیف') resultBadge = '<span class="result-badge-weak">⚠️ ضعیف</span>';
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td><b>${escapeHtml(e.first_name || '-')}</b></td>
+        <td>${escapeHtml(e.father_name || '-')}</td>
+        <td>${escapeHtml(e.job_title || '-')}</td>
+        <td><code>${escapeHtml(e.job_code || '—')}</code></td>
+        <td>${escapeHtml(e.schoolname || '-')}</td>
+        <td>${escapeHtml(e.appointment_date || '-')}</td>
+        <td>${escapeHtml(e.eval_date || '-')}</td>
+        <td><strong>${e.eval_score}</strong></td>
+        <td>${resultBadge}</td>
+        <td><button class="btn-action btn-delete-row" onclick="deleteEvalAdmin(${e.id})">🗑️</button></td>
+      `;
+      fragment.appendChild(tr);
+    });
+    tbody.appendChild(fragment);
+  }
+  window.applyEvalFilters = applyEvalFilters;
 
   async function deleteEvalAdmin(id) {
     if (!confirm('⚠️ حذف شود؟')) return;
@@ -914,18 +972,15 @@
   }
   window.deleteEvalAdmin = deleteEvalAdmin;
 
-  // ⭐ پرنت دقیقاً شبیه فرم رسمی (PDF)
   function printEvalAdmin() {
-    if (!cachedEvaluations || cachedEvaluations.length === 0) {
+    const listToPrint = filteredEvaluations.length > 0 ? filteredEvaluations : cachedEvaluations;
+    if (!listToPrint || listToPrint.length === 0) {
       showToast('رکوردی برای پرنت نیست', true);
       return;
     }
 
-    const sortedEvals = [...cachedEvaluations].sort((a, b) => {
-      const codeA = a.job_code || '';
-      const codeB = b.job_code || '';
-      return codeA.localeCompare(codeB);
-    });
+    const sortedEvals = [...listToPrint].sort((a, b) => (a.job_code || '').localeCompare(b.job_code || ''));
+    const schoolName = sortedEvals[0]?.schoolname || '---';
 
     let rowsHtml = '';
     sortedEvals.forEach((e, idx) => {
@@ -936,27 +991,22 @@
           <td class="col-father">${escapeHtml(e.father_name || '')}</td>
           <td class="col-grandfather">${escapeHtml(e.grandfather_name || '')}</td>
           <td class="col-code">${escapeHtml(e.job_code || '')}</td>
-          
           <td class="col-degree">${escapeHtml(e.degree || '')}</td>
           <td class="col-gender">${e.gender === 'مرد' ? 'ذکور' : (e.gender === 'زن' ? 'اناث' : '')}</td>
           <td class="col-job">${escapeHtml(e.job_title || '')}</td>
           <td class="col-district">${escapeHtml(e.district || '')}</td>
           <td class="col-school">${escapeHtml(e.schoolname || '')}</td>
-          
           <td class="col-date">${escapeHtml(e.appointment_date || '')}</td>
           <td class="col-bust">${escapeHtml(e.bust || '')}</td>
           <td class="col-grade">${escapeHtml(e.grade || '')}</td>
-          
           <td class="col-eval"></td>
           <td class="col-eval"></td>
           <td class="col-eval"></td>
           <td class="col-eval">${escapeHtml(e.eval_date || '')}</td>
-          
           <td class="col-eval"></td>
           <td class="col-eval"></td>
           <td class="col-eval"></td>
           <td class="col-eval">${e.eval_score}</td>
-          
           <td class="col-result">${escapeHtml(e.eval_result || '')}</td>
         </tr>
       `;
@@ -972,7 +1022,7 @@
             </td>
             <td class="header-center">
               <div class="title-main">جدول توحیدی ارزیابی اجرائات سالانه معلمین و مدرسین معارف</div>
-              <div class="title-sub">مکتب/مدرسه: <strong>${sortedEvals[0]?.schoolname || '---'}</strong></div>
+              <div class="title-sub">مکتب/مدرسه: <strong>${escapeHtml(schoolName)}</strong></div>
             </td>
             <td class="header-left">
               <div class="logo-text">معینیت مالی و اداری</div>
@@ -1100,9 +1150,9 @@
   }
   window.printEvalAdmin = printEvalAdmin;
 
-  // ⭐ خروجی اکسل دقیقاً شبیه فرم رسمی
   function exportEvalAdminExcel() {
-    if (!cachedEvaluations || cachedEvaluations.length === 0) {
+    const listToExport = filteredEvaluations.length > 0 ? filteredEvaluations : cachedEvaluations;
+    if (!listToExport || listToExport.length === 0) {
       showToast('رکوردی برای خروجی نیست', true);
       return;
     }
@@ -1149,7 +1199,7 @@
         <tbody>
     `;
 
-    const sortedEvals = [...cachedEvaluations].sort((a, b) => (a.job_code || '').localeCompare(b.job_code || ''));
+    const sortedEvals = [...listToExport].sort((a, b) => (a.job_code || '').localeCompare(b.job_code || ''));
 
     sortedEvals.forEach((e, idx) => {
       tableHtml += `
@@ -1181,6 +1231,7 @@
     });
     tableHtml += `</tbody></table>`;
 
+    const schoolName = sortedEvals[0]?.schoolname || '---';
     const html = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
       <head>
@@ -1207,7 +1258,7 @@
       </head>
       <body>
         <h2 style="text-align:center;">جدول توحیدی ارزیابی اجرائات سالانه معلمین و مدرسین معارف</h2>
-        <h3 style="text-align:center;">مکتب/مدرسه: ${sortedEvals[0]?.schoolname || '---'}</h3>
+        <h3 style="text-align:center;">مکتب/مدرسه: ${escapeHtml(schoolName)}</h3>
         ${tableHtml}
       </body>
       </html>

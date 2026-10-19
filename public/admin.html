@@ -59,7 +59,6 @@
   .stats-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 15px; }
   .stats-card-item h6 { margin: 0 0 12px 0; font-weight: bold; font-size: 14px; border-bottom: 2px solid; padding-bottom: 8px; }
   
-  /* استایل‌های مخصوص ارزیابی */
   .eval-permission-box {
     background: #fff; border-radius: 12px; padding: 20px 25px; margin-bottom: 20px;
     border: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
@@ -151,8 +150,8 @@
     <!-- فیلترها -->
     <div class="filter-grid">
       <div class="filter-item">
-        <label>🔍 جستجو (فقط کُد بست)</label>
-        <input class="form-control" id="searchInput" placeholder="مثلاً 27-32-02-13056" oninput="debouncedLoad()">
+        <label>🔍 جستجو (نام، وظیفه، کد بست...)</label>
+        <input class="form-control" id="searchInput" placeholder="جستجوی عمومی..." oninput="debouncedLoad()">
       </div>
       <div class="filter-item">
         <label>🏫 مکتب / مدرسه</label>
@@ -311,7 +310,7 @@
     </div>
   </div>
 
-  <!-- لیست ارزیابی‌ها -->
+  <!-- لیست ارزیابی‌ها (بدون جستجو و فیلتر تقرر) -->
   <div class="card card-custom">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <h5 class="text-purple m-0 fw-bold">📋 لیست ارزیابی‌های کارمندان</h5>
@@ -608,6 +607,8 @@
 
     try {
       const params = [];
+      // ⭐ جستجوی عمومی (سرور خودش در schoolname، district، و data جستجو می‌کند)
+      if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
 
       let statusToSend = '';
@@ -620,16 +621,6 @@
       if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
 
       let records = await res.json();
-
-      // ⭐ فیلتر جستجو فقط روی کُد بست
-      if (f.search) {
-        const searchTerm = normalizeDigits(f.search).trim().replace(/\s+/g, '');
-        records = records.filter(row => {
-          const info = row.data || {};
-          const jobCode = normalizeDigits(info.jobCode || '').trim().replace(/\s+/g, '');
-          return jobCode.includes(searchTerm);
-        });
-      }
 
       if (f.schoolType) {
         records = records.filter(row => {

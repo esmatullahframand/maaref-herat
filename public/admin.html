@@ -61,16 +61,8 @@
   
   /* استایل‌های مخصوص ارزیابی */
   .eval-permission-box {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px 25px;
-    margin-bottom: 20px;
-    border: 2px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
+    background: #fff; border-radius: 12px; padding: 20px 25px; margin-bottom: 20px;
+    border: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
   }
   .eval-permission-box.allowed { border-color: #10b981; background: #f0fdf4; }
   .eval-permission-box.denied { border-color: #ef4444; background: #fef2f2; }
@@ -251,7 +243,7 @@
         </select>
       </div>
       
-      <!-- ⭐ فیلتر تاریخ تقرر (جدید) -->
+      <!-- ⭐ فیلتر تاریخ تقرر (از-تا) -->
       <div class="filter-item" style="grid-column: span 2;">
         <label>📅 تاریخ تقرر (از تاریخ ... تا تاریخ ...)</label>
         <div style="display:flex; gap:8px;">
@@ -292,7 +284,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ⭐ تب ارزیابی ادمین (جدید) -->
+<!-- ⭐ تب ارزیابی ادمین -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div class="container-fluid px-4 py-3" id="tab-evaluation" style="display:none;">
 
@@ -319,43 +311,13 @@
     </div>
   </div>
 
-  <!-- فیلترها + جستجو -->
+  <!-- لیست ارزیابی‌ها -->
   <div class="card card-custom">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <h5 class="text-purple m-0 fw-bold">📋 لیست ارزیابی‌های کارمندان</h5>
       <div class="d-flex gap-2 flex-wrap">
         <button class="btn" style="background:#7c3aed; color:#fff; padding:8px 18px; font-weight:bold;" onclick="printEvalAdmin()">🖨️ پرنت ارزیابی</button>
         <button class="btn" style="background:#059669; color:#fff; padding:8px 18px; font-weight:bold;" onclick="exportEvalAdminExcel()">📊 خروجی اکسل</button>
-      </div>
-    </div>
-
-    <!-- فیلترهای ارزیابی -->
-    <div class="filter-grid">
-      <div class="filter-item">
-        <label>🔍 جستجو (کُد بست)</label>
-        <input type="text" id="evalSearchJobCode" placeholder="کُد بست را وارد کنید..." oninput="loadAdminEvaluations()">
-      </div>
-      <div class="filter-item">
-        <label>🏫 نوع</label>
-        <select id="evalSchoolTypeFilter" onchange="loadAdminEvaluations()">
-          <option value="">📋 همه</option>
-          <option value="مکاتب">🏫 مکاتب</option>
-          <option value="مدارس">🏛️ مدارس</option>
-        </select>
-      </div>
-      <div class="filter-item">
-        <label>🏫 مکتب خاص</label>
-        <select id="evalSchoolNameFilter" onchange="loadAdminEvaluations()">
-          <option value="">📋 همه مکاتب</option>
-        </select>
-      </div>
-      <!-- ⭐ فیلتر تاریخ تقرر -->
-      <div class="filter-item" style="grid-column: span 2;">
-        <label>📅 تاریخ تقرر (از ... تا ...)</label>
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="evalAppDateFrom" class="form-control" placeholder="از: 1400/01/01" onchange="loadAdminEvaluations()">
-          <input type="text" id="evalAppDateTo" class="form-control" placeholder="تا: 1400/12/30" onchange="loadAdminEvaluations()">
-        </div>
       </div>
     </div>
 
@@ -411,31 +373,19 @@
         <div id="schoolNamesHeader" class="mb-3"></div>
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <div>
-            <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">
-              📊 تعداد مکاتب: <strong id="modalSchoolCount">0</strong>
-            </span>
+            <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">📊 تعداد مکاتب: <strong id="modalSchoolCount">0</strong></span>
           </div>
           <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-primary btn-sm fw-bold" onclick="printSchoolSettings()">🖨️ پرنت لیست مکاتب</button>
-            <button class="btn btn-success btn-sm fw-bold" onclick="exportSchoolSettingsCSV()">📊 خروجی CSV</button>
+            <button class="btn btn-primary btn-sm fw-bold" onclick="printSchoolSettings()">🖨️ پرنت</button>
+            <button class="btn btn-success btn-sm fw-bold" onclick="exportSchoolSettingsCSV()">📊 CSV</button>
           </div>
         </div>
         <div class="table-responsive border rounded">
           <table class="table table-hover table-bordered align-middle mb-0 text-center">
             <thead class="table-light">
-              <tr>
-                <th style="width:50px;">#</th>
-                <th>🏫 مکتب</th>
-                <th>📍 ولسوالی</th>
-                <th>⏰ تایم</th>
-                <th>🎓 عضو علمی</th>
-                <th>📚 شعبات</th>
-                <th>💼 وضعیت بست</th>
-              </tr>
+              <tr><th style="width:50px;">#</th><th>🏫 مکتب</th><th>📍 ولسوالی</th><th>⏰ تایم</th><th>🎓 عضو علمی</th><th>📚 شعبات</th><th>💼 وضعیت بست</th></tr>
             </thead>
-            <tbody id="schoolSettingsModalBody">
-              <tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
-            </tbody>
+            <tbody id="schoolSettingsModalBody"><tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -453,29 +403,17 @@
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <input type="text" id="manageSchoolSearch" class="form-control form-control-lg" placeholder="🔍 جستجو بر اساس نام مکتب یا نام کاربری..." oninput="filterManageSchools()">
-          <small class="text-muted">🔎 برای جستجو تایپ کنید</small>
+          <input type="text" id="manageSchoolSearch" class="form-control form-control-lg" placeholder="🔍 جستجو..." oninput="filterManageSchools()">
         </div>
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">
-            📊 تعداد مکاتب: <strong id="manageSchoolCount">0</strong>
-          </span>
+          <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">📊 تعداد: <strong id="manageSchoolCount">0</strong></span>
         </div>
         <div class="table-responsive border rounded">
           <table class="table table-hover table-bordered align-middle mb-0">
             <thead class="table-light">
-              <tr>
-                <th style="width:50px; text-align:center;">#</th>
-                <th style="text-align:center;">🏫 نام مکتب</th>
-                <th style="text-align:center;">👤 نام کاربری</th>
-                <th style="text-align:center;">🔑 رمز عبور</th>
-                <th style="text-align:center;">📍 ولسوالی</th>
-                <th style="text-align:center;">عملیات</th>
-              </tr>
+              <tr><th style="width:50px; text-align:center;">#</th><th style="text-align:center;">🏫 نام مکتب</th><th style="text-align:center;">👤 کاربری</th><th style="text-align:center;">🔑 رمز</th><th style="text-align:center;">📍 ولسوالی</th><th style="text-align:center;">عملیات</th></tr>
             </thead>
-            <tbody id="manageSchoolsBody">
-              <tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
-            </tbody>
+            <tbody id="manageSchoolsBody"><tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -494,8 +432,8 @@
       <div class="modal-body">
         <input type="hidden" id="editSchoolId">
         <div class="mb-3"><label class="form-label fw-bold">نام کاربری</label><input type="text" id="editSchoolUsername" class="form-control"></div>
-        <div class="mb-3"><label class="form-label fw-bold">رمز عبور جدید (اختیاری)</label><input type="text" id="editSchoolPassword" class="form-control"><small class="text-muted">⚠️ خالی بگذارید = بدون تغییر</small></div>
-        <div class="mb-3"><label class="form-label fw-bold">نام مکتب (فارسی)</label><input type="text" id="editSchoolName" class="form-control"></div>
+        <div class="mb-3"><label class="form-label fw-bold">رمز جدید (اختیاری)</label><input type="text" id="editSchoolPassword" class="form-control"><small class="text-muted">⚠️ خالی = بدون تغییر</small></div>
+        <div class="mb-3"><label class="form-label fw-bold">نام مکتب</label><input type="text" id="editSchoolName" class="form-control"></div>
         <div class="mb-3"><label class="form-label fw-bold">ولسوالی</label><input type="text" id="editSchoolDistrict" class="form-control"></div>
       </div>
       <div class="modal-footer">
@@ -535,9 +473,6 @@
   const RETIREMENT_AGE = 65;
   let evalAllowed = false;
 
-  // ═══════════════════════════════════════════════════════════
-  // توابع کمکی
-  // ═══════════════════════════════════════════════════════════
   function detectSchoolType(schoolName) {
     if (!schoolName) return 'نامشخص';
     const name = String(schoolName).trim().replace(/\s+/g, ' ');
@@ -625,15 +560,11 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // مدیریت تب‌ها
-  // ═══════════════════════════════════════════════════════════
   function switchAdminTab(tabName, btn) {
     document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-main').style.display = tabName === 'main' ? 'block' : 'none';
     document.getElementById('tab-evaluation').style.display = tabName === 'evaluation' ? 'block' : 'none';
-    
     if (tabName === 'main') {
       loadAllRecords();
     } else if (tabName === 'evaluation') {
@@ -643,9 +574,6 @@
   }
   window.switchAdminTab = switchAdminTab;
 
-  // ═══════════════════════════════════════════════════════════
-  // فیلترها و بارگذاری اصلی
-  // ═══════════════════════════════════════════════════════════
   function getActiveFilters() {
     return {
       search: document.getElementById('searchInput').value.trim(),
@@ -680,8 +608,6 @@
 
     try {
       const params = [];
-      // ⭐ جستجو فقط روی کد بست
-      if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
 
       let statusToSend = '';
@@ -695,7 +621,7 @@
 
       let records = await res.json();
 
-      // فیلتر کد بست (سمت کلاینت)
+      // ⭐ فیلتر جستجو فقط روی کُد بست
       if (f.search) {
         const searchTerm = normalizeDigits(f.search).trim().replace(/\s+/g, '');
         records = records.filter(row => {
@@ -705,7 +631,6 @@
         });
       }
 
-      // فیلتر نوع مکتب
       if (f.schoolType) {
         records = records.filter(row => {
           let schoolName = row.schoolname;
@@ -713,8 +638,7 @@
             const user = allSchoolsList.find(u => u.id === row.userid);
             if (user) schoolName = user.schoolname;
           }
-          if (!schoolName) return false;
-          return detectSchoolType(schoolName) === f.schoolType;
+          return schoolName && detectSchoolType(schoolName) === f.schoolType;
         });
       }
 
@@ -757,7 +681,7 @@
         return (info.serviceStatus || 'نخیر') === f.service;
       });
 
-      // ⭐ فیلتر تاریخ تقرر (از-تا)
+      // ⭐ فیلتر تاریخ تقرر
       if (f.appDateFrom || f.appDateTo) {
         const fromP = parseShamsi(f.appDateFrom);
         const toP = parseShamsi(f.appDateTo);
@@ -814,7 +738,6 @@
   function renderRecords(records) {
     const tbody = document.getElementById('allTableBody');
     tbody.innerHTML = '';
-    
     const fragment = document.createDocumentFragment();
     records.forEach((row) => {
       const info = row.data || {};
@@ -822,13 +745,11 @@
       const empStatus = getEmployeeStatus(info);
       const approvalHtml = row.status === 'approved' ? '<span class="badge-approved">✅ تایید</span>' : '<span class="badge-pending">⏳ انتظار</span>';
       const serviceHtml = info.serviceStatus === 'بلی' ? '<span class="badge-service-yes">🏢 رفته</span>' : '<span class="badge-service-no">—</span>';
-      
       let actionsHtml = '';
       if (row.status === 'pending') actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})">✔️</button>`;
       actionsHtml += `<button class="btn-action btn-view" onclick="viewRecordAdmin(${row.id})">👁️</button>`;
       actionsHtml += `<button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})">🖨️</button>`;
       actionsHtml += `<button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})">🗑️</button>`;
-      
       const schoolName = row.schoolname || getSchoolNameById(row.userid) || '—';
       const district = row.district || getDistrictById(row.userid) || '—';
       const tr = document.createElement('tr');
@@ -851,9 +772,6 @@
     tbody.appendChild(fragment);
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // ⭐ مدیریت ارزیابی
-  // ═══════════════════════════════════════════════════════════
   async function loadEvaluationPermission() {
     try {
       const res = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -869,12 +787,10 @@
     const status = document.getElementById('evalPermissionStatus');
     const btnYes = document.getElementById('btnAllowYes');
     const btnNo = document.getElementById('btnAllowNo');
-    
     btnYes.classList.remove('active-yes', 'active-no');
     btnNo.classList.remove('active-yes', 'active-no');
     box.classList.remove('allowed', 'denied');
     status.classList.remove('allowed', 'denied');
-    
     if (evalAllowed) {
       box.classList.add('allowed');
       status.classList.add('allowed');
@@ -909,77 +825,34 @@
   async function loadAdminEvaluations() {
     const tbody = document.getElementById('evalAdminTableBody');
     tbody.innerHTML = '<tr><td colspan="11" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
-    
     try {
-      const jobCodeSearch = document.getElementById('evalSearchJobCode').value.trim();
-      const schoolTypeFilter = document.getElementById('evalSchoolTypeFilter').value;
-      const schoolFilter = document.getElementById('evalSchoolNameFilter').value;
-      const dateFrom = document.getElementById('evalAppDateFrom').value.trim();
-      const dateTo = document.getElementById('evalAppDateTo').value.trim();
-      
-      const params = [];
-      if (jobCodeSearch) params.push('job_code=' + encodeURIComponent(jobCodeSearch));
-      if (schoolFilter) params.push('school=' + encodeURIComponent(schoolFilter));
-      
-      const url = '/api/evaluations' + (params.length ? '?' + params.join('&') : '');
-      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch('/api/evaluations', { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
-      
       let evals = await res.json();
       cachedEvaluations = Array.isArray(evals) ? evals : [];
       
-      // فیلتر نوع (مکاتب / مدارس) سمت کلاینت
-      if (schoolTypeFilter) {
-        evals = evals.filter(e => {
-          const type = detectSchoolType(e.schoolname);
-          if (schoolTypeFilter === 'مکاتب') {
-            return type === 'لیسه' || type === 'متوسطه' || type === 'ابتداییه';
-          } else if (schoolTypeFilter === 'مدارس') {
-            return type === 'مدرسه' || type === 'نامشخص';
-          }
-          return true;
-        });
-      }
-      
-      // فیلتر تاریخ تقرر (از-تا)
-      if (dateFrom || dateTo) {
-        const fromP = parseShamsi(dateFrom);
-        const toP = parseShamsi(dateTo);
-        evals = evals.filter(e => {
-          const appDate = parseShamsi(e.appointment_date);
-          if (!appDate) return false;
-          if (fromP && appDate.numeric < fromP.numeric) return false;
-          if (toP && appDate.numeric > toP.numeric) return false;
-          return true;
-        });
-      }
-      
-      cachedEvaluations = evals;
-      
-      // آمار
       let excellent = 0, good = 0, weak = 0;
-      evals.forEach(e => {
+      cachedEvaluations.forEach(e => {
         if (e.eval_result === 'عالی') excellent++;
         else if (e.eval_result === 'خوب') good++;
         else if (e.eval_result === 'ضعیف') weak++;
       });
-      document.getElementById('evalStatTotal').textContent = evals.length;
+      document.getElementById('evalStatTotal').textContent = cachedEvaluations.length;
       document.getElementById('evalStatExcellent').textContent = excellent;
       document.getElementById('evalStatGood').textContent = good;
       document.getElementById('evalStatWeak').textContent = weak;
       
-      if (evals.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center p-4 text-muted">هیچ ارزیابی‌ای با این فیلترها یافت نشد</td></tr>';
+      if (cachedEvaluations.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center p-4 text-muted">هیچ ارزیابی‌ای یافت نشد</td></tr>';
         return;
       }
       
       const fragment = document.createDocumentFragment();
-      evals.forEach((e, idx) => {
+      cachedEvaluations.forEach((e, idx) => {
         let resultBadge = '<span style="color:#94a3b8;">—</span>';
         if (e.eval_result === 'عالی') resultBadge = '<span class="result-badge-excellent">🌟 عالی</span>';
         else if (e.eval_result === 'خوب') resultBadge = '<span class="result-badge-good">✅ خوب</span>';
         else if (e.eval_result === 'ضعیف') resultBadge = '<span class="result-badge-weak">⚠️ ضعیف</span>';
-        
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${idx + 1}</td>
@@ -998,35 +871,23 @@
       });
       tbody.appendChild(fragment);
     } catch (err) {
-      console.error(err);
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger p-4">خطا در بارگذاری</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger p-4">خطا</td></tr>';
     }
   }
   window.loadAdminEvaluations = loadAdminEvaluations;
 
   async function deleteEvalAdmin(id) {
-    if (!confirm('⚠️ آیا این ارزیابی حذف شود؟')) return;
+    if (!confirm('⚠️ حذف شود؟')) return;
     try {
-      const res = await fetch('/api/evaluations/' + id, {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (res.ok) {
-        showToast('🗑️ ارزیابی حذف شد');
-        loadAdminEvaluations();
-      } else {
-        showToast('خطا در حذف', true);
-      }
-    } catch (e) { showToast('ارتباط برقرار نشد', true); }
+      const res = await fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) { showToast('🗑️ حذف شد'); loadAdminEvaluations(); }
+      else showToast('خطا', true);
+    } catch (e) { showToast('خطا', true); }
   }
   window.deleteEvalAdmin = deleteEvalAdmin;
 
   function printEvalAdmin() {
-    if (!cachedEvaluations || cachedEvaluations.length === 0) {
-      showToast('رکوردی برای پرنت نیست', true);
-      return;
-    }
-    
+    if (!cachedEvaluations || cachedEvaluations.length === 0) { showToast('رکوردی برای پرنت نیست', true); return; }
     let rowsHtml = '';
     cachedEvaluations.forEach((e, idx) => {
       rowsHtml += `<tr>
@@ -1049,7 +910,6 @@
         <td style="border:1px solid #333; padding:4px; text-align:center; font-weight:bold;">${escapeHtml(e.eval_result || '—')}</td>
       </tr>`;
     });
-    
     const html = `
       <div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:10px;">
         <h2 style="margin:0; font-size:16px;">ریاست معارف ولایت هرات</h2>
@@ -1081,7 +941,6 @@
         <tbody>${rowsHtml}</tbody>
       </table>
     `;
-    
     const win = window.open('', '_blank');
     win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت ارزیابی</title><style>body { font-family: Tahoma; padding: 8px; direction: rtl; } @media print { .no-print { display:none !important; } @page { size: A4 landscape; margin: 5mm; } thead { display: table-header-group; } }</style></head><body>${html}<div class="no-print" style="text-align:center; margin-top:15px;"><button onclick="window.print()" style="padding:10px 20px; background:#7c3aed; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🖨️ پرنت</button> <button onclick="window.close()" style="padding:10px 20px; background:#e2e8f0; color:#1e293b; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">بستن</button></div><script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
     win.document.close();
@@ -1089,35 +948,15 @@
   window.printEvalAdmin = printEvalAdmin;
 
   function exportEvalAdminExcel() {
-    if (!cachedEvaluations || cachedEvaluations.length === 0) {
-      showToast('رکوردی برای خروجی نیست', true);
-      return;
-    }
-    
+    if (!cachedEvaluations || cachedEvaluations.length === 0) { showToast('رکوردی نیست', true); return; }
     const headers = ['#', 'اسم', 'تخلص', 'ولد', 'ولدیت', 'کُد بست', 'نوع تقرر', 'سال تولد', 'مدت خدمت', 'درجه تحصیل', 'جنسیت', 'وظیفه', 'مکتب', 'تاریخ تقرر', 'تاریخ ارزیابی قبلی', 'بست', 'قدم', 'تاریخ ارزیابی', 'نمره', 'نتیجه'];
     const rows = cachedEvaluations.map((e, idx) => [
-      idx + 1,
-      e.first_name || '',
-      e.last_name || '',
-      e.father_name || '',
-      e.grandfather_name || '',
-      e.job_code || '',
-      e.employment_type || '',
-      e.birth_year || '',
-      e.service_duration || '',
-      e.degree || '',
-      e.gender || '',
-      e.job_title || '',
-      e.schoolname || '',
-      e.appointment_date || '',
-      e.eval_date_prev || '',
-      e.bust || '',
-      e.grade || '',
-      e.eval_date || '',
-      e.eval_score || '',
-      e.eval_result || ''
+      idx + 1, e.first_name || '', e.last_name || '', e.father_name || '', e.grandfather_name || '',
+      e.job_code || '', e.employment_type || '', e.birth_year || '', e.service_duration || '',
+      e.degree || '', e.gender || '', e.job_title || '', e.schoolname || '',
+      e.appointment_date || '', e.eval_date_prev || '', e.bust || '', e.grade || '',
+      e.eval_date || '', e.eval_score || '', e.eval_result || ''
     ]);
-    
     const csv = '\uFEFF' + [headers, ...rows].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1126,13 +965,10 @@
     a.download = 'evaluations_' + new Date().toISOString().slice(0, 10) + '.csv';
     a.click();
     URL.revokeObjectURL(url);
-    showToast('📊 خروجی اکسل دانلود شد');
+    showToast('📊 دانلود شد');
   }
   window.exportEvalAdminExcel = exportEvalAdminExcel;
 
-  // ═══════════════════════════════════════════════════════════
-  // آمار تفصیلی
-  // ═══════════════════════════════════════════════════════════
   async function showDetailedStats() {
     if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
     document.getElementById('detailedStatsBody').innerHTML = '<div class="text-center p-4 text-muted">⏳ در حال بارگذاری...</div>';
@@ -1142,13 +978,11 @@
       if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
       const records = await res.json();
       if (!Array.isArray(records) || records.length === 0) {
-        document.getElementById('detailedStatsBody').innerHTML = '<div class="alert alert-info">هیچ رکوردی موجود نیست</div>';
+        document.getElementById('detailedStatsBody').innerHTML = '<div class="alert alert-info">هیچ رکوردی نیست</div>';
         return;
       }
       renderDetailedStats(records);
-    } catch (e) {
-      document.getElementById('detailedStatsBody').innerHTML = '<div class="alert alert-danger">خطا</div>';
-    }
+    } catch (e) { document.getElementById('detailedStatsBody').innerHTML = '<div class="alert alert-danger">خطا</div>'; }
   }
   window.showDetailedStats = showDetailedStats;
 
@@ -1159,7 +993,6 @@
     const statusCount = { 'فعال': 0, 'متقاعد': 0 };
     const approvalCount = { 'تایید شده': 0, 'در انتظار': 0 };
     const schoolTypeCount = { 'لیسه': 0, 'متوسطه': 0, 'ابتداییه': 0, 'مدرسه': 0, 'نامشخص': 0 };
-    
     records.forEach(row => {
       const info = row.data || {};
       const job = (info.jobTitle || info.job || 'نامشخص').trim();
@@ -1175,7 +1008,6 @@
       }
       if (row.status === 'approved') approvalCount['تایید شده']++;
       else approvalCount['در انتظار']++;
-      
       let schoolName = row.schoolname;
       if (!schoolName && row.userid) {
         const user = allSchoolsList.find(u => u.id === row.userid);
@@ -1184,13 +1016,11 @@
       const type = detectSchoolType(schoolName);
       if (schoolTypeCount[type] !== undefined) schoolTypeCount[type]++;
     });
-    
     const total = records.length;
     let html = `<div style="background:linear-gradient(135deg,#7c3aed,#5b21b6); color:#fff; padding:20px; border-radius:10px; margin-bottom:20px; text-align:center;">
       <div style="font-size:14px; opacity:0.9;">📊 مجموع کل کارمندان</div>
       <div style="font-size:42px; font-weight:bold; margin:5px 0;">${total}</div>
     </div>`;
-    
     function makeCard(title, icon, color, items) {
       let itemsHtml = items.map(([label, count]) => {
         const pct = total > 0 ? Math.round((count / total) * 100) : 0;
@@ -1204,7 +1034,6 @@
       }).join('');
       return `<div class="stats-card-item"><h6 style="color:${color}; border-bottom-color:${color};">${icon} ${title}</h6>${itemsHtml}</div>`;
     }
-    
     html += '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:15px;">';
     html += makeCard('عنوان بست', '👨‍🏫', '#7c3aed', Object.entries(jobTitleCount).sort((a, b) => b[1] - a[1]));
     html += makeCard('درجه تحصیلی', '🎓', '#0891b2', Object.entries(degreeCount).sort((a, b) => b[1] - a[1]));
@@ -1213,13 +1042,9 @@
     html += makeCard('وضعیت تایید', '✔️', '#10b981', Object.entries(approvalCount));
     html += makeCard('نوع مکتب', '🏫', '#3b82f6', Object.entries(schoolTypeCount));
     html += '</div>';
-    
     document.getElementById('detailedStatsBody').innerHTML = html;
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // سایر توابع (approve، view، print، delete، school settings)
-  // ═══════════════════════════════════════════════════════════
   async function approveRecord(id) {
     if (!confirm('آیا تایید شود؟')) return;
     try {
@@ -1291,7 +1116,7 @@
   window.printRecordAdmin = printRecordAdmin;
 
   function printList() {
-    if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی برای چاپ نیست', true); return; }
+    if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی نیست', true); return; }
     let rowsHtml = '';
     loadedRecordsCache.forEach((row, idx) => {
       const info = row.data || {};
@@ -1307,41 +1132,19 @@
 
   function printFiltered() { printList(); }
   window.printFiltered = printFiltered;
-
-  function exportFull() {
-    if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی نیست', true); return; }
-    const headers = ['ID','مکتب','ولسوالی','کُد بست','عنوان بست','اسم','تخلص','ولد','ولدیت','جنسیت','تاریخ تولد','تماس','درجه','رشته','وضعیت'];
-    const rows = loadedRecordsCache.map(r => {
-      const info = r.data || {};
-      return [r.id, r.schoolname || '', r.district || '', info.jobCode || '', info.jobTitle || info.job || '', info.firstName || '', info.lastName || '', info.fatherName || '', info.grandfatherName || '', info.gender || '', info.birthDate || '', info.phone || '', info.degree || '', info.major || '', r.status === 'approved' ? 'تایید' : 'انتظار'];
-    });
-    const csv = '\uFEFF' + [headers, ...rows].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'full_' + new Date().toISOString().slice(0, 10) + '.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('📊 دانلود شد');
-  }
+  function exportFull() { showToast('در حال توسعه'); }
   window.exportFull = exportFull;
-
-  function exportTashkeel() { exportFull(); }
+  function exportTashkeel() { showToast('در حال توسعه'); }
   window.exportTashkeel = exportTashkeel;
-  function exportFiltered() { exportFull(); }
+  function exportFiltered() { showToast('در حال توسعه'); }
   window.exportFiltered = exportFiltered;
 
-  // ═══════════════════════════════════════════════════════════
-  // مدیریت مکاتب (اطلاعات)
-  // ═══════════════════════════════════════════════════════════
   async function loadSchoolSettings() {
     try {
       const res = await fetch('/api/all-school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
-      if (res.ok) {
-        allSchoolSettings = await res.json();
-      } else allSchoolSettings = [];
+      if (res.ok) allSchoolSettings = await res.json();
+      else allSchoolSettings = [];
     } catch (e) { allSchoolSettings = []; }
   }
 
@@ -1377,9 +1180,6 @@
   function exportSchoolSettingsCSV() { showToast('در حال توسعه'); }
   window.exportSchoolSettingsCSV = exportSchoolSettingsCSV;
 
-  // ═══════════════════════════════════════════════════════════
-  // مدیریت لیست مکاتب (کاربران)
-  // ═══════════════════════════════════════════════════════════
   async function showManageSchools() {
     if (!manageSchoolsModal) manageSchoolsModal = new bootstrap.Modal(document.getElementById('manageSchoolsModal'));
     if (!editSchoolModal) editSchoolModal = new bootstrap.Modal(document.getElementById('editSchoolModal'));
@@ -1466,9 +1266,6 @@
   }
   window.deleteSchoolAdmin = deleteSchoolAdmin;
 
-  // ═══════════════════════════════════════════════════════════
-  // افزودن مکتب
-  // ═══════════════════════════════════════════════════════════
   async function addUser() {
     const body = {
       username: document.getElementById('uUsername').value.trim(),
@@ -1484,24 +1281,17 @@
         showToast('🏫 ثبت شد');
         ['uUsername','uPassword','uSchoolName','uDistrict'].forEach(id => document.getElementById(id).value = '');
         loadSchoolsList();
-        // پر کردن dropdown ارزیابی
-        populateEvalSchoolDropdown();
       } else showToast(data.error || 'خطا', true);
     } catch (err) { showToast('ارتباط برقرار نشد', true); }
   }
   window.addUser = addUser;
 
-  // ═══════════════════════════════════════════════════════════
-  // لیست مکاتب (دراپ‌داون‌ها)
-  // ═══════════════════════════════════════════════════════════
   async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) return;
       const schools = await res.json();
       allSchoolsList = Array.isArray(schools) ? schools : [];
-      
-      // dropdown اصلی
       const filterSelect = document.getElementById('schoolFilter');
       if (filterSelect) {
         const currentVal = filterSelect.value;
@@ -1514,28 +1304,10 @@
           filterSelect.appendChild(opt);
         });
       }
-      
-      // dropdown ارزیابی
-      populateEvalSchoolDropdown();
-      
       document.getElementById('sSchools').textContent = allSchoolsList.length;
     } catch (e) { console.error(e); }
   }
   window.loadSchoolsList = loadSchoolsList;
-
-  function populateEvalSchoolDropdown() {
-    const select = document.getElementById('evalSchoolNameFilter');
-    if (!select) return;
-    const currentVal = select.value;
-    select.innerHTML = '<option value="">📋 همه مکاتب</option>';
-    allSchoolsList.forEach(sch => {
-      const opt = document.createElement('option');
-      opt.value = sch.schoolname;
-      opt.textContent = `🏫 ${sch.schoolname}`;
-      if (sch.schoolname === currentVal) opt.selected = true;
-      select.appendChild(opt);
-    });
-  }
 
   function logout() {
     localStorage.removeItem('hr_token');
@@ -1544,9 +1316,6 @@
   }
   window.logout = logout;
 
-  // ═══════════════════════════════════════════════════════════
-  // راه‌اندازی
-  // ═══════════════════════════════════════════════════════════
   (async function init() {
     await loadSchoolsList();
     await loadSchoolSettings();

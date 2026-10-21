@@ -13,8 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V17.1 starting...');
-console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
+console.log('🔐 Server V17.2 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -807,8 +806,6 @@ app.post('/api/evaluation-permission', authRequired, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // ⭐ ارزیابی‌ها
 // ═══════════════════════════════════════════════════════════
-
-// لیست ارزیابی‌ها
 app.get('/api/evaluations', authRequired, async (req, res) => {
   try {
     const conditions = [];
@@ -860,7 +857,6 @@ app.get('/api/evaluations', authRequired, async (req, res) => {
   }
 });
 
-// ثبت ارزیابی جدید
 app.post('/api/evaluations', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -877,16 +873,14 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
     if (!record_id) return res.status(400).json({ error: 'کارمند انتخاب نشده است' });
     if (!bust) return res.status(400).json({ error: 'بست الزامی است' });
     if (!grade) return res.status(400).json({ error: 'قدم الزامی است' });
-    if (!eval_date) return res.status(400).json({ error: 'سال ارزیابی الزامی است' });
+    if (!eval_date) return res.status(400).json({ error: 'تاریخ ارزیابی الزامی است' });
     if (!eval_score) return res.status(400).json({ error: 'نمره الزامی است' });
     if (!eval_result) return res.status(400).json({ error: 'نتیجه الزامی است' });
 
-    // ⭐ اعتبارسنجی سال (فقط ۴ رقم)
-    const cleanYear = normalizeDigits(eval_date).trim();
-    const yearNum = Number(cleanYear);
-    if (isNaN(yearNum) || yearNum < 1300 || yearNum > 1450 || cleanYear.length !== 4) {
-      return res.status(400).json({ error: 'سال ارزیابی معتبر نیست (مثال: 1403)' });
-    }
+    // ⭐ اعتبارسنجی تاریخ کامل (تغییر جدید)
+    const dateErr = validateShamsiDateServer(eval_date, 'تاریخ ارزیابی');
+    if (dateErr) return res.status(400).json({ error: dateErr });
+    const cleanDate = normalizeDigits(eval_date).trim().replace(/[.\-]/g, '/');
 
     const scoreNum = Number(normalizeDigits(eval_score));
     if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
@@ -916,7 +910,7 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
       }
     }
 
-    // ⭐ محاسبه مدت خدمت (فقط سال)
+    // محاسبه مدت خدمت (سال)
     let serviceDuration = '';
     if (info.firstAppointmentDate) {
       const cleaned = normalizeDigits(info.firstAppointmentDate).replace(/[.\-]/g, '/').trim();
@@ -964,7 +958,7 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
         info.firstName || '', info.lastName || '', info.fatherName || '', info.grandfatherName || '',
         info.jobCode || '', info.employmentType || '', birthYear, serviceDuration,
         info.degree || '', info.gender || '', info.jobTitle || info.job || '', info.currentPositionDate || '',
-        eval_date_prev || '', bust, grade, cleanYear, scoreNum, eval_result
+        eval_date_prev || '', bust, grade, cleanDate, scoreNum, eval_result
       ]
     );
 
@@ -1102,11 +1096,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 app.get('/api/test', (req, res) => {
-  res.json({
-    ok: true,
-    version: '17.1.0',
-    timestamp: new Date().toISOString()
-  });
+  res.json({ ok: true, version: '17.2.0', timestamp: new Date().toISOString() });
 });
 
 app.get('*', (req, res) => {
@@ -1118,6 +1108,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V17.1 live on port ' + PORT);
+  console.log('🚀 Server V17.2 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

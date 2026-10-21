@@ -115,7 +115,7 @@
   .service-section { background: #fef3c7; border-right: 5px solid #f59e0b; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
   .service-section.active { display: block; }
   
-  .eval-section-locked { background: #fee2e2; border: 2px solid #dc2626; border-radius: 10px; padding: 20px; margin-bottom: 15px; text-align: center; color: #991b1b; font-weight: bold; font-size: 15px; }
+  .eval-section-locked { background: #fee2e2; border: 2px solid #dc2626; border-radius: 10px; padding: 25px; margin-bottom: 15px; text-align: center; color: #991b1b; font-weight: bold; font-size: 15px; }
   
   .eval-info-box { background: #eff6ff; border-right: 5px solid #3b82f6; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #1e3a8a; }
   
@@ -445,10 +445,12 @@
       <h4>⭐ ارزیابی کارمندان</h4>
 
       <!-- پیام قفل بودن -->
-      <div id="evalLockedBox" class="eval-section-locked" style="display:none;">
-        🔒 هنوز از طرف آمریت اجازه داده نشده است.
-        <div style="font-size:12px; font-weight:normal; margin-top:8px; color:#78350f;">
-          لطفاً با ریاست معارف تماس بگیرید تا اجازه ارزیابی برای مکتب شما فعال شود.
+      <div id="evalLockedBox" class="eval-section-locked" style="display:none; background:#fef2f2; border-color:#ef4444; color:#991b1b; padding: 25px;">
+        <div style="font-size: 18px; margin-bottom: 10px;">🔒 هنوز از طرف آمریت اجازه داده نشده است.</div>
+        <div style="font-size: 14px; font-weight: normal; line-height: 1.8;">
+          لطفاً با آمریت معارف (به عضو مسلکی امور مالی و کارکنان) به شماره 
+          <strong style="font-size: 16px; direction: ltr; display: inline-block;">0798525880</strong> 
+          تماس بگیرید تا اجازه ارزیابی برای مکتب شما فعال شود.
         </div>
       </div>
 
@@ -1677,13 +1679,13 @@
       currentEvalRecord = rec;
       const info = rec.data || {};
 
-      // ⭐ گرفتن تاریخ ارزیابی قبلی
+      // گرفتن آخرین ارزیابی قبلی
       let prevDate = '';
       try {
         const evalRes = await fetch('/api/evaluations?record_id=' + recordId, { headers: { 'Authorization': 'Bearer ' + token } });
         const evalData = await evalRes.json();
         if (Array.isArray(evalData) && evalData.length > 0) {
-          prevDate = evalData[0].eval_date || ''; 
+          prevDate = evalData[0].eval_date_prev || ''; 
         }
       } catch (e) { console.error(e); }
 
@@ -1697,7 +1699,7 @@
       const bd = parseShamsiParts(info.birthDate);
       document.getElementById('evalBirthYear').value = bd ? String(bd.year) : '—';
       
-      // ⭐ مدت خدمت فقط سال
+      // مدت خدمت فقط سال
       document.getElementById('evalServiceDuration').value = calcServiceDurationYears(info.firstAppointmentDate || info.currentPositionDate);
       
       document.getElementById('evalDegree').value = info.degree || '—';
@@ -1707,8 +1709,12 @@
       document.getElementById('evalSchoolName').value = rec.schoolname || user.schoolname || '—';
       document.getElementById('evalAppointmentDate').value = info.currentPositionDate || '—';
       
-      // ⭐ تاریخ ارزیابی قبلی (کامل)
-      document.getElementById('evalPrevDate').value = prevDate || '—';
+      // ⭐ تاریخ ارزیابی قبلی (به صورت خودکار پر شود)
+      let finalPrevDate = prevDate;
+      if (!finalPrevDate) {
+        finalPrevDate = info.currentPositionDate || info.firstAppointmentDate || '';
+      }
+      document.getElementById('evalPrevDate').value = finalPrevDate;
 
       document.getElementById('evalBust').value = info.bust || '';
       document.getElementById('evalGrade').value = info.grade || '';
@@ -1762,7 +1768,7 @@
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({
           record_id: currentEvalRecord.id,
-          eval_date_prev: document.getElementById('evalPrevDate').value === '—' ? '' : document.getElementById('evalPrevDate').value,
+          eval_date_prev: document.getElementById('evalPrevDate').value.trim() === '—' ? '' : document.getElementById('evalPrevDate').value.trim(),
           bust: bust,
           grade: grade,
           eval_date: yearResult.formatted, // فقط سال

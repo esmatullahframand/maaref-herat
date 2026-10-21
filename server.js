@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V17.2 starting...');
+console.log('🔐 Server V17.3 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -877,7 +877,6 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
     if (!eval_score) return res.status(400).json({ error: 'نمره الزامی است' });
     if (!eval_result) return res.status(400).json({ error: 'نتیجه الزامی است' });
 
-    // ⭐ اعتبارسنجی تاریخ کامل (تغییر جدید)
     const dateErr = validateShamsiDateServer(eval_date, 'تاریخ ارزیابی');
     if (dateErr) return res.status(400).json({ error: dateErr });
     const cleanDate = normalizeDigits(eval_date).trim().replace(/[.\-]/g, '/');
@@ -910,7 +909,6 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
       }
     }
 
-    // محاسبه مدت خدمت (سال)
     let serviceDuration = '';
     if (info.firstAppointmentDate) {
       const cleaned = normalizeDigits(info.firstAppointmentDate).replace(/[.\-]/g, '/').trim();
@@ -969,11 +967,72 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
   }
 });
 
+// ⭐ ویرایش ارزیابی
+app.put('/api/evaluations/:id', authRequired, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const body = req.body || {};
+    
+    let check;
+    if (req.user.role === 'admin') {
+      check = await pool.query('SELECT * FROM evaluations WHERE id = $1', [id]);
+    } else if (req.user.role === 'school') {
+      check = await pool.query('SELECT * FROM evaluations WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    
+    if (check.rows.length === 0) return res.status(404).json({ error: 'ارزیابی یافت نشد' });
+
+    const { bust, grade, eval_date, eval_score, eval_result, eval_date_prev } = body;
+
+    if (!bust) return res.status(400).json({ error: 'بست الزامی است' });
+    if (!grade) return res.status(400).json({ error: 'قدم الزامی است' });
+    if (!eval_date) return res.status(400).json({ error: 'تاریخ ارزیابی الزامی است' });
+    
+    const dateErr = validateShamsiDateServer(eval_date, 'تاریخ ارزیابی');
+    if (dateErr) return res.status(400).json({ error: dateErr });
+    const cleanDate = normalizeDigits(eval_date).trim().replace(/[.\-]/g, '/');
+
+    if (!eval_score) return res.status(400).json({ error: 'نمره الزامی است' });
+    const scoreNum = Number(normalizeDigits(eval_score));
+    if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
+      return res.status(400).json({ error: 'نمره باید بین ۰ تا ۱۰۰ باشد' });
+    }
+
+    if (!['عالی', 'خوب', 'ضعیف'].includes(eval_result)) {
+      return res.status(400).json({ error: 'نتیجه ارزیابی معتبر نیست' });
+    }
+
+    await pool.query(
+      `UPDATE evaluations SET 
+        bust = $1, grade = $2, eval_date = $3, eval_score = $4, eval_result = $5, eval_date_prev = $6
+       WHERE id = $7`,
+      [bust, grade, cleanDate, scoreNum, eval_result, eval_date_prev || '', id]
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Evaluation PUT error:', err.message);
+    res.status(500).json({ error: 'خطا در ویرایش ارزیابی: ' + err.message });
+  }
+});
+
+// ⭐ حذف ارزیابی
 app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
   try {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    const result = await pool.query('DELETE FROM evaluations WHERE id = $1', [req.params.id]);
-    if (result.rowCount === 0) return res.status(404).json({ error: 'یافت نشد' });
+    const id = req.params.id;
+    let check;
+    if (req.user.role === 'admin') {
+      check = await pool.query('SELECT id FROM evaluations WHERE id = $1', [id]);
+    } else if (req.user.role === 'school') {
+      check = await pool.query('SELECT id FROM evaluations WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    if (check.rows.length === 0) return res.status(404).json({ error: 'یافت نشد' });
+
+    await pool.query('DELETE FROM evaluations WHERE id = $1', [id]);
     res.json({ ok: true });
   } catch (err) {
     console.error('Delete evaluation error:', err.message);
@@ -1096,7 +1155,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 app.get('/api/test', (req, res) => {
-  res.json({ ok: true, version: '17.2.0', timestamp: new Date().toISOString() });
+  res.json({ ok: true, version: '17.3.0', timestamp: new Date().toISOString() });
 });
 
 app.get('*', (req, res) => {
@@ -1108,6 +1167,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V17.2 live on port ' + PORT);
+  console.log('🚀 Server V17.3 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

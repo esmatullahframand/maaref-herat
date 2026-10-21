@@ -523,8 +523,8 @@
                 <input type="text" id="evalGrade" placeholder="مثال: 3">
               </div>
               <div class="form-group">
-                <label>سال ارزیابی *</label>
-                <input type="text" id="evalNewDate" placeholder="مثال: 1403" maxlength="4">
+                <label>تاریخ ارزیابی (شمسی) *</label>
+                <input type="text" id="evalNewDate" placeholder="مثال: 1403/05/15">
                 <small id="evalNewDateMsg" class="date-msg"></small>
               </div>
               <div class="form-group">
@@ -733,7 +733,6 @@
     return age >= 0 ? age : null;
   }
 
-  // ⭐ محاسبه مدت خدمت (فقط سال)
   function calcServiceDurationYears(startDateStr) {
     if (!startDateStr) return '—';
     const p = parseShamsiParts(startDateStr);
@@ -819,15 +818,6 @@
     return { valid: true, formatted: String(num) };
   }
 
-  function validateYear(yearStr) {
-    if (!yearStr) return { valid: false, error: 'سال الزامی است' };
-    const num = Number(normalizeDigits(yearStr));
-    if (isNaN(num) || num < 1300 || num > 1450 || String(yearStr).length !== 4) {
-      return { valid: false, error: 'سال معتبر نیست (مثال: 1403)' };
-    }
-    return { valid: true, formatted: String(num) };
-  }
-
   function attachLiveValidation(inputId, validateFn, msgId) {
     const input = document.getElementById(inputId);
     const msg = msgId ? document.getElementById(msgId) : null;
@@ -858,14 +848,13 @@
     });
   }
 
-  // ══════ راه‌اندازی اولیه ══════
   attachLiveValidation('birthDate', validateShamsiDate, 'birthDateMsg');
   attachLiveValidation('firstAppointmentDate', validateShamsiDate, 'firstAppointmentDateMsg');
   attachLiveValidation('currentPositionDate', validateShamsiDate, 'currentPositionDateMsg');
   attachLiveValidation('enrollmentDate', validateShamsiDate, 'enrollmentDateMsg');
   attachLiveValidation('graduationDate', validateShamsiDate, 'graduationDateMsg');
   attachLiveValidation('serviceDate', validateShamsiDate, 'serviceDateMsg');
-  attachLiveValidation('evalNewDate', validateYear, 'evalNewDateMsg'); // فقط سال
+  attachLiveValidation('evalNewDate', validateShamsiDate, 'evalNewDateMsg'); // تاریخ کامل
   attachLiveValidation('evalScore', validateScore, 'evalScoreMsg');
   attachLiveValidation('jobCode', validateJobCode, 'jobCodeMsg');
   attachLiveValidation('eTazkira', validateTazkira);
@@ -1709,7 +1698,7 @@
       document.getElementById('evalSchoolName').value = rec.schoolname || user.schoolname || '—';
       document.getElementById('evalAppointmentDate').value = info.currentPositionDate || '—';
       
-      // ⭐ تاریخ ارزیابی قبلی (به صورت خودکار پر شود)
+      // تاریخ ارزیابی قبلی (به صورت خودکار پر شود)
       let finalPrevDate = prevDate;
       if (!finalPrevDate) {
         finalPrevDate = info.currentPositionDate || info.firstAppointmentDate || '';
@@ -1749,9 +1738,10 @@
     if (!bust) { showToast('❌ بست الزامی است', true); return; }
     if (!grade) { showToast('❌ قدم الزامی است', true); return; }
     
-    // ⭐ اعتبارسنجی سال
-    const yearResult = validateYear(newDate);
-    if (!yearResult.valid) { showToast('❌ سال ارزیابی: ' + yearResult.error, true); return; }
+    // اعتبارسنجی تاریخ کامل
+    if (!newDate) { showToast('❌ تاریخ ارزیابی الزامی است', true); return; }
+    const dateResult = validateShamsiDate(newDate);
+    if (!dateResult.valid) { showToast('❌ تاریخ ارزیابی: ' + dateResult.error, true); return; }
 
     if (!score) { showToast('❌ نمره الزامی است', true); return; }
     const sResult = validateScore(score);
@@ -1771,7 +1761,7 @@
           eval_date_prev: document.getElementById('evalPrevDate').value.trim() === '—' ? '' : document.getElementById('evalPrevDate').value.trim(),
           bust: bust,
           grade: grade,
-          eval_date: yearResult.formatted, // فقط سال
+          eval_date: dateResult.formatted, // تاریخ کامل
           eval_score: sResult.formatted,
           eval_result: result
         })

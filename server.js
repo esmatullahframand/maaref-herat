@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V17.0 starting...');
+console.log('🔐 Server V17.1 starting...');
 console.log('🔐 JWT_SECRET:', JWT_SECRET_CONSTANT);
 console.log('═══════════════════════════════════════');
 
@@ -46,7 +46,6 @@ async function initDB() {
   try {
     const client = await pool.connect();
     try {
-      // جدول کاربران
       await client.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -58,8 +57,6 @@ async function initDB() {
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-      
-      // جدول رکوردها (کارمندان)
       await client.query(`
         CREATE TABLE IF NOT EXISTS records (
           id SERIAL PRIMARY KEY,
@@ -71,8 +68,6 @@ async function initDB() {
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-      
-      // جدول تلاش‌های لاگین
       await client.query(`
         CREATE TABLE IF NOT EXISTS login_attempts (
           id SERIAL PRIMARY KEY,
@@ -82,8 +77,6 @@ async function initDB() {
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-      
-      // جدول تنظیمات مکتب
       await client.query(`
         CREATE TABLE IF NOT EXISTS school_settings (
           id SERIAL PRIMARY KEY,
@@ -106,8 +99,6 @@ async function initDB() {
           updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-
-      // ⭐ جدول تنظیمات عمومی (برای اجازه ارزیابی)
       await client.query(`
         CREATE TABLE IF NOT EXISTS app_settings (
           key TEXT PRIMARY KEY,
@@ -115,15 +106,11 @@ async function initDB() {
           updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-
-      // ⭐ مقدار پیش‌فرض: ارزیابی بسته باشد
       await client.query(`
         INSERT INTO app_settings (key, value)
         VALUES ('evaluation_allowed', 'false')
         ON CONFLICT (key) DO NOTHING;
       `);
-
-      // ⭐ جدول ارزیابی‌ها
       await client.query(`
         CREATE TABLE IF NOT EXISTS evaluations (
           id SERIAL PRIMARY KEY,
@@ -131,7 +118,6 @@ async function initDB() {
           userid INTEGER NOT NULL,
           schoolname TEXT,
           district TEXT,
-          
           first_name TEXT,
           last_name TEXT,
           father_name TEXT,
@@ -144,18 +130,15 @@ async function initDB() {
           gender TEXT,
           job_title TEXT,
           appointment_date TEXT,
-          
           eval_date_prev TEXT,
           bust TEXT,
           grade TEXT,
-          eval_date TEXT NOT NULL,
+          eval_date TEXT NOT NULL, 
           eval_score INTEGER NOT NULL,
           eval_result TEXT NOT NULL,
-          
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-
       console.log('✅ جداول دیتابیس آماده شدند.');
     } finally {
       client.release();
@@ -381,7 +364,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// GET /api/records
+// GET /api/records (با قابلیت جستجوی کد بست و جستجوی عمومی)
 // ═══════════════════════════════════════════════════════════
 app.get('/api/records', authRequired, async (req, res) => {
   try {
@@ -578,7 +561,6 @@ app.post('/api/records', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ بررسی فوری تکراری بودن کد بست
 app.post('/api/check-jobcode', authRequired, async (req, res) => {
   try {
     const { jobCode } = req.body || {};
@@ -793,8 +775,6 @@ app.get('/api/all-school-settings', authRequired, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // ⭐ تنظیمات عمومی (اجازه ارزیابی)
 // ═══════════════════════════════════════════════════════════
-
-// چک کردن اجازه ارزیابی (برای مکتب و ادمین)
 app.get('/api/evaluation-permission', authRequired, async (req, res) => {
   try {
     const result = await pool.query("SELECT value FROM app_settings WHERE key = 'evaluation_allowed'");
@@ -806,7 +786,6 @@ app.get('/api/evaluation-permission', authRequired, async (req, res) => {
   }
 });
 
-// تنظیم اجازه ارزیابی (فقط ادمین)
 app.post('/api/evaluation-permission', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -829,7 +808,7 @@ app.post('/api/evaluation-permission', authRequired, async (req, res) => {
 // ⭐ ارزیابی‌ها
 // ═══════════════════════════════════════════════════════════
 
-// لیست ارزیابی‌ها (فیلتر بر اساس record_id برای مکتب، و فیلترهای مختلف برای ادمین)
+// لیست ارزیابی‌ها
 app.get('/api/evaluations', authRequired, async (req, res) => {
   try {
     const conditions = [];
@@ -839,10 +818,8 @@ app.get('/api/evaluations', authRequired, async (req, res) => {
       conditions.push(`userid = $${params.length + 1}`);
       params.push(req.user.id);
     } else if (req.user.role === 'admin') {
-      // فیلترها برای ادمین
       const recordId = req.query.record_id;
       const schoolFilter = req.query.school;
-      const schoolTypeFilter = req.query.school_type;
       const jobCodeSearch = req.query.job_code;
       const dateFrom = req.query.date_from;
       const dateTo = req.query.date_to;
@@ -876,8 +853,6 @@ app.get('/api/evaluations', authRequired, async (req, res) => {
       `SELECT * FROM evaluations ${where} ORDER BY id DESC`,
       params
     );
-
-    // فیلتر نوع مکتب سمت سرور (چون ما نوع مکتب را در DB نداریم، سمت کلاینت انجام می‌شود)
     res.json(result.rows);
   } catch (err) {
     console.error('Evaluations GET error:', err.message);
@@ -890,7 +865,6 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
 
-    // چک اجازه
     const permResult = await pool.query("SELECT value FROM app_settings WHERE key = 'evaluation_allowed'");
     const allowed = permResult.rows.length > 0 && permResult.rows[0].value === 'true';
     if (!allowed) {
@@ -900,20 +874,18 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
     const body = req.body || {};
     const { record_id, eval_date_prev, bust, grade, eval_date, eval_score, eval_result } = body;
 
-    // اعتبارسنجی
     if (!record_id) return res.status(400).json({ error: 'کارمند انتخاب نشده است' });
     if (!bust) return res.status(400).json({ error: 'بست الزامی است' });
     if (!grade) return res.status(400).json({ error: 'قدم الزامی است' });
-    if (!eval_date) return res.status(400).json({ error: 'تاریخ ارزیابی الزامی است' });
+    if (!eval_date) return res.status(400).json({ error: 'سال ارزیابی الزامی است' });
     if (!eval_score) return res.status(400).json({ error: 'نمره الزامی است' });
     if (!eval_result) return res.status(400).json({ error: 'نتیجه الزامی است' });
 
-    const dateErr = validateShamsiDateServer(eval_date, 'تاریخ ارزیابی');
-    if (dateErr) return res.status(400).json({ error: dateErr });
-
-    if (eval_date_prev) {
-      const prevDateErr = validateShamsiDateServer(eval_date_prev, 'تاریخ ارزیابی قبلی');
-      if (prevDateErr) return res.status(400).json({ error: prevDateErr });
+    // ⭐ اعتبارسنجی سال (فقط ۴ رقم)
+    const cleanYear = normalizeDigits(eval_date).trim();
+    const yearNum = Number(cleanYear);
+    if (isNaN(yearNum) || yearNum < 1300 || yearNum > 1450 || cleanYear.length !== 4) {
+      return res.status(400).json({ error: 'سال ارزیابی معتبر نیست (مثال: 1403)' });
     }
 
     const scoreNum = Number(normalizeDigits(eval_score));
@@ -925,7 +897,6 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
       return res.status(400).json({ error: 'نتیجه ارزیابی معتبر نیست' });
     }
 
-    // گرفتن رکورد کارمند (برای پر کردن اطلاعات از دیتابیس)
     const recResult = await pool.query('SELECT * FROM records WHERE id = $1 AND userid = $2', [record_id, req.user.id]);
     if (recResult.rows.length === 0) {
       return res.status(404).json({ error: 'کارمند یافت نشد' });
@@ -934,10 +905,6 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
     let info = {};
     try { info = JSON.parse(rec.data); } catch (e) {}
 
-    // محاسبه مدت خدمت (سمت سرور هم تکرار می‌کنیم)
-    // برای سادگی، از کلاینت می‌گیریم و ذخیره می‌کنیم
-
-    // سال تولد
     let birthYear = '';
     if (info.birthDate) {
       const cleaned = normalizeDigits(info.birthDate).replace(/[.\-]/g, '/').trim();
@@ -949,7 +916,7 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
       }
     }
 
-    // مدت خدمت (محاسبه از firstAppointmentDate)
+    // ⭐ محاسبه مدت خدمت (فقط سال)
     let serviceDuration = '';
     if (info.firstAppointmentDate) {
       const cleaned = normalizeDigits(info.firstAppointmentDate).replace(/[.\-]/g, '/').trim();
@@ -962,7 +929,6 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
           startYear = parts[2]; startMonth = parts[1]; startDay = parts[0];
         }
         
-        // تاریخ فعلی شمسی
         const now = new Date();
         const gy = now.getFullYear();
         const gm = now.getMonth() + 1;
@@ -979,14 +945,11 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
         const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30));
         
         let years = jy - startYear;
-        let months = jm - startMonth;
-        if (months < 0) { years--; months += 12; }
-        if (jd < startDay) { months--; if (months < 0) { years--; months += 12; } }
-        if (years >= 0) serviceDuration = `${years} سال و ${months} ماه`;
+        if (jm < startMonth || (jm === startMonth && jd < startDay)) years--;
+        if (years >= 0) serviceDuration = `${years} سال`;
       }
     }
 
-    // درج در جدول
     const insertResult = await pool.query(
       `INSERT INTO evaluations (
         record_id, userid, schoolname, district,
@@ -1001,7 +964,7 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
         info.firstName || '', info.lastName || '', info.fatherName || '', info.grandfatherName || '',
         info.jobCode || '', info.employmentType || '', birthYear, serviceDuration,
         info.degree || '', info.gender || '', info.jobTitle || info.job || '', info.currentPositionDate || '',
-        eval_date_prev || '', bust, grade, eval_date, scoreNum, eval_result
+        eval_date_prev || '', bust, grade, cleanYear, scoreNum, eval_result
       ]
     );
 
@@ -1012,7 +975,6 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
   }
 });
 
-// حذف ارزیابی (فقط ادمین)
 app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -1045,7 +1007,6 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
     const result = await pool.query('DELETE FROM records WHERE id = $1', [req.params.id]);
     if (result.rowCount === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
-    // همچنین ارزیابی‌های مرتبط را حذف کن
     await pool.query('DELETE FROM evaluations WHERE record_id = $1', [req.params.id]);
     res.json({ ok: true });
   } catch (err) {
@@ -1116,7 +1077,6 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
     const result = await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
     if (result.rowCount === 0) return res.status(404).json({ error: 'مکتب یافت نشد' });
-    // حذف رکوردهای مرتبط و ارزیابی‌ها
     const userRecords = await pool.query('SELECT id FROM records WHERE userid = $1', [req.params.id]);
     for (const r of userRecords.rows) {
       await pool.query('DELETE FROM evaluations WHERE record_id = $1', [r.id]);
@@ -1144,7 +1104,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 app.get('/api/test', (req, res) => {
   res.json({
     ok: true,
-    version: '17.0.0',
+    version: '17.1.0',
     timestamp: new Date().toISOString()
   });
 });
@@ -1158,6 +1118,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V17.0 live on port ' + PORT);
+  console.log('🚀 Server V17.1 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

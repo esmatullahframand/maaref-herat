@@ -497,7 +497,7 @@
               <div class="form-group"><label>کُد بست (تشکیل)</label><input type="text" id="evalJobCode" readonly></div>
               <div class="form-group"><label>نوع تقرر</label><input type="text" id="evalEmploymentType" readonly></div>
               <div class="form-group"><label>سال تولد</label><input type="text" id="evalBirthYear" readonly></div>
-              <div class="form-group"><label>مدت خدمت</label><input type="text" id="evalServiceDuration" readonly></div>
+              <div class="form-group"><label>مدت خدمت (سال)</label><input type="text" id="evalServiceDuration" readonly></div>
               <div class="form-group"><label>درجه تحصیل</label><input type="text" id="evalDegree" readonly></div>
               <div class="form-group"><label>جنسیت</label><input type="text" id="evalGender" readonly></div>
               <div class="form-group"><label>وظیفه</label><input type="text" id="evalJobTitle" readonly></div>
@@ -521,13 +521,13 @@
                 <input type="text" id="evalGrade" placeholder="مثال: 3">
               </div>
               <div class="form-group">
-                <label>تاریخ ارزیابی جدید (شمسی) *</label>
-                <input type="text" id="evalNewDate" placeholder="مثال: 1403/05/15">
+                <label>سال ارزیابی *</label>
+                <input type="text" id="evalNewDate" placeholder="مثال: 1403" maxlength="4">
                 <small id="evalNewDateMsg" class="date-msg"></small>
               </div>
               <div class="form-group">
                 <label>نمره ارزیابی (۰ تا ۱۰۰) *</label>
-                <input type="text" id="evalScore" placeholder="مثال: 85">
+                <input type="text" id="evalScore" placeholder="مثال: 85" oninput="autoSelectResult()">
                 <small id="evalScoreMsg" class="date-msg"></small>
               </div>
               <div class="form-group">
@@ -731,8 +731,8 @@
     return age >= 0 ? age : null;
   }
 
-  // محاسبه مدت خدمت از تاریخ (به سال و ماه)
-  function calcServiceDuration(startDateStr) {
+  // ⭐ محاسبه مدت خدمت (فقط سال)
+  function calcServiceDurationYears(startDateStr) {
     if (!startDateStr) return '—';
     const p = parseShamsiParts(startDateStr);
     if (!p) return '—';
@@ -754,12 +754,10 @@
     const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30));
     
     let years = jy - p.year;
-    let months = jm - p.month;
-    if (months < 0) { years--; months += 12; }
-    if (jd < p.day) { months--; if (months < 0) { years--; months += 12; } }
+    if (jm < p.month || (jm === p.month && jd < p.day)) years--;
     
     if (years < 0) return '—';
-    return `${years} سال و ${months} ماه`;
+    return `${years} سال`;
   }
 
   function validateShamsiDate(dateStr) {
@@ -819,6 +817,15 @@
     return { valid: true, formatted: String(num) };
   }
 
+  function validateYear(yearStr) {
+    if (!yearStr) return { valid: false, error: 'سال الزامی است' };
+    const num = Number(normalizeDigits(yearStr));
+    if (isNaN(num) || num < 1300 || num > 1450 || String(yearStr).length !== 4) {
+      return { valid: false, error: 'سال معتبر نیست (مثال: 1403)' };
+    }
+    return { valid: true, formatted: String(num) };
+  }
+
   function attachLiveValidation(inputId, validateFn, msgId) {
     const input = document.getElementById(inputId);
     const msg = msgId ? document.getElementById(msgId) : null;
@@ -856,7 +863,7 @@
   attachLiveValidation('enrollmentDate', validateShamsiDate, 'enrollmentDateMsg');
   attachLiveValidation('graduationDate', validateShamsiDate, 'graduationDateMsg');
   attachLiveValidation('serviceDate', validateShamsiDate, 'serviceDateMsg');
-  attachLiveValidation('evalNewDate', validateShamsiDate, 'evalNewDateMsg');
+  attachLiveValidation('evalNewDate', validateYear, 'evalNewDateMsg'); // فقط سال
   attachLiveValidation('evalScore', validateScore, 'evalScoreMsg');
   attachLiveValidation('jobCode', validateJobCode, 'jobCodeMsg');
   attachLiveValidation('eTazkira', validateTazkira);
@@ -1573,8 +1580,31 @@
   // ⭐ بخش ارزیابی
   // ═══════════════════════════════════════════════════════════
 
+  function autoSelectResult() {
+    const scoreStr = document.getElementById('evalScore').value.trim();
+    const resultSelect = document.getElementById('evalResult');
+    
+    if (!scoreStr) {
+      resultSelect.value = '';
+      return;
+    }
+    
+    const score = Number(normalizeDigits(scoreStr));
+    if (isNaN(score) || score < 0 || score > 100) {
+      return;
+    }
+
+    if (score >= 1 && score <= 59) {
+      resultSelect.value = 'ضعیف';
+    } else if (score >= 60 && score <= 84) {
+      resultSelect.value = 'خوب';
+    } else if (score >= 85 && score <= 100) {
+      resultSelect.value = 'عالی';
+    }
+  }
+  window.autoSelectResult = autoSelectResult;
+
   async function loadEvaluationTab() {
-    // ۱. چک اجازه ادمین
     try {
       const permRes = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } });
       const permData = await permRes.json();
@@ -1593,10 +1623,7 @@
       formSection.style.display = 'none';
     }
 
-    // ۲. لیست کارمندان برای انتخاب
     await loadEmployeeDropdownForEval();
-
-    // ۳. آمار و لیست ارزیابی‌ها
     await loadEvaluationStats();
     await loadEvaluationList();
   }
@@ -1643,7 +1670,6 @@
     }
 
     try {
-      // گرفتن رکورد
       const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
       const records = await res.json();
       const rec = records.find(r => String(r.id) === String(recordId));
@@ -1651,17 +1677,16 @@
       currentEvalRecord = rec;
       const info = rec.data || {};
 
-      // گرفتن تاریخ ارزیابی قبلی
+      // ⭐ گرفتن تاریخ ارزیابی قبلی
       let prevDate = '';
       try {
         const evalRes = await fetch('/api/evaluations?record_id=' + recordId, { headers: { 'Authorization': 'Bearer ' + token } });
         const evalData = await evalRes.json();
         if (Array.isArray(evalData) && evalData.length > 0) {
-          prevDate = evalData[0].eval_date || '';
+          prevDate = evalData[0].eval_date || ''; 
         }
       } catch (e) { console.error(e); }
 
-      // پر کردن فیلدها
       document.getElementById('evalRecordId').value = rec.id;
       document.getElementById('evalFirstName').value = info.firstName || '—';
       document.getElementById('evalFatherName').value = info.fatherName || '—';
@@ -1669,12 +1694,11 @@
       document.getElementById('evalJobCode').value = info.jobCode || '—';
       document.getElementById('evalEmploymentType').value = info.employmentType || '—';
       
-      // سال تولد
       const bd = parseShamsiParts(info.birthDate);
       document.getElementById('evalBirthYear').value = bd ? String(bd.year) : '—';
       
-      // مدت خدمت
-      document.getElementById('evalServiceDuration').value = calcServiceDuration(info.firstAppointmentDate || info.currentPositionDate);
+      // ⭐ مدت خدمت فقط سال
+      document.getElementById('evalServiceDuration').value = calcServiceDurationYears(info.firstAppointmentDate || info.currentPositionDate);
       
       document.getElementById('evalDegree').value = info.degree || '—';
       document.getElementById('evalGender').value = info.gender || '—';
@@ -1682,9 +1706,10 @@
       document.getElementById('evalDistrict').value = rec.district || user.district || '—';
       document.getElementById('evalSchoolName').value = rec.schoolname || user.schoolname || '—';
       document.getElementById('evalAppointmentDate').value = info.currentPositionDate || '—';
+      
+      // ⭐ تاریخ ارزیابی قبلی (کامل)
       document.getElementById('evalPrevDate').value = prevDate || '—';
 
-      // فیلدهای جدید
       document.getElementById('evalBust').value = info.bust || '';
       document.getElementById('evalGrade').value = info.grade || '';
       document.getElementById('evalNewDate').value = '';
@@ -1717,9 +1742,11 @@
 
     if (!bust) { showToast('❌ بست الزامی است', true); return; }
     if (!grade) { showToast('❌ قدم الزامی است', true); return; }
-    if (!newDate) { showToast('❌ تاریخ ارزیابی الزامی است', true); return; }
-    const dResult = validateShamsiDate(newDate);
-    if (!dResult.valid) { showToast('❌ تاریخ ارزیابی: ' + dResult.error, true); return; }
+    
+    // ⭐ اعتبارسنجی سال
+    const yearResult = validateYear(newDate);
+    if (!yearResult.valid) { showToast('❌ سال ارزیابی: ' + yearResult.error, true); return; }
+
     if (!score) { showToast('❌ نمره الزامی است', true); return; }
     const sResult = validateScore(score);
     if (!sResult.valid) { showToast('❌ نمره: ' + sResult.error, true); return; }
@@ -1738,7 +1765,7 @@
           eval_date_prev: document.getElementById('evalPrevDate').value === '—' ? '' : document.getElementById('evalPrevDate').value,
           bust: bust,
           grade: grade,
-          eval_date: dResult.formatted,
+          eval_date: yearResult.formatted, // فقط سال
           eval_score: sResult.formatted,
           eval_result: result
         })

@@ -46,6 +46,7 @@
   .btn-view { background: #3b82f6; color: #fff; }
   .btn-print { background: #7c3aed; color: #fff; }
   .btn-edit-row { background: #f59e0b; color: #fff; }
+  .btn-delete-row { background: #dc2626; color: #fff; }
   .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 8px; font-weight: bold; z-index: 9999; display: none; max-width: 90%; text-align: center; }
   .toast.error { background: #ef4444; }
   .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }
@@ -563,10 +564,11 @@
                   <th>تاریخ ارزیابی</th>
                   <th>نمره</th>
                   <th>نتیجه</th>
+                  <th>عملیات</th>
                 </tr>
               </thead>
               <tbody id="evalListBody">
-                <tr><td colspan="8" class="empty-state">در حال بارگذاری...</td></tr>
+                <tr><td colspan="9" class="empty-state">در حال بارگذاری...</td></tr>
               </tbody>
             </table>
           </div>
@@ -595,6 +597,46 @@
     <div class="modal-actions no-print">
       <button class="btn-modal btn-modal-close" onclick="closeModal('editModal')">انصراف</button>
       <button class="btn-modal" style="background:#f59e0b; color:#fff;" onclick="saveEditedRecord()">💾 ذخیره تغییرات</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ویرایش ارزیابی -->
+<div class="modal-overlay" id="editEvalModal">
+  <div class="modal-box" style="max-width: 600px;">
+    <h3>✏️ ویرایش ارزیابی</h3>
+    <input type="hidden" id="editEvalId">
+    <div class="grid-4" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+      <div class="form-group">
+        <label>بست *</label>
+        <input type="text" id="editEvalBust">
+      </div>
+      <div class="form-group">
+        <label>قدم *</label>
+        <input type="text" id="editEvalGrade">
+      </div>
+      <div class="form-group">
+        <label>تاریخ ارزیابی *</label>
+        <input type="text" id="editEvalDate" placeholder="مثال: 1403/05/15">
+        <small id="editEvalDateMsg" class="date-msg"></small>
+      </div>
+      <div class="form-group">
+        <label>نمره ارزیابی *</label>
+        <input type="text" id="editEvalScore" oninput="autoSelectResultEdit()">
+        <small id="editEvalScoreMsg" class="date-msg"></small>
+      </div>
+      <div class="form-group">
+        <label>نتیجه ارزیابی *</label>
+        <select id="editEvalResult">
+          <option value="عالی">🌟 عالی</option>
+          <option value="خوب">✅ خوب</option>
+          <option value="ضعیف">⚠️ ضعیف</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions no-print">
+      <button class="btn-modal btn-modal-close" onclick="closeModal('editEvalModal')">انصراف</button>
+      <button class="btn-modal" style="background:#f59e0b; color:#fff;" onclick="saveEditedEvaluation()">💾 ذخیره</button>
     </div>
   </div>
 </div>
@@ -808,6 +850,8 @@
   attachLiveValidation('serviceDate', validateShamsiDate, 'serviceDateMsg');
   attachLiveValidation('evalNewDate', validateShamsiDate, 'evalNewDateMsg');
   attachLiveValidation('evalScore', validateScore, 'evalScoreMsg');
+  attachLiveValidation('editEvalDate', validateShamsiDate, 'editEvalDateMsg');
+  attachLiveValidation('editEvalScore', validateScore, 'editEvalScoreMsg');
   attachLiveValidation('jobCode', validateJobCode, 'jobCodeMsg');
   attachLiveValidation('eTazkira', validateTazkira);
 
@@ -1348,6 +1392,18 @@
   }
   window.autoSelectResult = autoSelectResult;
 
+  function autoSelectResultEdit() {
+    const scoreStr = document.getElementById('editEvalScore').value.trim();
+    const resultSelect = document.getElementById('editEvalResult');
+    if (!scoreStr) { resultSelect.value = ''; return; }
+    const score = Number(normalizeDigits(scoreStr));
+    if (isNaN(score) || score < 0 || score > 100) return;
+    if (score >= 1 && score <= 59) resultSelect.value = 'ضعیف';
+    else if (score >= 60 && score <= 84) resultSelect.value = 'خوب';
+    else if (score >= 85 && score <= 100) resultSelect.value = 'عالی';
+  }
+  window.autoSelectResultEdit = autoSelectResultEdit;
+
   async function loadEvaluationTab() {
     try { const permRes = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } }); const permData = await permRes.json(); evalAllowed = !!permData.allowed; } catch (e) { evalAllowed = false; }
     const lockedBox = document.getElementById('evalLockedBox');
@@ -1497,6 +1553,57 @@
     finally { btn.disabled = false; btn.innerText = '✅ موافقت و ارسال به آمریت'; }
   });
 
+  // ⭐ ویرایش ارزیابی
+  function editEvaluation(id) {
+    const e = cachedEvaluations.find(x => x.id === id);
+    if (!e) { showToast('رکورد یافت نشد', true); return; }
+    document.getElementById('editEvalId').value = e.id;
+    document.getElementById('editEvalBust').value = e.bust || '';
+    document.getElementById('editEvalGrade').value = e.grade || '';
+    document.getElementById('editEvalDate').value = e.eval_date || '';
+    document.getElementById('editEvalScore').value = e.eval_score || '';
+    document.getElementById('editEvalResult').value = e.eval_result || '';
+    document.getElementById('editEvalModal').classList.add('active');
+  }
+  window.editEvaluation = editEvaluation;
+
+  async function saveEditedEvaluation() {
+    const id = document.getElementById('editEvalId').value;
+    const bust = document.getElementById('editEvalBust').value.trim();
+    const grade = document.getElementById('editEvalGrade').value.trim();
+    const date = document.getElementById('editEvalDate').value.trim();
+    const score = document.getElementById('editEvalScore').value.trim();
+    const result = document.getElementById('editEvalResult').value;
+    if (!bust) { showToast('❌ بست الزامی است', true); return; }
+    if (!grade) { showToast('❌ قدم الزامی است', true); return; }
+    const dateRes = validateShamsiDate(date);
+    if (!dateRes.valid) { showToast('❌ تاریخ ارزیابی: ' + dateRes.error, true); return; }
+    const scoreRes = validateScore(score);
+    if (!scoreRes.valid) { showToast('❌ نمره: ' + scoreRes.error, true); return; }
+    if (!result) { showToast('❌ نتیجه الزامی است', true); return; }
+    try {
+      const res = await fetch('/api/evaluations/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ bust, grade, eval_date: dateRes.formatted, eval_score: scoreRes.formatted, eval_result: result, eval_date_prev: '' })
+      });
+      if (res.ok) { showToast('✅ ارزیابی ویرایش شد'); closeModal('editEvalModal'); await loadEvaluationStats(); await loadEvaluationList(); }
+      else { const data = await res.json().catch(() => ({})); showToast('❌ ' + (data.error || 'خطا در ویرایش'), true); }
+    } catch (err) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.saveEditedEvaluation = saveEditedEvaluation;
+
+  // ⭐ حذف ارزیابی
+  async function deleteEvaluation(id) {
+    if (!confirm('⚠️ آیا این ارزیابی حذف شود؟')) return;
+    try {
+      const res = await fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) { showToast('🗑️ ارزیابی حذف شد'); await loadEvaluationStats(); await loadEvaluationList(); }
+      else { showToast('❌ خطا در حذف', true); }
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.deleteEvaluation = deleteEvaluation;
+
   async function loadEvaluationStats() {
     try {
       const res = await fetch('/api/evaluations', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -1520,12 +1627,12 @@
 
   async function loadEvaluationList() {
     const tbody = document.getElementById('evalListBody');
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">در حال بارگذاری...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">در حال بارگذاری...</td></tr>';
     try {
       const res = await fetch('/api/evaluations', { headers: { 'Authorization': 'Bearer ' + token } });
       const evals = await res.json();
       cachedEvaluations = Array.isArray(evals) ? evals : [];
-      if (cachedEvaluations.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">هیچ ارزیابی ثبت نشده است</td></tr>'; return; }
+      if (cachedEvaluations.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">هیچ ارزیابی ثبت نشده است</td></tr>'; return; }
       const fragment = document.createDocumentFragment();
       cachedEvaluations.forEach((e, idx) => {
         let resultBadge = '<span style="color:#94a3b8;">—</span>';
@@ -1533,11 +1640,24 @@
         else if (e.eval_result === 'خوب') resultBadge = '<span class="result-badge-good">✅ خوب</span>';
         else if (e.eval_result === 'ضعیف') resultBadge = '<span class="result-badge-weak">⚠️ ضعیف</span>';
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${idx + 1}</td><td><b>${escapeHtml(e.first_name || '-')}</b></td><td>${escapeHtml(e.father_name || '-')}</td><td>${escapeHtml(e.job_title || '-')}</td><td><code>${escapeHtml(e.job_code || '—')}</code></td><td>${escapeHtml(e.eval_date || '-')}</td><td><strong>${e.eval_score}</strong></td><td>${resultBadge}</td>`;
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><b>${escapeHtml(e.first_name || '-')}</b></td>
+          <td>${escapeHtml(e.father_name || '-')}</td>
+          <td>${escapeHtml(e.job_title || '-')}</td>
+          <td><code>${escapeHtml(e.job_code || '—')}</code></td>
+          <td>${escapeHtml(e.eval_date || '-')}</td>
+          <td><strong>${e.eval_score}</strong></td>
+          <td>${resultBadge}</td>
+          <td>
+            <button class="btn-action btn-edit-row" onclick="editEvaluation(${e.id})" title="ویرایش">✏️</button>
+            <button class="btn-action btn-delete-row" onclick="deleteEvaluation(${e.id})" title="حذف">🗑️</button>
+          </td>
+        `;
         fragment.appendChild(tr);
       });
       tbody.appendChild(fragment);
-    } catch (e) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state" style="color:#dc2626;">خطا در بارگذاری</td></tr>'; }
+    } catch (e) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state" style="color:#dc2626;">خطا در بارگذاری</td></tr>'; }
   }
   window.loadEvaluationList = loadEvaluationList;
 
@@ -1548,6 +1668,7 @@
   }
   window.toggleEvalListVisibility = toggleEvalListVisibility;
 
+  // ⭐ پرنت ارزیابی
   function printEvalList() {
     if (!cachedEvaluations || cachedEvaluations.length === 0) { showToast('رکوردی برای پرنت نیست', true); return; }
     let rowsHtml = '';
@@ -1565,7 +1686,6 @@
       if (e.eval_date_prev) { const p = e.eval_date_prev.replace(/[.\-]/g, '/').split('/'); if(p.length===3){prevYear=p[0];prevMonth=p[1];prevDay=p[2];} }
       let evalDay = '', evalMonth = '', evalYear = '';
       if (e.eval_date) { const p = e.eval_date.replace(/[.\-]/g, '/').split('/'); if(p.length===3){evalYear=p[0];evalMonth=p[1];evalDay=p[2];} }
-
       rowsHtml += `<tr>
         <td style="border:1px solid #333; padding:3px; text-align:center;">${idx + 1}</td>
         <td style="border:1px solid #333; padding:3px; text-align:center;">${escapeHtml(e.first_name || '')}</td>
@@ -1582,21 +1702,12 @@
         <td style="border:1px solid #333; padding:3px; text-align:center;">${escapeHtml(e.job_title || '')}</td>
         <td style="border:1px solid #333; padding:3px; text-align:center;">${escapeHtml(e.district || '')}</td>
         <td style="border:1px solid #333; padding:3px; text-align:center;">${escapeHtml(e.schoolname || '')}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${appDay}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${appMonth}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${appYear}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${prevDay}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${prevMonth}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${prevYear}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${escapeHtml(e.bust || '')}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${escapeHtml(e.grade || '')}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${evalDay}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${evalMonth}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${evalYear}</td>
+        <td style="border:1px solid #333; padding:3px; text-align:center;">${appDay}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${appMonth}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${appYear}</td>
+        <td style="border:1px solid #333; padding:3px; text-align:center;">${prevDay}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${prevMonth}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${prevYear}</td>
+        <td style="border:1px solid #333; padding:3px; text-align:center;">${escapeHtml(e.bust || '')}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${escapeHtml(e.grade || '')}</td>
+        <td style="border:1px solid #333; padding:3px; text-align:center;">${evalDay}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${evalMonth}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${evalYear}</td>
         <td style="border:1px solid #333; padding:3px; text-align:center; font-weight:bold;">${e.eval_score}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${resExcellent}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${resGood}</td>
-        <td style="border:1px solid #333; padding:3px; text-align:center;">${resWeak}</td>
+        <td style="border:1px solid #333; padding:3px; text-align:center;">${resExcellent}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${resGood}</td><td style="border:1px solid #333; padding:3px; text-align:center;">${resWeak}</td>
         <td style="border:1px solid #333; padding:3px; text-align:center;"></td>
       </tr>`;
     });
@@ -1623,38 +1734,19 @@
             <th rowspan="3" style="border:1px solid #333; padding:4px;">ملاحظات</th>
           </tr>
           <tr style="background:#f1f5f9; text-align:center;">
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">اسم</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">ولد</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">ولدیت</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">کود تشکیل</th>
-            <th colspan="2" style="border:1px solid #333; padding:4px;">نوع تقرری</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">تاریخ تولد</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">مدت خدمت</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">درجه تحصیل</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">اسم</th><th rowspan="2" style="border:1px solid #333; padding:4px;">ولد</th><th rowspan="2" style="border:1px solid #333; padding:4px;">ولدیت</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">کود تشکیل</th><th colspan="2" style="border:1px solid #333; padding:4px;">نوع تقرری</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">تاریخ تولد</th><th rowspan="2" style="border:1px solid #333; padding:4px;">مدت خدمت</th><th rowspan="2" style="border:1px solid #333; padding:4px;">درجه تحصیل</th>
             <th colspan="2" style="border:1px solid #333; padding:4px;">جنسیت</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">وظیفه</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">ناحیه / ولسوالی</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">نام مکتب / اداره مربوطه</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">روز</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">ماه</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">سال</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">روز</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">ماه</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">سال</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">بست</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">قدم</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">روز</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">ماه</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">سال</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">عالی</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">خوب</th>
-            <th rowspan="2" style="border:1px solid #333; padding:4px;">ضعیف</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">وظیفه</th><th rowspan="2" style="border:1px solid #333; padding:4px;">ناحیه / ولسوالی</th><th rowspan="2" style="border:1px solid #333; padding:4px;">نام مکتب / اداره</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">روز</th><th rowspan="2" style="border:1px solid #333; padding:4px;">ماه</th><th rowspan="2" style="border:1px solid #333; padding:4px;">سال</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">روز</th><th rowspan="2" style="border:1px solid #333; padding:4px;">ماه</th><th rowspan="2" style="border:1px solid #333; padding:4px;">سال</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">بست</th><th rowspan="2" style="border:1px solid #333; padding:4px;">قدم</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">روز</th><th rowspan="2" style="border:1px solid #333; padding:4px;">ماه</th><th rowspan="2" style="border:1px solid #333; padding:4px;">سال</th>
+            <th rowspan="2" style="border:1px solid #333; padding:4px;">عالی</th><th rowspan="2" style="border:1px solid #333; padding:4px;">خوب</th><th rowspan="2" style="border:1px solid #333; padding:4px;">ضعیف</th>
           </tr>
           <tr style="background:#f1f5f9; text-align:center;">
-            <th style="border:1px solid #333; padding:4px;">حکمی</th>
-            <th style="border:1px solid #333; padding:4px;">رقابتی</th>
-            <th style="border:1px solid #333; padding:4px;">مرد</th>
-            <th style="border:1px solid #333; padding:4px;">زن</th>
+            <th style="border:1px solid #333; padding:4px;">حکمی</th><th style="border:1px solid #333; padding:4px;">رقابتی</th><th style="border:1px solid #333; padding:4px;">مرد</th><th style="border:1px solid #333; padding:4px;">زن</th>
           </tr>
         </thead>
         <tbody>${rowsHtml}</tbody>
@@ -1677,29 +1769,12 @@
       <table border="1" style="text-align:center; font-family: Tahoma;">
         <thead>
           <tr style="background-color: #f1f5f9;">
-            <th rowspan="3">شماره</th>
-            <th colspan="3">شهرت</th>
-            <th colspan="14">مشخصات وظیفوی</th>
-            <th colspan="6">تاریخ تقرر / معادلت / فراغت</th>
-            <th colspan="3">تاریخ ارزیابی قبلی</th>
-            <th colspan="2">بست و قدم موجود</th>
-            <th colspan="3">تاریخ ارزیابی</th>
-            <th rowspan="3">نمره ارزیابی</th>
-            <th colspan="3">نتیجه ارزیابی</th>
-            <th rowspan="3">ملاحظات</th>
+            <th rowspan="3">شماره</th><th colspan="3">شهرت</th><th colspan="14">مشخصات وظیفوی</th><th colspan="6">تاریخ تقرر / معادلت / فراغت</th>
+            <th colspan="3">تاریخ ارزیابی قبلی</th><th colspan="2">بست و قدم موجود</th><th colspan="3">تاریخ ارزیابی</th><th rowspan="3">نمره ارزیابی</th><th colspan="3">نتیجه ارزیابی</th><th rowspan="3">ملاحظات</th>
           </tr>
           <tr style="background-color: #f1f5f9;">
-            <th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th>
-            <th rowspan="2">کود تشکیل</th>
-            <th colspan="2">نوع تقرری</th>
-            <th rowspan="2">تاریخ تولد</th><th rowspan="2">مدت خدمت</th><th rowspan="2">درجه تحصیل</th>
-            <th colspan="2">جنسیت</th>
-            <th rowspan="2">وظیفه</th><th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره</th>
-            <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
-            <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
-            <th rowspan="2">بست</th><th rowspan="2">قدم</th>
-            <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
-            <th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th>
+            <th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th><th rowspan="2">کود تشکیل</th><th colspan="2">نوع تقرری</th><th rowspan="2">تاریخ تولد</th><th rowspan="2">مدت خدمت</th><th rowspan="2">درجه تحصیل</th><th colspan="2">جنسیت</th><th rowspan="2">وظیفه</th><th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره</th>
+            <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">بست</th><th rowspan="2">قدم</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th>
           </tr>
           <tr style="background-color: #f1f5f9;">
             <th>حکمی</th><th>رقابتی</th><th>مرد</th><th>زن</th>
@@ -1721,31 +1796,14 @@
       if (e.eval_date_prev) { const p = e.eval_date_prev.replace(/[.\-]/g, '/').split('/'); if(p.length===3){prevYear=p[0];prevMonth=p[1];prevDay=p[2];} }
       let evalDay = '', evalMonth = '', evalYear = '';
       if (e.eval_date) { const p = e.eval_date.replace(/[.\-]/g, '/').split('/'); if(p.length===3){evalYear=p[0];evalMonth=p[1];evalDay=p[2];} }
-
       tableHtml += `
         <tr>
-          <td>${idx + 1}</td>
-          <td>${escapeHtml(e.first_name || '')}</td>
-          <td>${escapeHtml(e.father_name || '')}</td>
-          <td>${escapeHtml(e.grandfather_name || '')}</td>
-          <td>${escapeHtml(e.job_code || '')}</td>
-          <td>${typeHokmi}</td>
-          <td>${typeReghabati}</td>
-          <td>${escapeHtml(e.birth_year || '')}</td>
-          <td>${escapeHtml(e.service_duration || '')}</td>
-          <td>${escapeHtml(e.degree || '')}</td>
-          <td>${genderMale}</td>
-          <td>${genderFemale}</td>
-          <td>${escapeHtml(e.job_title || '')}</td>
-          <td>${escapeHtml(e.district || '')}</td>
-          <td>${escapeHtml(e.schoolname || '')}</td>
-          <td>${appDay}</td><td>${appMonth}</td><td>${appYear}</td>
-          <td>${prevDay}</td><td>${prevMonth}</td><td>${prevYear}</td>
-          <td>${escapeHtml(e.bust || '')}</td><td>${escapeHtml(e.grade || '')}</td>
-          <td>${evalDay}</td><td>${evalMonth}</td><td>${evalYear}</td>
-          <td>${e.eval_score}</td>
-          <td>${resExcellent}</td><td>${resGood}</td><td>${resWeak}</td>
-          <td></td>
+          <td>${idx + 1}</td><td>${escapeHtml(e.first_name || '')}</td><td>${escapeHtml(e.father_name || '')}</td><td>${escapeHtml(e.grandfather_name || '')}</td><td>${escapeHtml(e.job_code || '')}</td>
+          <td>${typeHokmi}</td><td>${typeReghabati}</td><td>${escapeHtml(e.birth_year || '')}</td><td>${escapeHtml(e.service_duration || '')}</td><td>${escapeHtml(e.degree || '')}</td>
+          <td>${genderMale}</td><td>${genderFemale}</td><td>${escapeHtml(e.job_title || '')}</td><td>${escapeHtml(e.district || '')}</td><td>${escapeHtml(e.schoolname || '')}</td>
+          <td>${appDay}</td><td>${appMonth}</td><td>${appYear}</td><td>${prevDay}</td><td>${prevMonth}</td><td>${prevYear}</td>
+          <td>${escapeHtml(e.bust || '')}</td><td>${escapeHtml(e.grade || '')}</td><td>${evalDay}</td><td>${evalMonth}</td><td>${evalYear}</td>
+          <td>${e.eval_score}</td><td>${resExcellent}</td><td>${resGood}</td><td>${resWeak}</td><td></td>
         </tr>
       `;
     });
@@ -1777,8 +1835,7 @@
     `;
     const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'ارزیابی_مکتب_' + new Date().toISOString().slice(0, 10) + '.xls'; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = 'ارزیابی_مکتب_' + new Date().toISOString().slice(0, 10) + '.xls'; a.click();
     URL.revokeObjectURL(url);
     showToast('📊 خروجی اکسل دانلود شد');
   }

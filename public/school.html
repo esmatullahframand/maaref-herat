@@ -333,7 +333,6 @@
               <small id="currentPositionDateMsg" class="date-msg"></small>
             </div>
             
-            <!-- ⭐ تغییرات در این بخش -->
             <div class="form-group" id="degreeGroup"><label id="degreeLabel">درجه تحصیل *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
             <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی / تعلیمی *</label><input type="text" id="major"></div>
             <div class="form-group" id="eduInstituteGroup"><label id="eduInstituteLabel">مرجع تحصیلی / تعلیمی *</label><input type="text" id="eduInstitute"></div>
@@ -1943,28 +1942,81 @@
   }
   window.printEmployeeList = printEmployeeList;
 
-  // ⭐ خروجی اکسل لیست کارمندان
+  // ⭐ خروجی اکسل لیست کارمندان (تمام فیلدها)
   function exportEmployeeExcel() {
     const records = cachedRecords || [];
     if (records.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
-    const headers = ['#', 'نام و تخلص', 'ولد', 'ولدیت', 'عنوان بست', 'کُد بست', 'درجه', 'جنسیت', 'شماره تماس', 'وضعیت'];
+
+    const headers = [
+      '#', 'عنوان بست', 'کُد بست', 'اسم', 'تخلص', 'ولد', 'ولدیت', 
+      'تذکره الکترونیکی', 'تذکره کاغذی', 'صفحه تذکره', 'جلد تذکره', 'قومیت', 
+      'جنسیت', 'تاریخ تولد', 'محل تولد', 'سکونت اصلی', 'سکونت فعلی', 
+      'تاریخ اولین تقرر', 'شماره تماس', 'معلولیت', 'موقف وظیفوی', 'نوع استخدام', 
+      'بست', 'قدم', 'تاریخ تقرر فعلی', 'درجه تحصیل', 'رشته تحصیلی', 'مرجع تعلیمی', 
+      'موقعیت مرجع', 'تاریخ شمولیت', 'تاریخ فراغت', 'مضمون تدریس', 
+      'ورکشاپ', 'عنوان ورکشاپ', 'مدت ورکشاپ', 'مجموعه ساعت درسی', 
+      'خدمتی رفته', 'ولسوالی خدمتی', 'مکتب خدمتی', 'تاریخ خدمتی', 
+      'وضعیت تایید'
+    ];
+
     const rows = records.map((row, idx) => {
       const info = row.data || {};
-      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
       const statusText = row.status === 'approved' ? 'تایید شده' : 'در انتظار';
+      
       return [
-        idx + 1, name, info.fatherName || '', info.grandfatherName || '', info.jobTitle || info.job || '', info.jobCode || '', info.degree || '', info.gender || '', info.phone || '', statusText
+        idx + 1,
+        info.jobTitle || info.job || '',
+        info.jobCode || '',
+        info.firstName || '',
+        info.lastName || '',
+        info.fatherName || '',
+        info.grandfatherName || '',
+        info.eTazkira || '',
+        info.paperTazkira || '',
+        info.tazkiraPage || '',
+        info.tazkiraVolume || '',
+        info.ethnicity || '',
+        info.gender || '',
+        info.birthDate || '',
+        info.birthPlace || '',
+        info.originAddress || '',
+        info.currentAddress || '',
+        info.firstAppointmentDate || '',
+        info.phone || '',
+        info.disability || '',
+        info.positionType || '',
+        info.employmentType || '',
+        info.bust || '',
+        info.grade || '',
+        info.currentPositionDate || '',
+        info.degree || '',
+        info.major || '',
+        info.eduInstitute || '',
+        info.eduInstituteLocation || '',
+        info.enrollmentDate || '',
+        info.graduationDate || '',
+        info.subjectTeaching || '',
+        info.workshopStatus || 'نخیر',
+        info.workshopTitle || '',
+        info.workshopDuration || '',
+        info.totalTeachingHours || '',
+        info.serviceStatus || 'نخیر',
+        info.serviceDistrict || '',
+        info.serviceSchool || '',
+        info.serviceDate || '',
+        statusText
       ];
     });
+
     const csv = '\uFEFF' + [headers, ...rows].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'employees_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.download = 'employees_full_' + new Date().toISOString().slice(0, 10) + '.csv';
     a.click();
     URL.revokeObjectURL(url);
-    showToast('📊 خروجی اکسل دانلود شد');
+    showToast('📊 خروجی اکسل کامل دانلود شد');
   }
   window.exportEmployeeExcel = exportEmployeeExcel;
 

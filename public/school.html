@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>پنل اختصاصی مکاتب - رباط سنگی</title>
+<title>پنل اختصاصی مکاتب - هرات</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; direction: rtl; color: #222; }
@@ -245,8 +245,8 @@
             <div class="form-group"><label>تخلص</label><input type="text" id="lastName"></div>
             <div class="form-group"><label>ولد *</label><input type="text" id="fatherName" required></div>
             <div class="form-group"><label>ولدیت *</label><input type="text" id="grandfatherName" required></div>
-            <div class="form-group"><label>شماره تذکره الکترونیکی </label><input type="text" id="eTazkira" placeholder="32434-32323-3232"></div>
-            <div class="form-group"><label>شماره تذکره کاغذی</label><input type="text" id="paperTazkira"></div>
+            <div class="form-group"><label>تذکره الکترونیکی</label><input type="text" id="eTazkira" placeholder="32434-32323-3232"></div>
+            <div class="form-group"><label>تذکره کاغذی</label><input type="text" id="paperTazkira"></div>
             <div class="form-group"><label>صفحه تذکره</label><input type="text" id="tazkiraPage"></div>
             <div class="form-group"><label>جلد تذکره</label><input type="text" id="tazkiraVolume"></div>
             <div class="form-group"><label>قومیت *</label><input type="text" id="ethnicity" required></div>
@@ -268,9 +268,9 @@
               <input type="text" id="birthDate" placeholder="مثال: 1360/02/22" required>
               <small id="birthDateMsg" class="date-msg"></small>
             </div>
-            <div class="form-group"><label>محل تولد ولایت/ولسوالی یا ناحیه</label><input type="text" id="birthPlace"></div>
-            <div class="form-group"><label>سکونت اصلی ولایت /ولسوالی یا ناحیه *</label><input type="text" id="originAddress" required></div>
-            <div class="form-group"><label>سکونت فعلی ولایت /ولسوالی یا ناحیه *</label><input type="text" id="currentAddress" required></div>
+            <div class="form-group"><label>محل تولد</label><input type="text" id="birthPlace"></div>
+            <div class="form-group"><label>سکونت اصلی *</label><input type="text" id="originAddress" required></div>
+            <div class="form-group"><label>سکونت فعلی *</label><input type="text" id="currentAddress" required></div>
             <div class="form-group">
               <label>تاریخ اولین تقرر *</label>
               <input type="text" id="firstAppointmentDate" placeholder="مثال: 1385/01/10" required>
@@ -305,20 +305,20 @@
               <small id="currentPositionDateMsg" class="date-msg"></small>
             </div>
             <div class="form-group" id="degreeGroup"><label id="degreeLabel">درجه تحصیلی *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
-            <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی یا تعلیمی *</label><input type="text" id="major"></div>
-            <div class="form-group" id="eduInstituteGroup"><label id="eduInstituteLabel">مرجع تحصیلی یا تعلیمی *</label><input type="text" id="eduInstitute"></div>
-            <div class="form-group" id="eduInstituteLocationGroup"><label id="eduInstituteLocationLabel">موقعیت مرجع تحصیلی یا تعلیمی *</label><input type="text" id="eduInstituteLocation"></div>
+            <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی *</label><input type="text" id="major"></div>
+            <div class="form-group" id="eduInstituteGroup"><label id="eduInstituteLabel">مرجع تعلیمی *</label><input type="text" id="eduInstitute"></div>
+            <div class="form-group" id="eduInstituteLocationGroup"><label id="eduInstituteLocationLabel">موقعیت مرجع *</label><input type="text" id="eduInstituteLocation"></div>
             <div class="form-group" id="enrollmentDateGroup">
-              <label id="enrollmentDateLabel">تاریخ شمولیت به پوهنتون یا مکتب  *</label>
+              <label id="enrollmentDateLabel">تاریخ شمولیت *</label>
               <input type="text" id="enrollmentDate" placeholder="مثال: 1397/01/01">
               <small id="enrollmentDateMsg" class="date-msg"></small>
             </div>
             <div class="form-group" id="graduationDateGroup">
-              <label id="graduationDateLabel">تاریخ فراغت از پوهنتون یا مکتب *</label>
+              <label id="graduationDateLabel">تاریخ فراغت *</label>
               <input type="text" id="graduationDate" placeholder="مثال: 1399/01/01">
               <small id="graduationDateMsg" class="date-msg"></small>
             </div>
-            <div class="form-group"><label>رشته تدریس</label><input type="text" id="subjectTeaching"></div>
+            <div class="form-group"><label>مضمون تدریس</label><input type="text" id="subjectTeaching"></div>
           </div>
         </div>
         <div class="form-section">
@@ -389,7 +389,14 @@
   <!-- تب لیست کارمندان -->
   <div class="tab-content" id="tab-list">
     <div class="card">
-      <h4>📋 لیست کارمندان</h4>
+      <!-- ⭐ اضافه کردن دکمه‌های پرنت و اکسل -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+        <h4 style="margin:0; border:none; padding:0;">📋 لیست کارمندان</h4>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" style="background:#7c3aed; padding:8px 16px; font-size:13px;" onclick="printEmployeeList()">🖨️ پرنت لیست کارمندان</button>
+          <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEmployeeExcel()">📊 خروجی اکسل</button>
+        </div>
+      </div>
 
       <div class="stats-grid">
         <div class="stat-box total"><div class="stat-label">👥 کل</div><div class="stat-value" id="statTotal">0</div></div>
@@ -541,7 +548,7 @@
       <div id="evalListSection" style="margin-top:30px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
           <h5 style="margin:0; color:#10b981; font-size:15px;">📋 لیست ارزیابی‌های ثبت شده</h5>
-          <div class="d-flex gap-2" style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
             <label class="toggle-switch">
               <input type="checkbox" id="evalShowToggle" checked onchange="toggleEvalListVisibility()">
               <span>👁️ نمایش لیست</span>
@@ -1668,7 +1675,7 @@
   }
   window.toggleEvalListVisibility = toggleEvalListVisibility;
 
-  // ⭐ پرنت ارزیابی
+  // ⭐ پرنت ارزیابی (دقیقاً مانند فرم رسمی)
   function printEvalList() {
     if (!cachedEvaluations || cachedEvaluations.length === 0) { showToast('رکوردی برای پرنت نیست', true); return; }
     let rowsHtml = '';
@@ -1763,6 +1770,7 @@
   }
   window.printEvalList = printEvalList;
 
+  // ⭐ خروجی اکسل ارزیابی
   function exportEvalExcel() {
     if (!cachedEvaluations || cachedEvaluations.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
     let tableHtml = `
@@ -1840,6 +1848,91 @@
     showToast('📊 خروجی اکسل دانلود شد');
   }
   window.exportEvalExcel = exportEvalExcel;
+
+  // ⭐ پرنت لیست کارمندان
+  function printEmployeeList() {
+    const records = cachedRecords || [];
+    if (records.length === 0) { showToast('رکوردی برای پرنت نیست', true); return; }
+    let rowsHtml = '';
+    records.forEach((row, idx) => {
+      const info = row.data || {};
+      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
+      const statusText = row.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
+      rowsHtml += `<tr>
+        <td style="border:1px solid #333; padding:4px; text-align:center;">${idx + 1}</td>
+        <td style="border:1px solid #333; padding:4px;">${escapeHtml(name)}</td>
+        <td style="border:1px solid #333; padding:4px;">${escapeHtml(info.fatherName || '-')}</td>
+        <td style="border:1px solid #333; padding:4px;">${escapeHtml(info.jobTitle || info.job || '-')}</td>
+        <td style="border:1px solid #333; padding:4px; text-align:center;">${escapeHtml(info.jobCode || '-')}</td>
+        <td style="border:1px solid #333; padding:4px; text-align:center;">${escapeHtml(info.degree || '-')}</td>
+        <td style="border:1px solid #333; padding:4px; text-align:center;">${escapeHtml(info.gender || '-')}</td>
+        <td style="border:1px solid #333; padding:4px; text-align:center;">${statusText}</td>
+      </tr>`;
+    });
+    const html = `
+      <div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
+        <h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2>
+        <h4 style="margin:5px 0 0 0; font-size:13px;">لیست کارمندان مکتب: <strong>${escapeHtml(user.schoolname || '---')}</strong></h4>
+        <div style="font-size:11px; margin-top:5px;">تعداد: <strong>${records.length}</strong> نفر | تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</div>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead>
+          <tr style="background:#f1f5f9;">
+            <th style="border:1px solid #333; padding:6px;">#</th>
+            <th style="border:1px solid #333; padding:6px;">نام و تخلص</th>
+            <th style="border:1px solid #333; padding:6px;">ولد</th>
+            <th style="border:1px solid #333; padding:6px;">عنوان بست</th>
+            <th style="border:1px solid #333; padding:6px;">کُد بست</th>
+            <th style="border:1px solid #333; padding:6px;">درجه</th>
+            <th style="border:1px solid #333; padding:6px;">جنسیت</th>
+            <th style="border:1px solid #333; padding:6px;">وضعیت</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <div style="margin-top:30px; text-align:center; font-size:12px;">
+        مهر و امضاء مدیر مکتب
+      </div>
+    `;
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت لیست کارمندان</title>
+      <style>
+        body { font-family: Tahoma; padding: 15px; direction: rtl; }
+        @media print { .no-print { display: none !important; } @page { size: A4 portrait; margin: 8mm; } }
+        .no-print { text-align: center; margin-top: 20px; }
+        .no-print button { padding: 10px 20px; background: #7c3aed; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
+      </style>
+      </head><body>${html}<div class="no-print"><button onclick="window.print()">🖨️ پرنت</button> <button onclick="window.close()" style="background:#e2e8f0; color:#1e293b;">بستن</button></div><script>setTimeout(() => { window.print(); }, 500);<\/script></body></html>
+    `);
+    win.document.close();
+  }
+  window.printEmployeeList = printEmployeeList;
+
+  // ⭐ خروجی اکسل لیست کارمندان
+  function exportEmployeeExcel() {
+    const records = cachedRecords || [];
+    if (records.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
+    const headers = ['#', 'نام و تخلص', 'ولد', 'ولدیت', 'عنوان بست', 'کُد بست', 'درجه', 'جنسیت', 'شماره تماس', 'وضعیت'];
+    const rows = records.map((row, idx) => {
+      const info = row.data || {};
+      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
+      const statusText = row.status === 'approved' ? 'تایید شده' : 'در انتظار';
+      return [
+        idx + 1, name, info.fatherName || '', info.grandfatherName || '', info.jobTitle || info.job || '', info.jobCode || '', info.degree || '', info.gender || '', info.phone || '', statusText
+      ];
+    });
+    const csv = '\uFEFF' + [headers, ...rows].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'employees_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📊 خروجی اکسل دانلود شد');
+  }
+  window.exportEmployeeExcel = exportEmployeeExcel;
 
   function logout() {
     localStorage.removeItem('hr_token'); localStorage.removeItem('hr_user'); localStorage.removeItem('hr_schoolname'); localStorage.removeItem('hr_district');

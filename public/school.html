@@ -269,42 +269,51 @@
               <small id="birthDateMsg" class="date-msg"></small>
             </div>
             
-            <!-- ⭐ محل تولد، سکونت اصلی و سکونت فعلی (ولایت و ولسوالی) -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; grid-column: span 2; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <!-- ⭐ محل تولد، سکونت اصلی و سکونت فعلی (منظم و جدول‌بندی شده) -->
+            <div style="grid-column: 1 / -1; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
               
-              <!-- محل تولد -->
-              <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px; margin-bottom: 5px;">
-                <div class="form-group" style="margin: 0;">
-                  <label>محل تولد - ولایت</label>
-                  <input type="text" id="birthProvince" placeholder="مثال: هرات">
-                </div>
-                <div class="form-group" style="margin: 0;">
-                  <label>محل تولد - ولسوالی</label>
-                  <input type="text" id="birthDistrict" placeholder="مثال: رباط سنگی">
-                </div>
-              </div>
-
-              <!-- سکونت اصلی -->
-              <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px; margin-bottom: 5px;">
-                <div class="form-group" style="margin: 0;">
-                  <label>سکونت اصلی - ولایت *</label>
-                  <input type="text" id="originProvince" placeholder="مثال: هرات" required>
-                </div>
-                <div class="form-group" style="margin: 0;">
-                  <label>سکونت اصلی - ولسوالی *</label>
-                  <input type="text" id="originDistrict" placeholder="مثال: رباط سنگی" required>
+              <!-- بخش محل تولد -->
+              <div style="margin-bottom: 20px;">
+                <label style="font-weight: bold; color: #10b981; font-size: 14px; margin-bottom: 8px; display: block; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">محل تولد</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                  <div class="form-group" style="margin: 0;">
+                    <label>ولایت</label>
+                    <input type="text" id="birthProvince" placeholder="مثال: هرات">
+                  </div>
+                  <div class="form-group" style="margin: 0;">
+                    <label>ولسوالی</label>
+                    <input type="text" id="birthDistrict" placeholder="مثال: رباط سنگی">
+                  </div>
                 </div>
               </div>
 
-              <!-- سکونت فعلی -->
-              <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div class="form-group" style="margin: 0;">
-                  <label>سکونت فعلی - ولایت *</label>
-                  <input type="text" id="currentProvince" placeholder="مثال: هرات" required>
+              <!-- بخش سکونت اصلی -->
+              <div style="margin-bottom: 20px;">
+                <label style="font-weight: bold; color: #10b981; font-size: 14px; margin-bottom: 8px; display: block; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">سکونت اصلی *</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                  <div class="form-group" style="margin: 0;">
+                    <label>ولایت</label>
+                    <input type="text" id="originProvince" placeholder="مثال: هرات" required>
+                  </div>
+                  <div class="form-group" style="margin: 0;">
+                    <label>ولسوالی</label>
+                    <input type="text" id="originDistrict" placeholder="مثال: رباط سنگی" required>
+                  </div>
                 </div>
-                <div class="form-group" style="margin: 0;">
-                  <label>سکونت فعلی - ولسوالی *</label>
-                  <input type="text" id="currentDistrict" placeholder="مثال: رباط سنگی" required>
+              </div>
+
+              <!-- بخش سکونت فعلی -->
+              <div>
+                <label style="font-weight: bold; color: #10b981; font-size: 14px; margin-bottom: 8px; display: block; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">سکونت فعلی *</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                  <div class="form-group" style="margin: 0;">
+                    <label>ولایت</label>
+                    <input type="text" id="currentProvince" placeholder="مثال: هرات" required>
+                  </div>
+                  <div class="form-group" style="margin: 0;">
+                    <label>ولسوالی</label>
+                    <input type="text" id="currentDistrict" placeholder="مثال: رباط سنگی" required>
+                  </div>
                 </div>
               </div>
 

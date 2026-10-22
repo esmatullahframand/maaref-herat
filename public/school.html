@@ -268,9 +268,37 @@
               <input type="text" id="birthDate" placeholder="مثال: 1360/02/22" required>
               <small id="birthDateMsg" class="date-msg"></small>
             </div>
-            <div class="form-group"><label>محل تولد</label><input type="text" id="birthPlace"></div>
-            <div class="form-group"><label>سکونت اصلی *</label><input type="text" id="originAddress" required></div>
-            <div class="form-group"><label>سکونت فعلی *</label><input type="text" id="currentAddress" required></div>
+            
+            <!-- ⭐ محل تولد (ولایت و ولسوالی) -->
+            <div class="form-group">
+              <label>محل تولد - ولایت</label>
+              <input type="text" id="birthProvince" placeholder="مثال: هرات">
+            </div>
+            <div class="form-group">
+              <label>محل تولد - ولسوالی</label>
+              <input type="text" id="birthDistrict" placeholder="مثال: رباط سنگی">
+            </div>
+            
+            <!-- ⭐ سکونت اصلی (ولایت و ولسوالی) -->
+            <div class="form-group">
+              <label>سکونت اصلی - ولایت *</label>
+              <input type="text" id="originProvince" placeholder="مثال: هرات" required>
+            </div>
+            <div class="form-group">
+              <label>سکونت اصلی - ولسوالی *</label>
+              <input type="text" id="originDistrict" placeholder="مثال: رباط سنگی" required>
+            </div>
+            
+            <!-- ⭐ سکونت فعلی (ولایت و ولسوالی) -->
+            <div class="form-group">
+              <label>سکونت فعلی - ولایت *</label>
+              <input type="text" id="currentProvince" placeholder="مثال: هرات" required>
+            </div>
+            <div class="form-group">
+              <label>سکونت فعلی - ولسوالی *</label>
+              <input type="text" id="currentDistrict" placeholder="مثال: رباط سنگی" required>
+            </div>
+            
             <div class="form-group">
               <label>تاریخ اولین تقرر *</label>
               <input type="text" id="firstAppointmentDate" placeholder="مثال: 1385/01/10" required>
@@ -304,17 +332,19 @@
               <input type="text" id="currentPositionDate" placeholder="مثال: 1400/03/20" required>
               <small id="currentPositionDateMsg" class="date-msg"></small>
             </div>
-            <div class="form-group" id="degreeGroup"><label id="degreeLabel">درجه تحصیلی *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
-            <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی *</label><input type="text" id="major"></div>
-            <div class="form-group" id="eduInstituteGroup"><label id="eduInstituteLabel">مرجع تعلیمی *</label><input type="text" id="eduInstitute"></div>
-            <div class="form-group" id="eduInstituteLocationGroup"><label id="eduInstituteLocationLabel">موقعیت مرجع *</label><input type="text" id="eduInstituteLocation"></div>
+            
+            <!-- ⭐ تغییرات در این بخش -->
+            <div class="form-group" id="degreeGroup"><label id="degreeLabel">درجه تحصیل *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
+            <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی / تعلیمی *</label><input type="text" id="major"></div>
+            <div class="form-group" id="eduInstituteGroup"><label id="eduInstituteLabel">مرجع تحصیلی / تعلیمی *</label><input type="text" id="eduInstitute"></div>
+            <div class="form-group" id="eduInstituteLocationGroup"><label id="eduInstituteLocationLabel">موقعیت رشته تحصیلی / تعلیمی *</label><input type="text" id="eduInstituteLocation"></div>
             <div class="form-group" id="enrollmentDateGroup">
-              <label id="enrollmentDateLabel">تاریخ شمولیت *</label>
+              <label id="enrollmentDateLabel">تاریخ شمولیت به پوهنتون یا مکتب *</label>
               <input type="text" id="enrollmentDate" placeholder="مثال: 1397/01/01">
               <small id="enrollmentDateMsg" class="date-msg"></small>
             </div>
             <div class="form-group" id="graduationDateGroup">
-              <label id="graduationDateLabel">تاریخ فراغت *</label>
+              <label id="graduationDateLabel">تاریخ فراغت از پوهنتون یا مکتب *</label>
               <input type="text" id="graduationDate" placeholder="مثال: 1399/01/01">
               <small id="graduationDateMsg" class="date-msg"></small>
             </div>
@@ -389,7 +419,6 @@
   <!-- تب لیست کارمندان -->
   <div class="tab-content" id="tab-list">
     <div class="card">
-      <!-- ⭐ اضافه کردن دکمه‌های پرنت و اکسل -->
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
         <h4 style="margin:0; border:none; padding:0;">📋 لیست کارمندان</h4>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -888,7 +917,7 @@
   function updateEducationFields() {
     const jobTitle = document.getElementById('jobTitle').value;
     const isService = isServiceOrSupport(jobTitle);
-    const eduFields = [ { id: 'degree', labelId: 'degreeLabel', label: 'درجه تحصیلی' }, { id: 'major', labelId: 'majorLabel', label: 'رشته تحصیلی' }, { id: 'eduInstitute', labelId: 'eduInstituteLabel', label: 'مرجع تعلیمی' }, { id: 'eduInstituteLocation', labelId: 'eduInstituteLocationLabel', label: 'موقعیت مرجع' }, { id: 'enrollmentDate', labelId: 'enrollmentDateLabel', label: 'تاریخ شمولیت' }, { id: 'graduationDate', labelId: 'graduationDateLabel', label: 'تاریخ فراغت' } ];
+    const eduFields = [ { id: 'degree', labelId: 'degreeLabel', label: 'درجه تحصیل' }, { id: 'major', labelId: 'majorLabel', label: 'رشته تحصیلی / تعلیمی' }, { id: 'eduInstitute', labelId: 'eduInstituteLabel', label: 'مرجع تحصیلی / تعلیمی' }, { id: 'eduInstituteLocation', labelId: 'eduInstituteLocationLabel', label: 'موقعیت رشته تحصیلی / تعلیمی' }, { id: 'enrollmentDate', labelId: 'enrollmentDateLabel', label: 'تاریخ شمولیت به پوهنتون یا مکتب' }, { id: 'graduationDate', labelId: 'graduationDateLabel', label: 'تاریخ فراغت از پوهنتون یا مکتب' } ];
     eduFields.forEach(field => {
       const input = document.getElementById(field.id);
       const label = document.getElementById(field.labelId);
@@ -1129,7 +1158,7 @@
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) return;
     const info = rec.data || {};
-    const fields = [ ['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره برقی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['تاریخ تولد', info.birthDate], ['شماره تماس', info.phone], ['بست', info.bust], ['قدم', info.grade], ['درجه تحصیلی', info.degree], ['رشته تحصیلی', info.major], ['مرجع تعلیمی', info.eduInstitute], ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate], ['مضمون تدریس', info.subjectTeaching], ['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration], ['مجموعه ساعت درسی', info.totalTeachingHours], ['خدمتی رفته', info.serviceStatus || 'نخیر'], ['ولسوالی خدمتی', info.serviceDistrict], ['مکتب خدمتی', info.serviceSchool], ['تاریخ خدمتی', info.serviceDate] ];
+    const fields = [ ['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره برقی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['تاریخ تولد', info.birthDate], ['محل تولد', info.birthPlace], ['سکونت اصلی', info.originAddress], ['سکونت فعلی', info.currentAddress], ['شماره تماس', info.phone], ['بست', info.bust], ['قدم', info.grade], ['درجه تحصیلی', info.degree], ['رشته تحصیلی', info.major], ['مرجع تعلیمی', info.eduInstitute], ['موقعیت مرجع', info.eduInstituteLocation], ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate], ['مضمون تدریس', info.subjectTeaching], ['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration], ['مجموعه ساعت درسی', info.totalTeachingHours], ['خدمتی رفته', info.serviceStatus || 'نخیر'], ['ولسوالی خدمتی', info.serviceDistrict], ['مکتب خدمتی', info.serviceSchool], ['تاریخ خدمتی', info.serviceDate] ];
     let html = '';
     fields.forEach(([label, value]) => { html += `<div class="info-item"><div class="label">${label}</div><div class="value">${escapeHtml(value || '—')}</div></div>`; });
     const statusText = rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
@@ -1142,7 +1171,7 @@
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) return;
     const info = rec.data || {};
-    const rows = [ ['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره برقی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['تاریخ تولد', info.birthDate], ['تماس', info.phone], ['درجه تحصیلی', info.degree], ['رشته', info.major], ['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration], ['ساعت درسی', info.totalTeachingHours], ['خدمتی رفته', info.serviceStatus || 'نخیر'], ['ولسوالی خدمتی', info.serviceDistrict], ['مکتب خدمتی', info.serviceSchool], ['تاریخ خدمتی', info.serviceDate] ];
+    const rows = [ ['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره برقی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['تاریخ تولد', info.birthDate], ['محل تولد', info.birthPlace], ['سکونت اصلی', info.originAddress], ['سکونت فعلی', info.currentAddress], ['تماس', info.phone], ['درجه تحصیلی', info.degree], ['رشته', info.major], ['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration], ['ساعت درسی', info.totalTeachingHours], ['خدمتی رفته', info.serviceStatus || 'نخیر'], ['ولسوالی خدمتی', info.serviceDistrict], ['مکتب خدمتی', info.serviceSchool], ['تاریخ خدمتی', info.serviceDate] ];
     let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;"><h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2><h4 style="margin:5px 0 0 0; font-size:13px;">فورم معلومات کارمند</h4></div><table style="width:100%; border-collapse:collapse; font-size:12px;">`;
     for (let i = 0; i < rows.length; i += 2) {
       html += '<tr>';
@@ -1270,6 +1299,11 @@
         } catch (e) { console.error('Error checking jobcode:', e); }
       }
     }
+    
+    const birthPlaceStr = (document.getElementById('birthProvince').value.trim() + ' / ' + document.getElementById('birthDistrict').value.trim()).replace(/^ \/ | \/ $/g, '');
+    const originAddressStr = (document.getElementById('originProvince').value.trim() + ' / ' + document.getElementById('originDistrict').value.trim()).replace(/^ \/ | \/ $/g, '');
+    const currentAddressStr = (document.getElementById('currentProvince').value.trim() + ' / ' + document.getElementById('currentDistrict').value.trim()).replace(/^ \/ | \/ $/g, '');
+
     const body = {
       jobTitle: document.getElementById('jobTitle').value.trim(),
       jobCode: document.getElementById('jobCode').value.trim(),
@@ -1284,9 +1318,9 @@
       ethnicity: document.getElementById('ethnicity').value.trim(),
       gender: document.getElementById('gender').value,
       birthDate: document.getElementById('birthDate').value.trim(),
-      birthPlace: document.getElementById('birthPlace').value.trim(),
-      originAddress: document.getElementById('originAddress').value.trim(),
-      currentAddress: document.getElementById('currentAddress').value.trim(),
+      birthPlace: birthPlaceStr,
+      originAddress: originAddressStr,
+      currentAddress: currentAddressStr,
       firstAppointmentDate: document.getElementById('firstAppointmentDate').value.trim(),
       phone: document.getElementById('phone').value.trim(),
       disability: document.getElementById('disability').value,
@@ -1319,8 +1353,8 @@
     if (!body.ethnicity) { showToast('❌ قومیت الزامی است', true); resetSubmitBtn(); return; }
     if (!body.gender) { showToast('❌ جنسیت الزامی است', true); resetSubmitBtn(); return; }
     if (!body.birthDate) { showToast('❌ تاریخ تولد الزامی است', true); resetSubmitBtn(); return; }
-    if (!body.originAddress) { showToast('❌ سکونت اصلی الزامی است', true); resetSubmitBtn(); return; }
-    if (!body.currentAddress) { showToast('❌ سکونت فعلی الزامی است', true); resetSubmitBtn(); return; }
+    if (!originAddressStr) { showToast('❌ سکونت اصلی (ولایت و ولسوالی) الزامی است', true); resetSubmitBtn(); return; }
+    if (!currentAddressStr) { showToast('❌ سکونت فعلی (ولایت و ولسوالی) الزامی است', true); resetSubmitBtn(); return; }
     if (!body.firstAppointmentDate) { showToast('❌ تاریخ اولین تقرر الزامی است', true); resetSubmitBtn(); return; }
     if (!body.phone) { showToast('❌ شماره تماس الزامی است', true); resetSubmitBtn(); return; }
     if (!body.currentPositionDate) { showToast('❌ تاریخ تقرر فعلی الزامی است', true); resetSubmitBtn(); return; }

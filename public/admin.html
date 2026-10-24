@@ -218,7 +218,7 @@
     <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:2px solid #10b981; border-radius:10px; padding:15px 20px; margin-bottom:15px;">
       <h6 style="color:#065f46; font-weight:bold; margin:0 0 10px 0; font-size:14px;">💵 آمار مالی بر اساس سال</h6>
       <div id="salYearFinancialStats" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px;">
-        <span style="color:#94a3b8; font-size:13px;">برای مشاهده آمار، از فیلترها استفاده کنید</span>
+        <span style="color:#94a3b8; font-size:13px;">در حال بارگذاری...</span>
       </div>
     </div>
 
@@ -226,7 +226,7 @@
     <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe); border:2px solid #3b82f6; border-radius:10px; padding:15px 20px; margin-bottom:15px;">
       <h6 style="color:#1e40af; font-weight:bold; margin:0 0 10px 0; font-size:14px;">👥 آمار کارمندان بر اساس وظیفه</h6>
       <div id="salEmployeeRoleStats" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px;">
-        <span style="color:#94a3b8; font-size:13px;">برای مشاهده آمار، از فیلترها استفاده کنید</span>
+        <span style="color:#94a3b8; font-size:13px;">در حال بارگذاری...</span>
       </div>
     </div>
 
@@ -258,11 +258,11 @@
       </div>
 
       <div style="background:#fffbeb; border:2px solid #f59e0b; border-radius:10px; padding:12px 18px; margin-bottom:15px;">
-        <label style="font-weight:bold; color:#92400e; margin-bottom:6px; display:block;">🔍 جستجو در معاشات (نام، تخلص، کد بست)</label>
+        <label style="font-weight:bold; color:#92400e; margin-bottom:6px; display:block;">🔍 جستجو در معاشات (نام، تخلص، ولد، کد بست)</label>
         <input type="text" id="salarySearchBottom" class="form-control" placeholder="مثال: احمد، محمود، 27-32-02-13056..." oninput="applySalaryFilters()" style="border-color:#f59e0b;">
       </div>
 
-      <div class="info-banner">ℹ️ برای مشاهده معاشات، از فیلترها یا کادر جستجوی بالا استفاده کنید.</div>
+      <div class="info-banner" id="salaryFilterStatus">ℹ️ در حال نمایش همه معاشات. برای فیلتر، از گزینه‌های بالا استفاده کنید.</div>
 
       <div class="table-responsive border rounded">
         <table class="table table-hover align-middle mb-0 text-center" style="font-size:13px;">
@@ -270,13 +270,7 @@
             <tr><th>#</th><th>نام و تخلص</th><th>کد بست</th><th>مکتب</th><th>وظیفه</th><th>سال</th><th>ماه</th><th>استحقاق</th><th>کسرات</th><th>قابل پرداخت</th><th>حاضر</th><th>غیر حاضر</th><th>مریض</th><th>عملیات</th></tr>
           </thead>
           <tbody id="salariesTableBody">
-            <tr><td colspan="14" class="text-center p-4 text-muted">
-              <div style="padding:30px;">
-                <div style="font-size:50px; margin-bottom:15px;">🔍</div>
-                <div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده معاشات، از فیلترها یا کادر جستجو استفاده کنید</div>
-                <div style="font-size:13px; color:#94a3b8;">نام کارمند، نوع مکتب، نام مکتب یا عنوان وظیفه را جستجو کنید</div>
-              </div>
-            </td></tr>
+            <tr><td colspan="14" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
           </tbody>
         </table>
       </div>
@@ -497,25 +491,12 @@
     document.getElementById('tab-salaries').style.display = tabName === 'salaries' ? 'block' : 'none';
     if (tabName === 'main') loadAllRecords();
     else if (tabName === 'evaluation') { loadEvaluationPermission(); loadAdminEvaluations(); }
-    else if (tabName === 'salaries') { loadSalaries(); }
+    else if (tabName === 'salaries') loadSalaries();
   }
   window.switchAdminTab = switchAdminTab;
 
   function logout() { localStorage.removeItem('hr_token'); localStorage.removeItem('hr_user'); location.href = '/'; }
   window.logout = logout;
-
-  function toggleEvalListVisibility(event) {
-    if (event) event.preventDefault();
-    const chk = document.getElementById('evalShowToggle');
-    const container = document.getElementById('evalListContainer');
-    const label = document.getElementById('evalListToggleLabel');
-    const text = document.getElementById('evalToggleText');
-    if (!chk) return;
-    chk.checked = !chk.checked;
-    if (chk.checked) { container.style.display = 'block'; label.classList.add('active'); label.classList.remove('inactive'); text.textContent = '👁️ نمایش لیست'; }
-    else { container.style.display = 'none'; label.classList.remove('active'); label.classList.add('inactive'); text.textContent = '🙈 عدم نمایش لیست'; }
-  }
-  window.toggleEvalListVisibility = toggleEvalListVisibility;
 
   function getActiveFilters() {
     return {
@@ -607,7 +588,7 @@
     const rec = loadedRecordsCache.find(r => r.id === id);
     if (!rec) return;
     const info = rec.data || {};
-    const fields = [ ['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره', info.eTazkira], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['حالت مدنی', info.maritalStatus], ['تاریخ تولد', info.birthDate], ['تماس', info.phone], ['بست', info.bust], ['قدم', info.grade], ['درجه', info.degree], ['رشته', info.major] ];
+    const fields = [ ['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره', info.eTazkira], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['حالت مدنی', info.maritalStatus], ['تاریخ تولد', info.birthDate], ['تماس', info.phone] ];
     let html = '';
     fields.forEach(([label, value]) => { html += `<div style="background:#f8fafc; padding:10px 14px; border-radius:6px; border-right:4px solid #7c3aed; margin-bottom:8px;"><div style="font-size:11px; color:#64748b; font-weight:600; margin-bottom:4px;">${label}</div><div style="font-size:13px; color:#1e293b; font-weight:bold;">${escapeHtml(value || '—')}</div></div>`; });
     const win = window.open('', '_blank');
@@ -845,7 +826,7 @@
   window.exportEvalAdminExcel = exportEvalAdminExcel;
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ بخش معاشات (Salaries)
+  // ⭐ بخش معاشات (Salaries) — عمومی + خصوصی
   // ═══════════════════════════════════════════════════════════
 
   async function loadSalaries() {
@@ -857,11 +838,23 @@
       const data = await res.json();
       cachedSalaries = Array.isArray(data) ? data : [];
       salaryAllPersons = cachedSalaries.map(s => ({ id: s.record_id || s.id, name: `${s.first_name || ''} ${s.last_name || ''}`.trim(), school: s.schoolname }));
+      
       populateSalarySchoolDropdown();
       populateSalaryPersonFilter();
       
-      // مقداردهی اولیه جدول (خالی)
-      applySalaryFilters();
+      // ⭐ نمایش عمومی (همه معاشات) در بدو ورود
+      filteredSalaries = [...cachedSalaries];
+      renderSalaries(filteredSalaries);
+      updateSalaryTotals(filteredSalaries);
+      
+      // به‌روزرسانی نوار وضعیت
+      const statusBar = document.getElementById('salaryFilterStatus');
+      if (statusBar) {
+        statusBar.innerHTML = `ℹ️ در حال نمایش <strong>همه ${cachedSalaries.length} معاش</strong>. برای فیلتر، از گزینه‌های بالا استفاده کنید.`;
+        statusBar.style.background = '#dbeafe';
+        statusBar.style.color = '#1e3a8a';
+      }
+      
     } catch (e) {
       console.error(e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="text-center text-danger p-4">خطا در بارگذاری</td></tr>';
@@ -910,19 +903,22 @@
     const tbody = document.getElementById('salariesTableBody');
     if (!tbody) return;
 
+    // ⭐ اگر هیچ فیلتری اعمال نشده، همه معاشات (عمومی) نمایش داده شود
     if (!hasFilter) {
-      filteredSalaries = [];
-      tbody.innerHTML = `<tr><td colspan="14" class="text-center p-4 text-muted">
-        <div style="padding:30px;">
-          <div style="font-size:50px; margin-bottom:15px;">🔍</div>
-          <div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده معاشات، از فیلترها یا کادر جستجو استفاده کنید</div>
-          <div style="font-size:13px; color:#94a3b8;">نام کارمند، نوع مکتب، نام مکتب یا عنوان وظیفه را جستجو کنید</div>
-        </div>
-      </td></tr>`;
-      updateSalaryTotals([]);
+      filteredSalaries = [...cachedSalaries];
+      renderSalaries(filteredSalaries);
+      updateSalaryTotals(filteredSalaries);
+      
+      const statusBar = document.getElementById('salaryFilterStatus');
+      if (statusBar) {
+        statusBar.innerHTML = `ℹ️ در حال نمایش <strong>همه ${cachedSalaries.length} معاش</strong>. برای فیلتر، از گزینه‌های بالا استفاده کنید.`;
+        statusBar.style.background = '#dbeafe';
+        statusBar.style.color = '#1e3a8a';
+      }
       return;
     }
 
+    // اعمال فیلترها
     filteredSalaries = cachedSalaries.filter(s => {
       const schoolName = s.schoolname || '';
       
@@ -944,8 +940,10 @@
         const ql = searchInput.toLowerCase();
         const fn = (s.first_name || '').toLowerCase();
         const ln = (s.last_name || '').toLowerCase();
+        const fa = (s.father_name || '').toLowerCase();
         const jc = (s.job_code || '').toLowerCase();
-        if (!fn.includes(ql) && !ln.includes(ql) && !jc.includes(ql)) return false;
+        const fullName = `${fn} ${ln}`;
+        if (!fn.includes(ql) && !ln.includes(ql) && !fa.includes(ql) && !jc.includes(ql) && !fullName.includes(ql)) return false;
       }
       
       return true;
@@ -953,6 +951,13 @@
 
     renderSalaries(filteredSalaries);
     updateSalaryTotals(filteredSalaries);
+    
+    const statusBar = document.getElementById('salaryFilterStatus');
+    if (statusBar) {
+      statusBar.innerHTML = `🔍 نتایج فیلتر: <strong>${filteredSalaries.length} معاش</strong> از ${cachedSalaries.length} معاش کل.`;
+      statusBar.style.background = '#fef3c7';
+      statusBar.style.color = '#92400e';
+    }
   }
   window.applySalaryFilters = applySalaryFilters;
 
@@ -1025,7 +1030,7 @@
     });
 
     if (years.length === 0) {
-      yearFinEl.innerHTML = '<span style="color:#94a3b8; font-size:13px;">برای مشاهده آمار، از فیلترها استفاده کنید</span>';
+      yearFinEl.innerHTML = '<span style="color:#94a3b8; font-size:13px;">هیچ سالی یافت نشد</span>';
     } else {
       let html = '';
       years.forEach(year => {
@@ -1048,7 +1053,7 @@
     const roles = Object.keys(roleStats).sort((a, b) => roleStats[b].size - roleStats[a].size);
 
     if (roles.length === 0) {
-      roleEl.innerHTML = '<span style="color:#94a3b8; font-size:13px;">برای مشاهده آمار، از فیلترها استفاده کنید</span>';
+      roleEl.innerHTML = '<span style="color:#94a3b8; font-size:13px;">هیچ کارمندی یافت نشد</span>';
     } else {
       let html = `<div style="background:#1e40af; color:#fff; border-radius:8px; padding:10px 16px; text-align:center; min-width:100px;">
         <div style="font-size:11px; opacity:0.8;">👥 کل</div>

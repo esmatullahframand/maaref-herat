@@ -10,7 +10,6 @@
   body { font-family: Tahoma, Arial, sans-serif; background: #f0f4f8; margin: 0; direction: rtl; }
   .topbar { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
   .topbar h5 { margin: 0; font-size: 18px; font-weight: bold; }
-  .topbar small { opacity: 0.8; }
   .nav-tabs-custom { display: flex; gap: 5px; background: #fff; border-bottom: 2px solid #e2e8f0; padding: 0 15px; flex-wrap: wrap; }
   .nav-tab-btn { padding: 15px 25px; border: none; background: transparent; font-weight: bold; color: #64748b; cursor: pointer; font-family: inherit; font-size: 14px; border-bottom: 3px solid transparent; transition: all 0.2s; }
   .nav-tab-btn:hover { color: #7c3aed; background: #f8fafc; }
@@ -163,38 +162,107 @@
     </div>
   </div>
 </div>
-
 <!-- ══════════ تب معاشات (جدید) ══════════ -->
 <div class="container-fluid px-4 py-3" id="tab-salaries" style="display:none;">
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-money-bill-wave"></i> مدیریت معاشات</h5>
+    
     <div class="salary-total-bar">
       <div class="salary-total-item"><div class="label">📋 تعداد معاشات</div><div class="value" id="salCount">0</div></div>
       <div class="salary-total-item"><div class="label">💵 مجموع استحقاق</div><div class="value" id="salTotalEnt">0</div></div>
       <div class="salary-total-item"><div class="label">✂️ مجموع کسرات</div><div class="value" style="color:#b91c1c;" id="salTotalDed">0</div></div>
       <div class="salary-total-item"><div class="label">💰 مجموع قابل پرداخت</div><div class="value" id="salTotalNet">0</div></div>
     </div>
+
     <div class="filter-grid">
-      <div class="filter-item"><label>🏫 نوع (مکاتب / مدارس)</label><select id="salaryTypeFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه</option><option value="مکاتب">🏫 مکاتب</option><option value="مدارس">🏛️ مدارس</option></select></div>
-      <div class="filter-item"><label>📖 نوع مکتب</label><select id="salarySchoolTypeFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه</option><option value="لیسه">لیسه</option><option value="متوسطه">متوسطه</option><option value="ابتداییه">ابتداییه</option><option value="مدرسه">مدرسه</option></select></div>
-      <div class="filter-item"><label>🏫 نام مکتب خاص</label><select id="salarySchoolNameFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه مکاتب</option></select></div>
-      <div class="filter-item"><label>👨‍🏫 عنوان وظیفه</label><select id="salaryJobTitleFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه</option><option value="آمر">آمر</option><option value="مدیر">مدیر</option><option value="معلم">معلم</option><option value="کارکن خدماتی">کارکن خدماتی</option><option value="معتمد جنسی (تحویلدار)">معتمد جنسی</option></select></div>
-      <div class="filter-item" style="grid-column: span 2;"><label>👤 جستجوی شخص</label><input type="text" id="salaryEmployeeSearch" class="form-control" placeholder="مثال: احمد، محمود..." oninput="applySalaryFilters()"></div>
+      <div class="filter-item">
+        <label>🏫 نوع (مکاتب / مدارس)</label>
+        <select id="salaryTypeFilter" class="form-control" onchange="onSalaryTypeChange()">
+          <option value="">📋 همه</option>
+          <option value="مکاتب">🏫 مکاتب (لیسه، متوسطه، ابتداییه)</option>
+          <option value="مدارس">🏛️ مدارس</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>📖 نوع مکتب</label>
+        <select id="salarySchoolTypeFilter" class="form-control" onchange="applySalaryFilters()">
+          <option value="">📋 همه</option>
+          <option value="لیسه">لیسه</option>
+          <option value="متوسطه">متوسطه</option>
+          <option value="ابتداییه">ابتداییه</option>
+          <option value="مدرسه">مدرسه</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>🏫 نام مکتب خاص</label>
+        <select id="salarySchoolNameFilter" class="form-control" onchange="onSalarySchoolChange()">
+          <option value="">📋 همه مکاتب</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>👨‍🏫 عنوان وظیفه</label>
+        <select id="salaryJobTitleFilter" class="form-control" onchange="applySalaryFilters()">
+          <option value="">📋 همه</option>
+          <option value="آمر">آمر</option>
+          <option value="مدیر">مدیر</option>
+          <option value="معلم">معلم</option>
+          <option value="کارکن خدماتی">کارکن خدماتی</option>
+          <option value="معتمد جنسی (تحویلدار)">معتمد جنسی</option>
+        </select>
+      </div>
+      <div class="filter-item" style="grid-column: span 2;">
+        <label>👤 فیلتر شخص (کارمند)</label>
+        <select id="salaryPersonFilter" class="form-control" onchange="applySalaryFilters()">
+          <option value="">📋 همه کارمندان</option>
+        </select>
+        <small style="font-size:11px; color:#64748b; margin-top:4px; display:block;">💡 ابتدا مکتب را انتخاب کنید تا لیست کارمندان آن مکتب نمایش داده شود.</small>
+      </div>
     </div>
+
     <div class="d-flex gap-2 flex-wrap mb-3 p-3" style="background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0;">
-      <span style="font-weight:bold; color:#475569; padding:8px 5px;">📥 خروجی:</span>
+      <span style="font-weight:bold; color:#475569; padding:8px 5px;">📥 خروجی کلی:</span>
       <button class="btn btn-purple btn-sm fw-bold px-3" onclick="printSalaryFiltered()">🖨️ پرنت فیلترشده</button>
       <button class="btn btn-success btn-sm fw-bold px-3" onclick="exportSalaryFiltered()">📊 اکسل فیلترشده</button>
       <button class="btn btn-primary btn-sm fw-bold px-3" onclick="printSalaryAll()">🖨️ پرنت همه</button>
       <button class="btn btn-warning btn-sm fw-bold px-3" onclick="exportSalaryAll()">📊 اکسل همه</button>
     </div>
+
+    <div style="background:#fffbeb; border:2px solid #f59e0b; border-radius:10px; padding:12px 18px; margin-bottom:15px;">
+      <label style="font-weight:bold; color:#92400e; margin-bottom:6px; display:block;">🔍 جستجو در معاشات (نام، تخلص، کد بست)</label>
+      <input type="text" id="salarySearchBottom" class="form-control" placeholder="مثال: احمد، محمود، 27-32-02-13056..." oninput="debounceSalarySearch()" style="border-color:#f59e0b;">
+    </div>
+
     <div class="info-banner">ℹ️ برای مشاهده تمام معلومات، دکمه <strong>👁️ نمایش تمام</strong> را بزنید.</div>
+
     <div class="table-responsive border rounded">
       <table class="table table-hover align-middle mb-0 text-center" style="font-size:13px;">
-        <thead class="table-light"><tr><th>#</th><th>نام و تخلص</th><th>مکتب</th><th>وظیفه</th><th>مجموعه استحقاق</th><th>مجموعه کسرات</th><th>قابل پرداخت</th><th>حاضر</th><th>غیر حاضر</th><th>مریض</th><th>عملیات</th></tr></thead>
-        <tbody id="salariesTableBody"><tr><td colspan="11" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody>
+        <thead class="table-light">
+          <tr>
+            <th>#</th><th>نام و تخلص</th><th>کد بست</th><th>مکتب</th><th>وظیفه</th>
+            <th>مجموعه استحقاق</th><th>مجموعه کسرات</th><th>قابل پرداخت</th>
+            <th>حاضر</th><th>غیر حاضر</th><th>مریض</th><th>عملیات</th>
+          </tr>
+        </thead>
+        <tbody id="salariesTableBody"><tr><td colspan="12" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody>
       </table>
     </div>
+
+    <div style="margin-top:20px; display:none;" id="salarySearchResultsWrap">
+      <h6 style="color:#92400e; font-weight:bold;">🔍 نتایج جستجو</h6>
+      <div class="table-responsive border rounded" style="border-color:#f59e0b;">
+        <table class="table table-hover align-middle mb-0 text-center" style="font-size:13px;">
+          <thead style="background:#fef3c7;">
+            <tr>
+              <th>#</th><th>نام و تخلص</th><th>کد بست</th><th>مکتب</th><th>وظیفه</th>
+              <th>استحقاق</th><th>کسرات</th><th>قابل پرداخت</th>
+              <th>حاضر</th><th>غیر حاضر</th><th>مریض</th><th>عملیات</th>
+            </tr>
+          </thead>
+          <tbody id="salarySearchResultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -218,6 +286,9 @@
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  // ═══════════════════════════════════════════════════════════
+  // پنل ادمین — JavaScript کامل
+  // ═══════════════════════════════════════════════════════════
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
@@ -230,6 +301,7 @@
   let filteredEvaluations = [];
   let cachedSalaries = [];
   let filteredSalaries = [];
+  let salaryAllPersons = [];
   let currentViewSalary = null;
   let viewSalaryModal = null;
   let evalAllowed = false;
@@ -576,22 +648,25 @@
     showToast('📊 اکسل دانلود شد');
   }
   window.exportEvalAdminExcel = exportEvalAdminExcel;
+
   // ═══════════════════════════════════════════════════════════
-  // ⭐ بخش معاشات (Salaries) — کامل
+  // ⭐ بخش معاشات (Salaries) — کامل با فیلتر شخص
   // ═══════════════════════════════════════════════════════════
 
   async function loadSalaries() {
     const tbody = document.getElementById('salariesTableBody');
-    tbody.innerHTML = '<tr><td colspan="11" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
     try {
       const res = await fetch('/api/salaries', { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) { localStorage.clear(); location.href = '/'; return; }
       const data = await res.json();
       cachedSalaries = Array.isArray(data) ? data : [];
+      salaryAllPersons = cachedSalaries.map(s => ({ id: s.record_id || s.id, name: `${s.first_name || ''} ${s.last_name || ''}`.trim(), school: s.schoolname }));
       populateSalarySchoolDropdown();
+      populateSalaryPersonFilter();
       applySalaryFilters();
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center text-danger p-4">خطا در بارگذاری</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center text-danger p-4">خطا در بارگذاری</td></tr>';
     }
   }
   window.loadSalaries = loadSalaries;
@@ -610,12 +685,38 @@
     });
   }
 
+  function populateSalaryPersonFilter() {
+    const sel = document.getElementById('salaryPersonFilter');
+    if (!sel) return;
+    const currentSchool = document.getElementById('salarySchoolNameFilter').value;
+    sel.innerHTML = '<option value="">📋 همه کارمندان</option>';
+    let persons = salaryAllPersons;
+    if (currentSchool) persons = salaryAllPersons.filter(p => p.school === currentSchool);
+    const unique = [...new Set(persons.map(p => p.name).filter(Boolean))].sort();
+    unique.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = `👤 ${name}`;
+      sel.appendChild(opt);
+    });
+  }
+
+  function onSalarySchoolChange() {
+    populateSalaryPersonFilter();
+    applySalaryFilters();
+  }
+  window.onSalarySchoolChange = onSalarySchoolChange;
+
+  function onSalaryTypeChange() {
+    applySalaryFilters();
+  }
+  window.onSalaryTypeChange = onSalaryTypeChange;
+
   function applySalaryFilters() {
     const typeFilter = document.getElementById('salaryTypeFilter').value;
     const schoolTypeFilter = document.getElementById('salarySchoolTypeFilter').value;
     const schoolNameFilter = document.getElementById('salarySchoolNameFilter').value;
     const jobTitleFilter = document.getElementById('salaryJobTitleFilter').value;
-    const empSearch = document.getElementById('salaryEmployeeSearch').value.trim().toLowerCase();
+    const personFilter = document.getElementById('salaryPersonFilter').value;
 
     filteredSalaries = cachedSalaries.filter(s => {
       const schoolName = s.schoolname || '';
@@ -627,12 +728,9 @@
       if (schoolTypeFilter && detectSchoolType(schoolName) !== schoolTypeFilter) return false;
       if (schoolNameFilter && schoolName !== schoolNameFilter) return false;
       if (jobTitleFilter && (s.job_title || '') !== jobTitleFilter) return false;
-      if (empSearch) {
-        const firstName = (s.first_name || '').toLowerCase();
-        const lastName = (s.last_name || '').toLowerCase();
-        const fatherName = (s.father_name || '').toLowerCase();
-        const fullName = `${firstName} ${lastName} ${fatherName}`;
-        if (!fullName.includes(empSearch)) return false;
+      if (personFilter) {
+        const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim();
+        if (fullName !== personFilter) return false;
       }
       return true;
     });
@@ -645,27 +743,26 @@
   function renderSalaries(list) {
     const tbody = document.getElementById('salariesTableBody');
     if (!list || list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center p-4 text-muted">هیچ معاشی با این فیلترها یافت نشد</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center p-4 text-muted">هیچ معاشی با این فیلترها یافت نشد</td></tr>';
       return;
     }
     let html = '';
     list.forEach((s, idx) => {
-      const present = s.att_present || 0;
-      const absent = s.att_absent || 0;
-      const sick = s.att_sick || 0;
       html += `<tr>
         <td>${idx + 1}</td>
-        <td><b>${escapeHtml(s.first_name || '')} ${escapeHtml(s.last_name || '')}</b><br><small class="text-muted">${escapeHtml(s.father_name || '')}</small></td>
+        <td><b>${escapeHtml(s.first_name || '')} ${escapeHtml(s.last_name || '')}</b><br><small class="text-muted">ولد: ${escapeHtml(s.father_name || '')}</small></td>
+        <td><code>${escapeHtml(s.job_code || '—')}</code></td>
         <td>${escapeHtml(s.schoolname || '-')}</td>
         <td><span class="badge bg-light text-dark">${escapeHtml(s.job_title || '-')}</span></td>
         <td><strong style="color:#065f46;">${Number(s.total_entitlement || 0).toLocaleString()}</strong></td>
         <td><strong style="color:#b91c1c;">${Number(s.total_deductions || 0).toLocaleString()}</strong></td>
         <td><strong style="color:#7c3aed;">${Number(s.net_pay || 0).toLocaleString()}</strong></td>
-        <td>${present}</td>
-        <td>${absent}</td>
-        <td>${sick}</td>
+        <td>${s.att_present || 0}</td>
+        <td>${s.att_absent || 0}</td>
+        <td>${s.att_sick || 0}</td>
         <td>
           <button class="btn-action btn-view" onclick="viewSalaryAdmin(${s.id})" title="نمایش تمام">👁️ تمام</button>
+          <button class="btn-action" style="background:#f59e0b; color:#fff;" onclick="viewSalaryAdmin(${s.id})" title="ویرایش">✏️</button>
           <button class="btn-action btn-delete-row" onclick="deleteSalaryAdmin(${s.id})" title="حذف">🗑️</button>
           <button class="btn-action btn-print" onclick="printSingleSalary(${s.id})" title="پرینت">🖨️</button>
         </td>
@@ -685,6 +782,54 @@
     document.getElementById('salTotalEnt').textContent = totalEnt.toLocaleString();
     document.getElementById('salTotalDed').textContent = totalDed.toLocaleString();
     document.getElementById('salTotalNet').textContent = totalNet.toLocaleString();
+  }
+
+  const debounceSalarySearch = debounce(loadSalarySearchResults, 400);
+  window.debounceSalarySearch = debounceSalarySearch;
+
+  async function loadSalarySearchResults() {
+    const q = document.getElementById('salarySearchBottom').value.trim();
+    const wrap = document.getElementById('salarySearchResultsWrap');
+    const tbody = document.getElementById('salarySearchResultsBody');
+    if (!q) { wrap.style.display = 'none'; tbody.innerHTML = ''; return; }
+    wrap.style.display = 'block';
+    tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted">در حال جستجو...</td></tr>';
+    try {
+      const ql = q.toLowerCase();
+      const results = cachedSalaries.filter(s => {
+        const firstName = (s.first_name || '').toLowerCase();
+        const lastName = (s.last_name || '').toLowerCase();
+        const jobCode = (s.job_code || '').toLowerCase();
+        return firstName.includes(ql) || lastName.includes(ql) || jobCode.includes(ql);
+      });
+      if (results.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted">هیچ نتیجه‌ای یافت نشد</td></tr>';
+        return;
+      }
+      let html = '';
+      results.forEach((s, idx) => {
+        html += `<tr>
+          <td>${idx + 1}</td>
+          <td><b>${escapeHtml(s.first_name || '')} ${escapeHtml(s.last_name || '')}</b></td>
+          <td><code>${escapeHtml(s.job_code || '—')}</code></td>
+          <td>${escapeHtml(s.schoolname || '-')}</td>
+          <td>${escapeHtml(s.job_title || '-')}</td>
+          <td>${Number(s.total_entitlement || 0).toLocaleString()}</td>
+          <td>${Number(s.total_deductions || 0).toLocaleString()}</td>
+          <td><strong style="color:#7c3aed;">${Number(s.net_pay || 0).toLocaleString()}</strong></td>
+          <td>${s.att_present || 0}</td>
+          <td>${s.att_absent || 0}</td>
+          <td>${s.att_sick || 0}</td>
+          <td>
+            <button class="btn-action btn-view" onclick="viewSalaryAdmin(${s.id})">👁️ تمام</button>
+            <button class="btn-action" style="background:#f59e0b;color:#fff;" onclick="viewSalaryAdmin(${s.id})">✏️</button>
+            <button class="btn-action btn-delete-row" onclick="deleteSalaryAdmin(${s.id})">🗑️</button>
+            <button class="btn-action btn-print" onclick="printSingleSalary(${s.id})">🖨️</button>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch (e) { tbody.innerHTML = '<tr><td colspan="12" class="text-center text-danger">خطا</td></tr>'; }
   }
 
   async function viewSalaryAdmin(id) {

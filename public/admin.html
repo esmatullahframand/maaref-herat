@@ -1109,22 +1109,64 @@
     const schoolNameFilter = document.getElementById('salarySchoolNameFilter').value;
     const jobTitleFilter = document.getElementById('salaryJobTitleFilter').value;
     const personFilter = document.getElementById('salaryPersonFilter').value;
+    
+    // ⭐ بررسی وجود کادر جستجوی پایین (اگر در کد شما وجود دارد)
+    const searchEl = document.getElementById('salarySearchBottom');
+    const searchInput = searchEl ? searchEl.value.trim() : '';
 
+    // بررسی اینکه آیا فیلتری اعمال شده است یا خیر
+    const hasFilter = typeFilter || schoolTypeFilter || schoolNameFilter || jobTitleFilter || personFilter || searchInput;
+
+    const tbody = document.getElementById('salariesTableBody');
+    if (!tbody) return;
+
+    // ⭐ اگر هیچ فیلتری اعمال نشده باشد، جدول خالی می‌شود
+    if (!hasFilter) {
+      filteredSalaries = [];
+      tbody.innerHTML = `<tr><td colspan="12" class="text-center p-4 text-muted">
+        <div style="padding:30px;">
+          <div style="font-size:50px; margin-bottom:15px;">🔍</div>
+          <div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده معاشات، از فیلترها یا کادر جستجو استفاده کنید</div>
+          <div style="font-size:13px; color:#94a3b8;">نام کارمند، نوع مکتب، نام مکتب یا عنوان وظیفه را جستجو کنید</div>
+        </div>
+      </td></tr>`;
+      updateSalaryTotals([]);
+      return;
+    }
+
+    // اعمال فیلترها
     filteredSalaries = cachedSalaries.filter(s => {
       const schoolName = s.schoolname || '';
-      if (typeFilter) { const st = detectSchoolType(schoolName); if (typeFilter === 'مکاتب') { if (st !== 'لیسه' && st !== 'متوسطه' && st !== 'ابتداییه') return false; } else if (typeFilter === 'مدارس') { if (st !== 'مدرسه' && st !== 'نامشخص') return false; } }
+      
+      if (typeFilter) {
+        const st = detectSchoolType(schoolName);
+        if (typeFilter === 'مکاتب') { if (st !== 'لیسه' && st !== 'متوسطه' && st !== 'ابتداییه') return false; }
+        else if (typeFilter === 'مدارس') { if (st !== 'مدرسه' && st !== 'نامشخص') return false; }
+      }
+      
       if (schoolTypeFilter && detectSchoolType(schoolName) !== schoolTypeFilter) return false;
       if (schoolNameFilter && schoolName !== schoolNameFilter) return false;
       if (jobTitleFilter && (s.job_title || '') !== jobTitleFilter) return false;
-      if (personFilter) { const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim(); if (fullName !== personFilter) return false; }
+      if (personFilter) {
+        const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim();
+        if (fullName !== personFilter) return false;
+      }
+      
+      if (searchInput) {
+        const ql = searchInput.toLowerCase();
+        const fn = (s.first_name || '').toLowerCase();
+        const ln = (s.last_name || '').toLowerCase();
+        const jc = (s.job_code || '').toLowerCase();
+        if (!fn.includes(ql) && !ln.includes(ql) && !jc.includes(ql)) return false;
+      }
+      
       return true;
     });
 
     renderSalaries(filteredSalaries);
-    updateSalaryStats(filteredSalaries);
+    updateSalaryTotals(filteredSalaries);
   }
   window.applySalaryFilters = applySalaryFilters;
-
   function renderSalaries(list) {
     const tbody = document.getElementById('salariesTableBody');
     if (!tbody) return;

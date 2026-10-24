@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V18.0 starting...');
+console.log('🔐 Server V19.0 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -181,7 +181,7 @@ async function initDB() {
       `);
 
       // ═══════════════════════════════════════════════════════════
-      // ⭐ جدول راپور حاضری (Attendance)
+      // ⭐ جدول راپور حاضری (Attendance) — با ستون holidays
       // ═══════════════════════════════════════════════════════════
       await client.query(`
         CREATE TABLE IF NOT EXISTS attendance (
@@ -196,11 +196,17 @@ async function initDB() {
           service_center REAL DEFAULT 0,
           service_province REAL DEFAULT 0,
           hajj REAL DEFAULT 0,
+          holidays REAL DEFAULT 0,
           other REAL DEFAULT 0,
           total_days REAL DEFAULT 0,
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+      `);
+
+      // ⭐ اضافه کردن ستون holidays به جداول موجود (اگر نیست)
+      await client.query(`
+        ALTER TABLE attendance ADD COLUMN IF NOT EXISTS holidays REAL DEFAULT 0;
       `);
 
       console.log('✅ جداول دیتابیس آماده شدند.');
@@ -1109,10 +1115,9 @@ app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ معاشات (Salaries)
+// ⭐ معاشات (Salaries) — با att_holidays و همه فیلدهای حاضری
 // ═══════════════════════════════════════════════════════════
 
-// GET: لیست معاشات (همه یا با فیلتر)
 app.get('/api/salaries', authRequired, async (req, res) => {
   try {
     const { record_id, year, search } = req.query;
@@ -1151,9 +1156,20 @@ app.get('/api/salaries', authRequired, async (req, res) => {
         r.data::json->>'fatherName' AS father_name,
         r.data::json->>'jobCode' AS job_code,
         r.data::json->>'jobTitle' AS job_title,
+        r.data::json->>'gender' AS gender,
+        a.id AS att_id,
         a.present AS att_present,
         a.absent AS att_absent,
-        a.sick AS att_sick
+        a.vacation AS att_vacation,
+        a.sick AS att_sick,
+        a.essential AS att_essential,
+        a.maternity AS att_maternity,
+        a.service_center AS att_service_center,
+        a.service_province AS att_service_province,
+        a.hajj AS att_hajj,
+        a.holidays AS att_holidays,
+        a.other AS att_other,
+        a.total_days AS att_total_days
        FROM salaries s
        LEFT JOIN records r ON r.id = s.record_id
        LEFT JOIN attendance a ON a.salary_id = s.id
@@ -1168,7 +1184,6 @@ app.get('/api/salaries', authRequired, async (req, res) => {
   }
 });
 
-// GET: یک معاش با جزئیات
 app.get('/api/salaries/:id', authRequired, async (req, res) => {
   try {
     const id = req.params.id;
@@ -1196,6 +1211,7 @@ app.get('/api/salaries/:id', authRequired, async (req, res) => {
       father_name: info.fatherName || '',
       job_title: info.jobTitle || '',
       job_code: info.jobCode || '',
+      gender: info.gender || '',
       attendance: attRes.rows.length > 0 ? attRes.rows[0] : null
     });
   } catch (err) {
@@ -1204,7 +1220,6 @@ app.get('/api/salaries/:id', authRequired, async (req, res) => {
   }
 });
 
-// POST: ثبت معاش جدید (پیش‌نویس)
 app.post('/api/salaries', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -1218,11 +1233,9 @@ app.post('/api/salaries', authRequired, async (req, res) => {
     if (!year) return res.status(400).json({ error: 'سال الزامی است' });
     if (!month) return res.status(400).json({ error: 'ماه الزامی است' });
 
-    // بررسی کارمند متعلق به همین مکتب است
     const recCheck = await pool.query('SELECT * FROM records WHERE id = $1 AND userid = $2', [record_id, req.user.id]);
     if (recCheck.rows.length === 0) return res.status(404).json({ error: 'کارمند یافت نشد' });
 
-    // بررسی تکراری
     const dup = await pool.query('SELECT id FROM salaries WHERE record_id = $1 AND year = $2 AND month = $3', [record_id, year, month]);
     if (dup.rows.length > 0) return res.status(400).json({ error: 'برای این ماه قبلاً معاش ثبت شده است' });
 
@@ -1264,7 +1277,6 @@ app.post('/api/salaries', authRequired, async (req, res) => {
   }
 });
 
-// PUT: ویرایش معاش (فقط draft)
 app.put('/api/salaries/:id', authRequired, async (req, res) => {
   try {
     const id = req.params.id;
@@ -1311,7 +1323,6 @@ app.put('/api/salaries/:id', authRequired, async (req, res) => {
   }
 });
 
-// POST: تایید و ارسال نهایی
 app.post('/api/salaries/:id/approve', authRequired, async (req, res) => {
   try {
     const id = req.params.id;
@@ -1325,7 +1336,6 @@ app.post('/api/salaries/:id/approve', authRequired, async (req, res) => {
     }
     if (check.rows.length === 0) return res.status(404).json({ error: 'یافت نشد' });
 
-    // باید راپور حاضری ثبت شده باشد
     const att = await pool.query('SELECT id FROM attendance WHERE salary_id = $1', [id]);
     if (att.rows.length === 0) {
       return res.status(400).json({ error: '❌ ابتدا راپور حاضری را ثبت کنید' });
@@ -1339,7 +1349,6 @@ app.post('/api/salaries/:id/approve', authRequired, async (req, res) => {
   }
 });
 
-// DELETE: حذف معاش
 app.delete('/api/salaries/:id', authRequired, async (req, res) => {
   try {
     const id = req.params.id;
@@ -1363,7 +1372,7 @@ app.delete('/api/salaries/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ راپور حاضری (Attendance)
+// ⭐ راپور حاضری (Attendance) — با holidays
 // ═══════════════════════════════════════════════════════════
 app.post('/api/attendance', authRequired, async (req, res) => {
   try {
@@ -1374,7 +1383,6 @@ app.post('/api/attendance', authRequired, async (req, res) => {
     const salary_id = parseInt(body.salary_id);
     if (!salary_id) return res.status(400).json({ error: 'salary_id الزامی است' });
 
-    // بررسی مالکیت
     const sc = await pool.query('SELECT * FROM salaries WHERE id = $1', [salary_id]);
     if (sc.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
     if (req.user.role === 'school' && sc.rows[0].userid !== req.user.id) {
@@ -1394,25 +1402,25 @@ app.post('/api/attendance', authRequired, async (req, res) => {
     const service_center = num(body.service_center);
     const service_province = num(body.service_province);
     const hajj = num(body.hajj);
+    const holidays = num(body.holidays);
     const other = num(body.other);
-    const total_days = present + absent + vacation + sick + essential + maternity + service_center + service_province + hajj + other;
+    const total_days = present + absent + vacation + sick + essential + maternity + service_center + service_province + hajj + holidays + other;
 
-    // بررسی وجود
     const existing = await pool.query('SELECT id FROM attendance WHERE salary_id = $1', [salary_id]);
     if (existing.rows.length > 0) {
       await pool.query(
         `UPDATE attendance SET
           present = $1, absent = $2, vacation = $3, sick = $4, essential = $5, maternity = $6,
-          service_center = $7, service_province = $8, hajj = $9, other = $10, total_days = $11,
+          service_center = $7, service_province = $8, hajj = $9, holidays = $10, other = $11, total_days = $12,
           updatedat = CURRENT_TIMESTAMP
-         WHERE salary_id = $12`,
-        [present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, other, total_days, salary_id]
+         WHERE salary_id = $13`,
+        [present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, holidays, other, total_days, salary_id]
       );
     } else {
       await pool.query(
-        `INSERT INTO attendance (salary_id, present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, other, total_days)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-        [salary_id, present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, other, total_days]
+        `INSERT INTO attendance (salary_id, present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, holidays, other, total_days)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [salary_id, present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, holidays, other, total_days]
       );
     }
 
@@ -1423,7 +1431,6 @@ app.post('/api/attendance', authRequired, async (req, res) => {
   }
 });
 
-// GET: یک راپور حاضری
 app.get('/api/attendance/:salary_id', authRequired, async (req, res) => {
   try {
     const salary_id = req.params.salary_id;
@@ -1564,7 +1571,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 app.get('/api/test', (req, res) => {
-  res.json({ ok: true, version: '18.0.0', timestamp: new Date().toISOString() });
+  res.json({ ok: true, version: '19.0.0', timestamp: new Date().toISOString() });
 });
 
 app.get('*', (req, res) => {
@@ -1576,6 +1583,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V18.0 live on port ' + PORT);
+  console.log('🚀 Server V19.0 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

@@ -96,15 +96,6 @@
   .btn-salary-new { background: #fff; color: #059669; border: 2px solid #fff !important; }
   .salary-panel { display: none; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); margin-bottom: 20px; }
   .salary-panel.active { display: block; }
-  .salary-years-tree { display: flex; flex-direction: column; gap: 10px; }
-  .salary-year-node { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
-  .salary-year-header { padding: 12px 18px; background: #e2e8f0; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-  .salary-year-header:hover { background: #cbd5e1; }
-  .salary-months-list { display: none; padding: 10px; background: #fff; }
-  .salary-months-list.open { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-  .salary-month-chip { padding: 10px; background: #dcfce7; border: 1px solid #10b981; border-radius: 6px; text-align: center; cursor: pointer; font-weight: bold; color: #065f46; font-size: 13px; transition: all 0.2s; }
-  .salary-month-chip:hover { background: #10b981; color: #fff; }
-  .salary-month-chip.pending { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
   .salary-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
   .salary-form-grid label { font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; display: block; }
   .salary-form-grid input, .salary-form-grid select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; width: 100%; }
@@ -364,11 +355,10 @@
     <div class="card">
       <h4>💰 مدیریت معاشات</h4>
 
-      <!-- ۱. انتخاب کارمند با فیلتر مکتب -->
+      <!-- ۱. انتخاب کارمند (بدون فیلتر مکتب) -->
       <div class="form-section" style="background:#f8fafc; border:2px solid #10b981; border-radius:10px; padding:20px; margin-bottom:20px;">
         <h5 style="color:#10b981; font-weight:bold; margin-top:0;">👤 انتخاب کارمند</h5>
         <div class="grid-4">
-          <div class="form-group"><label>🏫 فیلتر مکتب (اختیاری)</label><select id="salarySchoolSelect" onchange="onSalarySchoolSelectChange()"><option value="">— همه مکاتب —</option></select></div>
           <div class="form-group"><label>👤 کارمند *</label><select id="salaryEmployeeSelect" onchange="onSalaryEmployeeChange()"><option value="">— ابتدا کارمند را انتخاب کنید —</option></select></div>
         </div>
       </div>
@@ -387,7 +377,7 @@
         </div>
       </div>
 
-      <!-- ۳. پنل معاشات ثبت شده (درخت سال/ماه) -->
+      <!-- ۳. پنل معاشات ثبت شده (جدول) -->
       <div class="salary-panel" id="salarySavedPanel">
         <h4 style="margin-top:0; color:#3b82f6; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">📋 معاشات ثبت شده</h4>
         <div id="salaryYearsTree" class="salary-years-tree"><div class="empty-state">در حال بارگذاری...</div></div>
@@ -524,7 +514,7 @@
 <div class="toast" id="toast"></div>
 <script>
   // ═══════════════════════════════════════════════════════════
-  // پنل مکتب — JavaScript کامل با پرینت فورم م ۴۰ و اکسل کامل
+  // پنل مکتب — JavaScript کامل
   // ═══════════════════════════════════════════════════════════
 
   const token = localStorage.getItem('hr_token');
@@ -1050,38 +1040,26 @@
     MONTHS_SHAMSI.forEach(m => { const opt = document.createElement('option'); opt.value = m; opt.textContent = m; sel.appendChild(opt); });
   }
 
-  // ۱. انتخاب کارمند با فیلتر مکتب
+  // ۱. انتخاب کارمند (بدون فیلتر مکتب)
   async function loadSalaryEmployees() {
     try {
       const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
       const records = await res.json();
-      const schoolSel = document.getElementById('salarySchoolSelect');
       const empSel = document.getElementById('salaryEmployeeSelect');
-      const schools = [...new Set(records.map(r => r.schoolname).filter(Boolean))].sort();
-      schoolSel.innerHTML = '<option value="">— همه مکاتب —</option>';
-      schools.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = '🏫 ' + s; schoolSel.appendChild(o); });
       empSel.innerHTML = '<option value="">— ابتدا کارمند را انتخاب کنید —</option>';
-      records.forEach(r => {
-        const info = r.data || {};
-        const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : `آی‌دی ${r.id}`;
-        const opt = document.createElement('option');
-        opt.value = r.id;
-        opt.textContent = name;
-        opt.dataset.school = r.schoolname || '';
-        empSel.appendChild(opt);
-      });
+      if (Array.isArray(records)) {
+        records.forEach(r => {
+          const info = r.data || {};
+          const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : `آی‌دی ${r.id}`;
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = name;
+          empSel.appendChild(opt);
+        });
+      }
     } catch (e) { console.error(e); }
   }
   window.loadSalaryEmployees = loadSalaryEmployees;
-
-  function onSalarySchoolSelectChange() {
-    const school = document.getElementById('salarySchoolSelect').value;
-    const empSel = document.getElementById('salaryEmployeeSelect');
-    Array.from(empSel.options).forEach(opt => { if (opt.value === '') { opt.hidden = false; return; } opt.hidden = school ? opt.dataset.school !== school : false; });
-    empSel.value = '';
-    onSalaryEmployeeChange();
-  }
-  window.onSalarySchoolSelectChange = onSalarySchoolSelectChange;
 
   async function onSalaryEmployeeChange() {
     const id = document.getElementById('salaryEmployeeSelect').value;
@@ -1253,7 +1231,7 @@
   }
   window.approveSalary = approveSalary;
 
-  // ۳. درخت سال/ماه
+  // ۳. درخت سال/ماه (جدول ماه‌های ثبت شده)
   async function loadSalaryYearsTree(recordId) {
     const tree = document.getElementById('salaryYearsTree');
     tree.innerHTML = '<div class="empty-state">در حال بارگذاری...</div>';
@@ -1263,13 +1241,75 @@
       if (!Array.isArray(salaries) || salaries.length === 0) { tree.innerHTML = '<div class="empty-state">معاشی ثبت نشده</div>'; return; }
       const byYear = {};
       salaries.forEach(s => { if (!byYear[s.year]) byYear[s.year] = []; byYear[s.year].push(s); });
+      const MONTHS_ORDER = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
       let html = '';
-      Object.keys(byYear).sort((a,b) => b-a).forEach(year => {
-        const months = byYear[year];
-        html += `<div class="salary-year-node"><div class="salary-year-header" onclick="this.nextElementSibling.classList.toggle('open')"><span>📁 سال ${escapeHtml(year)}</span><span>${months.length} ماه ▾</span></div><div class="salary-months-list">${months.map(m => `<div class="salary-month-chip ${m.status === 'draft' ? 'pending' : ''}" onclick="viewSalaryDetail(${m.id})">${escapeHtml(m.month)} ${m.status === 'draft' ? '⏳' : '✅'}</div>`).join('')}</div></div>`;
+      Object.keys(byYear).sort((a, b) => b - a).forEach(year => {
+        const months = byYear[year].sort((a, b) => MONTHS_ORDER.indexOf(a.month) - MONTHS_ORDER.indexOf(b.month));
+        let totalBase = 0, totalProf = 0, totalFood = 0, totalEnt = 0, totalTax = 0, totalDed = 0, totalNet = 0;
+        let rowsHtml = '';
+        months.forEach(m => {
+          const base = Number(m.base_salary) || 0;
+          const prof = Number(m.professional) || 0;
+          const food = Number(m.food) || 0;
+          const ent = Number(m.total_entitlement) || 0;
+          const tax = Number(m.tax) || 0;
+          const ded = Number(m.total_deductions) || 0;
+          const net = Number(m.net_pay) || 0;
+          const statusBadge = m.status === 'draft' 
+            ? '<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold;">⏳ پیش‌نویس</span>' 
+            : '<span style="background:#dcfce7; color:#065f46; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold;">✅ تایید</span>';
+          totalBase += base; totalProf += prof; totalFood += food; totalEnt += ent;
+          totalTax += tax; totalDed += ded; totalNet += net;
+          rowsHtml += `<tr style="cursor:pointer;" onclick="viewSalaryDetail(${m.id})">
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; font-weight:bold; color:#1e293b;">${escapeHtml(m.month)}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center;">${base.toLocaleString()}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center;">${prof.toLocaleString()}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center;">${food.toLocaleString()}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center; font-weight:bold; color:#065f46;">${ent.toLocaleString()}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center; color:#b91c1c;">${tax.toLocaleString()}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center; font-weight:bold; color:#b91c1c;">${ded.toLocaleString()}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center; font-weight:bold; color:#7c3aed;">${net.toLocaleString()}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center;">${statusBadge}</td>
+            <td style="padding:8px; border-bottom:1px solid #e2e8f0; text-align:center;"><button class="btn-action btn-view" onclick="event.stopPropagation(); viewSalaryDetail(${m.id})" style="padding:4px 8px; font-size:11px;">👁️</button></td>
+          </tr>`;
+        });
+        rowsHtml += `<tr style="background:#f1f5f9; font-weight:bold;">
+          <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981;">مجموعه</td>
+          <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981;">${totalBase.toLocaleString()}</td>
+          <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981;">${totalProf.toLocaleString()}</td>
+          <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981;">${totalFood.toLocaleString()}</td>
+          <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981; color:#065f46;">${totalEnt.toLocaleString()}</td>
+          <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981; color:#b91c1c;">${totalTax.toLocaleString()}</td>
+          <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981; color:#b91c1c;">${totalDed.toLocaleString()}</td>
+          <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981; color:#7c3aed;">${totalNet.toLocaleString()}</td>
+          <td colspan="2" style="padding:8px; text-align:center; border-bottom:2px solid #10b981;"></td>
+        </tr>`;
+        html += `<div style="margin-bottom:25px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden;">
+          <div style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; padding:12px 18px; font-weight:bold; font-size:15px; display:flex; justify-content:space-between; align-items:center;">
+            <span>📅 سال ${escapeHtml(year)}</span>
+            <span style="font-size:12px; opacity:0.9;">${months.length} ماه ثبت شده</span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <thead><tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                <th style="padding:10px 8px; text-align:right; color:#475569;">ماه</th>
+                <th style="padding:10px 8px; text-align:center; color:#475569;">معاش</th>
+                <th style="padding:10px 8px; text-align:center; color:#475569;">مسلکی</th>
+                <th style="padding:10px 8px; text-align:center; color:#475569;">ماکول</th>
+                <th style="padding:10px 8px; text-align:center; color:#065f46;">مجموعه استحقاق</th>
+                <th style="padding:10px 8px; text-align:center; color:#b91c1c;">مالیه</th>
+                <th style="padding:10px 8px; text-align:center; color:#b91c1c;">مجموعه کسرات</th>
+                <th style="padding:10px 8px; text-align:center; color:#7c3aed;">مبلغ قابل پرداخت</th>
+                <th style="padding:10px 8px; text-align:center; color:#475569;">وضعیت</th>
+                <th style="padding:10px 8px; text-align:center; color:#475569;">عملیات</th>
+              </tr></thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        </div>`;
       });
       tree.innerHTML = html;
-    } catch (e) { tree.innerHTML = '<div class="empty-state" style="color:red;">خطا</div>'; }
+    } catch (e) { console.error(e); tree.innerHTML = '<div class="empty-state" style="color:red;">خطا</div>'; }
   }
   window.loadSalaryYearsTree = loadSalaryYearsTree;
 
@@ -1301,7 +1341,6 @@
       document.getElementById('salOtherDeductions').value = s.other_deductions || '';
       calcSalaryTotals();
       showSalaryPanel('new');
-      // بارگذاری حاضری
       try {
         const attRes = await fetch('/api/attendance/' + s.id, { headers: { 'Authorization': 'Bearer ' + token } });
         const att = await attRes.json();
@@ -1335,10 +1374,7 @@
         document.getElementById('btnSaveSalaryDraft').textContent = '💾 به‌روزرسانی';
         document.getElementById('btnOpenAttendance').style.display = 'inline-block';
         const hasAtt = document.getElementById('attTotal').value && document.getElementById('attTotal').value !== '0';
-        if (hasAtt) {
-          document.getElementById('btnApproveSalary').style.display = 'inline-block';
-          document.getElementById('btnApproveSalary').textContent = '✅ ارسال به آمریت';
-        }
+        if (hasAtt) { document.getElementById('btnApproveSalary').style.display = 'inline-block'; document.getElementById('btnApproveSalary').textContent = '✅ ارسال به آمریت'; }
         updateSalaryStatusBar(true, hasAtt, false);
       }
     } catch (e) { showToast('خطا', true); }
@@ -1346,7 +1382,7 @@
   window.viewSalaryDetail = viewSalaryDetail;
 
   // ═══════════════════════════════════════════════════════════
-  // 🖨️ پرینت فورم م ۴۰ (دقیقاً شبیه تصویر)
+  // 🖨️ پرینت فورم م ۴۰
   // ═══════════════════════════════════════════════════════════
   async function printSalaryForm40() {
     if (!salaryCurrentEmployee) { showToast('❌ کارمند انتخاب نشده', true); return; }
@@ -1356,18 +1392,12 @@
       const rec = records.find(r => String(r.id) === String(salaryCurrentEmployee.id));
       if (!rec) { showToast('❌ کارمند یافت نشد', true); return; }
       const info = rec.data || {};
-      
       const salRes = await fetch(`/api/salaries?record_id=${salaryCurrentEmployee.id}`, { headers: { 'Authorization': 'Bearer ' + token } });
       const salaries = await salRes.json();
-      
       const byYear = {};
       if (Array.isArray(salaries)) salaries.forEach(s => { if (!byYear[s.year]) byYear[s.year] = []; byYear[s.year].push(s); });
-      
       let allHtml = '';
-      Object.keys(byYear).sort((a,b) => b-a).forEach(year => {
-        allHtml += buildForm40Html(rec, info, year, byYear[year]);
-      });
-      
+      Object.keys(byYear).sort((a,b) => b-a).forEach(year => { allHtml += buildForm40Html(rec, info, year, byYear[year]); });
       const win = window.open('', '_blank');
       win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>فورم م ۴۰</title><style>
         @page { size: A4 landscape; margin: 8mm; }
@@ -1384,10 +1414,8 @@
   function buildForm40Html(rec, info, year, months) {
     const MONTHS_ORDER = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
     const sortedMonths = months.sort((a,b) => MONTHS_ORDER.indexOf(a.month) - MONTHS_ORDER.indexOf(b.month));
-    
     let rowsHtml = '';
     let totals = { base:0, prof:0, food:0, other:0, absence:0, ent:0, p8:0, p3:0, p2:0, tax:0, otherTax:0, totalDed:0, net:0 };
-    
     sortedMonths.forEach(m => {
       const base = Number(m.base_salary) || 0;
       const prof = Number(m.professional) || 0;
@@ -1400,11 +1428,9 @@
       const otherTax = (Number(m.other_tax)||0) + (Number(m.tax_10)||0) + (Number(m.deductions)||0) + (Number(m.other_deductions)||0);
       const totalDed = Number(m.total_deductions) || 0;
       const net = Number(m.net_pay) || 0;
-      
       totals.base += base; totals.prof += prof; totals.food += food; totals.other += other;
       totals.absence += absence; totals.ent += ent; totals.p8 += p8; totals.p3 += p3; totals.p2 += p2;
       totals.tax += tax; totals.otherTax += otherTax; totals.totalDed += totalDed; totals.net += net;
-      
       rowsHtml += `<tr>
         <td style="border:1px solid #000; padding:3px; text-align:center; font-weight:bold;">${escapeHtml(m.month || '')}</td>
         <td style="border:1px solid #000; padding:3px; text-align:center;">${base || ''}</td>
@@ -1423,7 +1449,6 @@
         <td style="border:1px solid #000; padding:3px; text-align:center;"></td>
       </tr>`;
     });
-    
     rowsHtml += `<tr style="background:#f1f5f9; font-weight:bold;">
       <td style="border:1px solid #000; padding:3px; text-align:center;">مجموعه</td>
       <td style="border:1px solid #000; padding:3px; text-align:center;">${totals.base}</td>
@@ -1441,68 +1466,45 @@
       <td style="border:1px solid #000; padding:3px; text-align:center;">${totals.net}</td>
       <td style="border:1px solid #000; padding:3px; text-align:center;"></td>
     </tr>`;
-    
-    return `
-      <div style="page-break-after: always;">
-        <table style="width:100%; border-collapse:collapse; margin-bottom:3px;">
-          <tr>
-            <td style="border:1px solid #000; padding:4px; width:60%; text-align:right; font-weight:bold; font-size:11px;">فورم م ۴۰ دفتر معاش و کسرات</td>
-            <td style="border:1px solid #000; padding:4px; width:40%; text-align:right; font-weight:bold; font-size:11px;">۱. اداره: ${escapeHtml(rec.schoolname || '')}</td>
+    return `<div style="page-break-after: always;">
+      <table style="width:100%; border-collapse:collapse; margin-bottom:3px;">
+        <tr><td style="border:1px solid #000; padding:4px; width:60%; text-align:right; font-weight:bold; font-size:11px;">فورم م ۴۰ دفتر معاش و کسرات</td><td style="border:1px solid #000; padding:4px; width:40%; text-align:right; font-weight:bold; font-size:11px;">۱. اداره: ${escapeHtml(rec.schoolname || '')}</td></tr>
+        <tr><td style="border:1px solid #000; padding:4px; text-align:right;">۳. ولد: ${escapeHtml(info.fatherName || '')}</td><td style="border:1px solid #000; padding:4px; text-align:right;">۲. اسم: ${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</td></tr>
+        <tr><td style="border:1px solid #000; padding:4px; text-align:right;">۵. آدرس: ${escapeHtml((info.currentProvince || '') + ' ' + (info.currentDistrict || ''))}</td><td style="border:1px solid #000; padding:4px; text-align:right;">۴. نمبر: ${escapeHtml(months[0]?.bank_number || info.jobCode || '')}</td></tr>
+        <tr><td style="border:1px solid #000; padding:4px; text-align:right;" colspan="2">۶. اجرآت متعلقه مامور: تاریخ مراجعه: ........ رتبه: ${escapeHtml(info.grade || '')} ماموریت: ........</td></tr>
+        <tr><td style="border:1px solid #000; padding:4px; text-align:right;" colspan="2">۷. کسرات مخصوص: تاریخ: ........ مراجعه: ........ منظور: ........ مجموعه مبلغ: ........</td></tr>
+        <tr><td style="border:1px solid #000; padding:4px; text-align:right;">۸. کسرات عادی: تقاعد: ........ کوپراتیف: ........</td><td style="border:1px solid #000; padding:4px; text-align:right;">۹. یادداشت:</td></tr>
+      </table>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#e2e8f0;">
+            <th rowspan="2" style="border:1px solid #000; padding:3px; text-align:center;">ماه</th>
+            <th colspan="6" style="border:1px solid #000; padding:3px; text-align:center;">۱۰. استحقاق</th>
+            <th colspan="6" style="border:1px solid #000; padding:3px; text-align:center;">۱۱. کسرات عادی</th>
+            <th rowspan="2" style="border:1px solid #000; padding:3px; text-align:center;">۱۲. مبلغ قابل پرداخت</th>
+            <th rowspan="2" style="border:1px solid #000; padding:3px; text-align:center;">ملاحظات</th>
           </tr>
-          <tr>
-            <td style="border:1px solid #000; padding:4px; text-align:right;">۳. ولد: ${escapeHtml(info.fatherName || '')}</td>
-            <td style="border:1px solid #000; padding:4px; text-align:right;">۲. اسم: ${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</td>
+          <tr style="background:#e2e8f0;">
+            <th style="border:1px solid #000; padding:3px; text-align:center;">رتبوی</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">مسلکی</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">ماکول</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">سایر</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">غیرحاضری</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">مجموعه استحقاق</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">۸٪</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">۳٪</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">۲٪</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">مالیه</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">سایر</th>
+            <th style="border:1px solid #000; padding:3px; text-align:center;">مجموعه کسرات</th>
           </tr>
-          <tr>
-            <td style="border:1px solid #000; padding:4px; text-align:right;">۵. آدرس: ${escapeHtml((info.currentProvince || '') + ' ' + (info.currentDistrict || ''))}</td>
-            <td style="border:1px solid #000; padding:4px; text-align:right;">۴. نمبر: ${escapeHtml(months[0]?.bank_number || info.jobCode || '')}</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000; padding:4px; text-align:right;" colspan="2">۶. اجرآت متعلقه مامور: تاریخ مراجعه: ........ رتبه: ${escapeHtml(info.grade || '')} ماموریت: ........</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000; padding:4px; text-align:right;" colspan="2">۷. کسرات مخصوص: تاریخ: ........ مراجعه: ........ منظور: ........ مجموعه مبلغ: ........</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000; padding:4px; text-align:right;">۸. کسرات عادی: تقاعد: ........ کوپراتیف: ........</td>
-            <td style="border:1px solid #000; padding:4px; text-align:right;">۹. یادداشت:</td>
-          </tr>
-        </table>
-        
-        <table style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr style="background:#e2e8f0;">
-              <th rowspan="2" style="border:1px solid #000; padding:3px; text-align:center;">ماه</th>
-              <th colspan="6" style="border:1px solid #000; padding:3px; text-align:center;">۱۰. استحقاق</th>
-              <th colspan="6" style="border:1px solid #000; padding:3px; text-align:center;">۱۱. کسرات عادی</th>
-              <th rowspan="2" style="border:1px solid #000; padding:3px; text-align:center;">۱۲. مبلغ قابل پرداخت</th>
-              <th rowspan="2" style="border:1px solid #000; padding:3px; text-align:center;">ملاحظات</th>
-            </tr>
-            <tr style="background:#e2e8f0;">
-              <th style="border:1px solid #000; padding:3px; text-align:center;">رتبوی</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">مسلکی</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">ماکول</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">سایر</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">غیرحاضری</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">مجموعه استحقاق</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">۸٪</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">۳٪</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">۲٪</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">مالیه</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">سایر</th>
-              <th style="border:1px solid #000; padding:3px; text-align:center;">مجموعه کسرات</th>
-            </tr>
-          </thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-        <div style="text-align:left; margin-top:5px; font-size:10px;">سال: ${escapeHtml(year)}</div>
-      </div>
-    `;
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <div style="text-align:left; margin-top:5px; font-size:10px;">سال: ${escapeHtml(year)}</div>
+    </div>`;
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // 📊 خروجی اکسل کامل (۴۳ ستون)
-  // ═══════════════════════════════════════════════════════════
   function exportSalaryExcel() { showToast('در حال توسعه'); }
   window.exportSalaryExcel = exportSalaryExcel;
 

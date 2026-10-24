@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V17.3 starting...');
+console.log('🔐 Server V18.0 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -40,6 +40,8 @@ const JOB_TITLES = [
 const NO_CODE_TITLES = [];
 const SERVICE_TITLES = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
+
+const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
 
 async function initDB() {
   try {
@@ -138,6 +140,69 @@ async function initDB() {
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
+
+      // ═══════════════════════════════════════════════════════════
+      // ⭐ جدول معاشات (Salaries)
+      // ═══════════════════════════════════════════════════════════
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS salaries (
+          id SERIAL PRIMARY KEY,
+          record_id INTEGER NOT NULL,
+          userid INTEGER NOT NULL,
+          schoolname TEXT,
+          district TEXT,
+          year TEXT NOT NULL,
+          month TEXT NOT NULL,
+          bank_number TEXT,
+          appointment_letter TEXT,
+          base_salary REAL DEFAULT 0,
+          other_base REAL DEFAULT 0,
+          professional REAL DEFAULT 0,
+          other_professional REAL DEFAULT 0,
+          food REAL DEFAULT 0,
+          other_food REAL DEFAULT 0,
+          allowance REAL DEFAULT 0,
+          other_allowance REAL DEFAULT 0,
+          other_increase REAL DEFAULT 0,
+          total_entitlement REAL DEFAULT 0,
+          absence REAL DEFAULT 0,
+          tax REAL DEFAULT 0,
+          other_tax REAL DEFAULT 0,
+          tax_10 REAL DEFAULT 0,
+          deductions REAL DEFAULT 0,
+          other_deductions REAL DEFAULT 0,
+          total_deductions REAL DEFAULT 0,
+          net_pay REAL DEFAULT 0,
+          status TEXT DEFAULT 'draft',
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(record_id, year, month)
+        );
+      `);
+
+      // ═══════════════════════════════════════════════════════════
+      // ⭐ جدول راپور حاضری (Attendance)
+      // ═══════════════════════════════════════════════════════════
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS attendance (
+          id SERIAL PRIMARY KEY,
+          salary_id INTEGER NOT NULL UNIQUE,
+          present REAL DEFAULT 0,
+          absent REAL DEFAULT 0,
+          vacation REAL DEFAULT 0,
+          sick REAL DEFAULT 0,
+          essential REAL DEFAULT 0,
+          maternity REAL DEFAULT 0,
+          service_center REAL DEFAULT 0,
+          service_province REAL DEFAULT 0,
+          hajj REAL DEFAULT 0,
+          other REAL DEFAULT 0,
+          total_days REAL DEFAULT 0,
+          createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
       console.log('✅ جداول دیتابیس آماده شدند.');
     } finally {
       client.release();
@@ -363,7 +428,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// GET /api/records (با قابلیت جستجوی کد بست و جستجوی عمومی)
+// GET /api/records
 // ═══════════════════════════════════════════════════════════
 app.get('/api/records', authRequired, async (req, res) => {
   try {
@@ -440,12 +505,14 @@ async function validateRecordBody(body, excludeId = null) {
   const phone = String(body.phone || '').trim();
   const enrollmentDate = String(body.enrollmentDate || '').trim();
   const graduationDate = String(body.graduationDate || '').trim();
+  const maritalStatus = String(body.maritalStatus || '').trim();
 
   if (!job) return 'عنوان بست الزامی است';
   if (!JOB_TITLES.includes(job)) return '❌ عنوان بست انتخابی معتبر نیست';
   if (!firstName) return 'اسم الزامی است';
   if (!fatherName) return 'ولد الزامی است';
   if (!grandfatherName) return 'ولدیت الزامی است';
+  if (maritalStatus && !['مجرد', 'متاهل'].includes(maritalStatus)) return '❌ حالت مدنی معتبر نیست';
 
   const isContract = isNoCodeTitle(job);
   const isService = isServiceOrSupport(job);
@@ -626,6 +693,7 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
         tazkiraVolume: originalData.tazkiraVolume,
         ethnicity: originalData.ethnicity,
         gender: originalData.gender,
+        maritalStatus: originalData.maritalStatus,
         birthDate: originalData.birthDate,
         birthPlace: originalData.birthPlace,
         originAddress: originalData.originAddress,
@@ -1041,6 +1109,343 @@ app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+// ⭐ معاشات (Salaries)
+// ═══════════════════════════════════════════════════════════
+
+// GET: لیست معاشات (همه یا با فیلتر)
+app.get('/api/salaries', authRequired, async (req, res) => {
+  try {
+    const { record_id, year, search } = req.query;
+    const conditions = [];
+    const params = [];
+
+    if (req.user.role === 'school') {
+      conditions.push(`s.userid = $${params.length + 1}`);
+      params.push(req.user.id);
+    } else if (req.user.role === 'admin') {
+      // admin: همه چیز
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+
+    if (record_id) {
+      conditions.push(`s.record_id = $${params.length + 1}`);
+      params.push(record_id);
+    }
+    if (year) {
+      conditions.push(`s.year = $${params.length + 1}`);
+      params.push(year);
+    }
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      params.push(q);
+      const i = params.length;
+      conditions.push(`(s.schoolname ILIKE $${i} OR s.district ILIKE $${i} OR CAST(r.data AS TEXT) ILIKE $${i})`);
+    }
+
+    const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    const result = await pool.query(
+      `SELECT s.*, 
+        r.data::json->>'firstName' AS first_name,
+        r.data::json->>'lastName' AS last_name,
+        r.data::json->>'fatherName' AS father_name,
+        r.data::json->>'jobCode' AS job_code,
+        r.data::json->>'jobTitle' AS job_title,
+        a.present AS att_present,
+        a.absent AS att_absent,
+        a.sick AS att_sick
+       FROM salaries s
+       LEFT JOIN records r ON r.id = s.record_id
+       LEFT JOIN attendance a ON a.salary_id = s.id
+       ${where}
+       ORDER BY s.year DESC, s.id DESC`,
+      params
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Salaries GET error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت معاشات: ' + err.message });
+  }
+});
+
+// GET: یک معاش با جزئیات
+app.get('/api/salaries/:id', authRequired, async (req, res) => {
+  try {
+    const id = req.params.id;
+    let check;
+    if (req.user.role === 'admin') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1', [id]);
+    } else if (req.user.role === 'school') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    if (check.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
+
+    const salary = check.rows[0];
+    const attRes = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [id]);
+    const recordRes = await pool.query('SELECT * FROM records WHERE id = $1', [salary.record_id]);
+    let info = {};
+    if (recordRes.rows.length > 0) {
+      try { info = JSON.parse(recordRes.rows[0].data); } catch (e) {}
+    }
+    res.json({
+      ...salary,
+      first_name: info.firstName || '',
+      last_name: info.lastName || '',
+      father_name: info.fatherName || '',
+      job_title: info.jobTitle || '',
+      job_code: info.jobCode || '',
+      attendance: attRes.rows.length > 0 ? attRes.rows[0] : null
+    });
+  } catch (err) {
+    console.error('Salary GET error:', err.message);
+    res.status(500).json({ error: 'خطا' });
+  }
+});
+
+// POST: ثبت معاش جدید (پیش‌نویس)
+app.post('/api/salaries', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
+    const body = req.body || {};
+
+    const record_id = parseInt(body.record_id);
+    const year = String(body.year || '').trim();
+    const month = String(body.month || '').trim();
+
+    if (!record_id) return res.status(400).json({ error: 'کارمند انتخاب نشده' });
+    if (!year) return res.status(400).json({ error: 'سال الزامی است' });
+    if (!month) return res.status(400).json({ error: 'ماه الزامی است' });
+
+    // بررسی کارمند متعلق به همین مکتب است
+    const recCheck = await pool.query('SELECT * FROM records WHERE id = $1 AND userid = $2', [record_id, req.user.id]);
+    if (recCheck.rows.length === 0) return res.status(404).json({ error: 'کارمند یافت نشد' });
+
+    // بررسی تکراری
+    const dup = await pool.query('SELECT id FROM salaries WHERE record_id = $1 AND year = $2 AND month = $3', [record_id, year, month]);
+    if (dup.rows.length > 0) return res.status(400).json({ error: 'برای این ماه قبلاً معاش ثبت شده است' });
+
+    const num = (v) => Number(normalizeDigits(v || 0)) || 0;
+
+    const totalEnt = num(body.total_entitlement) || (
+      num(body.base_salary) + num(body.other_base) + num(body.professional) + num(body.other_professional) +
+      num(body.food) + num(body.other_food) + num(body.allowance) + num(body.other_allowance) + num(body.other_increase)
+    );
+    const totalDed = num(body.total_deductions) || (
+      num(body.absence) + num(body.tax) + num(body.other_tax) + num(body.tax_10) + num(body.deductions) + num(body.other_deductions)
+    );
+    const net = num(body.net_pay) || (totalEnt - totalDed);
+
+    const result = await pool.query(
+      `INSERT INTO salaries (
+        record_id, userid, schoolname, district, year, month,
+        bank_number, appointment_letter,
+        base_salary, other_base, professional, other_professional,
+        food, other_food, allowance, other_allowance, other_increase,
+        total_entitlement, absence, tax, other_tax, tax_10,
+        deductions, other_deductions, total_deductions, net_pay, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, 'draft')
+      RETURNING id`,
+      [
+        record_id, req.user.id, recCheck.rows[0].schoolname || '', recCheck.rows[0].district || '',
+        year, month,
+        String(body.bank_number || '').trim(), String(body.appointment_letter || '').trim(),
+        num(body.base_salary), num(body.other_base), num(body.professional), num(body.other_professional),
+        num(body.food), num(body.other_food), num(body.allowance), num(body.other_allowance), num(body.other_increase),
+        totalEnt, num(body.absence), num(body.tax), num(body.other_tax), num(body.tax_10),
+        num(body.deductions), num(body.other_deductions), totalDed, net
+      ]
+    );
+    res.json({ ok: true, id: result.rows[0].id });
+  } catch (err) {
+    console.error('Salary POST error:', err.message);
+    res.status(500).json({ error: 'خطا در ثبت معاش: ' + err.message });
+  }
+});
+
+// PUT: ویرایش معاش (فقط draft)
+app.put('/api/salaries/:id', authRequired, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const body = req.body || {};
+    let check;
+    if (req.user.role === 'admin') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1', [id]);
+    } else if (req.user.role === 'school') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    if (check.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
+    if (check.rows[0].status === 'approved' && req.user.role !== 'admin') {
+      return res.status(400).json({ error: 'معاش تایید شده قابل ویرایش نیست' });
+    }
+
+    const num = (v) => Number(normalizeDigits(v || 0)) || 0;
+    const totalEnt = num(body.total_entitlement);
+    const totalDed = num(body.total_deductions);
+    const net = num(body.net_pay) || (totalEnt - totalDed);
+
+    await pool.query(
+      `UPDATE salaries SET
+        bank_number = $1, appointment_letter = $2,
+        base_salary = $3, other_base = $4, professional = $5, other_professional = $6,
+        food = $7, other_food = $8, allowance = $9, other_allowance = $10, other_increase = $11,
+        total_entitlement = $12, absence = $13, tax = $14, other_tax = $15, tax_10 = $16,
+        deductions = $17, other_deductions = $18, total_deductions = $19, net_pay = $20,
+        updatedat = CURRENT_TIMESTAMP
+       WHERE id = $21`,
+      [
+        String(body.bank_number || '').trim(), String(body.appointment_letter || '').trim(),
+        num(body.base_salary), num(body.other_base), num(body.professional), num(body.other_professional),
+        num(body.food), num(body.other_food), num(body.allowance), num(body.other_allowance), num(body.other_increase),
+        totalEnt, num(body.absence), num(body.tax), num(body.other_tax), num(body.tax_10),
+        num(body.deductions), num(body.other_deductions), totalDed, net, id
+      ]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Salary PUT error:', err.message);
+    res.status(500).json({ error: 'خطا در ویرایش: ' + err.message });
+  }
+});
+
+// POST: تایید و ارسال نهایی
+app.post('/api/salaries/:id/approve', authRequired, async (req, res) => {
+  try {
+    const id = req.params.id;
+    let check;
+    if (req.user.role === 'admin') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1', [id]);
+    } else if (req.user.role === 'school') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    if (check.rows.length === 0) return res.status(404).json({ error: 'یافت نشد' });
+
+    // باید راپور حاضری ثبت شده باشد
+    const att = await pool.query('SELECT id FROM attendance WHERE salary_id = $1', [id]);
+    if (att.rows.length === 0) {
+      return res.status(400).json({ error: '❌ ابتدا راپور حاضری را ثبت کنید' });
+    }
+
+    await pool.query("UPDATE salaries SET status = 'approved', updatedat = CURRENT_TIMESTAMP WHERE id = $1", [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Salary approve error:', err.message);
+    res.status(500).json({ error: 'خطا' });
+  }
+});
+
+// DELETE: حذف معاش
+app.delete('/api/salaries/:id', authRequired, async (req, res) => {
+  try {
+    const id = req.params.id;
+    let check;
+    if (req.user.role === 'admin') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1', [id]);
+    } else if (req.user.role === 'school') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    if (check.rows.length === 0) return res.status(404).json({ error: 'یافت نشد' });
+
+    await pool.query('DELETE FROM attendance WHERE salary_id = $1', [id]);
+    await pool.query('DELETE FROM salaries WHERE id = $1', [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Salary DELETE error:', err.message);
+    res.status(500).json({ error: 'خطا' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// ⭐ راپور حاضری (Attendance)
+// ═══════════════════════════════════════════════════════════
+app.post('/api/attendance', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    const body = req.body || {};
+    const salary_id = parseInt(body.salary_id);
+    if (!salary_id) return res.status(400).json({ error: 'salary_id الزامی است' });
+
+    // بررسی مالکیت
+    const sc = await pool.query('SELECT * FROM salaries WHERE id = $1', [salary_id]);
+    if (sc.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
+    if (req.user.role === 'school' && sc.rows[0].userid !== req.user.id) {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    if (sc.rows[0].status === 'approved' && req.user.role !== 'admin') {
+      return res.status(400).json({ error: 'معاش تایید شده قابل ویرایش نیست' });
+    }
+
+    const num = (v) => Number(normalizeDigits(v || 0)) || 0;
+    const present = num(body.present);
+    const absent = num(body.absent);
+    const vacation = num(body.vacation);
+    const sick = num(body.sick);
+    const essential = num(body.essential);
+    const maternity = num(body.maternity);
+    const service_center = num(body.service_center);
+    const service_province = num(body.service_province);
+    const hajj = num(body.hajj);
+    const other = num(body.other);
+    const total_days = present + absent + vacation + sick + essential + maternity + service_center + service_province + hajj + other;
+
+    // بررسی وجود
+    const existing = await pool.query('SELECT id FROM attendance WHERE salary_id = $1', [salary_id]);
+    if (existing.rows.length > 0) {
+      await pool.query(
+        `UPDATE attendance SET
+          present = $1, absent = $2, vacation = $3, sick = $4, essential = $5, maternity = $6,
+          service_center = $7, service_province = $8, hajj = $9, other = $10, total_days = $11,
+          updatedat = CURRENT_TIMESTAMP
+         WHERE salary_id = $12`,
+        [present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, other, total_days, salary_id]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO attendance (salary_id, present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, other, total_days)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+        [salary_id, present, absent, vacation, sick, essential, maternity, service_center, service_province, hajj, other, total_days]
+      );
+    }
+
+    res.json({ ok: true, total_days });
+  } catch (err) {
+    console.error('Attendance POST error:', err.message);
+    res.status(500).json({ error: 'خطا در ثبت راپور حاضری: ' + err.message });
+  }
+});
+
+// GET: یک راپور حاضری
+app.get('/api/attendance/:salary_id', authRequired, async (req, res) => {
+  try {
+    const salary_id = req.params.salary_id;
+    let check;
+    if (req.user.role === 'admin') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1', [salary_id]);
+    } else if (req.user.role === 'school') {
+      check = await pool.query('SELECT * FROM salaries WHERE id = $1 AND userid = $2', [salary_id, req.user.id]);
+    } else {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    if (check.rows.length === 0) return res.status(404).json({ error: 'یافت نشد' });
+
+    const result = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [salary_id]);
+    res.json(result.rows.length > 0 ? result.rows[0] : null);
+  } catch (err) {
+    console.error('Attendance GET error:', err.message);
+    res.status(500).json({ error: 'خطا' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
 // تایید / حذف رکوردها
 // ═══════════════════════════════════════════════════════════
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
@@ -1061,6 +1466,8 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
     const result = await pool.query('DELETE FROM records WHERE id = $1', [req.params.id]);
     if (result.rowCount === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
     await pool.query('DELETE FROM evaluations WHERE record_id = $1', [req.params.id]);
+    await pool.query('DELETE FROM attendance WHERE salary_id IN (SELECT id FROM salaries WHERE record_id = $1)', [req.params.id]);
+    await pool.query('DELETE FROM salaries WHERE record_id = $1', [req.params.id]);
     res.json({ ok: true });
   } catch (err) {
     console.error('Delete record error:', err.message);
@@ -1133,6 +1540,8 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
     const userRecords = await pool.query('SELECT id FROM records WHERE userid = $1', [req.params.id]);
     for (const r of userRecords.rows) {
       await pool.query('DELETE FROM evaluations WHERE record_id = $1', [r.id]);
+      await pool.query('DELETE FROM attendance WHERE salary_id IN (SELECT id FROM salaries WHERE record_id = $1)', [r.id]);
+      await pool.query('DELETE FROM salaries WHERE record_id = $1', [r.id]);
     }
     await pool.query('DELETE FROM records WHERE userid = $1', [req.params.id]);
     await pool.query('DELETE FROM school_settings WHERE userid = $1', [req.params.id]);
@@ -1155,7 +1564,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 app.get('/api/test', (req, res) => {
-  res.json({ ok: true, version: '17.3.0', timestamp: new Date().toISOString() });
+  res.json({ ok: true, version: '18.0.0', timestamp: new Date().toISOString() });
 });
 
 app.get('*', (req, res) => {
@@ -1167,6 +1576,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V17.3 live on port ' + PORT);
+  console.log('🚀 Server V18.0 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

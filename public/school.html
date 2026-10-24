@@ -350,11 +350,34 @@
     </div>
   </div>
 
-  <!-- ══════════ تب معاشات ══════════ -->
+  <!-- ══════════ تب معاشات (با آمار) ══════════ -->
   <div class="tab-content" id="tab-salaries">
     <div class="card">
       <h4>💰 مدیریت معاشات</h4>
 
+      <!-- ═══ آمار معاشات ═══ -->
+      <div id="salaryStatsSection" style="margin-bottom:20px;">
+        <!-- جمع کل -->
+        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:2px solid #10b981; border-radius:10px; padding:15px 20px; margin-bottom:15px;">
+          <h6 style="color:#065f46; font-weight:bold; margin:0 0 10px 0; font-size:14px;">📊 آمار کلی معاشات</h6>
+          <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:15px;">
+            <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">📋 تعداد کل معاشات</div><div style="font-size:22px; font-weight:bold; color:#065f46;" id="salStatCount">0</div></div>
+            <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">💵 مجموع استحقاق</div><div style="font-size:22px; font-weight:bold; color:#065f46;" id="salStatEnt">0</div></div>
+            <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">✂️ مجموع کسرات</div><div style="font-size:22px; font-weight:bold; color:#b91c1c;" id="salStatDed">0</div></div>
+            <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">💰 مجموع قابل پرداخت</div><div style="font-size:22px; font-weight:bold; color:#7c3aed;" id="salStatNet">0</div></div>
+          </div>
+        </div>
+        
+        <!-- آمار بر اساس سال -->
+        <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe); border:2px solid #3b82f6; border-radius:10px; padding:15px 20px; margin-bottom:15px;">
+          <h6 style="color:#1e40af; font-weight:bold; margin:0 0 10px 0; font-size:14px;">📅 آمار مالی بر اساس سال</h6>
+          <div id="salYearStats" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px;">
+            <span style="color:#94a3b8; font-size:13px;">در حال بارگذاری...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- انتخاب کارمند -->
       <div class="form-section" style="background:#f8fafc; border:2px solid #10b981; border-radius:10px; padding:20px; margin-bottom:20px;">
         <h5 style="color:#10b981; font-weight:bold; margin-top:0;">👤 انتخاب کارمند</h5>
         <div class="grid-4">
@@ -507,7 +530,7 @@
 <div class="toast" id="toast"></div>
 <script>
   // ═══════════════════════════════════════════════════════════
-  // پنل مکتب — JavaScript کامل
+  // پنل مکتب — JavaScript کامل با آمار، سال‌های بسته، ۴ دکمه
   // ═══════════════════════════════════════════════════════════
 
   const token = localStorage.getItem('hr_token');
@@ -615,7 +638,7 @@
     if (name === 'list') loadSchoolRecords();
     if (name === 'settings') loadSchoolSettings();
     if (name === 'evaluation') loadEvaluationTab();
-    if (name === 'salaries') loadSalaryEmployees();
+    if (name === 'salaries') { loadSalaryEmployees(); loadSalaryStats(); }
   }
   window.switchTab = switchTab;
 
@@ -1024,6 +1047,72 @@
   window.deleteEvaluation = deleteEvaluation;
 
   // ═══════════════════════════════════════════════════════════
+  // 📊 آمار معاشات
+  // ═══════════════════════════════════════════════════════════
+  async function loadSalaryStats() {
+    try {
+      const res = await fetch('/api/salaries', { headers: { 'Authorization': 'Bearer ' + token } });
+      const salaries = await res.json();
+      
+      if (!Array.isArray(salaries) || salaries.length === 0) {
+        document.getElementById('salStatCount').textContent = '0';
+        document.getElementById('salStatEnt').textContent = '0';
+        document.getElementById('salStatDed').textContent = '0';
+        document.getElementById('salStatNet').textContent = '0';
+        document.getElementById('salYearStats').innerHTML = '<span style="color:#94a3b8; font-size:13px;">هیچ معاشی ثبت نشده است</span>';
+        return;
+      }
+      
+      let totalCount = salaries.length;
+      let totalEnt = 0, totalDed = 0, totalNet = 0;
+      const yearStats = {};
+      
+      salaries.forEach(s => {
+        const ent = Number(s.total_entitlement) || 0;
+        const ded = Number(s.total_deductions) || 0;
+        const net = Number(s.net_pay) || 0;
+        totalEnt += ent; totalDed += ded; totalNet += net;
+        const year = s.year || 'نامشخص';
+        if (!yearStats[year]) { yearStats[year] = { count: 0, ent: 0, ded: 0, net: 0, employees: new Set() }; }
+        yearStats[year].count++;
+        yearStats[year].ent += ent;
+        yearStats[year].ded += ded;
+        yearStats[year].net += net;
+        yearStats[year].employees.add(s.record_id);
+      });
+      
+      document.getElementById('salStatCount').textContent = totalCount.toLocaleString();
+      document.getElementById('salStatEnt').textContent = totalEnt.toLocaleString();
+      document.getElementById('salStatDed').textContent = totalDed.toLocaleString();
+      document.getElementById('salStatNet').textContent = totalNet.toLocaleString();
+      
+      const years = Object.keys(yearStats).sort((a, b) => Number(b) - Number(a));
+      let html = '';
+      years.forEach(year => {
+        const d = yearStats[year];
+        const empCount = d.employees.size;
+        html += `
+          <div style="background:#fff; border:2px solid #3b82f6; border-radius:10px; padding:15px; min-width:220px; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
+            <div style="font-size:16px; color:#1e40af; font-weight:bold; margin-bottom:12px; text-align:center; border-bottom:2px solid #3b82f6; padding-bottom:8px;">📅 سال ${escapeHtml(year)}</div>
+            <div style="display:grid; grid-template-columns:auto auto; gap:6px 10px; font-size:12px;">
+              <span style="color:#64748b;">👥 کارمندان:</span><span style="font-weight:bold; color:#1e293b;">${empCount} نفر</span>
+              <span style="color:#64748b;">📋 تعداد معاشات:</span><span style="font-weight:bold; color:#1e293b;">${d.count}</span>
+              <span style="color:#64748b;">💵 استحقاق:</span><span style="font-weight:bold; color:#065f46;">${d.ent.toLocaleString()}</span>
+              <span style="color:#64748b;">✂️ کسرات:</span><span style="font-weight:bold; color:#b91c1c;">${d.ded.toLocaleString()}</span>
+              <span style="color:#64748b;">💰 قابل پرداخت:</span><span style="font-weight:bold; color:#7c3aed;">${d.net.toLocaleString()}</span>
+            </div>
+          </div>
+        `;
+      });
+      document.getElementById('salYearStats').innerHTML = html;
+    } catch (e) {
+      console.error('loadSalaryStats error:', e);
+      document.getElementById('salYearStats').innerHTML = '<span style="color:#ef4444; font-size:13px;">خطا در بارگذاری</span>';
+    }
+  }
+  window.loadSalaryStats = loadSalaryStats;
+
+  // ═══════════════════════════════════════════════════════════
   // ⭐ بخش معاشات
   // ═══════════════════════════════════════════════════════════
   function populateSalaryMonthSelect() {
@@ -1165,6 +1254,7 @@
         document.getElementById('btnOpenAttendance').style.display = 'inline-block';
         document.getElementById('btnSaveSalaryDraft').textContent = '💾 به‌روزرسانی';
         updateSalaryStatusBar(true, false, false);
+        await loadSalaryStats();
       } else { showToast('❌ ' + (data.error || 'خطا'), true); }
     } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
   }
@@ -1213,12 +1303,13 @@
         document.getElementById('btnSaveSalaryDraft').style.display = 'none';
         document.getElementById('btnOpenAttendance').style.display = 'none';
         updateSalaryStatusBar(true, true, true);
+        await loadSalaryStats();
       } else showToast('❌ خطا', true);
     } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
   }
   window.approveSalary = approveSalary;
 
-  // درخت سال/ماه با ۴ دکمه
+  // درخت سال/ماه — همه سال‌ها بسته
   async function loadSalaryYearsTree(recordId) {
     const tree = document.getElementById('salaryYearsTree');
     tree.innerHTML = '<div class="empty-state">در حال بارگذاری...</div>';
@@ -1231,7 +1322,7 @@
       const MONTHS_ORDER = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
       let html = '';
       const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
-      years.forEach((year, yearIndex) => {
+      years.forEach((year) => {
         const months = byYear[year].sort((a, b) => MONTHS_ORDER.indexOf(a.month) - MONTHS_ORDER.indexOf(b.month));
         let totalBase = 0, totalProf = 0, totalFood = 0, totalEnt = 0, totalTax = 0, totalDed = 0, totalNet = 0;
         let rowsHtml = '';
@@ -1277,19 +1368,17 @@
           <td style="padding:8px; text-align:center; border-bottom:2px solid #10b981; color:#7c3aed;">${totalNet.toLocaleString()}</td>
           <td colspan="2" style="padding:8px; text-align:center; border-bottom:2px solid #10b981;"></td>
         </tr>`;
-        const isFirst = yearIndex === 0;
-        const arrow = isFirst ? '▴' : '▾';
-        const contentDisplay = isFirst ? 'block' : 'none';
+        // ⭐ همه سال‌ها بسته
         html += `
           <div style="margin-bottom:15px; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; border:2px solid #10b981;">
             <div onclick="toggleYearAccordion('year-content-${year}', 'year-arrow-${year}')" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; padding:14px 20px; font-weight:bold; font-size:16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;">
               <span>📅 سال ${escapeHtml(year)}</span>
               <div style="display:flex; align-items:center; gap:15px;">
                 <span style="font-size:13px; background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:20px;">${months.length} ماه ثبت شده</span>
-                <span id="year-arrow-${year}" style="font-size:18px;">${arrow}</span>
+                <span id="year-arrow-${year}" style="font-size:18px;">▾</span>
               </div>
             </div>
-            <div id="year-content-${year}" style="display:${contentDisplay}; overflow-x:auto;">
+            <div id="year-content-${year}" style="display:none; overflow-x:auto;">
               <table style="width:100%; border-collapse:collapse; font-size:12px;">
                 <thead>
                   <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
@@ -1394,8 +1483,11 @@
     if (!confirm(`⚠️ آیا از حذف معاش ${month} سال ${year} مطمئن هستید؟\n\nتوجه: این معاش حذف خواهد شد و قابل بازگشت نیست.`)) return;
     try {
       const res = await fetch('/api/salaries/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
-      if (res.ok) { showToast('🗑️ معاش حذف شد'); await loadSalaryYearsTree(salaryCurrentEmployee.id); }
-      else { const data = await res.json().catch(() => ({})); showToast('❌ ' + (data.error || 'خطا'), true); }
+      if (res.ok) {
+        showToast('🗑️ معاش حذف شد');
+        await loadSalaryYearsTree(salaryCurrentEmployee.id);
+        await loadSalaryStats();
+      } else { const data = await res.json().catch(() => ({})); showToast('❌ ' + (data.error || 'خطا'), true); }
     } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
   }
   window.requestDeleteSalary = requestDeleteSalary;
@@ -1601,7 +1693,7 @@
     const MONTHS_ORDER = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
     const sortedMonths = months.sort((a,b) => MONTHS_ORDER.indexOf(a.month) - MONTHS_ORDER.indexOf(b.month));
     let rowsHtml = '';
-    let totals = { base:0, prof:0, food:0, other:0, absence:0, ent:0, p8:0, p3:0, p2:0, tax:0, otherTax:0, totalDed:0, net:0 };
+    let totals = { base:0, prof:0, food:0, other:0, absence:0, ent:0, tax:0, otherTax:0, totalDed:0, net:0 };
     sortedMonths.forEach(m => {
       const base = Number(m.base_salary) || 0;
       const prof = Number(m.professional) || 0;

@@ -197,7 +197,7 @@
             <div class="form-group">
               <label>کُد بست *</label>
               <input type="text" id="jobCode" placeholder="27-32-02-13056">
-              <small id="jobCodeMsg" class="date-msg"></small>
+              <small id="jobCodeMsg" class="date-msg pending">⏳ منتظر...</small>
               <small class="field-hint">🔒 کد بست باید در تمام معارف یکتا باشد.</small>
             </div>
             <div class="form-group"><label>اسم *</label><input type="text" id="firstName" required></div>
@@ -207,12 +207,12 @@
             <div class="form-group">
               <label>تذکره الکترونیکی *</label>
               <input type="text" id="eTazkira" placeholder="32434-32323-3232">
-              <small id="eTazkiraMsg" class="date-msg"></small>
+              <small id="eTazkiraMsg" class="date-msg pending">⏳ منتظر...</small>
             </div>
             <div class="form-group">
               <label>تذکره کاغذی (اختیاری)</label>
               <input type="text" id="paperTazkira" maxlength="9" placeholder="12-34-567">
-              <small id="paperTazkiraMsg" class="date-msg"></small>
+              <small id="paperTazkiraMsg" class="date-msg pending">⏳ منتظر...</small>
             </div>
             <div class="form-group"><label>صفحه تذکره</label><input type="text" id="tazkiraPage"></div>
             <div class="form-group"><label>جلد تذکره</label><input type="text" id="tazkiraVolume"></div>
@@ -313,9 +313,7 @@
         </div>
       </div>
 
-      <div class="stats-grid" id="statsContainer">
-        <!-- توسط جاوااسکریپت پر می‌شود -->
-      </div>
+      <div class="stats-grid" id="statsContainer"></div>
 
       <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو در لیست کارمندان (نام، ولد، کُد بست، عنوان بست)..." oninput="debouncedLoad()">
 
@@ -639,6 +637,9 @@
     }).join('');
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // تاریخ شمسی
+  // ═══════════════════════════════════════════════════════════
   function validateShamsiDate(dateStr) {
     if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
     const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
@@ -680,15 +681,6 @@
     });
     input.addEventListener('blur', function() { if (this.value.trim()) { const result = validateFn(this.value); if (result.valid) this.value = result.formatted; } });
   }
-
-  attachLiveValidation('birthDate', validateShamsiDate, 'birthDateMsg');
-  attachLiveValidation('firstAppointmentDate', validateShamsiDate, 'firstAppointmentDateMsg');
-  attachLiveValidation('currentPositionDate', validateShamsiDate, 'currentPositionDateMsg');
-  attachLiveValidation('enrollmentDate', validateShamsiDate, 'enrollmentDateMsg');
-  attachLiveValidation('graduationDate', validateShamsiDate, 'graduationDateMsg');
-  attachLiveValidation('serviceDate', validateShamsiDate, 'serviceDateMsg');
-  attachLiveValidation('evalNewDate', validateShamsiDate, 'evalNewDateMsg');
-  attachLiveValidation('evalScore', validateScore, 'evalScoreMsg');
 
   // ═══════════════════════════════════════════════════════════
   // اعتبارسنجی کد بست + تذکره
@@ -775,9 +767,12 @@
     input.value = f;
   }
 
-  function attachEditFieldValidation(inputId, msgId, kind, excludeId) {
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ تابع اعتبارسنجی زنده + یکتایی (کد بست، تذکره الکترونیکی، تذکره کاغذی)
+  // ═══════════════════════════════════════════════════════════
+  function attachUniqueFieldValidation(inputId, msgId, kind, excludeId) {
     const input = document.getElementById(inputId);
-    const msg = document.getElementById(msgId);
+    const msg = msgId ? document.getElementById(msgId) : null;
     if (!input) return;
     let lastChecked = '', isChecking = false;
 
@@ -788,10 +783,10 @@
       if (state === 'invalid') input.classList.add('invalid');
     }
 
-    function validateFn(v) { 
-      if (kind === 'jobcode') return validateJobCode(v); 
-      if (kind === 'etazkira') return validateETazkira(v); 
-      return validateTazkiraCode(v); 
+    function validateFn(v) {
+      if (kind === 'jobcode') return validateJobCode(v);
+      if (kind === 'etazkira') return validateETazkira(v);
+      return validateTazkiraCode(v);
     }
     function checkFn(v) {
       if (kind === 'jobcode') return checkJobCodeUnique(v, excludeId);
@@ -799,19 +794,41 @@
       return checkTazkiraUnique(v, excludeId);
     }
 
+    // 🔹 در حین تایپ: بررسی فرمت + فیلتر کاراکترها
     input.addEventListener('input', function () {
-      if (kind === 'tazkira') autoFormatTazkira(this);
+      if (kind === 'tazkira') {
+        autoFormatTazkira(this);
+      } else if (kind === 'etazkira') {
+        let v = normalizeDigits(this.value).replace(/[^\d-]/g, '');
+        this.value = v;
+      } else if (kind === 'jobcode') {
+        let v = normalizeDigits(this.value).replace(/[^\d-]/g, '');
+        this.value = v;
+      }
+
       const val = this.value.trim();
       if (val !== lastChecked) lastChecked = '';
-      if (!val) { setState('pending', '⏳ منتظر...'); return; }
+      if (!val) {
+        if (kind === 'tazkira') {
+          // تذکره کاغذی اختیاری است
+          setState('pending', '⏳ اختیاری');
+        } else {
+          setState('pending', '⏳ منتظر...');
+        }
+        return;
+      }
       const r = validateFn(val);
       if (!r.valid) setState('invalid', '❌ ' + r.error);
-      else setState('pending', '⏳ برای بررسی، از فیلد خارج شوید');
+      else setState('pending', '⏳ برای بررسی یکتایی، از فیلد خارج شوید');
     });
 
+    // 🔹 هنگام خروج: بررسی یکتایی در سرور
     input.addEventListener('blur', async function () {
       const val = this.value.trim();
-      if (!val) return;
+      if (!val) {
+        if (kind === 'tazkira') setState('pending', '⏳ اختیاری');
+        return;
+      }
       const r = validateFn(val);
       if (!r.valid) return;
       this.value = r.formatted;
@@ -824,10 +841,28 @@
         const m = buildDuplicateMessage(kind, result);
         setState('invalid', m);
         showToast(m, true);
-      } catch (e) { setState('pending', '⚠️ خطا در بررسی'); }
-      finally { isChecking = false; }
+      } catch (e) {
+        setState('pending', '⚠️ خطا در بررسی');
+      } finally {
+        isChecking = false;
+      }
     });
   }
+
+  // ⭐ نصب اعتبارسنجی روی فیلدها
+  attachLiveValidation('birthDate', validateShamsiDate, 'birthDateMsg');
+  attachLiveValidation('firstAppointmentDate', validateShamsiDate, 'firstAppointmentDateMsg');
+  attachLiveValidation('currentPositionDate', validateShamsiDate, 'currentPositionDateMsg');
+  attachLiveValidation('enrollmentDate', validateShamsiDate, 'enrollmentDateMsg');
+  attachLiveValidation('graduationDate', validateShamsiDate, 'graduationDateMsg');
+  attachLiveValidation('serviceDate', validateShamsiDate, 'serviceDateMsg');
+  attachLiveValidation('evalNewDate', validateShamsiDate, 'evalNewDateMsg');
+  attachLiveValidation('evalScore', validateScore, 'evalScoreMsg');
+
+  // 🔒 اعتبارسنجی زنده + یکتایی کد بست و تذکره‌ها
+  attachUniqueFieldValidation('jobCode', 'jobCodeMsg', 'jobcode', null);
+  attachUniqueFieldValidation('eTazkira', 'eTazkiraMsg', 'etazkira', null);
+  attachUniqueFieldValidation('paperTazkira', 'paperTazkiraMsg', 'tazkira', null);
 
   // ═══════════════════════════════════════════════════════════
   // توابع پایه
@@ -980,6 +1015,15 @@
         document.getElementById('agreementCheckbox').checked = false;
         document.getElementById('agreementBox').classList.remove('checked');
         document.getElementById('submitBtn').disabled = true;
+        // ریست پیام‌های اعتبارسنجی
+        ['jobCodeMsg','eTazkiraMsg','paperTazkiraMsg'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) { el.textContent = '⏳ منتظر...'; el.className = 'date-msg pending'; }
+        });
+        ['jobCode','eTazkira','paperTazkira'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('valid','invalid');
+        });
         switchTab('list', document.querySelectorAll('.tab-btn')[2]);
       } else if (res.status === 409 && (data.code === 'DUPLICATE_JOBCODE' || data.code === 'DUPLICATE_TAZKIRA' || data.code === 'DUPLICATE_ETAZKIRA')) {
         const kind = data.code === 'DUPLICATE_JOBCODE' ? 'jobcode' : (data.code === 'DUPLICATE_ETAZKIRA' ? 'etazkira' : 'tazkira');
@@ -1164,7 +1208,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // ویرایش کارمند (مودال - بدون تذکره)
+  // ویرایش کارمند
   // ═══════════════════════════════════════════════════════════
   function editRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
@@ -1225,7 +1269,7 @@
     document.getElementById('editModal').classList.add('active');
 
     attachLiveValidation('eCurrentPositionDate', validateShamsiDate, 'eCurrentPositionDateMsg');
-    attachEditFieldValidation('eJobCode', 'eJobCodeMsg', 'jobcode', editingRecordId);
+    attachUniqueFieldValidation('eJobCode', 'eJobCodeMsg', 'jobcode', editingRecordId);
   }
   window.editRecord = editRecord;
 
@@ -1395,7 +1439,7 @@
   window.printRecord = printRecord;
 
   // ═══════════════════════════════════════════════════════════
-  // پرینت لیست کلی کارمندان
+  // پرینت لیست کلی
   // ═══════════════════════════════════════════════════════════
   function printEmployeeList() {
     if (!cachedRecords || cachedRecords.length === 0) {
@@ -1462,7 +1506,7 @@
   window.printEmployeeList = printEmployeeList;
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ خروجی اکسل کامل (۴۷ ستون)
+  // خروجی اکسل کامل (۴۵ ستون)
   // ═══════════════════════════════════════════════════════════
   function exportEmployeeExcel() {
     if (!cachedRecords || cachedRecords.length === 0) {
@@ -1676,7 +1720,7 @@
   window.deleteEvaluation = deleteEvaluation;
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ بخش معاشات
+  // معاشات
   // ═══════════════════════════════════════════════════════════
   function populateSalaryMonthSelect() {
     const sel = document.getElementById('newSalaryMonth');

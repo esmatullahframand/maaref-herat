@@ -163,7 +163,7 @@
         </div>
         <div class="agreement-box" id="settingsAgreementBox" onclick="toggleSettingsAgreement()">
           <input type="checkbox" id="settingsAgreementCheckbox">
-          <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد و این مکتب در قبال هر گونه معلومات نادرست و اشتباه، مسئول و پاسخگو می‌باشد.</div>
+          <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد.</div>
         </div>
         <button type="submit" id="settingsSubmitBtn" class="btn btn-submit" disabled>💾 ذخیره اطلاعات مکتب</button>
       </form>
@@ -185,14 +185,7 @@
                 <option value="آمر">آمر</option><option value="مدیر">مدیر</option><option value="مدیر اجرائیه">مدیر اجرائیه</option>
                 <option value="معلم">معلم</option><option value="سر معلم">سر معلم</option><option value="معلم همکار">معلم همکار</option>
                 <option value="معلم سپورت">معلم سپورت</option><option value="معلم لابرانت">معلم لابرانت</option>
-                <option value="عضو علمی معلمان">عضو علمی معلمان</option><option value="عضو علمی مدرسین">عضو علمی مدرسین</option>
-                <option value="عضو مسلکی امور مالی و کارکنان">عضو مسلکی امور مالی و کارکنان</option>
-                <option value="عضو مسلکی نظارت احصاییه و گزارش">عضو مسلکی نظارت احصاییه و گزارش</option>
-                <option value="عضو مسلکی تاسیسات و ترمیمات">عضو مسلکی تاسیسات و ترمیمات</option>
-                <option value="عضو مسلکی شوراها">عضو مسلکی شوراها</option>
-                <option value="کارکن خدماتی">کارکن خدماتی</option>
-                <option value="معتمد جنسی (تحویلدار)">معتمد جنسی (تحویلدار)</option>
-                <option value="سایر">سایر</option>
+                <option value="کارکن خدماتی">کارکن خدماتی</option><option value="سایر">سایر</option>
               </select>
             </div>
             <div class="form-group">
@@ -205,16 +198,13 @@
             <div class="form-group"><label>تخلص</label><input type="text" id="lastName"></div>
             <div class="form-group"><label>ولد *</label><input type="text" id="fatherName" required></div>
             <div class="form-group"><label>ولدیت *</label><input type="text" id="grandfatherName" required></div>
-            <div class="form-group"><label>تذکره الکترونیکی</label><input type="text" id="eTazkira" placeholder="32434-32323-3232"><small id="eTazkiraMsg" class="date-msg"></small></div>
+            <div class="form-group"><label>تذکره الکترونیکی</label><input type="text" id="eTazkira" placeholder="32434-32323-3232"></div>
             <div class="form-group">
               <label>تذکره کاغذی</label>
               <input type="text" id="paperTazkira" maxlength="9" placeholder="12-34-567">
               <small id="paperTazkiraMsg" class="date-msg"></small>
               <small class="field-hint">🔒 فرمت: XX-XX-123 (یکتا در تمام معارف)</small>
             </div>
-            <div class="form-group"><label>صفحه تذکره</label><input type="text" id="tazkiraPage"></div>
-            <div class="form-group"><label>جلد تذکره</label><input type="text" id="tazkiraVolume"></div>
-            <div class="form-group"><label>قومیت *</label><input type="text" id="ethnicity" required></div>
           </div>
         </div>
         <div class="form-section">
@@ -225,97 +215,36 @@
             <div class="form-group"><label>تاریخ تولد *</label><input type="text" id="birthDate" placeholder="1360/02/22" required><small id="birthDateMsg" class="date-msg"></small></div>
             <div class="form-group"><label>شماره تماس *</label><input type="text" id="phone" required></div>
             <div class="form-group"><label>معلولیت *</label><select id="disability" required><option value="نخیر">نخیر</option><option value="بلی">بلی</option></select></div>
-            
-            <div style="grid-column: 1 / -1; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 10px;">
-              <div style="margin-bottom: 20px;">
-                <label style="font-weight: bold; color: #10b981; font-size: 14px; margin-bottom: 8px; display: block; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">محل تولد</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                  <div class="form-group" style="margin: 0;"><label>ولایت</label><input type="text" id="birthProvince" placeholder="مثال: هرات"></div>
-                  <div class="form-group" style="margin: 0;"><label>ولسوالی</label><input type="text" id="birthDistrict" placeholder="مثال: رباط سنگی"></div>
-                </div>
-              </div>
-              <div style="margin-bottom: 20px;">
-                <label style="font-weight: bold; color: #10b981; font-size: 14px; margin-bottom: 8px; display: block; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">سکونت اصلی *</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                  <div class="form-group" style="margin: 0;"><label>ولایت</label><input type="text" id="originProvince" placeholder="مثال: هرات" required></div>
-                  <div class="form-group" style="margin: 0;"><label>ولسوالی</label><input type="text" id="originDistrict" placeholder="مثال: رباط سنگی" required></div>
-                </div>
-              </div>
-              <div>
-                <label style="font-weight: bold; color: #10b981; font-size: 14px; margin-bottom: 8px; display: block; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">سکونت فعلی *</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                  <div class="form-group" style="margin: 0;"><label>ولایت</label><input type="text" id="currentProvince" placeholder="مثال: هرات" required></div>
-                  <div class="form-group" style="margin: 0;"><label>ولسوالی</label><input type="text" id="currentDistrict" placeholder="مثال: رباط سنگی" required></div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         <div class="form-section">
-          <h5>۳. معلومات وظیفوی و تحصیلی</h5>
+          <h5>۳. معلومات وظیفوی</h5>
           <div class="grid-4">
             <div class="form-group"><label>بست</label><input type="text" id="bust"></div>
             <div class="form-group"><label>قدم</label><input type="text" id="grade"></div>
-            <div class="form-group"><label>تاریخ اولین تقرر *</label><input type="text" id="firstAppointmentDate" placeholder="1385/01/10" required><small id="firstAppointmentDateMsg" class="date-msg"></small></div>
             <div class="form-group"><label>تاریخ تقرر فعلی *</label><input type="text" id="currentPositionDate" placeholder="1400/03/20" required><small id="currentPositionDateMsg" class="date-msg"></small></div>
-            <div class="form-group"><label>موقف وظیفوی</label><select id="positionType"><option value="">انتخاب کنید</option><option value="اصلی">اصلی</option><option value="سرپرستی">سرپرستی</option></select></div>
-            <div class="form-group"><label>نوع استخدام</label><select id="employmentType"><option value="">انتخاب کنید</option><option value="حکمی">حکمی</option><option value="رقابتی">رقابتی</option></select></div>
-            <div class="form-group" id="degreeGroup"><label id="degreeLabel">درجه تحصیل *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
-            <div class="form-group" id="majorGroup"><label id="majorLabel">رشته تحصیلی / تعلیمی *</label><input type="text" id="major"></div>
-            <div class="form-group" id="eduInstituteGroup"><label id="eduInstituteLabel">مرجع تحصیلی / تعلیمی *</label><input type="text" id="eduInstitute"></div>
-            <div class="form-group" id="eduInstituteLocationGroup"><label id="eduInstituteLocationLabel">موقعیت مرجع تحصیلی / تعلیمی *</label><input type="text" id="eduInstituteLocation"></div>
-            <div class="form-group" id="enrollmentDateGroup"><label id="enrollmentDateLabel">تاریخ شمولیت به پوهنتون یا مکتب *</label><input type="text" id="enrollmentDate" placeholder="1397/01/01"><small id="enrollmentDateMsg" class="date-msg"></small></div>
-            <div class="form-group" id="graduationDateGroup"><label id="graduationDateLabel">تاریخ فراغت از پوهنتون یا مکتب *</label><input type="text" id="graduationDate" placeholder="1399/01/01"><small id="graduationDateMsg" class="date-msg"></small></div>
-            <div class="form-group"><label>مضمون تدریس</label><input type="text" id="subjectTeaching"></div>
-          </div>
-        </div>
-        <div class="form-section">
-          <h5>۴. ورکشاپ و ساعت درسی</h5>
-          <div class="grid-4">
-            <div class="form-group"><label>ورکشاپ اخذ کرده؟</label><select id="workshopStatus" onchange="toggleWorkshopFields()"><option value="نخیر">نخیر</option><option value="بلی">بلی</option></select></div>
-            <div class="form-group" id="workshopTitleGroup" style="display:none;"><label>عنوان ورکشاپ *</label><input type="text" id="workshopTitle"></div>
-            <div class="form-group" id="workshopDurationGroup" style="display:none;"><label>مدت ورکشاپ *</label><input type="text" id="workshopDuration"></div>
-            <div class="form-group"><label>مجموعه ساعت درسی</label><input type="text" id="totalTeachingHours"></div>
-          </div>
-        </div>
-        <div class="form-section">
-          <h5>۵. خدمتی رفته</h5>
-          <div class="grid-4">
-            <div class="form-group"><label>خدمتی رفته؟</label><select id="serviceStatus" onchange="toggleServiceFields()"><option value="نخیر">نخیر</option><option value="بلی">بلی</option></select></div>
-          </div>
-          <div class="service-section" id="serviceDetails">
-            <div class="grid-4" style="margin-top:15px;">
-              <div class="form-group"><label>نام ولسوالی *</label><input type="text" id="serviceDistrict" placeholder="نام ولسوالی"></div>
-              <div class="form-group"><label>نام مکتب *</label><input type="text" id="serviceSchool" placeholder="نام مکتب"></div>
-              <div class="form-group"><label>تاریخ خدمتی *</label><input type="text" id="serviceDate" placeholder="1400/03/20"><small id="serviceDateMsg" class="date-msg"></small></div>
-            </div>
           </div>
         </div>
         <div class="agreement-box" id="agreementBox" onclick="toggleAgreement()">
           <input type="checkbox" id="agreementCheckbox">
           <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد.</div>
         </div>
-        <button type="submit" id="submitBtn" class="btn btn-submit" disabled>💾 ذخیره و ارسال به معارف</button>
+        <button type="submit" id="submitBtn" class="btn btn-submit" disabled>💾 ذخیره و ارسال</button>
       </form>
     </div>
   </div>
+
   <!-- ══════════ تب لیست کارمندان ══════════ -->
   <div class="tab-content" id="tab-list">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
         <h4 style="margin:0; border:none; padding:0;">📋 لیست کارمندان</h4>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn" style="background:#7c3aed; padding:8px 16px; font-size:13px;" onclick="printEmployeeList()">🖨️ پرنت لیست</button>
-          <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEmployeeExcel()">📊 خروجی اکسل</button>
-        </div>
       </div>
 
       <div class="stats-grid">
         <div class="stat-box"><div class="stat-label">👥 کل</div><div class="stat-value" id="statTotal">0</div></div>
         <div class="stat-box"><div class="stat-label">👨‍🏫 معلمان</div><div class="stat-value" id="statTeachers">0</div></div>
         <div class="stat-box"><div class="stat-label">👨‍💼 مدیران</div><div class="stat-value" id="statManagers">0</div></div>
-        <div class="stat-box"><div class="stat-label">✅ فعال</div><div class="stat-value" id="statActive">0</div></div>
-        <div class="stat-box"><div class="stat-label">🎖️ متقاعد</div><div class="stat-value" id="statRetired">0</div></div>
         <div class="stat-box"><div class="stat-label">✅ تایید‌شده</div><div class="stat-value" id="statApproved">0</div></div>
         <div class="stat-box"><div class="stat-label">⏳ در انتظار</div><div class="stat-value" id="statPending">0</div></div>
       </div>
@@ -325,16 +254,10 @@
       <div class="table-responsive">
         <table>
           <thead>
-            <tr><th>آی‌دی</th><th>نام</th><th>ولد</th><th>عنوان بست</th><th>کُد بست</th><th>درجه</th><th>وضعیت</th><th>عملیات</th></tr>
+            <tr><th>آی‌دی</th><th>نام</th><th>ولد</th><th>عنوان بست</th><th>کُد بست</th><th>وضعیت</th><th>عملیات</th></tr>
           </thead>
           <tbody id="schoolTableBody">
-            <tr><td colspan="8" class="empty-state">
-              <div style="padding:30px;">
-                <div style="font-size:50px; margin-bottom:15px;">🔍</div>
-                <div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div>
-                <div style="font-size:13px; color:#94a3b8;">نام، ولد، کُد بست یا عنوان بست را در کادر بالا جستجو کنید</div>
-              </div>
-            </td></tr>
+            <tr><td colspan="7" class="empty-state">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید.</td></tr>
           </tbody>
         </table>
       </div>
@@ -415,8 +338,6 @@
           <h5 style="margin:0; color:#10b981; font-size:15px;">📋 لیست ارزیابی‌ها</h5>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <label class="toggle-switch"><input type="checkbox" id="evalShowToggle" checked onchange="toggleEvalListVisibility()"><span>👁️ نمایش</span></label>
-            <button class="btn" style="background:#7c3aed; padding:8px 16px; font-size:13px;" onclick="printEvalList()">🖨️ پرنت</button>
-            <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEvalExcel()">📊 اکسل</button>
           </div>
         </div>
         <div id="evalListContainer">
@@ -522,8 +443,6 @@
           <button class="btn" id="btnSaveSalaryDraft" onclick="saveSalaryDraft()" style="background:#10b981;">💾 ثبت معلومات</button>
           <button class="btn" id="btnOpenAttendance" onclick="openAttendancePanel()" style="background:#3b82f6; display:none;">📝 راپور حاضری</button>
           <button class="btn" id="btnApproveSalary" onclick="approveSalary()" style="background:#059669; display:none;">✅ ارسال به آمریت</button>
-          <button class="btn" id="btnPrintSalary" onclick="printSalaryForm()" style="background:#7c3aed; display:none;">🖨️ پرنت</button>
-          <button class="btn" id="btnExportSalary" onclick="exportSalaryExcel()" style="background:#059669; display:none;">📊 اکسل</button>
         </div>
 
         <div id="attendancePanel" class="form-section" style="border-right-color:#3b82f6; display:none; margin-top:20px;">
@@ -561,18 +480,7 @@
 
 </div>
 
-<!-- مودال‌ها -->
-<div class="modal-overlay" id="viewModal">
-  <div class="modal-box">
-    <h3>📄 مشاهده</h3>
-    <div id="viewContent"></div>
-    <div class="modal-actions no-print">
-      <button class="btn-modal btn-modal-close" onclick="closeModal('viewModal')">بستن</button>
-      <button class="btn-modal btn-modal-print" onclick="printFromView()">🖨️ پرنت</button>
-    </div>
-  </div>
-</div>
-
+<!-- مودال ویرایش -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box" style="max-width:1000px;">
     <h3>✏️ ویرایش</h3>
@@ -584,18 +492,14 @@
   </div>
 </div>
 
-<div id="printArea" style="display:none;"></div>
 <div class="toast" id="toast"></div>
+
 <script>
   // ═══════════════════════════════════════════════════════════
-  // پنل مکتب — JavaScript (بخش ۱: توابع پایه)
+  // پنل مکتب — JavaScript
   // ═══════════════════════════════════════════════════════════
-
   const token = localStorage.getItem('hr_token');
   const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
-
-  if (!user.schoolname) user.schoolname = localStorage.getItem('hr_schoolname') || '';
-  if (!user.district) user.district = localStorage.getItem('hr_district') || '';
 
   if (!token || token === 'undefined' || token === 'null') {
     localStorage.clear();
@@ -603,8 +507,7 @@
     throw new Error('No token');
   }
 
-  document.getElementById('schoolInfo').innerText = 
-    `${user.username || '-'} | ${user.schoolname || ''} (${user.district || ''})`;
+  document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
   let cachedRecords = [];
   let cachedEvaluations = [];
@@ -632,14 +535,18 @@
   const debouncedLoad = debounce(loadSchoolRecords, 400);
 
   function escapeHtml(s) {
-    if (s === null || s === undefined) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
-    return String(str).split('').map(ch => { const pi = p.indexOf(ch); if (pi !== -1) return pi; const ai = a.indexOf(ch); if (ai !== -1) return ai; return ch; }).join('');
+    return String(str).split('').map(ch => {
+      const pi = p.indexOf(ch); if (pi !== -1) return pi;
+      const ai = a.indexOf(ch); if (ai !== -1) return ai;
+      return ch;
+    }).join('');
   }
 
   function validateShamsiDate(dateStr) {
@@ -685,18 +592,13 @@
   }
 
   attachLiveValidation('birthDate', validateShamsiDate, 'birthDateMsg');
-  attachLiveValidation('firstAppointmentDate', validateShamsiDate, 'firstAppointmentDateMsg');
   attachLiveValidation('currentPositionDate', validateShamsiDate, 'currentPositionDateMsg');
-  attachLiveValidation('enrollmentDate', validateShamsiDate, 'enrollmentDateMsg');
-  attachLiveValidation('graduationDate', validateShamsiDate, 'graduationDateMsg');
-  attachLiveValidation('serviceDate', validateShamsiDate, 'serviceDateMsg');
   attachLiveValidation('evalNewDate', validateShamsiDate, 'evalNewDateMsg');
   attachLiveValidation('evalScore', validateScore, 'evalScoreMsg');
 
   // ═══════════════════════════════════════════════════════════
   // اعتبارسنجی کد بست + تذکره (XX-XX-123)
   // ═══════════════════════════════════════════════════════════
-
   function validateJobCode(codeStr) {
     if (!codeStr) return { valid: false, error: 'کد بست الزامی است' };
     const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
@@ -716,68 +618,37 @@
   }
 
   async function checkJobCodeUnique(codeStr, excludeId) {
-    if (!codeStr) return { unique: false, error: 'کد بست خالی است' };
+    if (!codeStr) return { unique: false };
     try {
       let url = '/api/check-jobcode?code=' + encodeURIComponent(codeStr);
       if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId);
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-      if (res.status === 401 || res.status === 403) {
-        localStorage.clear(); window.location.href = '/';
-        return { unique: false, error: 'دسترسی ندارید' };
-      }
       if (!res.ok) return { unique: true };
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json();
       if (!data.exists) return { unique: true };
-      return {
-        unique: false,
-        isSameSchool: !!data.isSameSchool,
-        schoolname: data.schoolname,
-        district: data.district,
-        employeeName: data.employeeName,
-        recordId: data.recordId
-      };
+      return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName };
     } catch (e) { return { unique: true }; }
   }
 
   async function checkTazkiraUnique(codeStr, excludeId) {
-    if (!codeStr) return { unique: false, error: 'تذکره خالی است' };
+    if (!codeStr) return { unique: false };
     try {
       let url = '/api/check-tazkira?code=' + encodeURIComponent(codeStr);
       if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId);
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-      if (res.status === 401 || res.status === 403) {
-        localStorage.clear(); window.location.href = '/';
-        return { unique: false, error: 'دسترسی ندارید' };
-      }
       if (!res.ok) return { unique: true };
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json();
       if (!data.exists) return { unique: true };
-      return {
-        unique: false,
-        isSameSchool: !!data.isSameSchool,
-        schoolname: data.schoolname,
-        district: data.district,
-        employeeName: data.employeeName,
-        recordId: data.recordId
-      };
+      return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName };
     } catch (e) { return { unique: true }; }
   }
 
   function buildDuplicateMessage(kind, result) {
     const label = kind === 'jobcode' ? 'کد بست' : 'تذکره';
     if (result.isSameSchool) {
-      const emp = escapeHtml(result.employeeName || 'نامشخص');
-      return {
-        html: `⚠️ این ${label} قبلاً برای <strong>«${emp}»</strong> در مکتب خودتان ثبت شده است.`,
-        toast: `⚠️ ${label} برای «${result.employeeName || 'نامشخص'}» در مکتب خودتان ثبت شده است.`
-      };
+      return `⚠️ این ${label} قبلاً برای «${result.employeeName || 'نامشخص'}» در مکتب خودتان ثبت شده است.`;
     }
-    const school = escapeHtml(result.schoolname || 'نامشخص');
-    const district = result.district ? ' — ' + escapeHtml(result.district) : '';
-    return {
-      html: `❌ این ${label} قبلاً در مکتب <strong>«${school}»</strong>${district} ثبت شده است.`,
-      toast: `❌ ${label} در مکتب «${result.schoolname || 'نامشخص'}»${result.district ? ' (' + result.district + ')' : ''} ثبت شده است.`
-    };
+    return `❌ این ${label} قبلاً در مکتب «${result.schoolname || 'نامشخص'}» ثبت شده است.`;
   }
 
   function autoFormatTazkira(input) {
@@ -788,9 +659,7 @@
     input.value = f;
   }
 
-  // ═══════════════════════════════════════════════════════════
   // اتصال به فیلد کد بست (فرم ثبت)
-  // ═══════════════════════════════════════════════════════════
   (function attachJobCodeValidation() {
     const input = document.getElementById('jobCode');
     const msg = document.getElementById('jobCodeMsg');
@@ -826,16 +695,14 @@
         const result = await checkJobCodeUnique(r.formatted);
         if (result.unique) { setState('valid', '✅ یکتا است'); return; }
         const m = buildDuplicateMessage('jobcode', result);
-        setState('invalid', m.html);
-        showToast(m.toast, true);
+        setState('invalid', m);
+        showToast(m, true);
       } catch (e) { setState('pending', '⚠️ خطا در بررسی'); }
       finally { isChecking = false; }
     });
   })();
 
-  // ═══════════════════════════════════════════════════════════
   // اتصال به فیلد تذکره (فرم ثبت)
-  // ═══════════════════════════════════════════════════════════
   (function attachTazkiraValidation() {
     const input = document.getElementById('paperTazkira');
     const msg = document.getElementById('paperTazkiraMsg');
@@ -872,16 +739,14 @@
         const result = await checkTazkiraUnique(r.formatted);
         if (result.unique) { setState('valid', '✅ یکتا است'); return; }
         const m = buildDuplicateMessage('tazkira', result);
-        setState('invalid', m.html);
-        showToast(m.toast, true);
+        setState('invalid', m);
+        showToast(m, true);
       } catch (e) { setState('pending', '⚠️ خطا در بررسی'); }
       finally { isChecking = false; }
     });
   })();
 
-  // ═══════════════════════════════════════════════════════════
   // اتصال به فیلدهای مودال ویرایش (با excludeId)
-  // ═══════════════════════════════════════════════════════════
   function attachEditFieldValidation(inputId, msgId, kind, excludeId) {
     const input = document.getElementById(inputId);
     const msg = document.getElementById(msgId);
@@ -897,9 +762,7 @@
 
     function validateFn(v) { return kind === 'jobcode' ? validateJobCode(v) : validateTazkiraCode(v); }
     function checkFn(v) {
-      return kind === 'jobcode'
-        ? checkJobCodeUnique(v, excludeId)
-        : checkTazkiraUnique(v, excludeId);
+      return kind === 'jobcode' ? checkJobCodeUnique(v, excludeId) : checkTazkiraUnique(v, excludeId);
     }
 
     input.addEventListener('input', function () {
@@ -925,19 +788,16 @@
         const result = await checkFn(r.formatted);
         if (result.unique) { setState('valid', '✅ یکتا است'); return; }
         const m = buildDuplicateMessage(kind, result);
-        setState('invalid', m.html);
-        showToast(m.toast, true);
+        setState('invalid', m);
+        showToast(m, true);
       } catch (e) { setState('pending', '⚠️ خطا در بررسی'); }
       finally { isChecking = false; }
     });
   }
 
   // ═══════════════════════════════════════════════════════════
-  // بقیه توابع پایه (switchTab, toggleAgreement, toggleSettingsAgreement,
-  //   toggleEvalAgreement, toggleBudgetFields, toggleWorkshopFields,
-  //   toggleServiceFields, closeModal, printFromView)
+  // توابع پایه
   // ═══════════════════════════════════════════════════════════
-
   function switchTab(name, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -969,32 +829,11 @@
   }
   window.toggleBudgetFields = toggleBudgetFields;
 
-  function toggleWorkshopFields() {
-    const status = document.getElementById('workshopStatus').value;
-    const titleGroup = document.getElementById('workshopTitleGroup');
-    const durationGroup = document.getElementById('workshopDurationGroup');
-    if (status === 'بلی') { titleGroup.style.display = 'flex'; durationGroup.style.display = 'flex'; }
-    else { titleGroup.style.display = 'none'; durationGroup.style.display = 'none'; }
-  }
-  window.toggleWorkshopFields = toggleWorkshopFields;
-
-  function toggleServiceFields() {
-    const status = document.getElementById('serviceStatus').value;
-    const details = document.getElementById('serviceDetails');
-    if (status === 'بلی') { details.classList.add('active'); }
-    else { details.classList.remove('active'); }
-  }
-  window.toggleServiceFields = toggleServiceFields;
-
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   window.closeModal = closeModal;
-  function printFromView() { closeModal('viewModal'); }
-  window.printFromView = printFromView;
 
-  // ادامه در بخش ۳ ...
-</script>
   // ═══════════════════════════════════════════════════════════
-  // فرم ثبت کارمند (recordForm) — با بررسی یکتایی قبل از fetch
+  // فرم ثبت کارمند
   // ═══════════════════════════════════════════════════════════
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1011,41 +850,14 @@
       grandfatherName: document.getElementById('grandfatherName').value.trim(),
       eTazkira: document.getElementById('eTazkira').value.trim(),
       paperTazkira: document.getElementById('paperTazkira').value.trim(),
-      tazkiraPage: document.getElementById('tazkiraPage').value.trim(),
-      tazkiraVolume: document.getElementById('tazkiraVolume').value.trim(),
-      ethnicity: document.getElementById('ethnicity').value.trim(),
       gender: document.getElementById('gender').value,
       maritalStatus: document.getElementById('maritalStatus').value,
       birthDate: document.getElementById('birthDate').value.trim(),
-      birthProvince: document.getElementById('birthProvince').value.trim(),
-      birthDistrict: document.getElementById('birthDistrict').value.trim(),
-      originProvince: document.getElementById('originProvince').value.trim(),
-      originDistrict: document.getElementById('originDistrict').value.trim(),
-      currentProvince: document.getElementById('currentProvince').value.trim(),
-      currentDistrict: document.getElementById('currentDistrict').value.trim(),
       phone: document.getElementById('phone').value.trim(),
       disability: document.getElementById('disability').value,
       bust: document.getElementById('bust').value.trim(),
       grade: document.getElementById('grade').value.trim(),
-      firstAppointmentDate: document.getElementById('firstAppointmentDate').value.trim(),
       currentPositionDate: document.getElementById('currentPositionDate').value.trim(),
-      positionType: document.getElementById('positionType').value,
-      employmentType: document.getElementById('employmentType').value,
-      degree: document.getElementById('degree').value.trim(),
-      major: document.getElementById('major').value.trim(),
-      eduInstitute: document.getElementById('eduInstitute').value.trim(),
-      eduInstituteLocation: document.getElementById('eduInstituteLocation').value.trim(),
-      enrollmentDate: document.getElementById('enrollmentDate').value.trim(),
-      graduationDate: document.getElementById('graduationDate').value.trim(),
-      subjectTeaching: document.getElementById('subjectTeaching').value.trim(),
-      workshopStatus: document.getElementById('workshopStatus').value,
-      workshopTitle: document.getElementById('workshopTitle').value.trim(),
-      workshopDuration: document.getElementById('workshopDuration').value.trim(),
-      totalTeachingHours: document.getElementById('totalTeachingHours').value.trim(),
-      serviceStatus: document.getElementById('serviceStatus').value,
-      serviceDistrict: document.getElementById('serviceDistrict').value.trim(),
-      serviceSchool: document.getElementById('serviceSchool').value.trim(),
-      serviceDate: document.getElementById('serviceDate').value.trim(),
       agreement: true
     };
 
@@ -1055,7 +867,6 @@
       return;
     }
 
-    // ---- بررسی یکتایی کد بست ----
     if (body.jobCode) {
       const jc = validateJobCode(body.jobCode);
       if (!jc.valid) {
@@ -1066,13 +877,12 @@
       const jcCheck = await checkJobCodeUnique(jc.formatted);
       if (!jcCheck.unique) {
         const m = buildDuplicateMessage('jobcode', jcCheck);
-        showToast(m.toast, true);
+        showToast(m, true);
         btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال';
         return;
       }
     }
 
-    // ---- بررسی یکتایی تذکره کاغذی ----
     if (body.paperTazkira) {
       const tz = validateTazkiraCode(body.paperTazkira);
       if (!tz.valid) {
@@ -1083,7 +893,7 @@
       const tzCheck = await checkTazkiraUnique(tz.formatted);
       if (!tzCheck.unique) {
         const m = buildDuplicateMessage('tazkira', tzCheck);
-        showToast(m.toast, true);
+        showToast(m, true);
         btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال';
         return;
       }
@@ -1107,7 +917,7 @@
       } else if (res.status === 409 && (data.code === 'DUPLICATE_JOBCODE' || data.code === 'DUPLICATE_TAZKIRA')) {
         const kind = data.code === 'DUPLICATE_JOBCODE' ? 'jobcode' : 'tazkira';
         const m = buildDuplicateMessage(kind, data);
-        showToast(m.toast, true);
+        showToast(m, true);
       } else {
         showToast('❌ ' + (data.error || 'خطا'), true);
       }
@@ -1210,7 +1020,7 @@
         cachedRecords = Array.isArray(allRecords) ? allRecords : [];
         updateStats(cachedRecords);
       } catch (e) { console.error(e); }
-      tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><div style="padding:30px;"><div style="font-size:50px; margin-bottom:15px;">🔍</div><div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div><div style="font-size:13px; color:#94a3b8;">نام، ولد، کُد بست یا عنوان بست را در کادر بالا جستجو کنید</div></div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div style="padding:30px;"><div style="font-size:50px; margin-bottom:15px;">🔍</div><div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div><div style="font-size:13px; color:#94a3b8;">نام، ولد، کُد بست یا عنوان بست را در کادر بالا جستجو کنید</div></div></td></tr>`;
       return;
     }
     try {
@@ -1220,24 +1030,24 @@
       const records = await res.json();
       cachedRecords = Array.isArray(records) ? records : [];
       updateStats(cachedRecords);
-      if (!Array.isArray(records) || records.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">هیچ رکوردی یافت نشد</td></tr>'; return; }
+      if (!Array.isArray(records) || records.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">هیچ رکوردی یافت نشد</td></tr>'; return; }
       let html = '';
       records.forEach((row) => {
         const info = row.data || {};
         const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
         const statusHtml = row.status === 'approved' ? '<span class="status-badge status-approved">✅ تایید</span>' : '<span class="status-badge status-pending">⏳ انتظار</span>';
-        html += `<tr><td>${row.id}</td><td><b>${escapeHtml(name)}</b></td><td>${escapeHtml(info.fatherName || '-')}</td><td>${escapeHtml(info.jobTitle || '-')}</td><td><code>${escapeHtml(info.jobCode || '—')}</code></td><td>${escapeHtml(info.degree || '-')}</td><td>${statusHtml}</td><td><button class="btn-action btn-edit-row" onclick="editRecord(${row.id})">✏️</button><button class="btn-action btn-view" onclick="viewRecord(${row.id})">👁️</button><button class="btn-action btn-print" onclick="printRecord(${row.id})">🖨️</button></td></tr>`;
+        html += `<tr><td>${row.id}</td><td><b>${escapeHtml(name)}</b></td><td>${escapeHtml(info.fatherName || '-')}</td><td>${escapeHtml(info.jobTitle || '-')}</td><td><code>${escapeHtml(info.jobCode || '—')}</code></td><td>${statusHtml}</td><td><button class="btn-action btn-edit-row" onclick="editRecord(${row.id})">✏️</button></td></tr>`;
       });
       tbody.innerHTML = html;
-    } catch (err) { console.error(err); tbody.innerHTML = '<tr><td colspan="8" class="empty-state" style="color:red;">خطا</td></tr>'; }
+    } catch (err) { console.error(err); tbody.innerHTML = '<tr><td colspan="7" class="empty-state" style="color:red;">خطا</td></tr>'; }
   }
 
   function updateStats(records) {
     if (!Array.isArray(records) || records.length === 0) {
-      ['statTotal', 'statApproved', 'statPending', 'statTeachers', 'statManagers', 'statActive', 'statRetired'].forEach(id => document.getElementById(id).textContent = '0');
+      ['statTotal', 'statApproved', 'statPending', 'statTeachers', 'statManagers'].forEach(id => document.getElementById(id).textContent = '0');
       return;
     }
-    let total = records.length, approved = 0, pending = 0, teachers = 0, managers = 0, active = 0, retired = 0;
+    let total = records.length, approved = 0, pending = 0, teachers = 0, managers = 0;
     const teacherKeywords = ['معلم', 'آموزگار', 'استاد', 'مدرس'];
     const managerKeywords = ['مدیر', 'رئیس', 'معاون', 'نایب', 'سرپرست', 'آمر'];
     records.forEach((row) => {
@@ -1246,48 +1056,13 @@
       const jobTitle = info.jobTitle || '';
       if (teacherKeywords.some(kw => jobTitle.includes(kw))) teachers++;
       if (managerKeywords.some(kw => jobTitle.includes(kw))) managers++;
-      const birthP = info.birthDate ? validateShamsiDate(info.birthDate) : null;
-      if (birthP && birthP.valid) {
-        const year = parseInt(birthP.formatted.split('/')[0]);
-        const age = new Date().getFullYear() - year - 621;
-        if (age >= 65) retired++; else active++;
-      }
     });
     document.getElementById('statTotal').textContent = total;
     document.getElementById('statApproved').textContent = approved;
     document.getElementById('statPending').textContent = pending;
     document.getElementById('statTeachers').textContent = teachers;
     document.getElementById('statManagers').textContent = managers;
-    document.getElementById('statActive').textContent = active;
-    document.getElementById('statRetired').textContent = retired;
   }
-
-  function viewRecord(id) {
-    const rec = cachedRecords.find(r => r.id === id);
-    if (!rec) return;
-    const info = rec.data || {};
-    const fields = [['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['حالت مدنی', info.maritalStatus], ['تاریخ تولد', info.birthDate], ['تماس', info.phone], ['درجه', info.degree], ['رشته', info.major], ['مرجع', info.eduInstitute], ['موقعیت مرجع', info.eduInstituteLocation]];
-    let html = '';
-    fields.forEach(([label, value]) => { html += `<div class="info-item"><div class="label">${label}</div><div class="value">${escapeHtml(value || '—')}</div></div>`; });
-    const statusText = rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
-    document.getElementById('viewContent').innerHTML = `<div style="background:#f1f5f9; padding:12px; border-radius:6px; margin-bottom:15px; text-align:center;"><strong>آی‌دی: ${rec.id}</strong> | مکتب: <strong>${escapeHtml(rec.schoolname || '-')}</strong> | وضعیت: <strong>${statusText}</strong></div><div class="info-grid">${html}</div>`;
-    document.getElementById('viewModal').classList.add('active');
-  }
-  window.viewRecord = viewRecord;
-
-  function printRecord(id) {
-    const rec = cachedRecords.find(r => r.id === id);
-    if (!rec) return;
-    const info = rec.data || {};
-    const rows = [['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['حالت مدنی', info.maritalStatus], ['تاریخ تولد', info.birthDate], ['تماس', info.phone]];
-    let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;"><h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2><h4 style="margin:5px 0 0 0; font-size:13px;">فورم معلومات کارمند</h4></div><table style="width:100%; border-collapse:collapse; font-size:12px;">`;
-    rows.forEach(([label, value]) => { html += `<tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">${label}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(value || '—')}</td></tr>`; });
-    html += '</table>';
-    const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت</title><style>body { font-family: Tahoma; padding: 15px; direction: rtl; } @media print { .no-print { display:none; } }</style></head><body>${html}<div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; background:#7c3aed; color:#fff; border:none; border-radius:6px; cursor:pointer;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(), 400);<\/script></body></html>`);
-    win.document.close();
-  }
-  window.printRecord = printRecord;
 
   // ═══════════════════════════════════════════════════════════
   // ویرایش کارمند (مودال با ۹ فیلد)
@@ -1395,26 +1170,24 @@
       return;
     }
 
-    // بررسی یکتایی کد بست (با استثنای رکورد فعلی)
     if (jobCode) {
       const jc = validateJobCode(jobCode);
       if (!jc.valid) { showToast('❌ ' + jc.error, true); return; }
       const jcCheck = await checkJobCodeUnique(jc.formatted, editingRecordId);
       if (!jcCheck.unique) {
         const m = buildDuplicateMessage('jobcode', jcCheck);
-        showToast(m.toast, true);
+        showToast(m, true);
         return;
       }
     }
 
-    // بررسی یکتایی تذکره (با استثنای رکورد فعلی)
     if (paperTazkira) {
       const tz = validateTazkiraCode(paperTazkira);
       if (!tz.valid) { showToast('❌ ' + tz.error, true); return; }
       const tzCheck = await checkTazkiraUnique(tz.formatted, editingRecordId);
       if (!tzCheck.unique) {
         const m = buildDuplicateMessage('tazkira', tzCheck);
-        showToast(m.toast, true);
+        showToast(m, true);
         return;
       }
     }
@@ -1448,7 +1221,7 @@
       } else if (res.status === 409 && (data.code === 'DUPLICATE_JOBCODE' || data.code === 'DUPLICATE_TAZKIRA')) {
         const kind = data.code === 'DUPLICATE_JOBCODE' ? 'jobcode' : 'tazkira';
         const m = buildDuplicateMessage(kind, data);
-        showToast(m.toast, true);
+        showToast(m, true);
       } else {
         showToast('❌ ' + (data.error || 'خطا'), true);
       }
@@ -1459,26 +1232,411 @@
   window.saveEditedRecord = saveEditedRecord;
 
   // ═══════════════════════════════════════════════════════════
-  // بقیه توابع بدون تغییر (از کد اصلی شما)
+  // ارزیابی
   // ═══════════════════════════════════════════════════════════
+  async function loadEvaluationTab() {
+    try { const permRes = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } }); const permData = await permRes.json(); evalAllowed = !!permData.allowed; } catch (e) { evalAllowed = false; }
+    const lockedBox = document.getElementById('evalLockedBox'), formSection = document.getElementById('evalFormSection');
+    if (evalAllowed) { lockedBox.style.display = 'none'; formSection.style.display = 'block'; } else { lockedBox.style.display = 'block'; formSection.style.display = 'none'; }
+    await loadEmployeeDropdownForEval();
+    await loadEvaluationStats();
+    await loadEvaluationList();
+  }
 
-  // printEmployeeList, exportEmployeeExcel, loadEvaluationTab, loadEmployeeDropdownForEval,
-  // loadEmployeeForEvaluation, autoSelectResult, loadEvaluationStats, loadEvaluationList,
-  // toggleEvalListVisibility, printEvalList, exportEvalExcel, deleteEvaluation,
-  // populateSalaryMonthSelect, loadSalaryEmployees, onSalaryEmployeeChange, showSalaryPanel,
-  // updateSalaryStatusBar, numVal, calcSalaryTotals, calcAttendance, saveSalaryDraft,
-  // openAttendancePanel, saveAttendanceDraft, approveSalary, loadSalaryYearsTree,
-  // viewSalaryDetail, editSalaryDraft, requestDeleteSalary, printSingleSalaryMonth,
-  // printSalaryForm, exportSalaryExcel, debounceSalarySearch, loadSalarySummary, logout
-  //
-  // ⚠️ این توابع را از کد اصلی خودتان بدون تغییر اینجا قرار دهید.
+  async function loadEmployeeDropdownForEval() {
+    try {
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      const records = await res.json();
+      const select = document.getElementById('evalEmployeeSelect');
+      select.innerHTML = '<option value="">— انتخاب —</option>';
+      if (Array.isArray(records)) records.forEach(r => { const info = r.data || {}; const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : `آی‌دی ${r.id}`; const opt = document.createElement('option'); opt.value = r.id; opt.textContent = name; select.appendChild(opt); });
+    } catch (e) { console.error(e); }
+  }
 
-  function printEmployeeList() { showToast('در حال آماده‌سازی پرینت...'); setTimeout(() => window.print(), 300); }
-  window.printEmployeeList = printEmployeeList;
-  function exportEmployeeExcel() { showToast('در حال توسعه'); }
-  window.exportEmployeeExcel = exportEmployeeExcel;
+  let currentEvalRecord = null;
 
-  // ... (بقیه توابع ارزیابی و معاشات از کد اصلی)
+  async function loadEmployeeForEvaluation() {
+    const recordId = document.getElementById('evalEmployeeSelect').value;
+    const autoSection = document.getElementById('evalAutoInfoSection'), newSection = document.getElementById('evalNewSection'), agreementBox = document.getElementById('evalAgreementBox'), submitBtn = document.getElementById('evalSubmitBtn');
+    if (!recordId) { autoSection.style.display = 'none'; newSection.style.display = 'none'; agreementBox.style.display = 'none'; submitBtn.style.display = 'none'; currentEvalRecord = null; return; }
+    try {
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      const records = await res.json();
+      const rec = records.find(r => String(r.id) === String(recordId));
+      if (!rec) return;
+      currentEvalRecord = rec;
+      const info = rec.data || {};
+      document.getElementById('evalRecordId').value = rec.id;
+      document.getElementById('evalFirstName').value = info.firstName || '—';
+      document.getElementById('evalFatherName').value = info.fatherName || '—';
+      document.getElementById('evalJobCode').value = info.jobCode || '—';
+      document.getElementById('evalJobTitle').value = info.jobTitle || '—';
+      document.getElementById('evalSchoolName').value = rec.schoolname || user.schoolname || '—';
+      document.getElementById('evalBust').value = info.bust || '';
+      document.getElementById('evalGrade').value = info.grade || '';
+      autoSection.style.display = 'block'; newSection.style.display = 'block'; agreementBox.style.display = 'flex'; submitBtn.style.display = 'block';
+      document.getElementById('evalAgreementCheckbox').checked = false; agreementBox.classList.remove('checked'); submitBtn.disabled = true;
+    } catch (e) { console.error(e); }
+  }
+  window.loadEmployeeForEvaluation = loadEmployeeForEvaluation;
+
+  function autoSelectResult() {
+    const scoreStr = document.getElementById('evalScore').value.trim(), resultSelect = document.getElementById('evalResult');
+    if (!scoreStr) { resultSelect.value = ''; return; }
+    const score = Number(normalizeDigits(scoreStr));
+    if (isNaN(score) || score < 0 || score > 100) return;
+    if (score <= 59) resultSelect.value = 'ضعیف';
+    else if (score <= 84) resultSelect.value = 'خوب';
+    else resultSelect.value = 'عالی';
+  }
+  window.autoSelectResult = autoSelectResult;
+
+  document.getElementById('evaluationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentEvalRecord) { showToast('❌ کارمند انتخاب نشده', true); return; }
+    if (!document.getElementById('evalAgreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
+    const body = { record_id: currentEvalRecord.id, eval_date_prev: '', bust: document.getElementById('evalBust').value.trim(), grade: document.getElementById('evalGrade').value.trim(), eval_date: document.getElementById('evalNewDate').value.trim(), eval_score: document.getElementById('evalScore').value.trim(), eval_result: document.getElementById('evalResult').value };
+    if (!body.eval_date || !body.eval_score || !body.eval_result) { showToast('❌ فیلدهای الزامی', true); return; }
+    const dateResult = validateShamsiDate(body.eval_date);
+    if (!dateResult.valid) { showToast('❌ تاریخ: ' + dateResult.error, true); return; }
+    body.eval_date = dateResult.formatted;
+    const btn = document.getElementById('evalSubmitBtn');
+    btn.disabled = true; btn.innerText = '⏳ در حال ارسال...';
+    try {
+      const res = await fetch('/api/evaluations', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(body) });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast('✅ ارزیابی ثبت شد');
+        document.getElementById('evaluationForm').reset();
+        document.getElementById('evalAutoInfoSection').style.display = 'none';
+        document.getElementById('evalNewSection').style.display = 'none';
+        document.getElementById('evalAgreementBox').style.display = 'none';
+        document.getElementById('evalSubmitBtn').style.display = 'none';
+        currentEvalRecord = null;
+        await loadEvaluationStats();
+        await loadEvaluationList();
+      } else { showToast('❌ ' + (data.error || 'خطا'), true); }
+    } catch (err) { showToast('❌ ارتباط برقرار نشد', true); }
+    finally { btn.disabled = false; btn.innerText = '✅ موافقت و ارسال'; }
+  });
+
+  async function loadEvaluationStats() {
+    try {
+      const res = await fetch('/api/evaluations', { headers: { 'Authorization': 'Bearer ' + token } });
+      const evals = await res.json();
+      cachedEvaluations = Array.isArray(evals) ? evals : [];
+      let excellent = 0, good = 0, weak = 0, totalScore = 0;
+      cachedEvaluations.forEach(e => { if (e.eval_result === 'عالی') excellent++; else if (e.eval_result === 'خوب') good++; else if (e.eval_result === 'ضعیف') weak++; totalScore += Number(e.eval_score) || 0; });
+      const avg = cachedEvaluations.length > 0 ? Math.round(totalScore / cachedEvaluations.length) : 0;
+      document.getElementById('evalStatTotal').textContent = cachedEvaluations.length;
+      document.getElementById('evalStatExcellent').textContent = excellent;
+      document.getElementById('evalStatGood').textContent = good;
+      document.getElementById('evalStatWeak').textContent = weak;
+      document.getElementById('evalStatAvg').textContent = avg;
+    } catch (e) { console.error(e); }
+  }
+
+  async function loadEvaluationList() {
+    const tbody = document.getElementById('evalListBody');
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">در حال بارگذاری...</td></tr>';
+    try {
+      const res = await fetch('/api/evaluations', { headers: { 'Authorization': 'Bearer ' + token } });
+      const evals = await res.json();
+      cachedEvaluations = Array.isArray(evals) ? evals : [];
+      if (cachedEvaluations.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">هیچ ارزیابی ثبت نشده</td></tr>'; return; }
+      let html = '';
+      cachedEvaluations.forEach((e, idx) => {
+        let resultBadge = '—';
+        if (e.eval_result === 'عالی') resultBadge = '<span class="result-badge-excellent">🌟 عالی</span>';
+        else if (e.eval_result === 'خوب') resultBadge = '<span class="result-badge-good">✅ خوب</span>';
+        else if (e.eval_result === 'ضعیف') resultBadge = '<span class="result-badge-weak">⚠️ ضعیف</span>';
+        html += `<tr><td>${idx + 1}</td><td><b>${escapeHtml(e.first_name || '-')}</b></td><td>${escapeHtml(e.father_name || '-')}</td><td>${escapeHtml(e.job_title || '-')}</td><td><code>${escapeHtml(e.job_code || '—')}</code></td><td>${escapeHtml(e.eval_date || '-')}</td><td><strong>${e.eval_score}</strong></td><td>${resultBadge}</td><td><button class="btn-action btn-delete-row" onclick="deleteEvaluation(${e.id})">🗑️</button></td></tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch (e) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state" style="color:red;">خطا</td></tr>'; }
+  }
+
+  function toggleEvalListVisibility() { const chk = document.getElementById('evalShowToggle'), container = document.getElementById('evalListContainer'); if (chk.checked) container.style.display = 'block'; else container.style.display = 'none'; }
+  window.toggleEvalListVisibility = toggleEvalListVisibility;
+  function deleteEvaluation(id) { if (!confirm('حذف شود؟')) return; fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }).then(r => { if (r.ok) { showToast('🗑️ حذف شد'); loadEvaluationStats(); loadEvaluationList(); } else showToast('خطا', true); }); }
+  window.deleteEvaluation = deleteEvaluation;
+
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ بخش معاشات
+  // ═══════════════════════════════════════════════════════════
+  function populateSalaryMonthSelect() {
+    const sel = document.getElementById('newSalaryMonth');
+    sel.innerHTML = '<option value="">— انتخاب —</option>';
+    MONTHS_SHAMSI.forEach(m => { const opt = document.createElement('option'); opt.value = m; opt.textContent = m; sel.appendChild(opt); });
+  }
+
+  async function loadSalaryEmployees() {
+    try {
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      const records = await res.json();
+      const empSel = document.getElementById('salaryEmployeeSelect');
+      empSel.innerHTML = '<option value="">— ابتدا کارمند را انتخاب کنید —</option>';
+      if (Array.isArray(records)) {
+        records.forEach(r => {
+          const info = r.data || {};
+          const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : `آی‌دی ${r.id}`;
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = name;
+          empSel.appendChild(opt);
+        });
+      }
+    } catch (e) { console.error(e); }
+  }
+  window.loadSalaryEmployees = loadSalaryEmployees;
+
+  async function onSalaryEmployeeChange() {
+    const id = document.getElementById('salaryEmployeeSelect').value;
+    if (!id) {
+      document.getElementById('salaryEmployeeHeader').style.display = 'none';
+      document.getElementById('salarySavedPanel').classList.remove('active');
+      document.getElementById('salaryNewPanel').classList.remove('active');
+      salaryCurrentEmployee = null;
+      return;
+    }
+    try {
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      const records = await res.json();
+      const rec = records.find(r => String(r.id) === String(id));
+      if (!rec) return;
+      salaryCurrentEmployee = rec;
+      const info = rec.data || {};
+      document.getElementById('salaryEmpName').textContent = `${info.firstName || ''} ${info.lastName || ''}`;
+      document.getElementById('salaryEmpInfo').textContent = `${info.jobTitle || '-'} | کُد: ${info.jobCode || '-'}`;
+      document.getElementById('salaryEmployeeHeader').style.display = 'block';
+      document.getElementById('salFirstName').value = info.firstName || '';
+      document.getElementById('salLastName').value = info.lastName || '';
+      document.getElementById('salFatherName').value = info.fatherName || '';
+      document.getElementById('salAppointmentDate').value = info.currentPositionDate || '';
+      document.getElementById('salJobTitle').value = info.jobTitle || '';
+      document.getElementById('salSchoolName').value = rec.schoolname || '';
+      showSalaryPanel('saved');
+      await loadSalaryYearsTree(id);
+    } catch (e) { console.error(e); }
+  }
+  window.onSalaryEmployeeChange = onSalaryEmployeeChange;
+
+  function showSalaryPanel(name) {
+    document.querySelectorAll('.salary-panel').forEach(p => p.classList.remove('active'));
+    if (name === 'saved') document.getElementById('salarySavedPanel').classList.add('active');
+    if (name === 'new') {
+      document.getElementById('salaryNewPanel').classList.add('active');
+      populateSalaryMonthSelect();
+      ['newSalaryYear','salBase','salOtherBase','salProfessional','salOtherProfessional','salFood','salOtherFood','salAllowance','salOtherAllowance','salOtherIncrease','salAbsence','salTax','salOtherTax','salTax10','salDeductions','salOtherDeductions','attPresent','attAbsent','attVacation','attSick','attEssential','attMaternity','attServiceCenter','attServiceProvince','attHajj','attHolidays','attOther'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      document.getElementById('newSalaryMonth').value = '';
+      document.getElementById('salTotalEntitlement').value = '';
+      document.getElementById('salTotalDeductions').value = '';
+      document.getElementById('salNetPay').value = '';
+      document.getElementById('attTotal').value = '';
+      document.getElementById('attendancePanel').style.display = 'none';
+      document.getElementById('btnOpenAttendance').style.display = 'none';
+      document.getElementById('btnApproveSalary').style.display = 'none';
+      document.getElementById('btnSaveSalaryDraft').style.display = 'inline-block';
+      salaryCurrentDraftId = null;
+      updateSalaryStatusBar(false, false, false);
+    }
+  }
+  window.showSalaryPanel = showSalaryPanel;
+
+  function updateSalaryStatusBar(hasDraft, hasAttendance, isApproved) {
+    const bar = document.getElementById('salaryStatusBar');
+    if (!bar) return;
+    if (isApproved) { bar.style.display = 'block'; bar.style.background = '#dcfce7'; bar.style.border = '2px solid #10b981'; bar.style.color = '#065f46'; bar.innerHTML = '✅ <strong>این معاش ارسال شده و قفل می‌باشد.</strong>'; }
+    else if (hasDraft && !hasAttendance) { bar.style.display = 'block'; bar.style.background = '#fef3c7'; bar.style.border = '2px solid #f59e0b'; bar.style.color = '#92400e'; bar.innerHTML = '⚠️ <strong>توجه:</strong> تا زمانیکه راپور حاضری را درج نکنید، معاش قابل ارسال به آمریت نیست.'; }
+    else if (hasDraft && hasAttendance) { bar.style.display = 'block'; bar.style.background = '#dbeafe'; bar.style.border = '2px solid #3b82f6'; bar.style.color = '#1e40af'; bar.innerHTML = '✅ <strong>راپور حاضری ثبت شده است.</strong>'; }
+    else { bar.style.display = 'none'; }
+  }
+  window.updateSalaryStatusBar = updateSalaryStatusBar;
+
+  function numVal(id) { const v = document.getElementById(id).value.trim(); return Number(normalizeDigits(v)) || 0; }
+  function calcSalaryTotals() {
+    const totalEnt = numVal('salBase') + numVal('salOtherBase') + numVal('salProfessional') + numVal('salOtherProfessional') + numVal('salFood') + numVal('salOtherFood') + numVal('salAllowance') + numVal('salOtherAllowance') + numVal('salOtherIncrease');
+    const totalDed = numVal('salAbsence') + numVal('salTax') + numVal('salOtherTax') + numVal('salTax10') + numVal('salDeductions') + numVal('salOtherDeductions');
+    document.getElementById('salTotalEntitlement').value = totalEnt;
+    document.getElementById('salTotalDeductions').value = totalDed;
+    document.getElementById('salNetPay').value = totalEnt - totalDed;
+  }
+  window.calcSalaryTotals = calcSalaryTotals;
+
+  function calcAttendance() {
+    const total = numVal('attPresent') + numVal('attAbsent') + numVal('attVacation') + numVal('attSick') + numVal('attEssential') + numVal('attMaternity') + numVal('attServiceCenter') + numVal('attServiceProvince') + numVal('attHajj') + numVal('attHolidays') + numVal('attOther');
+    document.getElementById('attTotal').value = total;
+  }
+  window.calcAttendance = calcAttendance;
+
+  async function saveSalaryDraft() {
+    if (!salaryCurrentEmployee) { showToast('❌ کارمند انتخاب نشده', true); return; }
+    const year = document.getElementById('newSalaryYear').value.trim();
+    const month = document.getElementById('newSalaryMonth').value;
+    if (!year || !month) { showToast('❌ سال و ماه الزامی است', true); return; }
+    if (!numVal('salBase')) { showToast('❌ معاش الزامی است', true); return; }
+    const payload = {
+      record_id: salaryCurrentEmployee.id, year, month,
+      bank_number: document.getElementById('salBankNumber').value.trim(),
+      appointment_letter: document.getElementById('salAppointmentLetter').value.trim(),
+      base_salary: numVal('salBase'), other_base: numVal('salOtherBase'),
+      professional: numVal('salProfessional'), other_professional: numVal('salOtherProfessional'),
+      food: numVal('salFood'), other_food: numVal('salOtherFood'),
+      allowance: numVal('salAllowance'), other_allowance: numVal('salOtherAllowance'),
+      other_increase: numVal('salOtherIncrease'),
+      total_entitlement: numVal('salTotalEntitlement'),
+      absence: numVal('salAbsence'), tax: numVal('salTax'), other_tax: numVal('salOtherTax'),
+      tax_10: numVal('salTax10'), deductions: numVal('salDeductions'), other_deductions: numVal('salOtherDeductions'),
+      total_deductions: numVal('salTotalDeductions'), net_pay: numVal('salNetPay'),
+      status: 'draft'
+    };
+    try {
+      const url = salaryCurrentDraftId ? `/api/salaries/${salaryCurrentDraftId}` : '/api/salaries';
+      const method = salaryCurrentDraftId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(payload) });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast('✅ معاش ذخیره شد (پیش‌نویس)');
+        salaryCurrentDraftId = data.id || salaryCurrentDraftId;
+        document.getElementById('btnOpenAttendance').style.display = 'inline-block';
+        document.getElementById('btnSaveSalaryDraft').textContent = '💾 به‌روزرسانی';
+        updateSalaryStatusBar(true, false, false);
+      } else { showToast('❌ ' + (data.error || 'خطا'), true); }
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.saveSalaryDraft = saveSalaryDraft;
+
+  function openAttendancePanel() {
+    if (!salaryCurrentDraftId) { showToast('❌ ابتدا معاش را ثبت کنید', true); return; }
+    document.getElementById('attendancePanel').style.display = 'block';
+    document.getElementById('attendancePanel').scrollIntoView({ behavior: 'smooth' });
+  }
+  window.openAttendancePanel = openAttendancePanel;
+
+  async function saveAttendanceDraft() {
+    if (!salaryCurrentDraftId) { showToast('❌ معاش ثبت نشده', true); return; }
+    const payload = {
+      salary_id: salaryCurrentDraftId,
+      present: numVal('attPresent'), absent: numVal('attAbsent'),
+      vacation: numVal('attVacation'), sick: numVal('attSick'),
+      essential: numVal('attEssential'), maternity: numVal('attMaternity'),
+      service_center: numVal('attServiceCenter'), service_province: numVal('attServiceProvince'),
+      hajj: numVal('attHajj'), holidays: numVal('attHolidays'),
+      other: numVal('attOther'), total_days: numVal('attTotal')
+    };
+    try {
+      const res = await fetch('/api/attendance', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(payload) });
+      if (res.ok) {
+        showToast('✅ راپور حاضری ذخیره شد');
+        document.getElementById('btnApproveSalary').style.display = 'inline-block';
+        document.getElementById('btnApproveSalary').textContent = '✅ ارسال به آمریت';
+        updateSalaryStatusBar(true, true, false);
+      } else { showToast('❌ خطا', true); }
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.saveAttendanceDraft = saveAttendanceDraft;
+
+  async function approveSalary() {
+    if (!salaryCurrentDraftId) return;
+    if (!confirm('⚠️ پس از ارسال قفل می‌شود. مطمئنید؟')) return;
+    try {
+      const res = await fetch(`/api/salaries/${salaryCurrentDraftId}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ status: 'approved' }) });
+      if (res.ok) {
+        showToast('✅ ارسال شد');
+        document.getElementById('btnApproveSalary').style.display = 'none';
+        document.getElementById('btnSaveSalaryDraft').style.display = 'none';
+        document.getElementById('btnOpenAttendance').style.display = 'none';
+        updateSalaryStatusBar(true, true, true);
+      } else showToast('❌ خطا', true);
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.approveSalary = approveSalary;
+
+  async function loadSalaryYearsTree(recordId) {
+    const tree = document.getElementById('salaryYearsTree');
+    tree.innerHTML = '<div class="empty-state">در حال بارگذاری...</div>';
+    try {
+      const res = await fetch(`/api/salaries?record_id=${recordId}`, { headers: { 'Authorization': 'Bearer ' + token } });
+      const salaries = await res.json();
+      if (!Array.isArray(salaries) || salaries.length === 0) { tree.innerHTML = '<div class="empty-state">معاشی ثبت نشده</div>'; return; }
+      const byYear = {};
+      salaries.forEach(s => { if (!byYear[s.year]) byYear[s.year] = []; byYear[s.year].push(s); });
+      const MONTHS_ORDER = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
+      let html = '';
+      const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
+      years.forEach((year) => {
+        const months = byYear[year].sort((a, b) => MONTHS_ORDER.indexOf(a.month) - MONTHS_ORDER.indexOf(b.month));
+        let totalNet = 0;
+        months.forEach(m => { totalNet += Number(m.net_pay) || 0; });
+        let rowsHtml = '';
+        months.forEach(m => {
+          const isApproved = m.status === 'approved';
+          const statusBg = isApproved ? '#dcfce7' : '#fef3c7';
+          const statusColor = isApproved ? '#15803d' : '#92400e';
+          const statusText = isApproved ? 'تایید شده' : 'پیش‌نویس';
+          const netPay = Number(m.net_pay || 0).toLocaleString();
+          rowsHtml += `
+            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div style="display:flex; align-items:center; gap:15px; min-width:150px;">
+                <div style="width:45px; height:45px; background:${statusBg}; border-radius:50%; display:flex; justify-content:center; align-items:center; color:${statusColor}; font-size:18px;">📅</div>
+                <div>
+                  <div style="font-size:15px; font-weight:bold; color:#1e293b;">${escapeHtml(m.month)}</div>
+                  <div style="font-size:11px; color:${statusColor}; font-weight:bold;">${statusText}</div>
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; flex:1; min-width:200px;">
+                <div><div style="font-size:11px; color:#64748b;">مجموعه استحقاق</div><div style="font-size:13px; font-weight:bold; color:#065f46;">${Number(m.total_entitlement || 0).toLocaleString()}</div></div>
+                <div><div style="font-size:11px; color:#64748b;">مجموعه کسرات</div><div style="font-size:13px; font-weight:bold; color:#b91c1c;">${Number(m.total_deductions || 0).toLocaleString()}</div></div>
+              </div>
+              <div style="min-width:120px; text-align:left;">
+                <div style="font-size:11px; color:#64748b;">مبلغ قابل پرداخت</div>
+                <div style="font-size:16px; font-weight:bold; color:#7c3aed;">${netPay} <span style="font-size:10px; font-weight:normal; color:#64748b;">افغانی</span></div>
+              </div>
+            </div>
+          `;
+        });
+        html += `
+          <div style="margin-bottom:20px; background:linear-gradient(135deg, #ffffff, #f8fafc); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid #e2e8f0; overflow:hidden;">
+            <div style="padding:15px 20px; display:flex; justify-content:space-between; align-items:center; background:#fff; border-bottom:1px solid #f1f5f9;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; background:#e0f2fe; color:#0284c7; border-radius:10px; display:flex; justify-content:center; align-items:center; font-size:18px;">📅</div>
+                <div>
+                  <div style="font-size:16px; font-weight:bold; color:#0f172a;">سال ${escapeHtml(year)}</div>
+                  <div style="font-size:12px; color:#64748b;">${months.length} ماه ثبت شده</div>
+                </div>
+              </div>
+              <div style="text-align:left;">
+                <div style="font-size:11px; color:#64748b;">مجموع پرداختی سال</div>
+                <div style="font-size:14px; font-weight:bold; color:#059669;">${totalNet.toLocaleString()} <span style="font-size:10px; font-weight:normal;">افغانی</span></div>
+              </div>
+            </div>
+            <div style="padding:15px 20px; background:#f8fafc;">${rowsHtml}</div>
+          </div>
+        `;
+      });
+      tree.innerHTML = html;
+    } catch (e) { console.error(e); tree.innerHTML = '<div class="empty-state" style="color:red;">خطا</div>'; }
+  }
+  window.loadSalaryYearsTree = loadSalaryYearsTree;
+
+  const debounceSalarySearch = debounce(loadSalarySummary, 400);
+  window.debounceSalarySearch = debounceSalarySearch;
+
+  async function loadSalarySummary() {
+    const q = document.getElementById('salarySearchInput').value.trim();
+    const tbody = document.getElementById('salarySummaryBody');
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">در حال بارگذاری...</td></tr>';
+    try {
+      const res = await fetch(`/api/salaries?search=${encodeURIComponent(q)}`, { headers: { 'Authorization': 'Bearer ' + token } });
+      const list = await res.json();
+      if (!Array.isArray(list) || list.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="empty-state">یافت نشد</td></tr>'; return; }
+      let html = '';
+      list.forEach((s, idx) => {
+        html += `<tr><td>${idx + 1}</td><td><b>${escapeHtml(s.first_name || '')} ${escapeHtml(s.last_name || '')}</b></td><td>${escapeHtml(s.schoolname || '')}</td><td>${s.total_entitlement || 0}</td><td>${s.total_deductions || 0}</td><td><strong style="color:#7c3aed;">${s.net_pay || 0}</strong></td><td>${s.att_present || 0}</td><td>${s.att_absent || 0}</td><td>${s.att_sick || 0}</td><td><button class="btn-action btn-view" onclick="viewSalaryDetail(${s.id})">👁️</button></td></tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch (e) { tbody.innerHTML = '<tr><td colspan="10" class="empty-state" style="color:red;">خطا</td></tr>'; }
+  }
 
   function logout() { localStorage.removeItem('hr_token'); localStorage.removeItem('hr_user'); localStorage.removeItem('hr_schoolname'); localStorage.removeItem('hr_district'); window.location.href = '/'; }
   window.logout = logout;

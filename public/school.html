@@ -417,6 +417,7 @@
           <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
             <button class="btn" type="button" onclick="printEvaluationList()" style="background:#7c3aed; padding:8px 14px; font-size:13px;">🖨️ پرینت ارزیابی‌ها</button>
             <button class="btn" type="button" onclick="exportEvaluationExcel()" style="background:#059669; padding:8px 14px; font-size:13px;">📊 خروجی اکسل</button>
+            <button class="btn" type="button" onclick="printUnifiedEvaluationTable()" style="background:#0f766e; padding:8px 14px; font-size:13px;">🖨️ پرینت جدول توحیدی معلمین</button>
             <label class="toggle-switch"><input type="checkbox" id="evalShowToggle" checked onchange="toggleEvalListVisibility()"><span>👁️ نمایش</span></label>
           </div>
         </div>
@@ -442,6 +443,12 @@
         <div class="grid-4">
           <div class="form-group"><label>👤 کارمند *</label><select id="salaryEmployeeSelect" onchange="onSalaryEmployeeChange()"><option value="">— ابتدا کارمند را انتخاب کنید —</option></select></div>
         </div>
+      </div>
+
+      <!-- دکمه های فرم م ۴۰ -->
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 15px;">
+        <button class="btn" type="button" onclick="printFormM40()" style="background:#7c3aed; padding:8px 16px; font-size:13px;">🖨️ پرینت فرم م ۴۰ (دفتر معاش)</button>
+        <button class="btn" type="button" onclick="exportFormM40Excel()" style="background:#059669; padding:8px 16px; font-size:13px;">📊 خروجی اکسل فرم م ۴۰</button>
       </div>
 
       <div id="salaryEmployeeHeader" style="display:none;">
@@ -2185,6 +2192,392 @@
     downloadCsv('خروجی_معاشات', columns, cachedSalarySummary);
   }
   window.exportSalarySummaryExcel = exportSalarySummaryExcel;
+
+  // ═══════════════════════════════════════════════════════════
+  // توابع اختصاصی پرینت و اکسل فرم م ۴۰ (دفتر معاش و کسرات)
+  // ═══════════════════════════════════════════════════════════
+
+  async function getEmployeeSalaryDataForM40() {
+      if (!salaryCurrentEmployee) {
+          showToast('❌ لطفاً ابتدا یک کارمند را از منوی انتخاب کارمند انتخاب کنید.', true);
+          return null;
+      }
+
+      try {
+          // دریافت لیست معاشات کارمند
+          const res = await fetch(`/api/salaries?record_id=${salaryCurrentEmployee.id}`, {
+              headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const salaries = await res.json();
+          
+          if (!Array.isArray(salaries) || salaries.length === 0) {
+              showToast('❌ برای این کارمند هیچ معاشی ثبت نشده است.', true);
+              return null;
+          }
+
+          // مرتب سازی بر اساس سال و ماه
+          const MONTHS_ORDER = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
+          salaries.sort((a, b) => {
+              if (a.year !== b.year) return Number(a.year) - Number(b.year);
+              return MONTHS_ORDER.indexOf(a.month) - MONTHS_ORDER.indexOf(b.month);
+          });
+
+          return salaries;
+      } catch (e) {
+          console.error(e);
+          showToast('❌ خطا در دریافت اطلاعات معاشات', true);
+          return null;
+      }
+  }
+
+  function generateM40TableHTML(salaries, isPrint = false) {
+      const info = salaryCurrentEmployee.data || {};
+      
+      // محاسبه مجموع‌ها
+      let totalBase = 0, totalFood = 0, totalAllowance = 0, totalEntitlement = 0;
+      let totalAbsence = 0, totalTax = 0, totalDeductions = 0, totalNetPay = 0;
+
+      salaries.forEach(s => {
+          totalBase += Number(s.base_salary || 0);
+          totalFood += Number(s.food || 0);
+          totalAllowance += Number(s.allowance || 0);
+          totalEntitlement += Number(s.total_entitlement || 0);
+          totalAbsence += Number(s.absence || 0);
+          totalTax += Number(s.tax || 0);
+          totalDeductions += Number(s.total_deductions || 0);
+          totalNetPay += Number(s.net_pay || 0);
+      });
+
+      // ساخت هدر فرم
+      let html = `
+      <div style="text-align:center; margin-bottom:15px;">
+          <h3 style="margin:0; font-size:16px;">فرم م ۴۰ دفتر معاش و کسرات</h3>
+          <h4 style="margin:5px 0; font-size:14px;">مکتب ابتدایی ${escapeHtml(user.schoolname || '')}</h4>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:11px; margin-bottom:15px; border:1px solid #000;">
+          <tr>
+              <td style="border:1px solid #000; padding:5px; background:#f0f0f0; font-weight:bold; width:15%;">اسم:</td>
+              <td style="border:1px solid #000; padding:5px; width:35%;">${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</td>
+              <td style="border:1px solid #000; padding:5px; background:#f0f0f0; font-weight:bold; width:15%;">ولد:</td>
+              <td style="border:1px solid #000; padding:5px; width:35%;">${escapeHtml(info.fatherName || '')}</td>
+          </tr>
+          <tr>
+              <td style="border:1px solid #000; padding:5px; background:#f0f0f0; font-weight:bold;">نمبر:</td>
+              <td style="border:1px solid #000; padding:5px;">${escapeHtml(info.jobCode || '')}</td>
+              <td style="border:1px solid #000; padding:5px; background:#f0f0f0; font-weight:bold;">آدرس:</td>
+              <td style="border:1px solid #000; padding:5px;">${escapeHtml(info.originProvince || '')} ${escapeHtml(info.originDistrict || '')}</td>
+          </tr>
+      </table>
+
+      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center; border:1px solid #000;">
+          <thead>
+              <tr style="background:#f0f0f0;">
+                  <th style="border:1px solid #000; padding:4px;" rowspan="2">ماه</th>
+                  <th style="border:1px solid #000; padding:4px;" colspan="3">استحقاق</th>
+                  <th style="border:1px solid #000; padding:4px;" colspan="3">کسورات</th>
+                  <th style="border:1px solid #000; padding:4px;" rowspan="2">مبلغ قابل پرداخت</th>
+              </tr>
+              <tr style="background:#f0f0f0;">
+                  <th style="border:1px solid #000; padding:4px;">رتبوی (معاش)</th>
+                  <th style="border:1px solid #000; padding:4px;">ماکول</th>
+                  <th style="border:1px solid #000; padding:4px;">سایر (حق‌الزحمه)</th>
+                  <th style="border:1px solid #000; padding:4px;">غیرحاضری</th>
+                  <th style="border:1px solid #000; padding:4px;">مالیات</th>
+                  <th style="border:1px solid #000; padding:4px;">سایر کسورات</th>
+              </tr>
+          </thead>
+          <tbody>
+      `;
+
+      salaries.forEach(s => {
+          html += `
+              <tr>
+                  <td style="border:1px solid #000; padding:4px; font-weight:bold;">${escapeHtml(s.month)}</td>
+                  <td style="border:1px solid #000; padding:4px;">${Number(s.base_salary || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${Number(s.food || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${Number(s.allowance || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${Number(s.absence || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${Number(s.tax || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${Number(s.total_deductions || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; font-weight:bold; background:#e0f2fe;">${Number(s.net_pay || 0).toLocaleString()}</td>
+              </tr>
+          `;
+      });
+
+      // ردیف مجموع
+      html += `
+              <tr style="background:#f8fafc; font-weight:bold;">
+                  <td style="border:1px solid #000; padding:4px;">مجموعه</td>
+                  <td style="border:1px solid #000; padding:4px;">${totalBase.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${totalFood.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${totalAllowance.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${totalAbsence.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${totalTax.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px;">${totalDeductions.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; background:#e0f2fe;">${totalNetPay.toLocaleString()}</td>
+              </tr>
+          </tbody>
+      </table>
+      `;
+
+      if (!isPrint) {
+          // برای نمایش در صفحه (اختیاری)
+          return html;
+      }
+
+      return html;
+  }
+
+  async function printFormM40() {
+      const salaries = await getEmployeeSalaryDataForM40();
+      if (!salaries) return;
+
+      const html = generateM40TableHTML(salaries, true);
+      
+      // استفاده از تابع کمکی موجود در کد اصلی برای پرینت
+      printHtmlDocument(html, `فرم م ۴۰ - ${salaryCurrentEmployee.data.firstName || ''}`, 'A4 portrait');
+  }
+  window.printFormM40 = printFormM40;
+
+  async function exportFormM40Excel() {
+      const salaries = await getEmployeeSalaryDataForM40();
+      if (!salaries) return;
+
+      const info = salaryCurrentEmployee.data || {};
+      
+      // ساختار ستون‌ها برای اکسل
+      const columns = [
+          ['ماه', s => s.month],
+          ['رتبوی (معاش)', s => s.base_salary],
+          ['ماکول', s => s.food],
+          ['سایر (حق‌الزحمه)', s => s.allowance],
+          ['مجموع استحقاق', s => s.total_entitlement],
+          ['غیرحاضری', s => s.absence],
+          ['مالیات', s => s.tax],
+          ['سایر کسورات', s => s.total_deductions],
+          ['مجموع کسورات', s => s.total_deductions],
+          ['مبلغ قابل پرداخت', s => s.net_pay]
+      ];
+
+      // محاسبه مجموع برای ردیف آخر
+      let totalBase = 0, totalFood = 0, totalAllowance = 0, totalEntitlement = 0;
+      let totalAbsence = 0, totalTax = 0, totalDeductions = 0, totalNetPay = 0;
+
+      salaries.forEach(s => {
+          totalBase += Number(s.base_salary || 0);
+          totalFood += Number(s.food || 0);
+          totalAllowance += Number(s.allowance || 0);
+          totalEntitlement += Number(s.total_entitlement || 0);
+          totalAbsence += Number(s.absence || 0);
+          totalTax += Number(s.tax || 0);
+          totalDeductions += Number(s.total_deductions || 0);
+          totalNetPay += Number(s.net_pay || 0);
+      });
+
+      // ساخت CSV دستی
+      let csv = '\uFEFF';
+      
+      // هدر اطلاعات کارمند
+      csv += `"فرم م ۴۰ دفتر معاش و کسرات"\n`;
+      csv += `"اسم:","${info.firstName || ''} ${info.lastName || ''}","ولد:","${info.fatherName || ''}"\n`;
+      csv += `"نمبر:","${info.jobCode || ''}","مکتب:","${user.schoolname || ''}"\n\n`;
+
+      // هدر جدول
+      csv += columns.map(c => `"${c[0]}"`).join(',') + '\n';
+
+      // داده‌ها
+      salaries.forEach(s => {
+          csv += columns.map(c => {
+              let val = c[1](s);
+              if (val === null || val === undefined) val = '';
+              return `"${String(val).replace(/,/g, '،')}"`;
+          }).join(',') + '\n';
+      });
+
+      // ردیف مجموع
+      csv += `"مجموعه","${totalBase}","${totalFood}","${totalAllowance}","${totalEntitlement}","${totalAbsence}","${totalTax}","${totalDeductions}","${totalDeductions}","${totalNetPay}"\n`;
+
+      // دانلود فایل
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `فرم_م۴۰_${info.firstName || 'کارمند'}_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      showToast('✅ خروجی اکسل فرم م ۴۰ دانلود شد.');
+  }
+  window.exportFormM40Excel = exportFormM40Excel;
+
+  // ═══════════════════════════════════════════════════════════
+  // پرینت جدول توحیدی ارزیابی معلمین (دقیقاً مطابق فرم فیزیکی)
+  // ═══════════════════════════════════════════════════════════
+
+  async function printUnifiedEvaluationTable() {
+      if (!cachedEvaluations || cachedEvaluations.length === 0) {
+          showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true);
+          return;
+      }
+
+      try {
+          // دریافت اطلاعات کامل کارمندان برای تکمیل ستون‌های جدول
+          const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+          const records = await res.json();
+          
+          // تبدیل به دیکشنری برای دسترسی سریع‌تر
+          const recordsMap = {};
+          if (Array.isArray(records)) {
+              records.forEach(r => {
+                  recordsMap[r.id] = r.data || {};
+              });
+          }
+
+          // مرتب‌سازی بر اساس تاریخ ارزیابی یا نام
+          const sortedEvals = [...cachedEvaluations].sort((a, b) => {
+              return (a.first_name || '').localeCompare(b.first_name || '');
+          });
+
+          // ساخت هدر فرم
+          let html = `
+          <div style="text-align:center; margin-bottom:15px; border-bottom:2px solid #000; padding-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <div style="width:20%; text-align:center;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=" alt="لوگو" style="height:50px; opacity:0.3;"></div>
+                  <div style="width:60%;">
+                      <h3 style="margin:0; font-size:16px;">جمهوری اسلامی افغانستان</h3>
+                      <h4 style="margin:2px 0; font-size:14px;">وزارت معارف</h4>
+                      <h5 style="margin:2px 0; font-size:12px;">معینیت مالی و اداری</h5>
+                      <h5 style="margin:2px 0; font-size:12px;">ریاست عمومی امور کارکنان</h5>
+                      <h5 style="margin:2px 0; font-size:12px;">آمریت ارزیابی اجرائات</h5>
+                      <h5 style="margin:2px 0; font-size:11px;">مدیریت عمومی ارزیابی اجرائات معلمان و استادان</h5>
+                  </div>
+                  <div style="width:20%; text-align:center;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=" alt="لوگو" style="height:50px; opacity:0.3;"></div>
+              </div>
+              <h4 style="margin:5px 0; font-size:14px; border:1px solid #000; padding:5px; display:inline-block;">جدول توحیدی ارزیابی اجرائات سابقه معلمان و مدرسین معارف — ${escapeHtml(user.schoolname || 'مکتب')}</h4>
+          </div>
+          
+          <table style="width:100%; border-collapse:collapse; font-size:9px; text-align:center; border:1px solid #000;">
+              <thead>
+                  <tr style="background:#f0f0f0; font-weight:bold;">
+                      <th style="border:1px solid #000; padding:3px;" rowspan="2">شماره</th>
+                      <th style="border:1px solid #000; padding:3px;" colspan="4">شهرت</th>
+                      <th style="border:1px solid #000; padding:3px;" colspan="10">مشخصات وظیفوی</th>
+                      <th style="border:1px solid #000; padding:3px;" colspan="9">نتیجه ارزیابی</th>
+                  </tr>
+                  <tr style="background:#f0f0f0; font-weight:bold;">
+                      <!-- شهرت -->
+                      <th style="border:1px solid #000; padding:3px;">اسم</th>
+                      <th style="border:1px solid #000; padding:3px;">ولد</th>
+                      <th style="border:1px solid #000; padding:3px;">ولدیت</th>
+                      <th style="border:1px solid #000; padding:3px;">کود تشکیل</th>
+                      
+                      <!-- مشخصات وظیفوی -->
+                      <th style="border:1px solid #000; padding:3px;">نوع قرار</th>
+                      <th style="border:1px solid #000; padding:3px;">درجه تحصیل</th>
+                      <th style="border:1px solid #000; padding:3px;">جنسیت</th>
+                      <th style="border:1px solid #000; padding:3px;">وظیفه</th>
+                      <th style="border:1px solid #000; padding:3px;">نام مکتب/اداره مربوطه</th>
+                      <th style="border:1px solid #000; padding:3px;">ناحیه/ولسوالی</th>
+                      <th style="border:1px solid #000; padding:3px;">تاریخ تقرر فعلی</th>
+                      <th style="border:1px solid #000; padding:3px;">بست موجود</th>
+                      <th style="border:1px solid #000; padding:3px;">قدم</th>
+                      <th style="border:1px solid #000; padding:3px;">بست</th>
+
+                      <!-- نتیجه ارزیابی -->
+                      <th style="border:1px solid #000; padding:3px;">تاریخ ارزیابی</th>
+                      <th style="border:1px solid #000; padding:3px;">نمره از (۱۰۰)</th>
+                      <th style="border:1px solid #000; padding:3px;">نتیجه نهایی</th>
+                      <th style="border:1px solid #000; padding:3px;">درصد</th>
+                      <th style="border:1px solid #000; padding:3px;">امتیاز</th>
+                      <th style="border:1px solid #000; padding:3px;">ملاحظات</th>
+                  </tr>
+              </thead>
+              <tbody>
+          `;
+
+          // پر کردن سطرها
+          sortedEvals.forEach((ev, index) => {
+              // پیدا کردن اطلاعات کامل کارمند بر اساس record_id
+              const recData = recordsMap[ev.record_id] || {};
+              
+              // استخراج مقادیر با مقادیر پیش‌فرض
+              const firstName = escapeHtml(ev.first_name || recData.firstName || '');
+              const lastName = escapeHtml(ev.last_name || recData.lastName || '');
+              const fatherName = escapeHtml(ev.father_name || recData.fatherName || '');
+              const grandFatherName = escapeHtml(ev.grandfather_name || recData.grandfatherName || '');
+              const jobCode = escapeHtml(ev.job_code || recData.jobCode || '');
+              
+              const jobTitle = escapeHtml(ev.job_title || recData.jobTitle || '');
+              const degree = escapeHtml(recData.degree || '');
+              const gender = escapeHtml(recData.gender || '');
+              const schoolName = escapeHtml(user.schoolname || '');
+              const district = escapeHtml(recData.originDistrict || '');
+              const currentPosDate = escapeHtml(recData.currentPositionDate || '');
+              
+              const bust = escapeHtml(ev.bust || recData.bust || '');
+              const grade = escapeHtml(ev.grade || recData.grade || '');
+              
+              const evalDate = escapeHtml(ev.eval_date || '');
+              const score = Number(ev.eval_score) || 0;
+              const result = escapeHtml(ev.eval_result || '');
+              
+              // محاسبه درصد و امتیاز (فرضی)
+              const percent = score; 
+              const points = Math.round(score * 0.8); // محاسبه فرضی امتیاز
+
+              html += `
+                  <tr>
+                      <td style="border:1px solid #000; padding:3px;">${index + 1}</td>
+                      
+                      <!-- شهرت -->
+                      <td style="border:1px solid #000; padding:3px; text-align:right;">${firstName} ${lastName}</td>
+                      <td style="border:1px solid #000; padding:3px; text-align:right;">${fatherName}</td>
+                      <td style="border:1px solid #000; padding:3px; text-align:right;">${grandFatherName}</td>
+                      <td style="border:1px solid #000; padding:3px; direction:ltr;">${jobCode}</td>
+                      
+                      <!-- مشخصات وظیفوی -->
+                      <td style="border:1px solid #000; padding:3px;">حکمی</td>
+                      <td style="border:1px solid #000; padding:3px;">${degree}</td>
+                      <td style="border:1px solid #000; padding:3px;">${gender}</td>
+                      <td style="border:1px solid #000; padding:3px;">${jobTitle}</td>
+                      <td style="border:1px solid #000; padding:3px;">${schoolName}</td>
+                      <td style="border:1px solid #000; padding:3px;">${district}</td>
+                      <td style="border:1px solid #000; padding:3px; direction:ltr;">${currentPosDate}</td>
+                      <td style="border:1px solid #000; padding:3px;">${bust}</td>
+                      <td style="border:1px solid #000; padding:3px;">${grade}</td>
+                      <td style="border:1px solid #000; padding:3px;">${bust}</td>
+
+                      <!-- نتیجه ارزیابی -->
+                      <td style="border:1px solid #000; padding:3px; direction:ltr;">${evalDate}</td>
+                      <td style="border:1px solid #000; padding:3px; font-weight:bold;">${score}</td>
+                      <td style="border:1px solid #000; padding:3px; font-weight:bold;">${result}</td>
+                      <td style="border:1px solid #000; padding:3px;">${percent}%</td>
+                      <td style="border:1px solid #000; padding:3px;">${points}</td>
+                      <td style="border:1px solid #000; padding:3px;"></td>
+                  </tr>
+              `;
+          });
+
+          html += `
+              </tbody>
+          </table>
+          <div style="margin-top:20px; text-align:left; font-size:11px;">
+              <p>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</p>
+              <p>مهر و امضا: ____________________</p>
+          </div>
+          `;
+
+          // ارسال به تابع پرینت موجود در کد
+          printHtmlDocument(html, 'جدول توحیدی ارزیابی معلمین', 'A4 landscape');
+
+      } catch (e) {
+          console.error(e);
+          showToast('❌ خطا در تولید جدول پرینت', true);
+      }
+  }
+  window.printUnifiedEvaluationTable = printUnifiedEvaluationTable;
 
   function logout() { localStorage.removeItem('hr_token'); localStorage.removeItem('hr_user'); localStorage.removeItem('hr_schoolname'); localStorage.removeItem('hr_district'); window.location.href = '/'; }
   window.logout = logout;

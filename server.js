@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V19.0 starting...');
+console.log('🔐 Server V19.1 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -42,6 +42,13 @@ const SERVICE_TITLES = ['کارکن خدماتی', 'معتمد جنسی (تحو�
 const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
 
 const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
+
+// ═══════════════════════════════════════════════════════════
+// Regex فرمت‌ها
+// ═══════════════════════════════════════════════════════════
+const JOBCODE_REGEX = /^27-\d{1,3}-\d{1,3}-\d{3,6}$/;
+const TAZKIRA_REGEX = /^[A-Z0-9]{2}-[A-Z0-9]{2}-\d{3}$/;
+const ETAZKIRA_REGEX = /^\d+-\d+-\d+$/;
 
 async function initDB() {
   try {
@@ -141,9 +148,6 @@ async function initDB() {
         );
       `);
 
-      // ═══════════════════════════════════════════════════════════
-      // ⭐ جدول معاشات (Salaries)
-      // ═══════════════════════════════════════════════════════════
       await client.query(`
         CREATE TABLE IF NOT EXISTS salaries (
           id SERIAL PRIMARY KEY,
@@ -180,9 +184,6 @@ async function initDB() {
         );
       `);
 
-      // ═══════════════════════════════════════════════════════════
-      // ⭐ جدول راپور حاضری (Attendance) — با ستون holidays
-      // ═══════════════════════════════════════════════════════════
       await client.query(`
         CREATE TABLE IF NOT EXISTS attendance (
           id SERIAL PRIMARY KEY,
@@ -204,10 +205,24 @@ async function initDB() {
         );
       `);
 
-      // ⭐ اضافه کردن ستون holidays به جداول موجود (اگر نیست)
       await client.query(`
         ALTER TABLE attendance ADD COLUMN IF NOT EXISTS holidays REAL DEFAULT 0;
       `);
+
+      // ⭐ ایندکس یکتا برای کد بست و تذکره (برای تضمین در سطح دیتابیس)
+      await client.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_records_jobcode
+          ON records ((data::json->>'jobCode'))
+          WHERE (data::json->>'jobCode') IS NOT NULL
+            AND (data::json->>'jobCode') <> '';
+      `).catch(e => console.log('⚠️ idx_records_jobcode:', e.message));
+
+      await client.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_records_papertazkira
+          ON records ((data::json->>'paperTazkira'))
+          WHERE (data::json->>'paperTazkira') IS NOT NULL
+            AND (data::json->>'paperTazkira') <> '';
+      `).catch(e => console.log('⚠️ idx_records_papertazkira:', e.message));
 
       console.log('✅ جداول دیتابیس آماده شدند.');
     } finally {
@@ -322,12 +337,22 @@ function validateShamsiDateServer(dateStr, fieldName) {
   return null;
 }
 
+// تذکره الکترونیکی: XXXXX-XXXXX-XXXX
 function validateTazkiraServer(tazkiraStr) {
   if (!tazkiraStr) return null;
   const cleaned = normalizeDigits(tazkiraStr).trim();
-  const pattern = /^\d+-\d+-\d+$/;
-  if (!pattern.test(cleaned)) {
+  if (!ETAZKIRA_REGEX.test(cleaned)) {
     return 'فرمت تذکره الکترونیکی باید XXXXX-XXXXX-XXXX باشد';
+  }
+  return null;
+}
+
+// تذکره کاغذی: XX-XX-123
+function validatePaperTazkiraServer(tazkiraStr) {
+  if (!tazkiraStr) return null;
+  const cleaned = normalizeDigits(tazkiraStr).trim().toUpperCase();
+  if (!TAZKIRA_REGEX.test(cleaned)) {
+    return 'فرمت تذکره باید XX-XX-123 باشد (مثال: 12-34-567)';
   }
   return null;
 }
@@ -335,8 +360,7 @@ function validateTazkiraServer(tazkiraStr) {
 function validateJobCodeServer(jobCode) {
   if (!jobCode) return null;
   const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
-  const pattern = /^27-\d{1,3}-\d{1,3}-\d{3,6}$/;
-  if (!pattern.test(cleaned)) {
+  if (!JOBCODE_REGEX.test(cleaned)) {
     return 'فرمت کُد بست باید 27-XX-XX-XXXXX باشد';
   }
   return null;
@@ -345,7 +369,7 @@ function validateJobCodeServer(jobCode) {
 function isValidJobCode(jobCode) {
   if (!jobCode) return false;
   const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
-  return /^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned);
+  return JOBCODE_REGEX.test(cleaned);
 }
 
 function isNoCodeTitle(jobTitle) {
@@ -357,34 +381,96 @@ function isServiceOrSupport(jobTitle) {
   return SERVICE_TITLES.includes(jobTitle);
 }
 
-async function isJobCodeDuplicate(jobCode, excludeRecordId = null) {
-  if (!jobCode) return { duplicate: false, schoolname: null };
+// ═══════════════════════════════════════════════════════════
+// ⭐ توابع بررسی یکتایی کد بست و تذکره (دقیق، با excludeId)
+// ═══════════════════════════════════════════════════════════
+
+// بررسی یکتایی کد بست — تطابق دقیق
+async function checkJobCodeExact(jobCode, excludeRecordId = null) {
+  if (!jobCode) return { exists: false };
   try {
     const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
-    let result;
+    let sql = `SELECT r.id, r.userid, r.data,
+                      COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname,
+                      COALESCE(NULLIF(r.district, ''), u.district) AS district
+               FROM records r LEFT JOIN users u ON u.id = r.userid
+               WHERE r.data::json->>'jobCode' = $1`;
+    const params = [normalizedCode];
     if (excludeRecordId) {
-      result = await pool.query(
-        `SELECT r.id, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname
-         FROM records r LEFT JOIN users u ON u.id = r.userid
-         WHERE CAST(r.data AS TEXT) LIKE $1 AND r.id != $2 LIMIT 1`,
-        [`%"jobCode":"${normalizedCode}"%`, excludeRecordId]
-      );
-    } else {
-      result = await pool.query(
-        `SELECT r.id, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname
-         FROM records r LEFT JOIN users u ON u.id = r.userid
-         WHERE CAST(r.data AS TEXT) LIKE $1 LIMIT 1`,
-        [`%"jobCode":"${normalizedCode}"%`]
-      );
+      params.push(excludeRecordId);
+      sql += ` AND r.id <> $${params.length}`;
     }
-    if (result.rows.length > 0) {
-      return { duplicate: true, schoolname: result.rows[0].schoolname || 'نامشخص' };
-    }
-    return { duplicate: false, schoolname: null };
+    sql += ' LIMIT 1';
+    const result = await pool.query(sql, params);
+    if (result.rows.length === 0) return { exists: false };
+
+    const row = result.rows[0];
+    let info = {};
+    try { info = JSON.parse(row.data || '{}'); } catch (e) {}
+    return {
+      exists: true,
+      recordId: row.id,
+      userid: row.userid,
+      schoolname: row.schoolname || 'نامشخص',
+      district: row.district || '',
+      employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص'
+    };
   } catch (err) {
-    console.error('Duplicate check error:', err.message);
-    return { duplicate: false, schoolname: null };
+    console.error('checkJobCodeExact error:', err.message);
+    return { exists: false };
   }
+}
+
+// بررسی یکتایی تذکره کاغذی — تطابق دقیق
+async function checkTazkiraExact(tazkiraCode, excludeRecordId = null) {
+  if (!tazkiraCode) return { exists: false };
+  try {
+    const cleaned = normalizeDigits(tazkiraCode).trim().toUpperCase();
+    let sql = `SELECT r.id, r.userid, r.data,
+                      COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname,
+                      COALESCE(NULLIF(r.district, ''), u.district) AS district
+               FROM records r LEFT JOIN users u ON u.id = r.userid
+               WHERE r.data::json->>'paperTazkira' = $1`;
+    const params = [cleaned];
+    if (excludeRecordId) {
+      params.push(excludeRecordId);
+      sql += ` AND r.id <> $${params.length}`;
+    }
+    sql += ' LIMIT 1';
+    const result = await pool.query(sql, params);
+    if (result.rows.length === 0) return { exists: false };
+
+    const row = result.rows[0];
+    let info = {};
+    try { info = JSON.parse(row.data || '{}'); } catch (e) {}
+    return {
+      exists: true,
+      recordId: row.id,
+      userid: row.userid,
+      schoolname: row.schoolname || 'نامشخص',
+      district: row.district || '',
+      employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص'
+    };
+  } catch (err) {
+    console.error('checkTazkiraExact error:', err.message);
+    return { exists: false };
+  }
+}
+
+// فرمت پاسخ 409 برای تکرار
+function buildDuplicateResponse(kind, dup, currentUserId) {
+  // kind: 'jobcode' | 'tazkira'
+  const isSameSchool = String(dup.userid) === String(currentUserId);
+  const label = kind === 'jobcode' ? 'کد بست' : 'کد تذکره';
+  return {
+    error: `${label} تکراری است`,
+    code: kind === 'jobcode' ? 'DUPLICATE_JOBCODE' : 'DUPLICATE_TAZKIRA',
+    isSameSchool,
+    schoolname: isSameSchool ? null : dup.schoolname,
+    district: isSameSchool ? null : dup.district,
+    employeeName: isSameSchool ? dup.employeeName : null,
+    recordId: dup.recordId
+  };
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -490,6 +576,85 @@ app.get('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+// ⭐ GET /api/check-jobcode — بررسی کد بست با نام مکتب/کارمند
+// ═══════════════════════════════════════════════════════════
+app.get('/api/check-jobcode', authRequired, async (req, res) => {
+  try {
+    const code = (req.query.code || req.body?.jobCode || '').trim();
+    const excludeId = req.query.excludeId ? parseInt(req.query.excludeId) : null;
+    if (!code) return res.json({ exists: false });
+
+    const dup = await checkJobCodeExact(code, excludeId);
+    if (!dup.exists) return res.json({ exists: false });
+
+    const isSameSchool = String(dup.userid) === String(req.user.id);
+    res.json({
+      exists: true,
+      isSameSchool,
+      recordId: dup.recordId,
+      schoolname: isSameSchool ? null : dup.schoolname,
+      district: isSameSchool ? null : dup.district,
+      employeeName: isSameSchool ? dup.employeeName : null
+    });
+  } catch (err) {
+    console.error('Check jobcode error:', err.message);
+    res.status(500).json({ error: 'خطا در بررسی کد بست' });
+  }
+});
+
+// ⭐ POST /api/check-jobcode (سازگاری با فرانت قدیمی)
+app.post('/api/check-jobcode', authRequired, async (req, res) => {
+  try {
+    const { jobCode, excludeId } = req.body || {};
+    if (!jobCode) return res.json({ exists: false });
+    const dup = await checkJobCodeExact(jobCode, excludeId ? parseInt(excludeId) : null);
+    if (!dup.exists) return res.json({ exists: false });
+    const isSameSchool = String(dup.userid) === String(req.user.id);
+    res.json({
+      exists: true,
+      isSameSchool,
+      recordId: dup.recordId,
+      schoolname: isSameSchool ? null : dup.schoolname,
+      district: isSameSchool ? null : dup.district,
+      employeeName: isSameSchool ? dup.employeeName : null
+    });
+  } catch (err) {
+    console.error('Check jobcode (POST) error:', err.message);
+    res.status(500).json({ error: 'خطا در بررسی کد بست' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// ⭐ GET /api/check-tazkira — بررسی کد تذکره XX-XX-123
+// ═══════════════════════════════════════════════════════════
+app.get('/api/check-tazkira', authRequired, async (req, res) => {
+  try {
+    const code = (req.query.code || '').trim();
+    const excludeId = req.query.excludeId ? parseInt(req.query.excludeId) : null;
+    if (!code) return res.json({ exists: false });
+
+    const fmtErr = validatePaperTazkiraServer(code);
+    if (fmtErr) return res.status(400).json({ error: fmtErr });
+
+    const dup = await checkTazkiraExact(code, excludeId);
+    if (!dup.exists) return res.json({ exists: false });
+
+    const isSameSchool = String(dup.userid) === String(req.user.id);
+    res.json({
+      exists: true,
+      isSameSchool,
+      recordId: dup.recordId,
+      schoolname: isSameSchool ? null : dup.schoolname,
+      district: isSameSchool ? null : dup.district,
+      employeeName: isSameSchool ? dup.employeeName : null
+    });
+  } catch (err) {
+    console.error('Check tazkira error:', err.message);
+    res.status(500).json({ error: 'خطا در بررسی تذکره' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
 // اعتبارسنجی رکورد
 // ═══════════════════════════════════════════════════════════
 async function validateRecordBody(body, excludeId = null) {
@@ -532,10 +697,6 @@ async function validateRecordBody(body, excludeId = null) {
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
     if (!jobCode) return 'کُد بست الزامی است';
     if (!isValidJobCode(jobCode)) return '❌ فرمت کُد بست اشتباه است';
-    const dupResult = await isJobCodeDuplicate(jobCode, excludeId);
-    if (dupResult.duplicate) {
-      return `❌ کُد بست قبلاً در مکتب «${dupResult.schoolname}» ثبت شده است.`;
-    }
     if (!birthDate) return 'تاریخ تولد الزامی است';
     if (!firstAppointmentDate) return 'تاریخ اولین تقرر الزامی است';
     if (!currentPositionDate) return 'تاریخ تقرر فعلی الزامی است';
@@ -556,6 +717,10 @@ async function validateRecordBody(body, excludeId = null) {
   }
   if (eTazkira) {
     const err = validateTazkiraServer(eTazkira);
+    if (err) return '❌ ' + err;
+  }
+  if (paperTazkira) {
+    const err = validatePaperTazkiraServer(paperTazkira);
     if (err) return '❌ ' + err;
   }
   if (birthDate) {
@@ -618,8 +783,34 @@ app.post('/api/records', authRequired, async (req, res) => {
       return res.status(400).json({ error: '❌ لطفاً ابتدا اطلاعات مکتب خود را ثبت کنید' });
     }
 
+    // ---- بررسی تکراری کد بست قبل از هر چیز ----
+    const jobCode = String(body.jobCode || '').trim();
+    if (jobCode) {
+      const dup = await checkJobCodeExact(jobCode, null);
+      if (dup.exists) {
+        return res.status(409).json(buildDuplicateResponse('jobcode', dup, req.user.id));
+      }
+    }
+
+    // ---- بررسی تکراری تذکره کاغذی ----
+    const paperTazkira = String(body.paperTazkira || '').trim();
+    if (paperTazkira) {
+      const fmtErr = validatePaperTazkiraServer(paperTazkira);
+      if (fmtErr) return res.status(400).json({ error: '❌ ' + fmtErr });
+      const dupT = await checkTazkiraExact(paperTazkira, null);
+      if (dupT.exists) {
+        return res.status(409).json(buildDuplicateResponse('tazkira', dupT, req.user.id));
+      }
+    }
+
     const error = await validateRecordBody(body, null);
-    if (error) return res.status(400).json({ error });
+    if (error) {
+      // اگر validateRecordBody خطای تکراری کد بست داد، با 409 برگردان
+      if (error.includes('کُد بست قبلاً')) {
+        return res.status(409).json({ error, code: 'DUPLICATE_JOBCODE' });
+      }
+      return res.status(400).json({ error });
+    }
 
     await pool.query(
       `INSERT INTO records (userid, schoolname, district, data, status)
@@ -630,27 +821,6 @@ app.post('/api/records', authRequired, async (req, res) => {
   } catch (err) {
     console.error('Records POST Error:', err.message);
     res.status(500).json({ error: 'خطا در ثبت رکورد: ' + err.message });
-  }
-});
-
-app.post('/api/check-jobcode', authRequired, async (req, res) => {
-  try {
-    const { jobCode } = req.body || {};
-    if (!jobCode) return res.json({ exists: false });
-    const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
-    const result = await pool.query(
-      `SELECT r.id, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname
-       FROM records r LEFT JOIN users u ON u.id = r.userid
-       WHERE CAST(r.data AS TEXT) LIKE $1 LIMIT 1`,
-      [`%"jobCode":"${normalizedCode}"%`]
-    );
-    if (result.rows.length > 0) {
-      return res.json({ exists: true, schoolname: result.rows[0].schoolname || 'نامشخص' });
-    }
-    res.json({ exists: false });
-  } catch (err) {
-    console.error('Check jobcode error:', err.message);
-    res.status(500).json({ error: 'خطا در بررسی کد بست' });
   }
 });
 
@@ -673,57 +843,60 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 
     if (check.rows.length === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
 
+    const originalData = JSON.parse(check.rows[0].data || '{}');
+
     let finalBody;
     if (req.user.role === 'school') {
-      const originalData = JSON.parse(check.rows[0].data || '{}');
+      // فقط فیلدهای مجاز ویرایش
       finalBody = {
+        ...originalData,
         jobTitle: body.jobTitle !== undefined ? String(body.jobTitle).trim() : originalData.jobTitle,
+        jobCode: body.jobCode !== undefined ? String(body.jobCode).trim() : originalData.jobCode,
+        paperTazkira: body.paperTazkira !== undefined ? String(body.paperTazkira).trim().toUpperCase() : originalData.paperTazkira,
         bust: body.bust !== undefined ? String(body.bust).trim() : originalData.bust,
         grade: body.grade !== undefined ? String(body.grade).trim() : originalData.grade,
         subjectTeaching: body.subjectTeaching !== undefined ? String(body.subjectTeaching).trim() : originalData.subjectTeaching,
         workshopStatus: body.workshopStatus !== undefined ? body.workshopStatus : originalData.workshopStatus,
         workshopTitle: body.workshopTitle !== undefined ? String(body.workshopTitle).trim() : originalData.workshopTitle,
         workshopDuration: body.workshopDuration !== undefined ? String(body.workshopDuration).trim() : originalData.workshopDuration,
+        degree: body.degree !== undefined ? String(body.degree).trim() : originalData.degree,
         totalTeachingHours: body.totalTeachingHours !== undefined ? String(body.totalTeachingHours).trim() : originalData.totalTeachingHours,
+        currentPositionDate: body.currentPositionDate !== undefined ? String(body.currentPositionDate).trim() : originalData.currentPositionDate,
         serviceStatus: body.serviceStatus !== undefined ? body.serviceStatus : (originalData.serviceStatus || 'نخیر'),
         serviceDistrict: body.serviceDistrict !== undefined ? String(body.serviceDistrict).trim() : (originalData.serviceDistrict || ''),
         serviceSchool: body.serviceSchool !== undefined ? String(body.serviceSchool).trim() : (originalData.serviceSchool || ''),
         serviceDate: body.serviceDate !== undefined ? String(body.serviceDate).trim() : (originalData.serviceDate || ''),
-        firstName: originalData.firstName,
-        lastName: originalData.lastName,
-        fatherName: originalData.fatherName,
-        grandfatherName: originalData.grandfatherName,
-        eTazkira: originalData.eTazkira,
-        paperTazkira: originalData.paperTazkira,
-        tazkiraPage: originalData.tazkiraPage,
-        tazkiraVolume: originalData.tazkiraVolume,
-        ethnicity: originalData.ethnicity,
-        gender: originalData.gender,
-        maritalStatus: originalData.maritalStatus,
-        birthDate: originalData.birthDate,
-        birthPlace: originalData.birthPlace,
-        originAddress: originalData.originAddress,
-        currentAddress: originalData.currentAddress,
-        firstAppointmentDate: originalData.firstAppointmentDate,
-        phone: originalData.phone,
-        disability: originalData.disability,
-        positionType: originalData.positionType,
-        employmentType: originalData.employmentType,
-        jobCode: originalData.jobCode,
-        degree: originalData.degree,
-        major: originalData.major,
-        eduInstitute: originalData.eduInstitute,
-        eduInstituteLocation: originalData.eduInstituteLocation,
-        enrollmentDate: originalData.enrollmentDate,
-        graduationDate: originalData.graduationDate,
         agreement: true
       };
     } else {
       finalBody = body;
     }
 
+    // ---- بررسی تکراری کد بست (به‌جز خود رکورد) ----
+    if (finalBody.jobCode) {
+      const dup = await checkJobCodeExact(finalBody.jobCode, id);
+      if (dup.exists) {
+        return res.status(409).json(buildDuplicateResponse('jobcode', dup, req.user.id));
+      }
+    }
+
+    // ---- بررسی تکراری تذکره (به‌جز خود رکورد) ----
+    if (finalBody.paperTazkira) {
+      const fmtErr = validatePaperTazkiraServer(finalBody.paperTazkira);
+      if (fmtErr) return res.status(400).json({ error: '❌ ' + fmtErr });
+      const dupT = await checkTazkiraExact(finalBody.paperTazkira, id);
+      if (dupT.exists) {
+        return res.status(409).json(buildDuplicateResponse('tazkira', dupT, req.user.id));
+      }
+    }
+
     const error = await validateRecordBody(finalBody, id);
-    if (error) return res.status(400).json({ error });
+    if (error) {
+      if (error.includes('کُد بست قبلاً')) {
+        return res.status(409).json({ error, code: 'DUPLICATE_JOBCODE' });
+      }
+      return res.status(400).json({ error });
+    }
 
     const schoolName = check.rows[0].schoolname || '';
     const district = check.rows[0].district || '';
@@ -1041,7 +1214,6 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ ویرایش ارزیابی
 app.put('/api/evaluations/:id', authRequired, async (req, res) => {
   try {
     const id = req.params.id;
@@ -1092,7 +1264,6 @@ app.put('/api/evaluations/:id', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ حذف ارزیابی
 app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
   try {
     const id = req.params.id;
@@ -1115,9 +1286,8 @@ app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ معاشات (Salaries) — با att_holidays و همه فیلدهای حاضری
+// ⭐ معاشات (Salaries)
 // ═══════════════════════════════════════════════════════════
-
 app.get('/api/salaries', authRequired, async (req, res) => {
   try {
     const { record_id, year, search } = req.query;
@@ -1372,7 +1542,7 @@ app.delete('/api/salaries/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ راپور حاضری (Attendance) — با holidays
+// ⭐ راپور حاضری
 // ═══════════════════════════════════════════════════════════
 app.post('/api/attendance', authRequired, async (req, res) => {
   try {
@@ -1571,7 +1741,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 app.get('/api/test', (req, res) => {
-  res.json({ ok: true, version: '19.0.0', timestamp: new Date().toISOString() });
+  res.json({ ok: true, version: '19.1.0', timestamp: new Date().toISOString() });
 });
 
 app.get('*', (req, res) => {
@@ -1583,6 +1753,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V19.0 live on port ' + PORT);
+  console.log('🚀 Server V19.1 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

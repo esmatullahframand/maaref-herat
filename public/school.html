@@ -414,7 +414,9 @@
       <div id="evalListSection" style="margin-top:30px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
           <h5 style="margin:0; color:#10b981; font-size:15px;">📋 لیست ارزیابی‌ها</h5>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="btn" type="button" onclick="printEvaluationList()" style="background:#7c3aed; padding:8px 14px; font-size:13px;">🖨️ پرینت ارزیابی‌ها</button>
+            <button class="btn" type="button" onclick="exportEvaluationExcel()" style="background:#059669; padding:8px 14px; font-size:13px;">📊 خروجی اکسل</button>
             <label class="toggle-switch"><input type="checkbox" id="evalShowToggle" checked onchange="toggleEvalListVisibility()"><span>👁️ نمایش</span></label>
           </div>
         </div>
@@ -544,7 +546,13 @@
       </div>
 
       <div class="card" style="margin-top:20px;">
-        <h4 style="border-bottom:2px solid #e2e8f0; padding-bottom:10px;">🔍 جستجو در معاشات</h4>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:12px;">
+          <h4 style="border:0; padding:0; margin:0;">🔍 جستجو در معاشات</h4>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn" type="button" onclick="printSalarySummary()" style="background:#7c3aed; padding:8px 14px; font-size:13px;">🖨️ پرینت معاشات</button>
+            <button class="btn" type="button" onclick="exportSalarySummaryExcel()" style="background:#059669; padding:8px 14px; font-size:13px;">📊 خروجی اکسل</button>
+          </div>
+        </div>
         <input type="text" id="salarySearchInput" class="search-input" placeholder="🔍 جستجو (نام، تخلص، کد بست)..." oninput="debounceSalarySearch()">
         <div class="salary-table-wrap">
           <table>
@@ -604,6 +612,7 @@
   let editingRecordId = null;
   let salaryCurrentEmployee = null;
   let salaryCurrentDraftId = null;
+  let cachedSalarySummary = [];
 
   const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
   const JOB_TITLES_LIST = ['آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین', 'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش', 'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
@@ -902,6 +911,32 @@
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   window.closeModal = closeModal;
 
+  // تحصیل برای همه بست‌ها الزامی است، به‌جز بست‌های خدماتی/شب‌باش/ملازم/معتمد جنسی/تحویلدار
+  function isEducationExemptJob(jobTitle) {
+    const title = String(jobTitle || '').replace(/[\u200c\s]+/g, ' ').trim();
+    return title.includes('کارکن خدماتی') || title.includes('شب باش') || title.includes('ملازم') ||
+           title.includes('معتمد جنسی') || title.includes('تحویلدار');
+  }
+
+  function validateEducationFields(jobTitle) {
+    if (isEducationExemptJob(jobTitle)) return { valid: true };
+    const fields = [
+      ['degree', 'درجه تحصیل'],
+      ['major', 'رشته تحصیلی'],
+      ['eduInstitute', 'مرجع تحصیلی'],
+      ['eduInstituteLocation', 'موقعیت مرجع تحصیلی'],
+      ['enrollmentDate', 'تاریخ شمولیت'],
+      ['graduationDate', 'تاریخ فراغت']
+    ];
+    const missing = fields.filter(([id]) => !document.getElementById(id)?.value.trim());
+    if (missing.length) return { valid: false, error: 'برای این بست، بخش تحصیل الزامی است. این موارد را تکمیل کنید: ' + missing.map(([, label]) => label).join('، ') };
+    for (const [id, label] of [['enrollmentDate', 'تاریخ شمولیت'], ['graduationDate', 'تاریخ فراغت']]) {
+      const dateResult = validateShamsiDate(document.getElementById(id).value.trim());
+      if (!dateResult.valid) return { valid: false, error: label + ': ' + dateResult.error };
+    }
+    return { valid: true };
+  }
+
   // ═══════════════════════════════════════════════════════════
   // فرم ثبت کارمند
   // ═══════════════════════════════════════════════════════════
@@ -960,6 +995,13 @@
 
     if (!body.jobTitle || !body.firstName || !body.fatherName || !body.grandfatherName) {
       showToast('❌ فیلدهای الزامی را پر کنید', true);
+      btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال';
+      return;
+    }
+
+    const educationCheck = validateEducationFields(body.jobTitle);
+    if (!educationCheck.valid) {
+      showToast('❌ ' + educationCheck.error, true);
       btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال';
       return;
     }
@@ -1279,6 +1321,10 @@
     const currentPositionDate = document.getElementById('eCurrentPositionDate').value.trim();
 
     if (!jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
+    if (!isEducationExemptJob(jobTitle) && !degree) {
+      showToast('❌ برای این بست، درجه تحصیل الزامی است', true);
+      return;
+    }
     if (currentPositionDate) {
       const d = validateShamsiDate(currentPositionDate);
       if (!d.valid) { showToast('❌ تاریخ تقرر فعلی: ' + d.error, true); return; }
@@ -1702,6 +1748,55 @@
     } catch (e) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state" style="color:red;">خطا</td></tr>'; }
   }
 
+  function printEvaluationList() {
+    if (!cachedEvaluations || cachedEvaluations.length === 0) { showToast('❌ ارزیابی‌ای برای پرینت وجود ندارد.', true); return; }
+    let rows = '';
+    cachedEvaluations.forEach((e, i) => {
+      rows += `<tr><td>${i + 1}</td><td>${escapeHtml(e.first_name || '-')}</td><td>${escapeHtml(e.father_name || '-')}</td><td>${escapeHtml(e.job_title || '-')}</td><td>${escapeHtml(e.job_code || '-')}</td><td>${escapeHtml(e.eval_date || '-')}</td><td>${escapeHtml(e.eval_score ?? '-')}</td><td>${escapeHtml(e.eval_result || '-')}</td></tr>`;
+    });
+    const html = `<div style="text-align:center;margin-bottom:16px"><h2>ریاست معارف ولایت هرات</h2><h3>لیست ارزیابی کارمندان - ${escapeHtml(user.schoolname || '')}</h3><p>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</p></div><table><thead><tr><th>#</th><th>اسم</th><th>ولد</th><th>وظیفه</th><th>کد بست</th><th>تاریخ</th><th>نمره</th><th>نتیجه</th></tr></thead><tbody>${rows}</tbody></table>`;
+    printHtmlDocument(html, 'پرینت ارزیابی کارمندان', 'A4 landscape');
+  }
+  window.printEvaluationList = printEvaluationList;
+
+  function exportEvaluationExcel() {
+    if (!cachedEvaluations || cachedEvaluations.length === 0) { showToast('❌ ارزیابی‌ای برای خروجی وجود ندارد.', true); return; }
+    const columns = [
+      ['شماره', (e, i) => i + 1], ['اسم', e => e.first_name], ['ولد', e => e.father_name],
+      ['وظیفه', e => e.job_title], ['کد بست', e => e.job_code], ['تاریخ ارزیابی', e => e.eval_date],
+      ['نمره', e => e.eval_score], ['نتیجه', e => e.eval_result]
+    ];
+    downloadCsv('خروجی_ارزیابی_کارمندان', columns, cachedEvaluations);
+  }
+  window.exportEvaluationExcel = exportEvaluationExcel;
+
+  function printHtmlDocument(html, title, pageSize = 'A4 landscape') {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>body{font-family:Tahoma,Arial,sans-serif;direction:rtl;padding:15px;color:#111}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #333;padding:7px;text-align:center}th{background:#eee} @media print{@page{size:${pageSize};margin:1cm}}</style></head><body>${html}</body></html>`);
+    doc.close();
+    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1200); }, 400);
+  }
+
+  function downloadCsv(filename, columns, rows) {
+    let csv = '\uFEFF' + columns.map(c => '"' + c[0].replace(/"/g, '""') + '"').join(',') + '\n';
+    rows.forEach((row, i) => {
+      csv += columns.map(c => {
+        let value = c[1](row, i);
+        if (value === null || value === undefined) value = '';
+        return '"' + String(value).replace(/"/g, '""').replace(/,/g, '،').replace(/[\r\n]+/g, ' ') + '"';
+      }).join(',') + '\n';
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a'); link.href = url; link.download = filename + '_' + Date.now() + '.csv';
+    document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+    showToast('✅ فایل خروجی دانلود شد. در Excel قابل بازکردن است.');
+  }
+
   function toggleEvalListVisibility() { const chk = document.getElementById('evalShowToggle'), container = document.getElementById('evalListContainer'); if (chk.checked) container.style.display = 'block'; else container.style.display = 'none'; }
   window.toggleEvalListVisibility = toggleEvalListVisibility;
   function deleteEvaluation(id) { if (!confirm('حذف شود؟')) return; fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }).then(r => { if (r.ok) { showToast('🗑️ حذف شد'); loadEvaluationStats(); loadEvaluationList(); } else showToast('خطا', true); }); }
@@ -2057,6 +2152,7 @@
     try {
       const res = await fetch(`/api/salaries?search=${encodeURIComponent(q)}`, { headers: { 'Authorization': 'Bearer ' + token } });
       const list = await res.json();
+      cachedSalarySummary = Array.isArray(list) ? list : [];
       if (!Array.isArray(list) || list.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="empty-state">یافت نشد</td></tr>'; return; }
       let html = '';
       list.forEach((s, idx) => {
@@ -2065,6 +2161,30 @@
       tbody.innerHTML = html;
     } catch (e) { tbody.innerHTML = '<tr><td colspan="10" class="empty-state" style="color:red;">خطا</td></tr>'; }
   }
+
+  function printSalarySummary() {
+    if (!cachedSalarySummary || cachedSalarySummary.length === 0) { showToast('❌ لیست معاشات خالی است؛ ابتدا جستجو کنید.', true); return; }
+    let rows = '';
+    cachedSalarySummary.forEach((s, i) => {
+      rows += `<tr><td>${i + 1}</td><td>${escapeHtml((s.first_name || '') + ' ' + (s.last_name || ''))}</td><td>${escapeHtml(s.schoolname || '')}</td><td>${Number(s.total_entitlement || 0).toLocaleString()}</td><td>${Number(s.total_deductions || 0).toLocaleString()}</td><td>${Number(s.net_pay || 0).toLocaleString()}</td><td>${escapeHtml(s.att_present ?? 0)}</td><td>${escapeHtml(s.att_absent ?? 0)}</td><td>${escapeHtml(s.att_sick ?? 0)}</td></tr>`;
+    });
+    const query = document.getElementById('salarySearchInput').value.trim();
+    const html = `<div style="text-align:center;margin-bottom:16px"><h2>ریاست معارف ولایت هرات</h2><h3>خلاصه معاشات - ${escapeHtml(user.schoolname || '')}</h3><p>جستجو: ${escapeHtml(query || 'همه نتایج')} | تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</p></div><table><thead><tr><th>#</th><th>نام و تخلص</th><th>مکتب</th><th>استحقاق</th><th>کسرات</th><th>قابل پرداخت</th><th>حاضر</th><th>غیر حاضر</th><th>مریض</th></tr></thead><tbody>${rows}</tbody></table>`;
+    printHtmlDocument(html, 'پرینت معاشات', 'A4 landscape');
+  }
+  window.printSalarySummary = printSalarySummary;
+
+  function exportSalarySummaryExcel() {
+    if (!cachedSalarySummary || cachedSalarySummary.length === 0) { showToast('❌ لیست معاشات خالی است؛ ابتدا جستجو کنید.', true); return; }
+    const columns = [
+      ['شماره', (s, i) => i + 1], ['اسم', s => s.first_name], ['تخلص', s => s.last_name],
+      ['مکتب', s => s.schoolname], ['مجموعه استحقاق', s => s.total_entitlement],
+      ['مجموعه کسرات', s => s.total_deductions], ['مبلغ قابل پرداخت', s => s.net_pay],
+      ['حاضر', s => s.att_present], ['غیر حاضر', s => s.att_absent], ['مریض', s => s.att_sick]
+    ];
+    downloadCsv('خروجی_معاشات', columns, cachedSalarySummary);
+  }
+  window.exportSalarySummaryExcel = exportSalarySummaryExcel;
 
   function logout() { localStorage.removeItem('hr_token'); localStorage.removeItem('hr_user'); localStorage.removeItem('hr_schoolname'); localStorage.removeItem('hr_district'); window.location.href = '/'; }
   window.logout = logout;

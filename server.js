@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V19.2 starting...');
+console.log('🔐 Server V19.3 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -47,10 +47,9 @@ const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', '
 // Regex فرمت‌ها
 // ═══════════════════════════════════════════════════════════
 const JOBCODE_REGEX = /^27-\d{1,3}-\d{1,3}-\d{3,6}$/;
-const TAZKIRA_REGEX = /^[A-Z0-9]{2}-[A-Z0-9]{2}-\d{3}$/;
 const ETAZKIRA_REGEX = /^\d+-\d+-\d+$/;
-// ⭐ تذکره کاغذی: فقط عدد (۳ تا ۲۰ رقم) — مثال: 66564646
-const PAPER_TAZKIRA_NUMERIC_REGEX = /^\d{3,20}$/;
+// ⭐ تذکره کاغذی: فقط عدد از ۱ تا ۲۰ رقم
+const PAPER_TAZKIRA_NUMERIC_REGEX = /^\d{1,20}$/;
 
 async function initDB() {
   try {
@@ -358,12 +357,12 @@ function validateTazkiraServer(tazkiraStr) {
   return null;
 }
 
-// ⭐ تذکره کاغذی: فقط عدد (مثال: 66564646)
+// ⭐ تذکره کاغذی: فقط عدد از ۱ تا ۲۰ رقم
 function validatePaperTazkiraServer(tazkiraStr) {
   if (!tazkiraStr) return null;
   const cleaned = normalizeDigits(tazkiraStr).trim().replace(/\s+/g, '');
   if (!PAPER_TAZKIRA_NUMERIC_REGEX.test(cleaned)) {
-    return 'فرمت تذکره کاغذی باید فقط عدد باشد (۳ تا ۲۰ رقم) — مثال: 66564646';
+    return 'فرمت تذکره کاغذی باید فقط عدد باشد (۱ تا ۲۰ رقم) — مثال: 43647374737';
   }
   return null;
 }
@@ -393,10 +392,9 @@ function isServiceOrSupport(jobTitle) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ توابع بررسی یکتایی کد بست، تذکره کاغذی و تذکره الکترونیکی
+// توابع بررسی یکتایی
 // ═══════════════════════════════════════════════════════════
 
-// بررسی یکتایی کد بست
 async function checkJobCodeExact(jobCode, excludeRecordId = null) {
   if (!jobCode) return { exists: false };
   try {
@@ -432,7 +430,6 @@ async function checkJobCodeExact(jobCode, excludeRecordId = null) {
   }
 }
 
-// بررسی یکتایی تذکره کاغذی
 async function checkTazkiraExact(tazkiraCode, excludeRecordId = null) {
   if (!tazkiraCode) return { exists: false };
   try {
@@ -468,7 +465,6 @@ async function checkTazkiraExact(tazkiraCode, excludeRecordId = null) {
   }
 }
 
-// ⭐ بررسی یکتایی تذکره الکترونیکی
 async function checkETazkiraExact(eTazkira, excludeRecordId = null) {
   if (!eTazkira) return { exists: false };
   try {
@@ -504,7 +500,6 @@ async function checkETazkiraExact(eTazkira, excludeRecordId = null) {
   }
 }
 
-// ⭐ فرمت پاسخ 409 برای تکرار (با پشتیبانی از etazkira)
 function buildDuplicateResponse(kind, dup, currentUserId) {
   const isSameSchool = String(dup.userid) === String(currentUserId);
   const label = kind === 'jobcode' ? 'کد بست' 
@@ -626,7 +621,7 @@ app.get('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// GET /api/check-jobcode
+// اندپوینت‌های بررسی یکتایی
 // ═══════════════════════════════════════════════════════════
 app.get('/api/check-jobcode', authRequired, async (req, res) => {
   try {
@@ -673,9 +668,6 @@ app.post('/api/check-jobcode', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// GET /api/check-tazkira — تذکره کاغذی (فقط عدد)
-// ═══════════════════════════════════════════════════════════
 app.get('/api/check-tazkira', authRequired, async (req, res) => {
   try {
     const code = (req.query.code || '').trim();
@@ -703,9 +695,6 @@ app.get('/api/check-tazkira', authRequired, async (req, res) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// ⭐ GET /api/check-etazkira — تذکره الکترونیکی
-// ═══════════════════════════════════════════════════════════
 app.get('/api/check-etazkira', authRequired, async (req, res) => {
   try {
     const code = (req.query.code || '').trim();
@@ -862,7 +851,7 @@ app.post('/api/records', authRequired, async (req, res) => {
       return res.status(400).json({ error: '❌ لطفاً ابتدا اطلاعات مکتب خود را ثبت کنید' });
     }
 
-    // ---- بررسی تکراری کد بست ----
+    // بررسی تکراری کد بست
     const jobCode = String(body.jobCode || '').trim();
     if (jobCode) {
       const dup = await checkJobCodeExact(jobCode, null);
@@ -871,7 +860,7 @@ app.post('/api/records', authRequired, async (req, res) => {
       }
     }
 
-    // ⭐ ---- بررسی تکراری تذکره الکترونیکی ----
+    // بررسی تکراری تذکره الکترونیکی
     const eTazkira = String(body.eTazkira || '').trim();
     if (eTazkira) {
       const fmtErr = validateTazkiraServer(eTazkira);
@@ -882,7 +871,7 @@ app.post('/api/records', authRequired, async (req, res) => {
       }
     }
 
-    // ---- بررسی تکراری تذکره کاغذی ----
+    // بررسی تکراری تذکره کاغذی
     const paperTazkira = String(body.paperTazkira || '').trim();
     if (paperTazkira) {
       const fmtErr = validatePaperTazkiraServer(paperTazkira);
@@ -906,7 +895,6 @@ app.post('/api/records', authRequired, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('Records POST Error:', err.message);
-    // اگر خطای ایندکس یکتا آمد (23505)، پیام مناسب بده
     if (err.code === '23505') {
       return res.status(409).json({ 
         error: '❌ این کد بست یا تذکره قبلاً ثبت شده است',
@@ -965,7 +953,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
       finalBody = body;
     }
 
-    // ---- بررسی تکراری کد بست ----
     if (finalBody.jobCode) {
       const dup = await checkJobCodeExact(finalBody.jobCode, id);
       if (dup.exists) {
@@ -973,7 +960,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
       }
     }
 
-    // ⭐ ---- بررسی تکراری تذکره الکترونیکی ----
     if (finalBody.eTazkira) {
       const fmtErr = validateTazkiraServer(finalBody.eTazkira);
       if (fmtErr) return res.status(400).json({ error: '❌ ' + fmtErr });
@@ -983,7 +969,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
       }
     }
 
-    // ---- بررسی تکراری تذکره کاغذی ----
     if (finalBody.paperTazkira) {
       const fmtErr = validatePaperTazkiraServer(finalBody.paperTazkira);
       if (fmtErr) return res.status(400).json({ error: '❌ ' + fmtErr });
@@ -1125,7 +1110,7 @@ app.get('/api/all-school-settings', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// تنظیمات عمومی (اجازه ارزیابی)
+// تنظیمات عمومی
 // ═══════════════════════════════════════════════════════════
 app.get('/api/evaluation-permission', authRequired, async (req, res) => {
   try {
@@ -1847,7 +1832,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 app.get('/api/test', (req, res) => {
-  res.json({ ok: true, version: '19.2.0', timestamp: new Date().toISOString() });
+  res.json({ ok: true, version: '19.3.0', timestamp: new Date().toISOString() });
 });
 
 app.get('*', (req, res) => {
@@ -1859,6 +1844,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V19.2 live on port ' + PORT);
+  console.log('🚀 Server V19.3 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

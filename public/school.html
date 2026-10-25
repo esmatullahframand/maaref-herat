@@ -708,8 +708,8 @@
   function validateTazkiraCode(codeStr) {
     if (!codeStr) return { valid: true, formatted: '' }; // اختیاری
     const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
-    if (!/^\d{3,20}$/.test(cleaned)) {
-      return { valid: false, error: 'فقط عدد (۳ تا ۲۰ رقم) — مثال: 66564646' };
+    if (!/^\d{1,20}$/.test(cleaned)) {
+      return { valid: false, error: 'فقط عدد (۱ تا ۲۰ رقم) — مثال: 66564646' };
     }
     return { valid: true, formatted: cleaned };
   }

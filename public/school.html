@@ -174,17 +174,24 @@
     <div class="card">
       <h4>➕ ثبت کارمند جدید</h4>
       <form id="recordForm">
+        <!-- بخش ۱: هویت و اسناد -->
         <div class="form-section">
           <h5>۱. هویت و اسناد تذکره</h5>
           <div class="grid-4">
             <div class="form-group">
               <label>عنوان بست *</label>
-              <select id="jobTitle" required>
+              <select id="jobTitle" required onchange="toggleEducationRequired()">
                 <option value="">— انتخاب کنید —</option>
-                <option value="آمر">آمر</option><option value="مدیر">مدیر</option><option value="مدیر اجرائیه">مدیر اجرائیه</option>
-                <option value="معلم">معلم</option><option value="سر معلم">سر معلم</option><option value="معلم همکار">معلم همکار</option>
-                <option value="معلم سپورت">معلم سپورت</option><option value="معلم لابرانت">معلم لابرانت</option>
-                <option value="عضو علمی معلمان">عضو علمی معلمان</option><option value="عضو علمی مدرسین">عضو علمی مدرسین</option>
+                <option value="آمر">آمر</option>
+                <option value="مدیر">مدیر</option>
+                <option value="مدیر اجرائیه">مدیر اجرائیه</option>
+                <option value="معلم">معلم</option>
+                <option value="سر معلم">سر معلم</option>
+                <option value="معلم همکار">معلم همکار</option>
+                <option value="معلم سپورت">معلم سپورت</option>
+                <option value="معلم لابرانت">معلم لابرانت</option>
+                <option value="عضو علمی معلمان">عضو علمی معلمان</option>
+                <option value="عضو علمی مدرسین">عضو علمی مدرسین</option>
                 <option value="عضو مسلکی امور مالی و کارکنان">عضو مسلکی امور مالی و کارکنان</option>
                 <option value="عضو مسلکی نظارت احصاییه و گزارش">عضو مسلکی نظارت احصاییه و گزارش</option>
                 <option value="عضو مسلکی تاسیسات و ترمیمات">عضو مسلکی تاسیسات و ترمیمات</option>
@@ -220,6 +227,8 @@
             <div class="form-group"><label>قومیت *</label><input type="text" id="ethnicity" required></div>
           </div>
         </div>
+
+        <!-- بخش ۲: اطلاعات شخصی و تماس -->
         <div class="form-section">
           <h5>۲. اطلاعات شخصی و تماس</h5>
           <div class="grid-4">
@@ -254,6 +263,8 @@
             </div>
           </div>
         </div>
+
+        <!-- بخش ۳: معلومات وظیفوی و تحصیلی -->
         <div class="form-section">
           <h5>۳. معلومات وظیفوی و تحصیلی</h5>
           <div class="grid-4">
@@ -263,15 +274,19 @@
             <div class="form-group"><label>تاریخ تقرر فعلی *</label><input type="text" id="currentPositionDate" placeholder="1400/03/20" required><small id="currentPositionDateMsg" class="date-msg"></small></div>
             <div class="form-group"><label>موقف وظیفوی</label><select id="positionType"><option value="">انتخاب کنید</option><option value="اصلی">اصلی</option><option value="سرپرستی">سرپرستی</option></select></div>
             <div class="form-group"><label>نوع استخدام</label><select id="employmentType"><option value="">انتخاب کنید</option><option value="حکمی">حکمی</option><option value="رقابتی">رقابتی</option></select></div>
-            <div class="form-group"><label>درجه تحصیل *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
-            <div class="form-group"><label>رشته تحصیلی *</label><input type="text" id="major"></div>
-            <div class="form-group"><label>مرجع تحصیلی *</label><input type="text" id="eduInstitute"></div>
-            <div class="form-group"><label>موقعیت مرجع تحصیلی *</label><input type="text" id="eduInstituteLocation"></div>
-            <div class="form-group"><label>تاریخ شمولیت *</label><input type="text" id="enrollmentDate" placeholder="1397/01/01"><small id="enrollmentDateMsg" class="date-msg"></small></div>
-            <div class="form-group"><label>تاریخ فراغت *</label><input type="text" id="graduationDate" placeholder="1399/01/01"><small id="graduationDateMsg" class="date-msg"></small></div>
+            
+            <div class="form-group edu-field"><label>درجه تحصیل *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
+            <div class="form-group edu-field"><label>رشته تحصیلی *</label><input type="text" id="major"></div>
+            <div class="form-group edu-field"><label>مرجع تحصیلی *</label><input type="text" id="eduInstitute"></div>
+            <div class="form-group edu-field"><label>موقعیت مرجع تحصیلی *</label><input type="text" id="eduInstituteLocation"></div>
+            <div class="form-group edu-field"><label>تاریخ شمولیت *</label><input type="text" id="enrollmentDate" placeholder="1397/01/01"><small id="enrollmentDateMsg" class="date-msg"></small></div>
+            <div class="form-group edu-field"><label>تاریخ فراغت *</label><input type="text" id="graduationDate" placeholder="1399/01/01"><small id="graduationDateMsg" class="date-msg"></small></div>
+            
             <div class="form-group"><label>مضمون تدریس</label><input type="text" id="subjectTeaching"></div>
           </div>
         </div>
+
+        <!-- بخش ۴: ورکشاپ و ساعت درسی -->
         <div class="form-section">
           <h5>۴. ورکشاپ و ساعت درسی</h5>
           <div class="grid-4">
@@ -281,6 +296,8 @@
             <div class="form-group"><label>مجموعه ساعت درسی</label><input type="text" id="totalTeachingHours"></div>
           </div>
         </div>
+
+        <!-- بخش ۵: خدمتی رفته -->
         <div class="form-section">
           <h5>۵. خدمتی رفته</h5>
           <div class="grid-4">
@@ -294,6 +311,7 @@
             </div>
           </div>
         </div>
+
         <div class="agreement-box" id="agreementBox" onclick="toggleAgreement()">
           <input type="checkbox" id="agreementCheckbox">
           <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد.</div>
@@ -624,6 +642,9 @@
   const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
   const JOB_TITLES_LIST = ['آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین', 'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش', 'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
 
+  // ⭐ بست‌هایی که از تحصیل معاف هستند
+  const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
+
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -758,7 +779,6 @@
 
   // ⭐ تذکره کاغذی: یکتایی غیرفعال (همیشه یکتا)
   async function checkTazkiraUnique(codeStr, excludeId) {
-    // تذکره کاغذی همیشه یکتا در نظر گرفته می‌شود
     return { unique: true };
   }
 
@@ -770,14 +790,10 @@
     return `❌ این ${label} قبلاً در مکتب «${result.schoolname || 'نامشخص'}» ثبت شده است.`;
   }
 
-  // ⭐ تذکره کاغذی: فقط عدد نگه می‌دارد
   function autoFormatTazkira(input) {
     input.value = normalizeDigits(input.value).replace(/[^\d]/g, '');
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // ⭐ اعتبارسنجی زنده + یکتایی
-  // ═══════════════════════════════════════════════════════════
   function attachUniqueFieldValidation(inputId, msgId, kind, excludeId) {
     const input = document.getElementById(inputId);
     const msg = msgId ? document.getElementById(msgId) : null;
@@ -803,7 +819,6 @@
     }
 
     input.addEventListener('input', function () {
-      // فیلتر کاراکترها
       if (kind === 'tazkira') {
         autoFormatTazkira(this);
       } else if (kind === 'etazkira') {
@@ -918,12 +933,39 @@
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   window.closeModal = closeModal;
 
-  // تحصیل برای همه بست‌ها الزامی است، به‌جز بست‌های خدماتی/شب‌باش/ملازم/معتمد جنسی/تحویلدار
+  // ⭐ تابع بررسی معافیت تحصیلی
   function isEducationExemptJob(jobTitle) {
-    const title = String(jobTitle || '').replace(/[\u200c\s]+/g, ' ').trim();
-    return title.includes('کارکن خدماتی') || title.includes('شب باش') || title.includes('ملازم') ||
-           title.includes('معتمد جنسی') || title.includes('تحویلدار');
+    return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim());
   }
+
+  // ⭐ تغییر وضعیت الزامی بودن فیلدهای تحصیلی
+  function toggleEducationRequired() {
+    const jobTitle = document.getElementById('jobTitle').value;
+    const eduFields = document.querySelectorAll('.edu-field input');
+    const isExempt = isEducationExemptJob(jobTitle);
+
+    eduFields.forEach(input => {
+      if (isExempt) {
+        input.removeAttribute('required');
+        input.classList.remove('invalid');
+        // اگر پیام خطا داشت پاک شود
+        const msg = input.nextElementSibling;
+        if (msg && msg.classList.contains('date-msg')) {
+           msg.textContent = '';
+           msg.className = 'date-msg';
+        }
+      } else {
+        // برای فیلدهای اجباری (به جز فیلدهایی که در حالت عادی اختیاری هستند)
+        if(['degree', 'major', 'eduInstitute', 'eduInstituteLocation', 'enrollmentDate', 'graduationDate'].includes(input.id)){
+            input.setAttribute('required', 'required');
+        }
+      }
+    });
+  }
+  window.toggleEducationRequired = toggleEducationRequired;
+
+  // فراخوانی اولیه برای تنظیم وضعیت
+  setTimeout(() => toggleEducationRequired(), 100);
 
   function validateEducationFields(jobTitle) {
     if (isEducationExemptJob(jobTitle)) return { valid: true };
@@ -1027,7 +1069,6 @@
       if (!etCheck.unique) { showToast(buildDuplicateMessage('etazkira', etCheck), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
     }
 
-    // تذکره کاغذی: فقط فرمت چک می‌شود (یکتایی غیرفعال)
     if (body.paperTazkira) {
       const tz = validateTazkiraCode(body.paperTazkira);
       if (!tz.valid) { showToast('❌ ' + tz.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
@@ -1055,6 +1096,7 @@
           const el = document.getElementById(id);
           if (el) el.classList.remove('valid','invalid');
         });
+        toggleEducationRequired(); // بازنشانی وضعیت تحصیل
         switchTab('list', document.querySelectorAll('.tab-btn')[2]);
       } else if (res.status === 409 && (data.code === 'DUPLICATE_JOBCODE' || data.code === 'DUPLICATE_ETAZKIRA')) {
         const kind = data.code === 'DUPLICATE_JOBCODE' ? 'jobcode' : 'etazkira';
@@ -1328,6 +1370,7 @@
     const currentPositionDate = document.getElementById('eCurrentPositionDate').value.trim();
 
     if (!jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
+    // در ویرایش، اگر بست از تحصیل معاف نباشد، درجه تحصیل الزامی است
     if (!isEducationExemptJob(jobTitle) && !degree) {
       showToast('❌ برای این بست، درجه تحصیل الزامی است', true);
       return;
@@ -2321,7 +2364,6 @@
       `;
 
       if (!isPrint) {
-          // برای نمایش در صفحه (اختیاری)
           return html;
       }
 
@@ -2334,7 +2376,6 @@
 
       const html = generateM40TableHTML(salaries, true);
       
-      // استفاده از تابع کمکی موجود در کد اصلی برای پرینت
       printHtmlDocument(html, `فرم م ۴۰ - ${salaryCurrentEmployee.data.firstName || ''}`, 'A4 portrait');
   }
   window.printFormM40 = printFormM40;
@@ -2345,7 +2386,6 @@
 
       const info = salaryCurrentEmployee.data || {};
       
-      // ساختار ستون‌ها برای اکسل
       const columns = [
           ['ماه', s => s.month],
           ['رتبوی (معاش)', s => s.base_salary],
@@ -2359,7 +2399,6 @@
           ['مبلغ قابل پرداخت', s => s.net_pay]
       ];
 
-      // محاسبه مجموع برای ردیف آخر
       let totalBase = 0, totalFood = 0, totalAllowance = 0, totalEntitlement = 0;
       let totalAbsence = 0, totalTax = 0, totalDeductions = 0, totalNetPay = 0;
 
@@ -2374,18 +2413,14 @@
           totalNetPay += Number(s.net_pay || 0);
       });
 
-      // ساخت CSV دستی
       let csv = '\uFEFF';
       
-      // هدر اطلاعات کارمند
       csv += `"فرم م ۴۰ دفتر معاش و کسرات"\n`;
       csv += `"اسم:","${info.firstName || ''} ${info.lastName || ''}","ولد:","${info.fatherName || ''}"\n`;
       csv += `"نمبر:","${info.jobCode || ''}","مکتب:","${user.schoolname || ''}"\n\n`;
 
-      // هدر جدول
       csv += columns.map(c => `"${c[0]}"`).join(',') + '\n';
 
-      // داده‌ها
       salaries.forEach(s => {
           csv += columns.map(c => {
               let val = c[1](s);
@@ -2394,10 +2429,8 @@
           }).join(',') + '\n';
       });
 
-      // ردیف مجموع
       csv += `"مجموعه","${totalBase}","${totalFood}","${totalAllowance}","${totalEntitlement}","${totalAbsence}","${totalTax}","${totalDeductions}","${totalDeductions}","${totalNetPay}"\n`;
 
-      // دانلود فایل
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -2423,11 +2456,9 @@
       }
 
       try {
-          // دریافت اطلاعات کامل کارمندان برای تکمیل ستون‌های جدول
           const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
           const records = await res.json();
           
-          // تبدیل به دیکشنری برای دسترسی سریع‌تر
           const recordsMap = {};
           if (Array.isArray(records)) {
               records.forEach(r => {
@@ -2435,12 +2466,10 @@
               });
           }
 
-          // مرتب‌سازی بر اساس تاریخ ارزیابی یا نام
           const sortedEvals = [...cachedEvaluations].sort((a, b) => {
               return (a.first_name || '').localeCompare(b.first_name || '');
           });
 
-          // ساخت هدر فرم
           let html = `
           <div style="text-align:center; margin-bottom:15px; border-bottom:2px solid #000; padding-bottom:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -2467,13 +2496,11 @@
                       <th style="border:1px solid #000; padding:3px;" colspan="9">نتیجه ارزیابی</th>
                   </tr>
                   <tr style="background:#f0f0f0; font-weight:bold;">
-                      <!-- شهرت -->
                       <th style="border:1px solid #000; padding:3px;">اسم</th>
                       <th style="border:1px solid #000; padding:3px;">ولد</th>
                       <th style="border:1px solid #000; padding:3px;">ولدیت</th>
                       <th style="border:1px solid #000; padding:3px;">کود تشکیل</th>
                       
-                      <!-- مشخصات وظیفوی -->
                       <th style="border:1px solid #000; padding:3px;">نوع قرار</th>
                       <th style="border:1px solid #000; padding:3px;">درجه تحصیل</th>
                       <th style="border:1px solid #000; padding:3px;">جنسیت</th>
@@ -2485,7 +2512,6 @@
                       <th style="border:1px solid #000; padding:3px;">قدم</th>
                       <th style="border:1px solid #000; padding:3px;">بست</th>
 
-                      <!-- نتیجه ارزیابی -->
                       <th style="border:1px solid #000; padding:3px;">تاریخ ارزیابی</th>
                       <th style="border:1px solid #000; padding:3px;">نمره از (۱۰۰)</th>
                       <th style="border:1px solid #000; padding:3px;">نتیجه نهایی</th>
@@ -2497,12 +2523,9 @@
               <tbody>
           `;
 
-          // پر کردن سطرها
           sortedEvals.forEach((ev, index) => {
-              // پیدا کردن اطلاعات کامل کارمند بر اساس record_id
               const recData = recordsMap[ev.record_id] || {};
               
-              // استخراج مقادیر با مقادیر پیش‌فرض
               const firstName = escapeHtml(ev.first_name || recData.firstName || '');
               const lastName = escapeHtml(ev.last_name || recData.lastName || '');
               const fatherName = escapeHtml(ev.father_name || recData.fatherName || '');
@@ -2523,21 +2546,17 @@
               const score = Number(ev.eval_score) || 0;
               const result = escapeHtml(ev.eval_result || '');
               
-              // محاسبه درصد و امتیاز (فرضی)
               const percent = score; 
-              const points = Math.round(score * 0.8); // محاسبه فرضی امتیاز
+              const points = Math.round(score * 0.8); 
 
               html += `
                   <tr>
                       <td style="border:1px solid #000; padding:3px;">${index + 1}</td>
-                      
-                      <!-- شهرت -->
                       <td style="border:1px solid #000; padding:3px; text-align:right;">${firstName} ${lastName}</td>
                       <td style="border:1px solid #000; padding:3px; text-align:right;">${fatherName}</td>
                       <td style="border:1px solid #000; padding:3px; text-align:right;">${grandFatherName}</td>
                       <td style="border:1px solid #000; padding:3px; direction:ltr;">${jobCode}</td>
                       
-                      <!-- مشخصات وظیفوی -->
                       <td style="border:1px solid #000; padding:3px;">حکمی</td>
                       <td style="border:1px solid #000; padding:3px;">${degree}</td>
                       <td style="border:1px solid #000; padding:3px;">${gender}</td>
@@ -2549,7 +2568,6 @@
                       <td style="border:1px solid #000; padding:3px;">${grade}</td>
                       <td style="border:1px solid #000; padding:3px;">${bust}</td>
 
-                      <!-- نتیجه ارزیابی -->
                       <td style="border:1px solid #000; padding:3px; direction:ltr;">${evalDate}</td>
                       <td style="border:1px solid #000; padding:3px; font-weight:bold;">${score}</td>
                       <td style="border:1px solid #000; padding:3px; font-weight:bold;">${result}</td>
@@ -2569,7 +2587,6 @@
           </div>
           `;
 
-          // ارسال به تابع پرینت موجود در کد
           printHtmlDocument(html, 'جدول توحیدی ارزیابی معلمین', 'A4 landscape');
 
       } catch (e) {

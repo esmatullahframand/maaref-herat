@@ -307,6 +307,10 @@
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
         <h4 style="margin:0; border:none; padding:0;">📋 لیست کارمندان</h4>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" style="background:#7c3aed; padding:8px 16px; font-size:13px;" onclick="printEmployeeList()">🖨️ پرنت لیست</button>
+          <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEmployeeExcel()">📊 خروجی اکسل</button>
+        </div>
       </div>
 
       <div class="stats-grid" id="statsContainer">
@@ -1301,7 +1305,7 @@
   window.saveEditedRecord = saveEditedRecord;
 
   // ═══════════════════════════════════════════════════════════
-  // مشاهده و پرینت کارمند
+  // مشاهده و پرینت کارمند (امن شده)
   // ═══════════════════════════════════════════════════════════
   function viewRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
@@ -1371,12 +1375,145 @@
       }
     });
     html += '</table>';
-    
-    const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت ${escapeHtml(info.firstName || '')}</title><style>body { font-family: Tahoma; padding: 15px; direction: rtl; } @media print { .no-print { display:none; } }</style></head><body>${html}<div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; background:#7c3aed; color:#fff; border:none; border-radius:6px; cursor:pointer;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(), 400);<\/script></body></html>`);
-    win.document.close();
+
+    // استفاده از iframe مخفی برای جلوگیری از قفل شدن صفحه اصلی (Main Thread)
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت ${escapeHtml(info.firstName || '')}</title><style>body { font-family: Tahoma; direction: rtl; padding: 15px; } @media print { @page { size: A4 portrait; margin: 1cm; } }</style></head><body>${html}</body></html>`);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      setTimeout(() => { document.body.removeChild(iframe); }, 1000);
+    }, 500);
   }
   window.printRecord = printRecord;
+
+  // ═══════════════════════════════════════════════════════════
+  // پرینت لیست کلی کارمندان (امن)
+  // ═══════════════════════════════════════════════════════════
+  function printEmployeeList() {
+    if (!cachedRecords || cachedRecords.length === 0) {
+      showToast('❌ لیستی برای پرینت وجود ندارد. ابتدا جستجو کنید.', true);
+      return;
+    }
+
+    let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
+      <h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2>
+      <h4 style="margin:5px 0 0 0; font-size:13px;">لیست کارمندان مکتب - ${escapeHtml(user.schoolname || '')}</h4>
+      <div style="font-size:11px; margin-top:5px;">تاریخ پرینت: ${new Date().toLocaleDateString('fa-IR')}</div>
+    </div>`;
+
+    html += `<table style="width:100%; border-collapse:collapse; font-size:11px;">
+      <thead>
+        <tr style="background:#eee;">
+          <th style="border:1px solid #333; padding:6px;">#</th>
+          <th style="border:1px solid #333; padding:6px;">نام و تخلص</th>
+          <th style="border:1px solid #333; padding:6px;">ولد</th>
+          <th style="border:1px solid #333; padding:6px;">عنوان بست</th>
+          <th style="border:1px solid #333; padding:6px;">کد بست</th>
+          <th style="border:1px solid #333; padding:6px;">تذکره</th>
+          <th style="border:1px solid #333; padding:6px;">شماره تماس</th>
+          <th style="border:1px solid #333; padding:6px;">وضعیت</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    cachedRecords.forEach((row, idx) => {
+      const info = row.data || {};
+      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
+      const statusText = row.status === 'approved' ? 'تایید شده' : 'در انتظار';
+      html += `<tr>
+        <td style="border:1px solid #333; padding:6px; text-align:center;">${idx + 1}</td>
+        <td style="border:1px solid #333; padding:6px;">${escapeHtml(name)}</td>
+        <td style="border:1px solid #333; padding:6px;">${escapeHtml(info.fatherName || '-')}</td>
+        <td style="border:1px solid #333; padding:6px;">${escapeHtml(info.jobTitle || '-')}</td>
+        <td style="border:1px solid #333; padding:6px;">${escapeHtml(info.jobCode || '-')}</td>
+        <td style="border:1px solid #333; padding:6px;">${escapeHtml(info.eTazkira || '-')}</td>
+        <td style="border:1px solid #333; padding:6px;">${escapeHtml(info.phone || '-')}</td>
+        <td style="border:1px solid #333; padding:6px; text-align:center;">${statusText}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت لیست کارمندان</title><style>body { font-family: Tahoma; direction: rtl; } @media print { @page { size: A4 landscape; margin: 1cm; } }</style></head><body>${html}</body></html>`);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      setTimeout(() => { document.body.removeChild(iframe); }, 1000);
+    }, 500);
+  }
+  window.printEmployeeList = printEmployeeList;
+
+  // ═══════════════════════════════════════════════════════════
+  // خروجی اکسل از لیست
+  // ═══════════════════════════════════════════════════════════
+  function exportEmployeeExcel() {
+    if (!cachedRecords || cachedRecords.length === 0) {
+      showToast('❌ لیستی برای خروجی وجود ندارد. ابتدا جستجو کنید.', true);
+      return;
+    }
+
+    let csvContent = "\uFEFF"; // BOM برای پشتیبانی از فارسی در اکسل
+    csvContent += "ردیف,نام و تخلص,ولد,عنوان بست,کد بست,تذکره الکترونیکی,شماره تماس,درجه تحصیل,وضعیت\n";
+
+    cachedRecords.forEach((row, idx) => {
+      const info = row.data || {};
+      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
+      const statusText = row.status === 'approved' ? 'تایید شده' : 'در انتظار';
+      
+      const rowData = [
+        idx + 1,
+        name,
+        info.fatherName || '-',
+        info.jobTitle || '-',
+        info.jobCode || '-',
+        info.eTazkira || '-',
+        info.phone || '-',
+        info.degree || '-',
+        statusText
+      ];
+      
+      const cleanRowData = rowData.map(val => {
+        let str = String(val);
+        str = str.replace(/,/g, '،'); 
+        str = str.replace(/\n/g, ' ');
+        return `"${str}"`;
+      });
+
+      csvContent += cleanRowData.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `لیست_کارمندان_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('✅ خروجی اکسل با موفقیت دانلود شد');
+  }
+  window.exportEmployeeExcel = exportEmployeeExcel;
 
   // ═══════════════════════════════════════════════════════════
   // ارزیابی
@@ -1712,7 +1849,6 @@
         return; 
       }
 
-      // گروه‌بندی بر اساس سال
       const byYear = {};
       salaries.forEach(s => { 
         if (!byYear[s.year]) byYear[s.year] = []; 
@@ -1726,7 +1862,6 @@
       years.forEach((year) => {
         const months = byYear[year].sort((a, b) => MONTHS_ORDER.indexOf(a.month) - MONTHS_ORDER.indexOf(b.month));
         
-        // ساخت دکمه‌های ماه‌ها (به صورت کارت‌های مربعی برای قرارگیری در یک ردیف)
         let monthsHtml = '';
         months.forEach(m => {
           const isApproved = m.status === 'approved';
@@ -1745,7 +1880,6 @@
           `;
         });
 
-        // ساخت آکاردئون سال با grid برای ماه‌ها
         html += `
           <div style="margin-bottom:15px; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; background:#fff;">
             <div onclick="document.getElementById('year-content-${year}').style.display = document.getElementById('year-content-${year}').style.display === 'none' ? 'grid' : 'none'" style="padding:15px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
@@ -1800,7 +1934,6 @@
       document.getElementById('salOtherDeductions').value = s.other_deductions || '';
       calcSalaryTotals();
       
-      // لود کردن حاضری
       try {
         const attRes = await fetch('/api/attendance/' + s.id, { headers: { 'Authorization': 'Bearer ' + token } });
         const att = await attRes.json();
@@ -1821,7 +1954,6 @@
         }
       } catch (e) { console.error(e); }
 
-      // تنظیم حالت قفل / باز برای فرم
       const isApproved = s.status === 'approved';
       ['salBase','salOtherBase','salProfessional','salOtherProfessional','salFood','salOtherFood','salAllowance','salOtherAllowance','salOtherIncrease','salAbsence','salTax','salOtherTax','salTax10','salDeductions','salOtherDeductions','newSalaryYear','newSalaryMonth'].forEach(fid => { 
         const el = document.getElementById(fid); 
@@ -1845,7 +1977,6 @@
         updateSalaryStatusBar(true, hasAtt, false);
       }
 
-      // باز کردن پنل ثبت جدید برای نمایش فرم
       document.querySelectorAll('.salary-panel').forEach(p => p.classList.remove('active'));
       document.getElementById('salaryNewPanel').classList.add('active');
       document.getElementById('salaryNewPanel').scrollIntoView({ behavior: 'smooth' });

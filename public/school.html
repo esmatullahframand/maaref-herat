@@ -318,10 +318,21 @@
       <div class="table-responsive">
         <table>
           <thead>
-            <tr><th>آی‌دی</th><th>نام</th><th>ولد</th><th>عنوان بست</th><th>کُد بست</th><th>وضعیت</th><th>عملیات</th></tr>
+            <tr>
+              <th>آی‌دی</th>
+              <th>نام و تخلص</th>
+              <th>ولد</th>
+              <th>عنوان بست</th>
+              <th>کُد بست</th>
+              <th>تذکره الکترونیکی</th>
+              <th>شماره تماس</th>
+              <th>درجه تحصیل</th>
+              <th>وضعیت</th>
+              <th>عملیات</th>
+            </tr>
           </thead>
           <tbody id="schoolTableBody">
-            <tr><td colspan="7" class="empty-state">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید.</td></tr>
+            <tr><td colspan="10" class="empty-state">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید.</td></tr>
           </tbody>
         </table>
       </div>
@@ -556,6 +567,17 @@
   </div>
 </div>
 
+<!-- مودال مشاهده -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal-box">
+    <h3>📄 مشاهده اطلاعات کارمند</h3>
+    <div id="viewContent"></div>
+    <div class="modal-actions no-print">
+      <button class="btn-modal btn-modal-close" onclick="closeModal('viewModal')">بستن</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -665,7 +687,7 @@
   attachLiveValidation('evalScore', validateScore, 'evalScoreMsg');
 
   // ═══════════════════════════════════════════════════════════
-  // اعتبارسنجی کد بست + تذکره (XX-XX-123)
+  // اعتبارسنجی کد بست + تذکره
   // ═══════════════════════════════════════════════════════════
   function validateJobCode(codeStr) {
     if (!codeStr) return { valid: false, error: 'کد بست الزامی است' };
@@ -749,10 +771,9 @@
     input.value = f;
   }
 
-  // اتصال به فیلد کد بست (فرم ثبت)
-  (function attachJobCodeValidation() {
-    const input = document.getElementById('jobCode');
-    const msg = document.getElementById('jobCodeMsg');
+  function attachEditFieldValidation(inputId, msgId, kind, excludeId) {
+    const input = document.getElementById(inputId);
+    const msg = document.getElementById(msgId);
     if (!input) return;
     let lastChecked = '', isChecking = false;
 
@@ -763,11 +784,23 @@
       if (state === 'invalid') input.classList.add('invalid');
     }
 
+    function validateFn(v) { 
+      if (kind === 'jobcode') return validateJobCode(v); 
+      if (kind === 'etazkira') return validateETazkira(v); 
+      return validateTazkiraCode(v); 
+    }
+    function checkFn(v) {
+      if (kind === 'jobcode') return checkJobCodeUnique(v, excludeId);
+      if (kind === 'etazkira') return checkETazkiraUnique(v, excludeId);
+      return checkTazkiraUnique(v, excludeId);
+    }
+
     input.addEventListener('input', function () {
+      if (kind === 'tazkira') autoFormatTazkira(this);
       const val = this.value.trim();
       if (val !== lastChecked) lastChecked = '';
       if (!val) { setState('pending', '⏳ منتظر...'); return; }
-      const r = validateJobCode(val);
+      const r = validateFn(val);
       if (!r.valid) setState('invalid', '❌ ' + r.error);
       else setState('pending', '⏳ برای بررسی، از فیلد خارج شوید');
     });
@@ -775,109 +808,22 @@
     input.addEventListener('blur', async function () {
       const val = this.value.trim();
       if (!val) return;
-      const r = validateJobCode(val);
+      const r = validateFn(val);
       if (!r.valid) return;
       this.value = r.formatted;
       if (r.formatted === lastChecked || isChecking) return;
       lastChecked = r.formatted; isChecking = true;
       setState('pending', '⏳ در حال بررسی...');
       try {
-        const result = await checkJobCodeUnique(r.formatted);
+        const result = await checkFn(r.formatted);
         if (result.unique) { setState('valid', '✅ یکتا است'); return; }
-        const m = buildDuplicateMessage('jobcode', result);
+        const m = buildDuplicateMessage(kind, result);
         setState('invalid', m);
         showToast(m, true);
       } catch (e) { setState('pending', '⚠️ خطا در بررسی'); }
       finally { isChecking = false; }
     });
-  })();
-
-  // اتصال به فیلد تذکره الکترونیکی (فرم ثبت)
-  (function attachETazkiraValidation() {
-    const input = document.getElementById('eTazkira');
-    const msg = document.getElementById('eTazkiraMsg');
-    if (!input) return;
-    let lastChecked = '', isChecking = false;
-
-    function setState(state, html) {
-      input.classList.remove('valid', 'invalid');
-      if (msg) { msg.className = 'date-msg ' + state; msg.innerHTML = html; }
-      if (state === 'valid') input.classList.add('valid');
-      if (state === 'invalid') input.classList.add('invalid');
-    }
-
-    input.addEventListener('input', function () {
-      const val = this.value.trim();
-      if (val !== lastChecked) lastChecked = '';
-      if (!val) { setState('pending', '⏳ منتظر...'); return; }
-      const r = validateETazkira(val);
-      if (!r.valid) setState('invalid', '❌ ' + r.error);
-      else setState('pending', '⏳ برای بررسی، از فیلد خارج شوید');
-    });
-
-    input.addEventListener('blur', async function () {
-      const val = this.value.trim();
-      if (!val) return;
-      const r = validateETazkira(val);
-      if (!r.valid) return;
-      this.value = r.formatted;
-      if (r.formatted === lastChecked || isChecking) return;
-      lastChecked = r.formatted; isChecking = true;
-      setState('pending', '⏳ در حال بررسی...');
-      try {
-        const result = await checkETazkiraUnique(r.formatted);
-        if (result.unique) { setState('valid', '✅ یکتا است'); return; }
-        const m = buildDuplicateMessage('etazkira', result);
-        setState('invalid', m);
-        showToast(m, true);
-      } catch (e) { setState('pending', '⚠️ خطا در بررسی'); }
-      finally { isChecking = false; }
-    });
-  })();
-
-  // اتصال به فیلد تذکره کاغذی (فرم ثبت)
-  (function attachTazkiraValidation() {
-    const input = document.getElementById('paperTazkira');
-    const msg = document.getElementById('paperTazkiraMsg');
-    if (!input) return;
-    let lastChecked = '', isChecking = false;
-
-    function setState(state, html) {
-      input.classList.remove('valid', 'invalid');
-      if (msg) { msg.className = 'date-msg ' + state; msg.innerHTML = html; }
-      if (state === 'valid') input.classList.add('valid');
-      if (state === 'invalid') input.classList.add('invalid');
-    }
-
-    input.addEventListener('input', function () {
-      autoFormatTazkira(this);
-      const f = this.value;
-      if (f !== lastChecked) lastChecked = '';
-      if (!f) { setState('pending', '⏳ اختیاری'); return; }
-      const r = validateTazkiraCode(f);
-      if (!r.valid) setState('invalid', '❌ ' + r.error);
-      else setState('pending', '⏳ برای بررسی، از فیلد خارج شوید');
-    });
-
-    input.addEventListener('blur', async function () {
-      const val = this.value.trim();
-      if (!val) return;
-      const r = validateTazkiraCode(val);
-      if (!r.valid) return;
-      this.value = r.formatted;
-      if (r.formatted === lastChecked || isChecking) return;
-      lastChecked = r.formatted; isChecking = true;
-      setState('pending', '⏳ در حال بررسی...');
-      try {
-        const result = await checkTazkiraUnique(r.formatted);
-        if (result.unique) { setState('valid', '✅ یکتا است'); return; }
-        const m = buildDuplicateMessage('tazkira', result);
-        setState('invalid', m);
-        showToast(m, true);
-      } catch (e) { setState('pending', '⚠️ خطا در بررسی'); }
-      finally { isChecking = false; }
-    });
-  })();
+  }
 
   // ═══════════════════════════════════════════════════════════
   // توابع پایه
@@ -1139,7 +1085,7 @@
     } catch (e) { console.error(e); }
 
     if (!searchVal) {
-      tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><div style="padding:30px;"><div style="font-size:50px; margin-bottom:15px;">🔍</div><div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div><div style="font-size:13px; color:#94a3b8;">نام، ولد، کُد بست یا عنوان بست را در کادر بالا جستجو کنید</div></div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><div style="padding:30px;"><div style="font-size:50px; margin-bottom:15px;">🔍</div><div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div><div style="font-size:13px; color:#94a3b8;">نام، ولد، کُد بست یا عنوان بست را در کادر بالا جستجو کنید</div></div></td></tr>`;
       return;
     }
     
@@ -1148,16 +1094,34 @@
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
       if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
       const records = await res.json();
-      if (!Array.isArray(records) || records.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">هیچ رکوردی یافت نشد</td></tr>'; return; }
+      if (!Array.isArray(records) || records.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="empty-state">هیچ رکوردی یافت نشد</td></tr>'; return; }
+      
       let html = '';
       records.forEach((row) => {
         const info = row.data || {};
         const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
         const statusHtml = row.status === 'approved' ? '<span class="status-badge status-approved">✅ تایید</span>' : '<span class="status-badge status-pending">⏳ انتظار</span>';
-        html += `<tr><td>${row.id}</td><td><b>${escapeHtml(name)}</b></td><td>${escapeHtml(info.fatherName || '-')}</td><td>${escapeHtml(info.jobTitle || '-')}</td><td><code>${escapeHtml(info.jobCode || '—')}</code></td><td>${statusHtml}</td><td><button class="btn-action btn-edit-row" onclick="editRecord(${row.id})">✏️</button></td></tr>`;
+        
+        // رندر ۱۰ ستون
+        html += `<tr>
+          <td>${row.id}</td>
+          <td><b>${escapeHtml(name)}</b></td>
+          <td>${escapeHtml(info.fatherName || '-')}</td>
+          <td>${escapeHtml(info.jobTitle || '-')}</td>
+          <td><code>${escapeHtml(info.jobCode || '—')}</code></td>
+          <td><code>${escapeHtml(info.eTazkira || '—')}</code></td>
+          <td>${escapeHtml(info.phone || '-')}</td>
+          <td>${escapeHtml(info.degree || '-')}</td>
+          <td>${statusHtml}</td>
+          <td>
+            <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>
+            <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="مشاهده">👁️</button>
+            <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرینت">🖨️</button>
+          </td>
+        </tr>`;
       });
       tbody.innerHTML = html;
-    } catch (err) { console.error(err); tbody.innerHTML = '<tr><td colspan="7" class="empty-state" style="color:red;">خطا</td></tr>'; }
+    } catch (err) { console.error(err); tbody.innerHTML = '<tr><td colspan="10" class="empty-state" style="color:red;">خطا در بارگذاری اطلاعات</td></tr>'; }
   }
 
   function updateStats(records) {
@@ -1198,7 +1162,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // ویرایش کارمند (مودال با ۹ فیلد)
+  // ویرایش کارمند (مودال - بدون تذکره)
   // ═══════════════════════════════════════════════════════════
   function editRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
@@ -1228,16 +1192,6 @@
           <label>کد بست</label>
           <input type="text" id="eJobCode" value="${escapeHtml(info.jobCode || '')}" placeholder="27-32-02-13056">
           <small id="eJobCodeMsg" class="date-msg pending">⏳ منتظر...</small>
-        </div>
-        <div class="form-group">
-          <label>تذکره الکترونیکی</label>
-          <input type="text" id="eETazkira" value="${escapeHtml(info.eTazkira || '')}" placeholder="32434-32323-3232">
-          <small id="eETazkiraMsg" class="date-msg pending">⏳ منتظر...</small>
-        </div>
-        <div class="form-group">
-          <label>تذکره کاغذی</label>
-          <input type="text" id="ePaperTazkira" value="${escapeHtml(info.paperTazkira || '')}" maxlength="9" placeholder="12-34-567">
-          <small id="ePaperTazkiraMsg" class="date-msg pending">⏳ منتظر...</small>
         </div>
         <div class="form-group"><label>بست</label><input type="text" id="eBust" value="${escapeHtml(info.bust || '')}"></div>
         <div class="form-group"><label>قدم</label><input type="text" id="eGrade" value="${escapeHtml(info.grade || '')}"></div>
@@ -1270,8 +1224,6 @@
 
     attachLiveValidation('eCurrentPositionDate', validateShamsiDate, 'eCurrentPositionDateMsg');
     attachEditFieldValidation('eJobCode', 'eJobCodeMsg', 'jobcode', editingRecordId);
-    attachEditFieldValidation('eETazkira', 'eETazkiraMsg', 'etazkira', editingRecordId);
-    attachEditFieldValidation('ePaperTazkira', 'ePaperTazkiraMsg', 'tazkira', editingRecordId);
   }
   window.editRecord = editRecord;
 
@@ -1289,8 +1241,6 @@
 
     const jobTitle = document.getElementById('eJobTitle').value.trim();
     const jobCode = document.getElementById('eJobCode').value.trim();
-    const eTazkira = document.getElementById('eETazkira').value.trim();
-    const paperTazkira = document.getElementById('ePaperTazkira').value.trim();
     const bust = document.getElementById('eBust').value.trim();
     const grade = document.getElementById('eGrade').value.trim();
     const workshopStatus = document.getElementById('eWorkshopStatus').value;
@@ -1314,25 +1264,9 @@
       if (!jcCheck.unique) { showToast(buildDuplicateMessage('jobcode', jcCheck), true); return; }
     }
 
-    if (eTazkira) {
-      const et = validateETazkira(eTazkira);
-      if (!et.valid) { showToast('❌ ' + et.error, true); return; }
-      const etCheck = await checkETazkiraUnique(et.formatted, editingRecordId);
-      if (!etCheck.unique) { showToast(buildDuplicateMessage('etazkira', etCheck), true); return; }
-    }
-
-    if (paperTazkira) {
-      const tz = validateTazkiraCode(paperTazkira);
-      if (!tz.valid) { showToast('❌ ' + tz.error, true); return; }
-      const tzCheck = await checkTazkiraUnique(tz.formatted, editingRecordId);
-      if (!tzCheck.unique) { showToast(buildDuplicateMessage('tazkira', tzCheck), true); return; }
-    }
-
     const body = {
       jobTitle,
       jobCode: jobCode ? normalizeDigits(jobCode).trim() : '',
-      eTazkira: eTazkira ? normalizeDigits(eTazkira).trim() : '',
-      paperTazkira: paperTazkira ? normalizeDigits(paperTazkira).trim().toUpperCase() : '',
       bust,
       grade,
       workshopStatus,
@@ -1355,9 +1289,8 @@
         showToast('✅ ذخیره شد');
         closeModal('editModal');
         loadSchoolRecords();
-      } else if (res.status === 409 && (data.code === 'DUPLICATE_JOBCODE' || data.code === 'DUPLICATE_TAZKIRA' || data.code === 'DUPLICATE_ETAZKIRA')) {
-        const kind = data.code === 'DUPLICATE_JOBCODE' ? 'jobcode' : (data.code === 'DUPLICATE_ETAZKIRA' ? 'etazkira' : 'tazkira');
-        showToast(buildDuplicateMessage(kind, data), true);
+      } else if (res.status === 409 && data.code === 'DUPLICATE_JOBCODE') {
+        showToast(buildDuplicateMessage('jobcode', data), true);
       } else {
         showToast('❌ ' + (data.error || 'خطا'), true);
       }
@@ -1366,6 +1299,84 @@
     }
   }
   window.saveEditedRecord = saveEditedRecord;
+
+  // ═══════════════════════════════════════════════════════════
+  // مشاهده و پرینت کارمند
+  // ═══════════════════════════════════════════════════════════
+  function viewRecord(id) {
+    const rec = cachedRecords.find(r => r.id === id);
+    if (!rec) { showToast('رکورد یافت نشد', true); return; }
+    const info = rec.data || {};
+    
+    const fields = [
+      ['آی‌دی', rec.id], ['عنوان بست', info.jobTitle], ['کد بست', info.jobCode], 
+      ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName],
+      ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira],
+      ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['حالت مدنی', info.maritalStatus],
+      ['تاریخ تولد', info.birthDate], ['شماره تماس', info.phone], ['معلولیت', info.disability],
+      ['محل تولد', `${info.birthProvince || ''} ${info.birthDistrict || ''}`],
+      ['سکونت اصلی', `${info.originProvince || ''} ${info.originDistrict || ''}`],
+      ['سکونت فعلی', `${info.currentProvince || ''} ${info.currentDistrict || ''}`],
+      ['بست', info.bust], ['قدم', info.grade],
+      ['تاریخ اولین تقرر', info.firstAppointmentDate], ['تاریخ تقرر فعلی', info.currentPositionDate],
+      ['موقف وظیفوی', info.positionType], ['نوع استخدام', info.employmentType],
+      ['درجه تحصیل', info.degree], ['رشته تحصیلی', info.major],
+      ['مرجع تحصیلی', info.eduInstitute], ['موقعیت مرجع', info.eduInstituteLocation],
+      ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate],
+      ['مضمون تدریس', info.subjectTeaching],
+      ['ورکشاپ', info.workshopStatus === 'بلی' ? `${info.workshopTitle} (${info.workshopDuration})` : 'نخیر'],
+      ['مجموعه ساعت درسی', info.totalTeachingHours],
+      ['خدمتی رفته', info.serviceStatus === 'بلی' ? `بلی - ${info.serviceDistrict} / ${info.serviceSchool} (${info.serviceDate})` : 'نخیر']
+    ];
+
+    let html = `<div style="background:#f1f5f9; padding:12px; border-radius:6px; margin-bottom:15px; text-align:center;"><strong>مکتب: ${escapeHtml(rec.schoolname || '-')}</strong> | وضعیت: <strong>${rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار'}</strong></div>`;
+    html += `<div class="info-grid">`;
+    fields.forEach(([label, value]) => {
+      if (value) {
+        html += `<div class="info-item"><div class="label">${label}</div><div class="value">${escapeHtml(value)}</div></div>`;
+      }
+    });
+    html += `</div>`;
+
+    document.getElementById('viewContent').innerHTML = html;
+    document.getElementById('viewModal').classList.add('active');
+  }
+  window.viewRecord = viewRecord;
+
+  function printRecord(id) {
+    const rec = cachedRecords.find(r => r.id === id);
+    if (!rec) return;
+    const info = rec.data || {};
+    
+    const rows = [
+      ['عنوان بست', info.jobTitle], ['کد بست', info.jobCode], 
+      ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName],
+      ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira],
+      ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['حالت مدنی', info.maritalStatus],
+      ['تاریخ تولد', info.birthDate], ['شماره تماس', info.phone], ['معلولیت', info.disability],
+      ['سکونت اصلی', `${info.originProvince || ''} ${info.originDistrict || ''}`],
+      ['سکونت فعلی', `${info.currentProvince || ''} ${info.currentDistrict || ''}`],
+      ['بست', info.bust], ['قدم', info.grade],
+      ['تاریخ اولین تقرر', info.firstAppointmentDate], ['تاریخ تقرر فعلی', info.currentPositionDate],
+      ['درجه تحصیل', info.degree], ['رشته تحصیلی', info.major],
+      ['مرجع تحصیلی', info.eduInstitute],
+      ['مضمون تدریس', info.subjectTeaching]
+    ];
+
+    let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;"><h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2><h4 style="margin:5px 0 0 0; font-size:13px;">فورم معلومات کارمند - ${escapeHtml(rec.schoolname || '')}</h4></div><table style="width:100%; border-collapse:collapse; font-size:12px;">`;
+    
+    rows.forEach(([label, value]) => {
+      if (value) {
+        html += `<tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold; width:30%;">${label}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(value)}</td></tr>`;
+      }
+    });
+    html += '</table>';
+    
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت ${escapeHtml(info.firstName || '')}</title><style>body { font-family: Tahoma; padding: 15px; direction: rtl; } @media print { .no-print { display:none; } }</style></head><body>${html}<div class="no-print" style="text-align:center; margin-top:20px;"><button onclick="window.print()" style="padding:10px 20px; background:#7c3aed; color:#fff; border:none; border-radius:6px; cursor:pointer;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(), 400);<\/script></body></html>`);
+    win.document.close();
+  }
+  window.printRecord = printRecord;
 
   // ═══════════════════════════════════════════════════════════
   // ارزیابی

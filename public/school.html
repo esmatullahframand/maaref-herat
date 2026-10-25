@@ -309,7 +309,7 @@
         <h4 style="margin:0; border:none; padding:0;">📋 لیست کارمندان</h4>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn" style="background:#7c3aed; padding:8px 16px; font-size:13px;" onclick="printEmployeeList()">🖨️ پرنت لیست</button>
-          <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEmployeeExcel()">📊 خروجی اکسل</button>
+          <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEmployeeExcel()">📊 خروجی اکسل (کامل)</button>
         </div>
       </div>
 
@@ -712,7 +712,7 @@
   }
 
   function validateTazkiraCode(codeStr) {
-    if (!codeStr) return { valid: true, formatted: '' }; // اختیاری
+    if (!codeStr) return { valid: true, formatted: '' };
     const cleaned = normalizeDigits(codeStr).trim().toUpperCase();
     if (!/^[A-Z0-9]{2}-[A-Z0-9]{2}-\d{3}$/.test(cleaned)) {
       return { valid: false, error: 'فرمت: XX-XX-123 (مثال: 12-34-567)' };
@@ -1079,7 +1079,6 @@
     const searchVal = document.getElementById('searchInput').value.trim();
     const tbody = document.getElementById('schoolTableBody');
     
-    // لود آمار همیشه در پس‌زمینه
     try {
       const statRes = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
       if (!statRes.ok && (statRes.status === 401 || statRes.status === 403)) { localStorage.clear(); window.location.href = '/'; return; }
@@ -1106,7 +1105,6 @@
         const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
         const statusHtml = row.status === 'approved' ? '<span class="status-badge status-approved">✅ تایید</span>' : '<span class="status-badge status-pending">⏳ انتظار</span>';
         
-        // رندر ۱۰ ستون
         html += `<tr>
           <td>${row.id}</td>
           <td><b>${escapeHtml(name)}</b></td>
@@ -1305,7 +1303,7 @@
   window.saveEditedRecord = saveEditedRecord;
 
   // ═══════════════════════════════════════════════════════════
-  // مشاهده و پرینت کارمند (امن شده)
+  // مشاهده و پرینت کارمند
   // ═══════════════════════════════════════════════════════════
   function viewRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
@@ -1376,7 +1374,6 @@
     });
     html += '</table>';
 
-    // استفاده از iframe مخفی برای جلوگیری از قفل شدن صفحه اصلی (Main Thread)
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
     iframe.style.width = '0';
@@ -1398,7 +1395,7 @@
   window.printRecord = printRecord;
 
   // ═══════════════════════════════════════════════════════════
-  // پرینت لیست کلی کارمندان (امن)
+  // پرینت لیست کلی کارمندان
   // ═══════════════════════════════════════════════════════════
   function printEmployeeList() {
     if (!cachedRecords || cachedRecords.length === 0) {
@@ -1465,7 +1462,7 @@
   window.printEmployeeList = printEmployeeList;
 
   // ═══════════════════════════════════════════════════════════
-  // خروجی اکسل از لیست
+  // ⭐ خروجی اکسل کامل (۴۷ ستون)
   // ═══════════════════════════════════════════════════════════
   function exportEmployeeExcel() {
     if (!cachedRecords || cachedRecords.length === 0) {
@@ -1473,45 +1470,78 @@
       return;
     }
 
-    let csvContent = "\uFEFF"; // BOM برای پشتیبانی از فارسی در اکسل
-    csvContent += "ردیف,نام و تخلص,ولد,عنوان بست,کد بست,تذکره الکترونیکی,شماره تماس,درجه تحصیل,وضعیت\n";
+    const columns = [
+      { label: 'آی‌دی', get: r => r.id },
+      { label: 'عنوان بست', get: r => r.data?.jobTitle },
+      { label: 'کُد بست', get: r => r.data?.jobCode },
+      { label: 'اسم', get: r => r.data?.firstName },
+      { label: 'تخلص', get: r => r.data?.lastName },
+      { label: 'ولد', get: r => r.data?.fatherName },
+      { label: 'ولدیت', get: r => r.data?.grandfatherName },
+      { label: 'تذکره الکترونیکی', get: r => r.data?.eTazkira },
+      { label: 'تذکره کاغذی', get: r => r.data?.paperTazkira },
+      { label: 'صفحه تذکره', get: r => r.data?.tazkiraPage },
+      { label: 'جلد تذکره', get: r => r.data?.tazkiraVolume },
+      { label: 'قومیت', get: r => r.data?.ethnicity },
+      { label: 'جنسیت', get: r => r.data?.gender },
+      { label: 'حالت مدنی', get: r => r.data?.maritalStatus },
+      { label: 'تاریخ تولد', get: r => r.data?.birthDate },
+      { label: 'شماره تماس', get: r => r.data?.phone },
+      { label: 'معلولیت', get: r => r.data?.disability },
+      { label: 'ولایت تولد', get: r => r.data?.birthProvince },
+      { label: 'ولسوالی تولد', get: r => r.data?.birthDistrict },
+      { label: 'ولایت سکونت اصلی', get: r => r.data?.originProvince },
+      { label: 'ولسوالی سکونت اصلی', get: r => r.data?.originDistrict },
+      { label: 'ولایت سکونت فعلی', get: r => r.data?.currentProvince },
+      { label: 'ولسوالی سکونت فعلی', get: r => r.data?.currentDistrict },
+      { label: 'بست', get: r => r.data?.bust },
+      { label: 'قدم', get: r => r.data?.grade },
+      { label: 'تاریخ اولین تقرر', get: r => r.data?.firstAppointmentDate },
+      { label: 'تاریخ تقرر فعلی', get: r => r.data?.currentPositionDate },
+      { label: 'موقف وظیفوی', get: r => r.data?.positionType },
+      { label: 'نوع استخدام', get: r => r.data?.employmentType },
+      { label: 'درجه تحصیل', get: r => r.data?.degree },
+      { label: 'رشته تحصیلی', get: r => r.data?.major },
+      { label: 'مرجع تحصیلی', get: r => r.data?.eduInstitute },
+      { label: 'موقعیت مرجع تحصیلی', get: r => r.data?.eduInstituteLocation },
+      { label: 'تاریخ شمولیت', get: r => r.data?.enrollmentDate },
+      { label: 'تاریخ فراغت', get: r => r.data?.graduationDate },
+      { label: 'مضمون تدریس', get: r => r.data?.subjectTeaching },
+      { label: 'ورکشاپ اخذ کرده', get: r => r.data?.workshopStatus },
+      { label: 'عنوان ورکشاپ', get: r => r.data?.workshopTitle },
+      { label: 'مدت ورکشاپ', get: r => r.data?.workshopDuration },
+      { label: 'مجموعه ساعت درسی', get: r => r.data?.totalTeachingHours },
+      { label: 'خدمتی رفته', get: r => r.data?.serviceStatus },
+      { label: 'ولسوالی خدمتی', get: r => r.data?.serviceDistrict },
+      { label: 'مکتب خدمتی', get: r => r.data?.serviceSchool },
+      { label: 'تاریخ خدمتی', get: r => r.data?.serviceDate },
+      { label: 'وضعیت', get: r => r.status === 'approved' ? 'تایید شده' : 'در انتظار' },
+      { label: 'مکتب', get: r => r.schoolname || user.schoolname || '' },
+    ];
 
-    cachedRecords.forEach((row, idx) => {
-      const info = row.data || {};
-      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
-      const statusText = row.status === 'approved' ? 'تایید شده' : 'در انتظار';
-      
-      const rowData = [
-        idx + 1,
-        name,
-        info.fatherName || '-',
-        info.jobTitle || '-',
-        info.jobCode || '-',
-        info.eTazkira || '-',
-        info.phone || '-',
-        info.degree || '-',
-        statusText
-      ];
-      
-      const cleanRowData = rowData.map(val => {
-        let str = String(val);
-        str = str.replace(/,/g, '،'); 
-        str = str.replace(/\n/g, ' ');
+    let csvContent = "\uFEFF";
+    csvContent += columns.map(c => `"${c.label}"`).join(",") + "\n";
+
+    cachedRecords.forEach((row) => {
+      const cells = columns.map(c => {
+        let val = c.get(row);
+        if (val === null || val === undefined) val = '';
+        let str = String(val).replace(/,/g, '،').replace(/\n/g, ' ').replace(/\r/g, ' ');
         return `"${str}"`;
       });
-
-      csvContent += cleanRowData.join(",") + "\n";
+      csvContent += cells.join(",") + "\n";
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `لیست_کارمندان_${new Date().getTime()}.csv`);
+    link.setAttribute("download", `لیست_کامل_کارمندان_${new Date().getTime()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('✅ خروجی اکسل با موفقیت دانلود شد');
+    URL.revokeObjectURL(url);
+    showToast(`✅ خروجی کامل اکسل دانلود شد (${cachedRecords.length} کارمند × ${columns.length} ستون)`);
   }
   window.exportEmployeeExcel = exportEmployeeExcel;
 

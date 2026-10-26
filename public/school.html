@@ -282,7 +282,7 @@
             <div class="form-group edu-field"><label>تاریخ شمولیت *</label><input type="text" id="enrollmentDate" placeholder="1397/01/01"><small id="enrollmentDateMsg" class="date-msg"></small></div>
             <div class="form-group edu-field"><label>تاریخ فراغت *</label><input type="text" id="graduationDate" placeholder="1399/01/01"><small id="graduationDateMsg" class="date-msg"></small></div>
             
-            <div class="form-group"><label>مضمون تدریس</label><input type="text" id="subjectTeaching"></div>
+            <div class="form-group"><label>رشته تدریس</label><input type="text" id="teachingField"></div>
           </div>
         </div>
 
@@ -327,6 +327,7 @@
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
         <h4 style="margin:0; border:none; padding:0;">📋 لیست کارمندان</h4>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" style="background:#3b82f6; padding:8px 16px; font-size:13px;" onclick="showAllEmployees()">👁️ نمایش همه لیست</button>
           <button class="btn" style="background:#7c3aed; padding:8px 16px; font-size:13px;" onclick="printEmployeeList()">🖨️ پرنت لیست</button>
           <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEmployeeExcel()">📊 خروجی اکسل (کامل)</button>
         </div>
@@ -615,6 +616,11 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ══════════ فوتر تهیه کننده ══════════ -->
+<div style="text-align:center; padding:20px; color:#64748b; font-size:13px; border-top:1px solid #e2e8f0; margin-top:30px;">
+  <strong>ترتیب و تهیه کننده این سیستم: عصمت الله فرهمند — عضو مسلکی امور مالی و کارکنان</strong>
+</div>
 
 <script>
   // ═══════════════════════════════════════════════════════════
@@ -1029,7 +1035,7 @@
       eduInstituteLocation: document.getElementById('eduInstituteLocation').value.trim(),
       enrollmentDate: document.getElementById('enrollmentDate').value.trim(),
       graduationDate: document.getElementById('graduationDate').value.trim(),
-      subjectTeaching: document.getElementById('subjectTeaching').value.trim(),
+      teachingField: document.getElementById('teachingField').value.trim(),
       workshopStatus: document.getElementById('workshopStatus').value,
       workshopTitle: document.getElementById('workshopTitle').value.trim(),
       workshopDuration: document.getElementById('workshopDuration').value.trim(),
@@ -1242,6 +1248,40 @@
     } catch (err) { console.error(err); tbody.innerHTML = '<tr><td colspan="10" class="empty-state" style="color:red;">خطا در بارگذاری اطلاعات</td></tr>'; }
   }
 
+  // ⭐ نمایش همه لیست (دکمه جدید)
+  function showAllEmployees() {
+    document.getElementById('searchInput').value = '';
+    const tbody = document.getElementById('schoolTableBody');
+    if (!Array.isArray(cachedRecords) || cachedRecords.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" class="empty-state">هیچ کارمندی ثبت نشده است</td></tr>';
+      return;
+    }
+    let html = '';
+    cachedRecords.forEach((row) => {
+      const info = row.data || {};
+      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
+      const statusHtml = row.status === 'approved' ? '<span class="status-badge status-approved">✅ تایید</span>' : '<span class="status-badge status-pending">⏳ انتظار</span>';
+      html += `<tr>
+        <td>${row.id}</td>
+        <td><b>${escapeHtml(name)}</b></td>
+        <td>${escapeHtml(info.fatherName || '-')}</td>
+        <td>${escapeHtml(info.jobTitle || '-')}</td>
+        <td><code>${escapeHtml(info.jobCode || '—')}</code></td>
+        <td><code>${escapeHtml(info.eTazkira || '—')}</code></td>
+        <td>${escapeHtml(info.phone || '-')}</td>
+        <td>${escapeHtml(info.degree || '-')}</td>
+        <td>${statusHtml}</td>
+        <td>
+          <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>
+          <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="مشاهده">👁️</button>
+          <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرینت">🖨️</button>
+        </td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+  window.showAllEmployees = showAllEmployees;
+
   function updateStats(records) {
     const container = document.getElementById('statsContainer');
     if (!Array.isArray(records) || records.length === 0) {
@@ -1304,11 +1344,6 @@
           <input type="text" id="eJobCode" value="${escapeHtml(info.jobCode || '')}" placeholder="27-32-02-13056">
           <small id="eJobCodeMsg" class="date-msg pending">⏳ منتظر...</small>
         </div>
-        <div class="form-group">
-          <label>تذکره کاغذی</label>
-          <input type="text" id="ePaperTazkira" value="${escapeHtml(info.paperTazkira || '')}" placeholder="66564646" inputmode="numeric" maxlength="20">
-          <small id="ePaperTazkiraMsg" class="date-msg pending">⏳ اختیاری</small>
-        </div>
         <div class="form-group"><label>بست</label><input type="text" id="eBust" value="${escapeHtml(info.bust || '')}"></div>
         <div class="form-group"><label>قدم</label><input type="text" id="eGrade" value="${escapeHtml(info.grade || '')}"></div>
         <div class="form-group">
@@ -1327,6 +1362,7 @@
           <input type="text" id="eWorkshopDuration" value="${escapeHtml(info.workshopDuration || '')}">
         </div>
         <div class="form-group"><label>درجه تحصیل</label><input type="text" id="eDegree" value="${escapeHtml(info.degree || '')}"></div>
+        <div class="form-group"><label>رشته تدریس</label><input type="text" id="eTeachingField" value="${escapeHtml(info.teachingField || '')}"></div>
         <div class="form-group"><label>مجموعه ساعت درسی</label><input type="text" id="eTotalTeachingHours" value="${escapeHtml(info.totalTeachingHours || '')}"></div>
         <div class="form-group">
           <label>تاریخ تقرر فعلی</label>
@@ -1340,7 +1376,6 @@
 
     attachLiveValidation('eCurrentPositionDate', validateShamsiDate, 'eCurrentPositionDateMsg');
     attachUniqueFieldValidation('eJobCode', 'eJobCodeMsg', 'jobcode', editingRecordId);
-    attachUniqueFieldValidation('ePaperTazkira', 'ePaperTazkiraMsg', 'tazkira', editingRecordId);
   }
   window.editRecord = editRecord;
 
@@ -1358,13 +1393,13 @@
 
     const jobTitle = document.getElementById('eJobTitle').value.trim();
     const jobCode = document.getElementById('eJobCode').value.trim();
-    const paperTazkira = document.getElementById('ePaperTazkira')?.value.trim() || '';
     const bust = document.getElementById('eBust').value.trim();
     const grade = document.getElementById('eGrade').value.trim();
     const workshopStatus = document.getElementById('eWorkshopStatus').value;
     const workshopTitle = document.getElementById('eWorkshopTitle')?.value.trim() || '';
     const workshopDuration = document.getElementById('eWorkshopDuration')?.value.trim() || '';
     const degree = document.getElementById('eDegree').value.trim();
+    const teachingField = document.getElementById('eTeachingField').value.trim();
     const totalTeachingHours = document.getElementById('eTotalTeachingHours').value.trim();
     const currentPositionDate = document.getElementById('eCurrentPositionDate').value.trim();
 
@@ -1387,21 +1422,16 @@
       if (!jcCheck.unique) { showToast(buildDuplicateMessage('jobcode', jcCheck), true); return; }
     }
 
-    if (paperTazkira) {
-      const tz = validateTazkiraCode(paperTazkira);
-      if (!tz.valid) { showToast('❌ ' + tz.error, true); return; }
-    }
-
     const body = {
       jobTitle,
       jobCode: jobCode ? normalizeDigits(jobCode).trim() : '',
-      paperTazkira: paperTazkira ? normalizeDigits(paperTazkira).trim() : '',
       bust,
       grade,
       workshopStatus,
       workshopTitle: workshopStatus === 'بلی' ? workshopTitle : '',
       workshopDuration: workshopStatus === 'بلی' ? workshopDuration : '',
       degree,
+      teachingField,
       totalTeachingHours,
       currentPositionDate: currentPositionDate ? validateShamsiDate(currentPositionDate).formatted : ''
     };
@@ -1452,7 +1482,7 @@
       ['درجه تحصیل', info.degree], ['رشته تحصیلی', info.major],
       ['مرجع تحصیلی', info.eduInstitute], ['موقعیت مرجع', info.eduInstituteLocation],
       ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate],
-      ['مضمون تدریس', info.subjectTeaching],
+      ['رشته تدریس', info.teachingField],
       ['ورکشاپ', info.workshopStatus === 'بلی' ? `${info.workshopTitle} (${info.workshopDuration})` : 'نخیر'],
       ['مجموعه ساعت درسی', info.totalTeachingHours],
       ['خدمتی رفته', info.serviceStatus === 'بلی' ? `بلی - ${info.serviceDistrict} / ${info.serviceSchool} (${info.serviceDate})` : 'نخیر']
@@ -1489,7 +1519,7 @@
       ['تاریخ اولین تقرر', info.firstAppointmentDate], ['تاریخ تقرر فعلی', info.currentPositionDate],
       ['درجه تحصیل', info.degree], ['رشته تحصیلی', info.major],
       ['مرجع تحصیلی', info.eduInstitute],
-      ['مضمون تدریس', info.subjectTeaching]
+      ['رشته تدریس', info.teachingField]
     ];
 
     let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;"><h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2><h4 style="margin:5px 0 0 0; font-size:13px;">فورم معلومات کارمند - ${escapeHtml(rec.schoolname || '')}</h4></div><table style="width:100%; border-collapse:collapse; font-size:12px;">`;
@@ -1633,7 +1663,7 @@
       { label: 'موقعیت مرجع تحصیلی', get: r => r.data?.eduInstituteLocation },
       { label: 'تاریخ شمولیت', get: r => r.data?.enrollmentDate },
       { label: 'تاریخ فراغت', get: r => r.data?.graduationDate },
-      { label: 'مضمون تدریس', get: r => r.data?.subjectTeaching },
+      { label: 'رشته تدریس', get: r => r.data?.teachingField },
       { label: 'ورکشاپ اخذ کرده', get: r => r.data?.workshopStatus },
       { label: 'عنوان ورکشاپ', get: r => r.data?.workshopTitle },
       { label: 'مدت ورکشاپ', get: r => r.data?.workshopDuration },

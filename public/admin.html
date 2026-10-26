@@ -1014,177 +1014,54 @@
 
   // 🖨️ پرینت دقیقاً مشابه فورم رسمی توحیدی ارزیابی (PDF)
   function printEvalAdmin() {
-    if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('داده‌ای برای پرینت وجود ندارد', true); return; }
-    
-    let rowsHtml = '';
-    filteredEvaluations.forEach((e, idx) => {
-      const g1 = e.eval_g1 || '—'; const g2 = e.eval_g2 || '—'; const g3 = e.eval_g3 || '—';
-      const g4 = e.eval_g4 || '—'; const g5 = e.eval_g5 || '—'; const g6 = e.eval_g6 || '—';
-      const g7 = e.eval_g7 || '—'; const g8 = e.eval_g8 || '—'; const g9 = e.eval_g9 || '—';
-      
-      const appDate = e.appointment_date || '—';
-      const currDate = e.current_position_date || '—';
-      const gradDate = e.graduation_date || '—';
-      const prevEvalDate = e.prev_eval_date || '—';
-      const evalDate = e.eval_date || '—';
-      
-      const degree = e.degree || '—';
-      const bust = e.bust || '—';
-      const grade = e.grade || '—';
-      const jobCode = e.job_code || '—';
-      
-      let resHtml = '—';
-      if (e.eval_result === 'عالی') resHtml = '<span style="color:green; font-weight:bold;">عالی</span>';
-      else if (e.eval_result === 'خوب') resHtml = '<span style="color:blue; font-weight:bold;">خوب</span>';
-      else if (e.eval_result === 'ضعیف') resHtml = '<span style="color:red; font-weight:bold;">ضعیف</span>';
-      
-      rowsHtml += `
-        <tr>
-          <td>${idx + 1}</td>
-          <td>${escapeHtml(e.first_name || '')}</td>
-          <td>${escapeHtml(e.last_name || '')}</td>
-          <td>${escapeHtml(e.father_name || '')}</td>
-          <td>${escapeHtml(jobCode)}</td>
-          <td>${escapeHtml(e.appointment_type || '—')}</td>
-          <td>${escapeHtml(e.birth_date || '—')}</td>
-          <td>${escapeHtml(e.service_duration || '—')}</td>
-          <td>${escapeHtml(degree)}</td>
-          <td>${escapeHtml(e.gender || '—')}</td>
-          <td>${escapeHtml(e.job_title || '')}</td>
-          <td>${escapeHtml(e.district || '—')}</td>
-          <td>${escapeHtml(e.schoolname || '')}</td>
-          <td>${escapeHtml(appDate)}</td>
-          <td>${escapeHtml(currDate)}</td>
-          <td>${escapeHtml(gradDate)}</td>
-          <td>${escapeHtml(prevEvalDate)}</td>
-          <td>${escapeHtml(bust)}</td>
-          <td>${escapeHtml(grade)}</td>
-          <td>${escapeHtml(evalDate)}</td>
-          <td>${g1}</td><td>${g2}</td><td>${g3}</td><td>${g4}</td><td>${g5}</td><td>${g6}</td><td>${g7}</td><td>${g8}</td><td>${g9}</td>
-          <td>${resHtml}</td>
-        </tr>
-      `;
-    });
-
-    const printHtml = `
-      <div class="print-area" dir="rtl" style="width: 100%;">
-        <div style="text-align: center; margin-bottom: 15px;">
-          <h3 style="margin: 0; font-size: 16px;">جمهوری اسلامی افغانستان</h3>
-          <h4 style="margin: 3px 0; font-size: 14px;">وزارت معارف</h4>
-          <h5 style="margin: 3px 0; font-size: 12px;">ریاست معارف ولایت هرات — آمریت ارزیابی اجرات معلمین و کارمندان</h5>
-          <h4 style="margin: 10px 0 5px 0; font-size: 14px; background: #eee; padding: 5px; border: 1px solid #000;">جدول توحیدی ارزیابی اجرات سالانه معلمین و مدرسین معارف</h4>
-        </div>
-        
-        <table class="print-table" style="width:100%; border-collapse: collapse; font-size: 8px; text-align: center;">
-          <thead>
-            <tr>
-              <th rowspan="3" style="border: 1px solid #000; padding: 2px;">شماره</th>
-              <th colspan="5" style="border: 1px solid #000; padding: 2px;">شهرت</th>
-              <th colspan="5" style="border: 1px solid #000; padding: 2px;">مشخصات وظیفوی</th>
-              <th colspan="3" style="border: 1px solid #000; padding: 2px;">تاریخ تقرر / تاریخ معادلت / تاریخ فراغت</th>
-              <th rowspan="3" style="border: 1px solid #000; padding: 2px;">تاریخ ارزیابی قبلی</th>
-              <th colspan="2" style="border: 1px solid #000; padding: 2px;">بست و قدم موجود</th>
-              <th colspan="3" style="border: 1px solid #000; padding: 2px;">تاریخ ارزیابی</th>
-              <th rowspan="3" style="border: 1px solid #000; padding: 2px;">نمره ارزیابی</th>
-              <th colspan="3" style="border: 1px solid #000; padding: 2px;">نتیجه ارزیابی</th>
-            </tr>
-            <tr>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">اسم</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ولد</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ولدیت</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">کود تشکیل</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">نوع تقرری</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">تاریخ تولد</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">مدت خدمت</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">درجه تحصیل</th>
-              <th colspan="2" style="border: 1px solid #000; padding: 2px;">جنسیت</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">وظیفه</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ناجیه / ولسوالی</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">نام مکتب / اداره مربوطه</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">روز</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ماه</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">سال</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">بست</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">قدم</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">روز</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ماه</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">سال</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">عالی</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">خوب</th>
-              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ضعیف</th>
-            </tr>
-            <tr>
-              <th style="border: 1px solid #000; padding: 2px;">حکمی</th>
-              <th style="border: 1px solid #000; padding: 2px;">رقابتی</th>
-              <th style="border: 1px solid #000; padding: 2px;">مرد</th>
-              <th style="border: 1px solid #000; padding: 2px;">زن</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
-        </table>
-        <div style="margin-top: 20px; display: flex; justify-content: space-between; font-size: 11px;">
-          <div>امضاء آمر ارزیابی: ..........................</div>
-          <div>امضاء مدیر مربوطه: ..........................</div>
-        </div>
-      </div>
-    `;
-
-    const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت توحیدی</title><style>body{font-family:Tahoma;padding:10px;direction:rtl;}table, th, td {border: 1px solid #000 !important;} @media print{.no-print{display:none;}@page{size:A4 landscape;margin:5mm;}}</style></head><body>${printHtml}<div class="no-print" style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="padding:10px 30px;background:#7c3aed;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px;font-weight:bold;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
+    const list = filteredEvaluations || [];
+    if (!list.length) { showToast('داده‌ای برای پرینت وجود ندارد', true); return; }
+    const dateParts = v => { const p=String(v||'').split(/[\/\-]/); return p.length===3 ? p : ['','','']; };
+    const cell = v => escapeHtml(v == null || v === '' ? '' : String(v));
+    const rows = list.map((e,i) => {
+      const bd=dateParts(e.birth_date), ad=dateParts(e.appointment_date), ed=dateParts(e.eval_date);
+      const result=e.eval_result||'';
+      const mark=(yes)=>yes?'√':'';
+      return `<tr>
+      <td>${i+1}</td><td>${cell(e.first_name)}</td><td>${cell(e.last_name)}</td><td>${cell(e.father_name)}</td><td>${cell(e.job_code)}</td>
+      <td>${mark(String(e.appointment_type||'').includes('حکمی'))}</td><td>${mark(String(e.appointment_type||'').includes('رقابتی'))}</td>
+      <td>${cell(bd[0])}</td><td>${cell(e.service_duration)}</td><td>${cell(e.degree)}</td><td>${mark(e.gender==='مرد')}</td><td>${mark(e.gender==='زن')}</td>
+      <td>${cell(e.job_title)}</td><td>${cell(e.district)}</td><td>${cell(e.schoolname)}</td>
+      <td>${cell(ad[2])}</td><td>${cell(ad[1])}</td><td>${cell(ad[0])}</td>
+      <td>${cell(e.current_position_date)}</td><td>${cell(e.prev_eval_date)}</td>
+      <td>${cell(e.bust)}</td><td>${cell(e.grade)}</td>
+      <td>${cell(ed[2])}</td><td>${cell(ed[1])}</td><td>${cell(ed[0])}</td>
+      <td>${cell(e.eval_score ?? e.total_score ?? e.score ?? '')}</td><td>${mark(result==='عالی')}</td><td>${mark(result==='خوب')}</td><td>${mark(result==='ضعیف')}</td><td>${cell(e.remarks||e.notes||'')}</td></tr>`;
+    }).join('');
+    const html=`<div class="head"><div class="headleft"><b>وزارت معارف</b><br>ریاست معارف ولایت هرات</div><div class="headcenter">معینیت مالی و اداری<br>ریاست عمومی امور کارکنان<br>ریاست استخدام<br>آمریت ارزیابی اجراات<br>مدیریت عمومی ارزیابی اجراات معلمین و استادان</div><div class="headright"><b>د پوهنې وزارت</b></div></div>
+    <div class="caption">جدول توحیدی ارزیابی اجراات سالانه معلمین و مدرسین معارف (کشک رباط سنگی)</div>
+    <table><thead>
+    <tr><th rowspan="3">شماره</th><th colspan="6">شهرت</th><th colspan="12">مشخصات وظیفوی</th><th colspan="3">تاریخ تقرر / تاریخ معادلت / تاریخ فراغت</th><th rowspan="3">تاریخ ارزیابی قبلی</th><th colspan="2">بست و قدم موجود</th><th colspan="3">تاریخ ارزیابی</th><th rowspan="3">نمره ارزیابی</th><th colspan="3">نتیجه ارزیابی</th><th rowspan="3">ملاحظات</th></tr>
+    <tr><th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th><th rowspan="2">کود تشکیل</th><th colspan="2">نوع تقرری</th><th rowspan="2">تاریخ تولد</th><th rowspan="2">مدت خدمت</th><th rowspan="2">درجه تحصیل</th><th colspan="2">جنسیت</th><th rowspan="2">وظیفه</th><th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره مربوطه</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">تاریخ معادلت</th><th rowspan="2">بست</th><th rowspan="2">قدم</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th></tr>
+    <tr><th>حکمی</th><th>رقابتی</th><th>مرد</th><th>زن</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="foot">Page 1 of 1</div>`;
+    const win=window.open('','_blank'); if(!win){showToast('اجازه بازشدن پنجره چاپ را بدهید',true);return;}
+    win.document.write(`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>جدول توحیدی ارزیابی</title><style>
+    @page{size:A3 landscape;margin:5mm}*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;color:#000}.head{height:30mm;border:1px solid #222;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;text-align:center;padding:3mm;font-size:9px}.headleft,.headright{font-size:17px;font-weight:bold}.headcenter{line-height:1.8}.caption{text-align:center;border:1px solid #222;border-top:0;background:#e5e5e5;font-size:9px;padding:2mm}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7px;text-align:center}th,td{border:1px solid #222;padding:2px;overflow-wrap:anywhere}thead th{background:#e8e8e8;font-weight:bold}tbody td{height:6mm}.foot{text-align:center;font-size:8px;margin-top:5mm}@media screen{body{padding:8px}.no-print{text-align:center;margin:12px}}@media print{.no-print{display:none}}</style></head><body>${html}<div class="no-print"><button onclick="window.print()">🖨️ پرینت</button></div><script>setTimeout(()=>window.print(),600)<\/script></body></html>`);
     win.document.close();
   }
   window.printEvalAdmin = printEvalAdmin;
 
   // 📊 خروجی اکسل دقیقا مشابه فرم (با ساختار ساده‌شده اما حفظ تمام اطلاعات)
   function exportEvalAdminExcel() {
-    if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('داده‌ای برای خروجی وجود ندارد', true); return; }
-    
-    const headers = [
-      'شماره', 'اسم', 'ولد', 'ولدیت', 'کود تشکیل', 'نوع تقرری', 
-      'تاریخ تولد', 'مدت خدمت', 'درجه تحصیل', 'جنسیت', 'وظیفه', 'ناجیه/ولسوالی', 'نام مکتب/اداره مربوطه',
-      'تاریخ تقرر', 'تاریخ معادلت', 'تاریخ فراغت', 
-      'تاریخ ارزیابی قبلی', 'بست', 'قدم',
-      'تاریخ ارزیابی', 'نمره ۱', 'نمره ۲', 'نمره ۳', 'نمره ۴', 'نمره ۵', 'نمره ۶', 'نمره ۷', 'نمره ۸', 'نمره ۹', 
-      'عالی', 'خوب', 'ضعیف'
-    ];
-    
-    const rows = filteredEvaluations.map((e, idx) => {
-      return [
-        idx + 1,
-        e.first_name || '',
-        e.last_name || '',
-        e.father_name || '',
-        e.job_code || '',
-        e.appointment_type || '',
-        e.birth_date || '',
-        e.service_duration || '',
-        e.degree || '',
-        e.gender || '',
-        e.job_title || '',
-        e.district || '',
-        e.schoolname || '',
-        e.appointment_date || '',
-        e.current_position_date || '',
-        e.graduation_date || '',
-        e.prev_eval_date || '',
-        e.bust || '',
-        e.grade || '',
-        e.eval_date || '',
-        e.eval_g1 || '', e.eval_g2 || '', e.eval_g3 || '', e.eval_g4 || '', e.eval_g5 || '', e.eval_g6 || '', e.eval_g7 || '', e.eval_g8 || '', e.eval_g9 || '',
-        e.eval_result === 'عالی' ? 'عالی' : '',
-        e.eval_result === 'خوب' ? 'خوب' : '',
-        e.eval_result === 'ضعیف' ? 'ضعیف' : ''
-      ];
-    });
-
-    const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'Evaluation_Tawhidi_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
-    URL.revokeObjectURL(url);
-    showToast('📊 اکسل دانلود شد');
+    const list=filteredEvaluations||[];
+    if(!list.length){showToast('داده‌ای برای خروجی وجود ندارد',true);return;}
+    const safe=v=>escapeHtml(v==null?'':String(v));
+    const rows=list.map((e,i)=>{
+      const p=v=>{const a=String(v||'').split(/[\/\-]/);return a.length===3?a:['','',''];};
+      const bd=p(e.birth_date),ad=p(e.appointment_date),ed=p(e.eval_date),r=e.eval_result||'';
+      return `<tr>${[i+1,e.first_name,e.last_name,e.father_name,e.job_code,String(e.appointment_type||'').includes('حکمی')?'√':'',String(e.appointment_type||'').includes('رقابتی')?'√':'',bd[0],e.service_duration,e.degree,e.gender==='مرد'?'√':'',e.gender==='زن'?'√':'',e.job_title,e.district,e.schoolname,ad[2],ad[1],ad[0],e.current_position_date,e.bust,e.grade,ed[2],ed[1],ed[0],e.eval_score??e.total_score??e.score??'',r==='عالی'?'√':'',r==='خوب'?'√':'',r==='ضعیف'?'√':'',e.remarks||''].map(v=>`<td>${safe(v)}</td>`).join('')}</tr>`;
+    }).join('');
+    const html=`<html><head><meta charset="utf-8"></head><body dir="rtl"><table border="1"><tr><th colspan="31">وزارت معارف — ریاست معارف ولایت هرات</th></tr><tr><th colspan="31">جدول توحیدی ارزیابی اجراات سالانه معلمین و مدرسین معارف</th></tr>
+    <tr><th rowspan="3">شماره</th><th colspan="6">شهرت</th><th colspan="12">مشخصات وظیفوی</th><th colspan="3">تاریخ تقرر / معادلت / فراغت</th><th rowspan="3">تاریخ ارزیابی قبلی</th><th colspan="2">بست و قدم موجود</th><th colspan="3">تاریخ ارزیابی</th><th rowspan="3">نمره ارزیابی</th><th colspan="3">نتیجه ارزیابی</th><th rowspan="3">ملاحظات</th></tr>
+    <tr><th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th><th rowspan="2">کود تشکیل</th><th colspan="2">نوع تقرری</th><th rowspan="2">تاریخ تولد</th><th rowspan="2">مدت خدمت</th><th rowspan="2">درجه تحصیل</th><th colspan="2">جنسیت</th><th rowspan="2">وظیفه</th><th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره مربوطه</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">تاریخ معادلت</th><th rowspan="2">بست</th><th rowspan="2">قدم</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th></tr><tr><th>حکمی</th><th>رقابتی</th><th>مرد</th><th>زن</th></tr>${rows}</table></body></html>`;
+    const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='جدول_توحیدی_ارزیابی.xls';a.click();URL.revokeObjectURL(url);showToast('📊 فایل اکسل توحیدی دانلود شد');
   }
   window.exportEvalAdminExcel = exportEvalAdminExcel;
 
@@ -1548,18 +1425,32 @@
   window.printSalaryAll = printSalaryAll;
 
   function printSalaryList(list, title) {
-    let rowsHtml = '';
-    let totalEnt = 0, totalDed = 0, totalNet = 0;
-    list.forEach((s, idx) => { 
-      totalEnt += Number(s.total_entitlement) || 0; 
-      totalDed += Number(s.total_deductions) || 0; 
-      totalNet += Number(s.net_pay) || 0; 
-      rowsHtml += `<tr><td>${idx + 1}</td><td>${escapeHtml(s.first_name || '')} ${escapeHtml(s.last_name || '')}</td><td>${escapeHtml(s.father_name || '')}</td><td>${escapeHtml(s.schoolname || '')}</td><td>${escapeHtml(s.job_title || '')}</td><td>${escapeHtml(s.year || '')}</td><td>${escapeHtml(s.month || '')}</td><td>${s.total_entitlement || 0}</td><td>${s.total_deductions || 0}</td><td><strong>${s.net_pay || 0}</strong></td><td>${s.att_present || 0}</td><td>${s.att_absent || 0}</td><td>${s.att_sick || 0}</td></tr>`; 
-    });
-    rowsHtml += `<tr style="background:#fef3c7; font-weight:bold;"><td colspan="7" style="text-align:center;">مجموعه کل</td><td>${totalEnt.toLocaleString()}</td><td>${totalDed.toLocaleString()}</td><td>${totalNet.toLocaleString()}</td><td colspan="3"></td></tr>`;
-    const html = `<h2 style="text-align:center; margin-bottom:5px;">ریاست معارف ولایت هرات</h2><h3 style="text-align:center; margin-top:0; color:#7c3aed;">${title}</h3><div style="text-align:center; font-size:11px; margin-bottom:15px;">تعداد: ${list.length} نفر | تاریخ: ${new Date().toLocaleDateString('fa-IR')}</div><table style="width:100%; border-collapse:collapse; font-size:10px;"><thead><tr style="background:#1e40af; color:#fff;"><th style="border:1px solid #333; padding:4px;">#</th><th style="border:1px solid #333; padding:4px;">نام</th><th style="border:1px solid #333; padding:4px;">ولد</th><th style="border:1px solid #333; padding:4px;">مکتب</th><th style="border:1px solid #333; padding:4px;">وظیفه</th><th style="border:1px solid #333; padding:4px;">سال</th><th style="border:1px solid #333; padding:4px;">ماه</th><th style="border:1px solid #333; padding:4px;">استحقاق</th><th style="border:1px solid #333; padding:4px;">کسرات</th><th style="border:1px solid #333; padding:4px;">قابل پرداخت</th><th style="border:1px solid #333; padding:4px;">حاضر</th><th style="border:1px solid #333; padding:4px;">غیرحاضر</th><th style="border:1px solid #333; padding:4px;">مریض</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
-    const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Tahoma;padding:8px;direction:rtl;}@media print{.no-print{display:none;}@page{size:A4 landscape;margin:5mm;}}</style></head><body>${html}<div class="no-print" style="text-align:center;margin-top:15px;"><button onclick="window.print()" style="padding:10px 30px;background:#7c3aed;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
+    const months=['حمل','ثور','جوزا','سرطان','اسد','سنبله','میزان','عقرب','قوس','جدی','دلو','حوت'];
+    const esc=v=>escapeHtml(v==null?'':String(v));
+    const groups={}; (list||[]).forEach(s=>{const k=[s.job_code||'',s.first_name||'',s.last_name||'',s.father_name||'',s.schoolname||''].join('|');(groups[k] ||= []).push(s);});
+    const pages=Object.values(groups).map((items,ix)=>{
+      const first=items[0], byMonth={}; items.forEach(s=>byMonth[String(s.month||'').trim()]=s);
+      let ent=0,ded=0,net=0,otherDed=0,absent=0;
+      const trs=months.map(m=>{
+        const s=byMonth[m]||byMonth[({'حمل':'1','ثور':'2','جوزا':'3','سرطان':'4','اسد':'5','سنبله':'6','میزان':'7','عقرب':'8','قوس':'9','جدی':'10','دلو':'11','حوت':'12'})[m]]||{};
+        const e=Number(s.total_entitlement)||0,d=Number(s.total_deductions)||0,n=Number(s.net_pay)||0;
+        ent+=e;ded+=d;net+=n;otherDed+=d;absent+=Number(s.att_absent)||0;
+        return `<tr><td>${m}</td><td>${esc(s.base_salary??s.salary_grade??s.salary_amount??'')}</td><td>${esc(s.professional_allowance??s.makul??'')}</td><td>${esc(s.other_allowance??'')}</td><td>${e||''}</td><td>${esc(s.att_absent||'')}</td><td>${esc(s.att_sick||'')}</td><td>${esc(s.att_present||'')}</td><td>${esc(s.tax||'')}</td><td>${d||''}</td><td>${n||''}</td><td></td></tr>`;
+      }).join('');
+      return `<section class="sheet ${ix?'pagebreak':''}">
+      <table class="top"><tr><th colspan="6">فورم - م 40 ر | دفتر معاش و کسرات</th><th colspan="6">1. اداره: ${esc(first.schoolname||'')}</th></tr>
+      <tr><th colspan="4">5. آدرس: ${esc(first.address||first.district||'')}</th><th colspan="4">4. نمبر: ${esc(first.bank_number||'')}</th><th colspan="4">2. اسم: ${esc((first.first_name||'')+' '+(first.last_name||''))}</th></tr>
+      <tr><th colspan="12">3. ولد: ${esc(first.father_name||'')}</th></tr></table>
+      <table class="top"><tr><th colspan="6">7. کسرات مخصوص</th><th colspan="6">6. اجراآت متعلق مامور</th></tr>
+      <tr><td colspan="6" style="height:12mm"></td><td colspan="6" style="height:12mm">رتبه ماموریت: ${esc(first.job_title||'')}　　سال: ${esc(first.year||'')}</td></tr>
+      <tr><th colspan="6">8. کسرات عادی</th><th colspan="6">9. یادداشت</th></tr><tr><td colspan="6" style="height:10mm"></td><td colspan="6"></td></tr></table>
+      <table class="pay"><thead><tr><th rowspan="2">ماه</th><th colspan="4">10. استحقاق</th><th colspan="5">11. کسرات عادی</th><th rowspan="2">12. مبلغ قابل تادیه</th><th rowspan="2">ملاحظات</th></tr>
+      <tr><th>رتبوی</th><th>مسلکی</th><th>ماکول</th><th>مجموعه استحقاق</th><th>غیرحاضری</th><th>مریض</th><th>سایر</th><th>مالیه</th><th>مجموعه کسرات</th></tr></thead><tbody>${trs}
+      <tr class="total"><th>مجموعه</th><td></td><td></td><td></td><td>${ent.toLocaleString()}</td><td>${absent}</td><td></td><td></td><td></td><td>${ded.toLocaleString()}</td><td>${net.toLocaleString()}</td><td></td></tr></tbody></table></section>`;
+    }).join('');
+    const win=window.open('','_blank');if(!win){showToast('اجازه بازشدن پنجره چاپ را بدهید',true);return;}
+    win.document.write(`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+    @page{size:A4 landscape;margin:12mm}*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#000;font-size:10px}.sheet{width:100%;page-break-after:always}.sheet:last-child{page-break-after:auto}table{width:100%;border-collapse:collapse;table-layout:fixed;text-align:center;margin-bottom:0}th,td{border:1px solid #000;padding:5px 3px;height:7mm}th{font-weight:bold}.top{font-size:10px}.pay{margin-top:6mm;font-size:9px}.pay thead th{height:12mm}.total{font-weight:bold}.pagebreak{page-break-before:always}@media screen{body{padding:10px}.no-print{text-align:center;margin:15px}}@media print{.no-print{display:none}}</style></head><body>${pages}<div class="no-print"><button onclick="window.print()">🖨️ پرینت</button></div><script>setTimeout(()=>window.print(),600)<\/script></body></html>`);
     win.document.close();
   }
 
@@ -1577,14 +1468,18 @@
   window.exportSalaryAll = exportSalaryAll;
 
   function exportSalaryList(list, filename) {
-    const headers = ['#', 'اسم', 'تخلص', 'ولد', 'وظیفه', 'کُد بست', 'مکتب', 'سال', 'ماه', 'نمبر بانکی', 'استحقاق', 'کسرات', 'قابل پرداخت', 'حاضر', 'غیرحاضر', 'مریض'];
-    const rows = list.map((s, idx) => [idx + 1, s.first_name || '', s.last_name || '', s.father_name || '', s.job_title || '', s.job_code || '', s.schoolname || '', s.year || '', s.month || '', s.bank_number || '', s.total_entitlement || 0, s.total_deductions || 0, s.net_pay || 0, s.att_present || 0, s.att_absent || 0, s.att_sick || 0]);
-    const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = filename + '_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
-    URL.revokeObjectURL(url);
-    showToast('📊 اکسل دانلود شد');
+    const months=['حمل','ثور','جوزا','سرطان','اسد','سنبله','میزان','عقرب','قوس','جدی','دلو','حوت'];
+    const esc=v=>escapeHtml(v==null?'':String(v));
+    const groups={};(list||[]).forEach(s=>{const k=[s.job_code||'',s.first_name||'',s.last_name||'',s.father_name||'',s.schoolname||''].join('|');(groups[k] ||= []).push(s);});
+    const sheets=Object.values(groups).map(items=>{
+      const f=items[0],m={};items.forEach(s=>m[String(s.month||'').trim()]=s);
+      const rows=months.map(month=>{const s=m[month]||m[({'حمل':'1','ثور':'2','جوزا':'3','سرطان':'4','اسد':'5','سنبله':'6','میزان':'7','عقرب':'8','قوس':'9','جدی':'10','دلو':'11','حوت':'12'})[month]]||{};
+        return `<tr><td>${month}</td><td>${esc(s.base_salary??s.salary_grade??'')}</td><td>${esc(s.professional_allowance??'')}</td><td>${esc(s.other_allowance??'')}</td><td>${esc(s.total_entitlement||0)}</td><td>${esc(s.att_absent||0)}</td><td>${esc(s.att_sick||0)}</td><td>${esc(s.att_present||0)}</td><td>${esc(s.tax||0)}</td><td>${esc(s.total_deductions||0)}</td><td>${esc(s.net_pay||0)}</td><td></td></tr>`;}).join('');
+      return `<table border="1" style="border-collapse:collapse;width:100%;text-align:center" dir="rtl"><tr><th colspan="6">فورم - م 40 ر | دفتر معاش و کسرات</th><th colspan="6">1. اداره: ${esc(f.schoolname||'')}</th></tr><tr><th colspan="4">5. آدرس: ${esc(f.address||f.district||'')}</th><th colspan="4">4. نمبر: ${esc(f.bank_number||'')}</th><th colspan="4">2. اسم: ${esc((f.first_name||'')+' '+(f.last_name||''))}</th></tr><tr><th colspan="12">3. ولد: ${esc(f.father_name||'')}</th></tr><tr><th colspan="12">6. اجراآت متعلق مامور　　رتبه ماموریت: ${esc(f.job_title||'')}　　سال: ${esc(f.year||'')}</th></tr><tr><th colspan="12">7. کسرات مخصوص　　8. کسرات عادی　　9. یادداشت</th></tr><tr><th rowspan="2">ماه</th><th colspan="4">10. استحقاق</th><th colspan="5">11. کسرات عادی</th><th rowspan="2">12. مبلغ قابل تادیه</th><th rowspan="2">ملاحظات</th></tr><tr><th>رتبوی</th><th>مسلکی</th><th>ماکول</th><th>مجموعه استحقاق</th><th>غیرحاضری</th><th>مریض</th><th>سایر</th><th>مالیه</th><th>مجموعه کسرات</th></tr>${rows}</table><br><br>`;
+    }).join('');
+    const html=`<html><head><meta charset="utf-8"></head><body dir="rtl">${sheets}</body></html>`;
+    const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=filename+'_دفتر_معاش_و_کسرات.xls';a.click();URL.revokeObjectURL(url);showToast('📊 فایل اکسل دفتر معاش دانلود شد');
   }
 
   // ═══════════════════════════════════════════════════════════

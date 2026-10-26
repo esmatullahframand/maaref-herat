@@ -127,7 +127,7 @@
     <button class="tab-btn" onclick="switchTab('salaries', this)">💰 معاشات</button>
   </div>
 
-  <!-- ══════════ تب مدیریت مکتب ══════════ -->
+  <!-- ══════════ تب مدیریت مکتب (بدون تغییر) ══════════ -->
   <div class="tab-content active" id="tab-settings">
     <div class="card">
       <h4>🏫 مدیریت مکتب</h4>
@@ -169,12 +169,11 @@
     </div>
   </div>
 
-  <!-- ══════════ تب ثبت کارمند ══════════ -->
+  <!-- ══════════ تب ثبت کارمند (بدون تغییر) ══════════ -->
   <div class="tab-content" id="tab-form">
     <div class="card">
       <h4>➕ ثبت کارمند جدید</h4>
       <form id="recordForm">
-        <!-- بخش ۱: هویت و اسناد -->
         <div class="form-section">
           <h5>۱. هویت و اسناد تذکره</h5>
           <div class="grid-4">
@@ -228,7 +227,6 @@
           </div>
         </div>
 
-        <!-- بخش ۲: اطلاعات شخصی و تماس -->
         <div class="form-section">
           <h5>۲. اطلاعات شخصی و تماس</h5>
           <div class="grid-4">
@@ -264,7 +262,6 @@
           </div>
         </div>
 
-        <!-- بخش ۳: معلومات وظیفوی و تحصیلی -->
         <div class="form-section">
           <h5>۳. معلومات وظیفوی و تحصیلی</h5>
           <div class="grid-4">
@@ -286,7 +283,6 @@
           </div>
         </div>
 
-        <!-- بخش ۴: ورکشاپ و ساعت درسی -->
         <div class="form-section">
           <h5>۴. ورکشاپ و ساعت درسی</h5>
           <div class="grid-4">
@@ -297,7 +293,6 @@
           </div>
         </div>
 
-        <!-- بخش ۵: خدمتی رفته -->
         <div class="form-section">
           <h5>۵. خدمتی رفته</h5>
           <div class="grid-4">
@@ -321,20 +316,39 @@
     </div>
   </div>
 
-  <!-- ══════════ تب لیست کارمندان ══════════ -->
+  <!-- ══════════ تب لیست کارمندان (بازطراحی شده مطابق دیاگرام) ══════════ -->
   <div class="tab-content" id="tab-list">
     <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
-        <h4 style="margin:0; border:none; padding:0;">📋 لیست کارمندان</h4>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn" style="background:#7c3aed; padding:8px 16px; font-size:13px;" onclick="printEmployeeList()">🖨️ پرنت لیست</button>
-          <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEmployeeExcel()">📊 خروجی اکسل (کامل)</button>
+      <!-- هدر مطابق دیاگرام: عنوان، دکمه بازگشت، آمار -->
+      <div style="background: linear-gradient(90deg, #2563eb, #3b82f6); color: white; padding: 18px 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 20px -25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 22px;">📋</span>
+          <h4 style="margin: 0; color: white; border: none; padding: 0; font-size: 18px;">لیست کارمندان</h4>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn" style="background:#7c3aed; padding:8px 16px; font-size:13px;" onclick="printEmployeeList()">🖨️ پرنت لیست تمام</button>
+          <button class="btn" style="background:#059669; padding:8px 16px; font-size:13px;" onclick="exportEmployeeExcel()">📊 خروجی تمام لیست</button>
+          <button class="btn" style="background:#f59e0b; padding:8px 16px; font-size:13px;" onclick="switchTab('settings', document.querySelectorAll('.tab-btn')[0])">🔙 بازگشت</button>
         </div>
       </div>
 
+      <!-- آمار مطابق دیاگرام -->
+      <div class="info-banner" style="background: #eff6ff; border-right-color: #3b82f6; color: #1e3a8a;">
+        📊 <strong>آمار:</strong> در آمار تعداد ثبت شده، تعداد معلم، کارکن خدماتی، تعداد عنوان بست ثبت شده، تعداد تعاقد، تعداد فعال، تعداد انتظار تایید شده نمایش داده می‌شود.
+      </div>
       <div class="stats-grid" id="statsContainer"></div>
 
-      <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو در لیست کارمندان (نام، ولد، کُد بست، عنوان بست)..." oninput="debouncedLoad()">
+      <!-- جستجو مطابق دیاگرام -->
+      <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+        <label style="font-weight: bold; color: #10b981; font-size: 14px; margin-bottom: 8px; display: block;">🔍 جستجوی نام، تخلص، کد بست</label>
+        <input type="text" id="searchInput" class="search-input" placeholder="نام، ولد، کُد بست یا عنوان بست را وارد کنید..." oninput="debouncedLoad()">
+      </div>
+
+      <!-- دو دکمه کنار هم مطابق دیاگرام -->
+      <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <button class="btn" style="background: #3b82f6; flex: 1; min-width: 200px;" onclick="showAllEmployees()">📋 نمایش تمام لیست</button>
+        <button class="btn" style="background: #7c3aed; flex: 1; min-width: 200px;" onclick="printEmployeeList()">🖨️ پرینت تمام لیست</button>
+      </div>
 
       <div class="table-responsive">
         <table>
@@ -353,19 +367,38 @@
             </tr>
           </thead>
           <tbody id="schoolTableBody">
-            <tr><td colspan="10" class="empty-state">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید.</td></tr>
+            <tr><td colspan="10" class="empty-state">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید یا دکمه «نمایش تمام لیست» را بزنید.</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- ══════════ تب ارزیابی ══════════ -->
+  <!-- ══════════ تب ارزیابی (بازطراحی شده مطابق دیاگرام) ══════════ -->
   <div class="tab-content" id="tab-evaluation">
     <div class="card">
-      <h4>⭐ ارزیابی کارمندان</h4>
+      <!-- هدر مطابق دیاگرام -->
+      <div style="background: linear-gradient(90deg, #2563eb, #3b82f6); color: white; padding: 18px 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 20px -25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 22px;">⭐</span>
+          <h4 style="margin: 0; color: white; border: none; padding: 0; font-size: 18px;">ارزیابی کارمندان</h4>
+        </div>
+        <button class="btn" style="background:#f59e0b; padding:8px 16px; font-size:13px;" onclick="switchTab('settings', document.querySelectorAll('.tab-btn')[0])">🔙 بازگشت</button>
+      </div>
 
-      <div id="evalLockedBox" class="eval-section-locked" style="display:none; background:#fef2f2; border-color:#ef4444; color:#991b1b; padding: 25px;">
+      <!-- آمار قرار ذیل (مطابق دیاگرام: خوب، ضعیف، عالی، نتیجه، تعداد ارزیابی شده) -->
+      <div class="info-banner" style="background: #eff6ff; border-right-color: #3b82f6; color: #1e3a8a;">
+        📊 <strong>آمار قرار ذیل:</strong> تعداد ارزیابی شده، نتیجه (خوب / عالی / ضعیف)
+      </div>
+      <div class="stats-grid" id="evalStatsGrid">
+        <div class="stat-box" style="background:#e0f2fe; border-color:#bae6fd;"><div class="stat-label" style="color:#0284c7;">📊 تعداد ارزیابی شده</div><div class="stat-value" style="color:#0369a1;" id="evalStatTotal">0</div></div>
+        <div class="stat-box" style="background:#dcfce7; border-color:#bbf7d0;"><div class="stat-label" style="color:#15803d;">🌟 عالی</div><div class="stat-value" style="color:#166534;" id="evalStatExcellent">0</div></div>
+        <div class="stat-box" style="background:#dbeafe; border-color:#bfdbfe;"><div class="stat-label" style="color:#1e40af;">✅ خوب</div><div class="stat-value" style="color:#1e3a8a;" id="evalStatGood">0</div></div>
+        <div class="stat-box" style="background:#fee2e2; border-color:#fecaca;"><div class="stat-label" style="color:#b91c1c;">⚠️ ضعیف</div><div class="stat-value" style="color:#991b1b;" id="evalStatWeak">0</div></div>
+      </div>
+
+      <!-- بخش قفل بودن مطابق دیاگرام -->
+      <div id="evalLockedBox" class="eval-section-locked" style="display:none;">
         <div style="font-size: 18px; margin-bottom: 10px;">🔒 هنوز از طرف آمریت اجازه داده نشده است.</div>
         <div style="font-size: 14px; font-weight: normal; line-height: 1.8;">
           لطفاً با آمریت معارف (به عضو مسلکی امور مالی و کارکنان) به شماره 
@@ -374,88 +407,90 @@
         </div>
       </div>
 
-      <div id="evalStatsSection">
-        <h5 style="margin-top:0; color:#10b981; font-size:15px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">📊 آمار ارزیابی‌ها</h5>
-        <div class="stats-grid">
-          <div class="stat-box"><div class="stat-label">👥 کل</div><div class="stat-value" id="evalStatTotal">0</div></div>
-          <div class="stat-box"><div class="stat-label">⭐ عالی</div><div class="stat-value" id="evalStatExcellent">0</div></div>
-          <div class="stat-box"><div class="stat-label">✅ خوب</div><div class="stat-value" id="evalStatGood">0</div></div>
-          <div class="stat-box"><div class="stat-label">⚠️ ضعیف</div><div class="stat-value" id="evalStatWeak">0</div></div>
-          <div class="stat-box"><div class="stat-label">📊 میانگین</div><div class="stat-value" id="evalStatAvg">0</div></div>
+      <!-- دو دکمه مطابق دیاگرام: ثبت جدید / ثبت شده -->
+      <div id="evalButtonsSection" style="display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap;">
+        <button class="btn" style="background: #10b981; flex: 1; min-width: 200px; padding: 15px; font-size: 15px;" onclick="showEvalFormNew()">➕ ثبت جدید</button>
+        <button class="btn" style="background: #3b82f6; flex: 1; min-width: 200px; padding: 15px; font-size: 15px;" onclick="showEvalListRegistered()">📋 ثبت شده</button>
+      </div>
+
+      <!-- فرم ثبت جدید ارزیابی -->
+      <div id="evalFormSection" style="display: none;">
+        <div class="form-section">
+          <h5>👤 انتخاب کارمند</h5>
+          <div class="grid-4">
+            <div class="form-group"><label>کارمند مورد نظر *</label><select id="evalEmployeeSelect" onchange="loadEmployeeForEvaluation()" required><option value="">— انتخاب کنید —</option></select></div>
+          </div>
         </div>
+
+        <div class="form-section" id="evalAutoInfoSection" style="display:none;">
+          <h5>📋 اطلاعات کارمند</h5>
+          <div class="grid-4">
+            <div class="form-group"><label>آی‌دی</label><input type="text" id="evalRecordId" readonly></div>
+            <div class="form-group"><label>اسم</label><input type="text" id="evalFirstName" readonly></div>
+            <div class="form-group"><label>ولد</label><input type="text" id="evalFatherName" readonly></div>
+            <div class="form-group"><label>کُد بست</label><input type="text" id="evalJobCode" readonly></div>
+            <div class="form-group"><label>وظیفه</label><input type="text" id="evalJobTitle" readonly></div>
+            <div class="form-group"><label>مکتب</label><input type="text" id="evalSchoolName" readonly></div>
+          </div>
+        </div>
+
+        <div class="form-section" id="evalNewSection" style="display:none;">
+          <h5>⭐ اطلاعات ارزیابی</h5>
+          <div class="grid-4">
+            <div class="form-group"><label>بست *</label><input type="text" id="evalBust"></div>
+            <div class="form-group"><label>قدم *</label><input type="text" id="evalGrade"></div>
+            <div class="form-group"><label>تاریخ ارزیابی *</label><input type="text" id="evalNewDate" placeholder="1403/05/15"><small id="evalNewDateMsg" class="date-msg"></small></div>
+            <div class="form-group"><label>نمره (۰-۱۰۰) *</label><input type="text" id="evalScore" oninput="autoSelectResult()"><small id="evalScoreMsg" class="date-msg"></small></div>
+            <div class="form-group"><label>نتیجه *</label><select id="evalResult" required><option value="">— انتخاب —</option><option value="عالی">🌟 عالی</option><option value="خوب">✅ خوب</option><option value="ضعیف">⚠️ ضعیف</option></select></div>
+          </div>
+        </div>
+
+        <div class="agreement-box" id="evalAgreementBox" onclick="toggleEvalAgreement()" style="display:none;">
+          <input type="checkbox" id="evalAgreementCheckbox">
+          <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>معلومات ارزیابی صحیح می‌باشد.</div>
+        </div>
+
+        <button type="submit" id="evalSubmitBtn" class="btn btn-submit" disabled style="display:none;" onclick="submitEvaluation()">✅ موافقت و ارسال</button>
       </div>
 
-      <div id="evalFormSection">
-        <h5 style="margin-top:20px; color:#10b981; font-size:15px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">📝 ثبت ارزیابی جدید</h5>
-        <div class="eval-info-box">ℹ️ ابتدا کارمند را از لیست انتخاب کنید.</div>
-
-        <form id="evaluationForm">
-          <div class="form-section">
-            <h5>👤 انتخاب کارمند</h5>
-            <div class="grid-4">
-              <div class="form-group"><label>کارمند مورد نظر *</label><select id="evalEmployeeSelect" onchange="loadEmployeeForEvaluation()" required><option value="">— انتخاب کنید —</option></select></div>
-            </div>
-          </div>
-
-          <div class="form-section" id="evalAutoInfoSection" style="display:none;">
-            <h5>📋 اطلاعات کارمند</h5>
-            <div class="grid-4">
-              <div class="form-group"><label>آی‌دی</label><input type="text" id="evalRecordId" readonly></div>
-              <div class="form-group"><label>اسم</label><input type="text" id="evalFirstName" readonly></div>
-              <div class="form-group"><label>ولد</label><input type="text" id="evalFatherName" readonly></div>
-              <div class="form-group"><label>کُد بست</label><input type="text" id="evalJobCode" readonly></div>
-              <div class="form-group"><label>وظیفه</label><input type="text" id="evalJobTitle" readonly></div>
-              <div class="form-group"><label>مکتب</label><input type="text" id="evalSchoolName" readonly></div>
-            </div>
-          </div>
-
-          <div class="form-section" id="evalNewSection" style="display:none;">
-            <h5>⭐ اطلاعات ارزیابی</h5>
-            <div class="grid-4">
-              <div class="form-group"><label>بست *</label><input type="text" id="evalBust"></div>
-              <div class="form-group"><label>قدم *</label><input type="text" id="evalGrade"></div>
-              <div class="form-group"><label>تاریخ ارزیابی *</label><input type="text" id="evalNewDate" placeholder="1403/05/15"><small id="evalNewDateMsg" class="date-msg"></small></div>
-              <div class="form-group"><label>نمره (۰-۱۰۰) *</label><input type="text" id="evalScore" oninput="autoSelectResult()"><small id="evalScoreMsg" class="date-msg"></small></div>
-              <div class="form-group"><label>نتیجه *</label><select id="evalResult" required><option value="">— انتخاب —</option><option value="عالی">🌟 عالی</option><option value="خوب">✅ خوب</option><option value="ضعیف">⚠️ ضعیف</option></select></div>
-            </div>
-          </div>
-
-          <div class="agreement-box" id="evalAgreementBox" onclick="toggleEvalAgreement()" style="display:none;">
-            <input type="checkbox" id="evalAgreementCheckbox">
-            <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>معلومات ارزیابی صحیح می‌باشد.</div>
-          </div>
-
-          <button type="submit" id="evalSubmitBtn" class="btn btn-submit" disabled style="display:none;">✅ موافقت و ارسال</button>
-        </form>
-      </div>
-
-      <div id="evalListSection" style="margin-top:30px;">
+      <!-- لیست ثبت شده‌ها -->
+      <div id="evalListSection" style="display: none; margin-top: 20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-          <h5 style="margin:0; color:#10b981; font-size:15px;">📋 لیست ارزیابی‌ها</h5>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <h5 style="margin:0; color:#10b981; font-size:15px;">📋 لیست ارزیابی‌های ثبت شده</h5>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn" type="button" onclick="printEvaluationList()" style="background:#7c3aed; padding:8px 14px; font-size:13px;">🖨️ پرینت ارزیابی‌ها</button>
             <button class="btn" type="button" onclick="exportEvaluationExcel()" style="background:#059669; padding:8px 14px; font-size:13px;">📊 خروجی اکسل</button>
-            <button class="btn" type="button" onclick="printUnifiedEvaluationTable()" style="background:#0f766e; padding:8px 14px; font-size:13px;">🖨️ پرینت جدول توحیدی معلمین</button>
-            <label class="toggle-switch"><input type="checkbox" id="evalShowToggle" checked onchange="toggleEvalListVisibility()"><span>👁️ نمایش</span></label>
+            <button class="btn" type="button" onclick="printUnifiedEvaluationTable()" style="background:#0f766e; padding:8px 14px; font-size:13px;">🖨️ پرینت جدول توحیدی</button>
           </div>
         </div>
-        <div id="evalListContainer">
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>#</th><th>اسم</th><th>ولد</th><th>وظیفه</th><th>کُد بست</th><th>تاریخ</th><th>نمره</th><th>نتیجه</th><th>عملیات</th></tr></thead>
-              <tbody id="evalListBody"><tr><td colspan="9" class="empty-state">در حال بارگذاری...</td></tr></tbody>
-            </table>
-          </div>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>#</th><th>اسم</th><th>ولد</th><th>وظیفه</th><th>کُد بست</th><th>تاریخ</th><th>نمره</th><th>نتیجه</th><th>عملیات</th></tr></thead>
+            <tbody id="evalListBody"><tr><td colspan="9" class="empty-state">در حال بارگذاری...</td></tr></tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ══════════ تب معاشات ══════════ -->
+  <!-- ══════════ تب معاشات (بازطراحی شده مطابق دیاگرام) ══════════ -->
   <div class="tab-content" id="tab-salaries">
     <div class="card">
-      <h4>💰 مدیریت معاشات</h4>
+      <!-- هدر مطابق دیاگرام -->
+      <div style="background: linear-gradient(90deg, #2563eb, #3b82f6); color: white; padding: 18px 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 20px -25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 22px;">💰</span>
+          <h4 style="margin: 0; color: white; border: none; padding: 0; font-size: 18px;">مدیریت معاشات</h4>
+        </div>
+        <button class="btn" style="background:#f59e0b; padding:8px 16px; font-size:13px;" onclick="switchTab('settings', document.querySelectorAll('.tab-btn')[0])">🔙 بازگشت</button>
+      </div>
 
+      <!-- آمار مطابق دیاگرام -->
+      <div class="info-banner" style="background: #eff6ff; border-right-color: #3b82f6; color: #1e3a8a;">
+        📊 <strong>آمار:</strong> معاشات ثبت شده یعنی به تعداد کارمند — مجموعه استحقاق — مجموعه مالیه و کسرات — مبلغ قابل پرداخت
+      </div>
+
+      <!-- انتخاب کارمند -->
       <div class="form-section" style="background:#f8fafc; border:2px solid #10b981; border-radius:10px; padding:20px; margin-bottom:20px;">
         <h5 style="color:#10b981; font-weight:bold; margin-top:0;">👤 انتخاب کارمند</h5>
         <div class="grid-4">
@@ -463,30 +498,23 @@
         </div>
       </div>
 
-      <!-- دکمه های فرم م ۴۰ -->
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 15px;">
-        <button class="btn" type="button" onclick="printFormM40()" style="background:#7c3aed; padding:8px 16px; font-size:13px;">🖨️ پرینت فرم م ۴۰ (دفتر معاش)</button>
-        <button class="btn" type="button" onclick="exportFormM40Excel()" style="background:#059669; padding:8px 16px; font-size:13px;">📊 خروجی اکسل فرم م ۴۰</button>
+      <!-- دو دکمه مطابق دیاگرام: ثبت جدید / ثبت شده -->
+      <div id="salaryButtonsSection" style="display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap;">
+        <button class="btn" style="background: #10b981; flex: 1; min-width: 200px; padding: 15px; font-size: 15px;" onclick="showSalaryPanel('new')">➕ ثبت جدید</button>
+        <button class="btn" style="background: #3b82f6; flex: 1; min-width: 200px; padding: 15px; font-size: 15px;" onclick="showSalaryPanel('saved')">📋 ثبت شده</button>
       </div>
 
-      <div id="salaryEmployeeHeader" style="display:none;">
-        <div class="salary-employee-header">
-          <div>
-            <h3 id="salaryEmpName">—</h3>
-            <small id="salaryEmpInfo">—</small>
-          </div>
-          <div class="salary-action-btns">
-            <button class="btn-salary-saved" onclick="showSalaryPanel('saved')">📋 معاشات ثبت شده</button>
-            <button class="btn-salary-new" onclick="showSalaryPanel('new')">➕ ثبت جدید معاشات</button>
-          </div>
-        </div>
-      </div>
-
+      <!-- نمایش سال و ماه‌ها (مطابق دیاگرام) -->
       <div class="salary-panel" id="salarySavedPanel">
         <h4 style="margin-top:0; color:#3b82f6; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">📋 معاشات ثبت شده</h4>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
+          <button class="btn" type="button" onclick="printFormM40()" style="background:#7c3aed; padding:8px 16px; font-size:13px;">🖨️ پرینت دقیق با تمام معلومات</button>
+          <button class="btn" type="button" onclick="exportFormM40Excel()" style="background:#059669; padding:8px 16px; font-size:13px;">📊 خروجی با تمام معلومات</button>
+        </div>
         <div id="salaryYearsTree" class="salary-years-tree"><div class="empty-state">در حال بارگذاری...</div></div>
       </div>
 
+      <!-- فرم ثبت جدید -->
       <div class="salary-panel" id="salaryNewPanel">
         <h4 style="margin-top:0; color:#10b981; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">➕ ثبت / مشاهده معاش</h4>
 
@@ -569,23 +597,6 @@
           <div style="margin-top:15px;"><button class="btn" onclick="saveAttendanceDraft()" style="background:#3b82f6;">💾 ثبت حاضری</button></div>
         </div>
       </div>
-
-      <div class="card" style="margin-top:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:12px;">
-          <h4 style="border:0; padding:0; margin:0;">🔍 جستجو در معاشات</h4>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn" type="button" onclick="printSalarySummary()" style="background:#7c3aed; padding:8px 14px; font-size:13px;">🖨️ پرینت معاشات</button>
-            <button class="btn" type="button" onclick="exportSalarySummaryExcel()" style="background:#059669; padding:8px 14px; font-size:13px;">📊 خروجی اکسل</button>
-          </div>
-        </div>
-        <input type="text" id="salarySearchInput" class="search-input" placeholder="🔍 جستجو (نام، تخلص، کد بست)..." oninput="debounceSalarySearch()">
-        <div class="salary-table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>نام و تخلص</th><th>مکتب</th><th>استحقاق</th><th>کسرات</th><th>قابل پرداخت</th><th>حاضر</th><th>غیر حاضر</th><th>مریض</th><th>عملیات</th></tr></thead>
-            <tbody id="salarySummaryBody"><tr><td colspan="10" class="empty-state">جستجو کنید</td></tr></tbody>
-          </table>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -641,8 +652,6 @@
 
   const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
   const JOB_TITLES_LIST = ['آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین', 'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش', 'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
-
-  // ⭐ بست‌هایی که از تحصیل معاف هستند
   const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
 
   function showToast(msg, isError = false) {
@@ -675,9 +684,6 @@
     }).join('');
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // تاریخ شمسی
-  // ═══════════════════════════════════════════════════════════
   function validateShamsiDate(dateStr) {
     if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
     const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
@@ -720,9 +726,6 @@
     input.addEventListener('blur', function() { if (this.value.trim()) { const result = validateFn(this.value); if (result.valid) this.value = result.formatted; } });
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // اعتبارسنجی کد بست + تذکره
-  // ═══════════════════════════════════════════════════════════
   function validateJobCode(codeStr) {
     if (!codeStr) return { valid: false, error: 'کد بست الزامی است' };
     const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
@@ -741,9 +744,8 @@
     return { valid: true, formatted: cleaned };
   }
 
-  // ⭐ تذکره کاغذی: فقط عدد (مثال: 66564646)
   function validateTazkiraCode(codeStr) {
-    if (!codeStr) return { valid: true, formatted: '' }; // اختیاری
+    if (!codeStr) return { valid: true, formatted: '' };
     const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
     if (!/^\d{1,20}$/.test(cleaned)) {
       return { valid: false, error: 'فقط عدد (۱ تا ۲۰ رقم) — مثال: 66564646' };
@@ -777,7 +779,6 @@
     } catch (e) { return { unique: true }; }
   }
 
-  // ⭐ تذکره کاغذی: یکتایی غیرفعال (همیشه یکتا)
   async function checkTazkiraUnique(codeStr, excludeId) {
     return { unique: true };
   }
@@ -865,7 +866,6 @@
     });
   }
 
-  // نصب اعتبارسنجی‌ها
   attachLiveValidation('birthDate', validateShamsiDate, 'birthDateMsg');
   attachLiveValidation('firstAppointmentDate', validateShamsiDate, 'firstAppointmentDateMsg');
   attachLiveValidation('currentPositionDate', validateShamsiDate, 'currentPositionDateMsg');
@@ -879,14 +879,11 @@
   attachUniqueFieldValidation('eTazkira', 'eTazkiraMsg', 'etazkira', null);
   attachUniqueFieldValidation('paperTazkira', 'paperTazkiraMsg', 'tazkira', null);
 
-  // ═══════════════════════════════════════════════════════════
-  // توابع پایه
-  // ═══════════════════════════════════════════════════════════
   function switchTab(name, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
-    btn.classList.add('active');
+    if (btn) btn.classList.add('active');
     if (name === 'list') loadSchoolRecords();
     if (name === 'settings') loadSchoolSettings();
     if (name === 'evaluation') loadEvaluationTab();
@@ -933,12 +930,10 @@
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   window.closeModal = closeModal;
 
-  // ⭐ تابع بررسی معافیت تحصیلی
   function isEducationExemptJob(jobTitle) {
     return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim());
   }
 
-  // ⭐ تغییر وضعیت الزامی بودن فیلدهای تحصیلی
   function toggleEducationRequired() {
     const jobTitle = document.getElementById('jobTitle').value;
     const eduFields = document.querySelectorAll('.edu-field input');
@@ -948,14 +943,12 @@
       if (isExempt) {
         input.removeAttribute('required');
         input.classList.remove('invalid');
-        // اگر پیام خطا داشت پاک شود
         const msg = input.nextElementSibling;
         if (msg && msg.classList.contains('date-msg')) {
            msg.textContent = '';
            msg.className = 'date-msg';
         }
       } else {
-        // برای فیلدهای اجباری (به جز فیلدهایی که در حالت عادی اختیاری هستند)
         if(['degree', 'major', 'eduInstitute', 'eduInstituteLocation', 'enrollmentDate', 'graduationDate'].includes(input.id)){
             input.setAttribute('required', 'required');
         }
@@ -964,7 +957,6 @@
   }
   window.toggleEducationRequired = toggleEducationRequired;
 
-  // فراخوانی اولیه برای تنظیم وضعیت
   setTimeout(() => toggleEducationRequired(), 100);
 
   function validateEducationFields(jobTitle) {
@@ -987,7 +979,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // فرم ثبت کارمند
+  // فرم ثبت کارمند (بدون تغییر)
   // ═══════════════════════════════════════════════════════════
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1096,7 +1088,7 @@
           const el = document.getElementById(id);
           if (el) el.classList.remove('valid','invalid');
         });
-        toggleEducationRequired(); // بازنشانی وضعیت تحصیل
+        toggleEducationRequired();
         switchTab('list', document.querySelectorAll('.tab-btn')[2]);
       } else if (res.status === 409 && (data.code === 'DUPLICATE_JOBCODE' || data.code === 'DUPLICATE_ETAZKIRA')) {
         const kind = data.code === 'DUPLICATE_JOBCODE' ? 'jobcode' : 'etazkira';
@@ -1112,7 +1104,7 @@
   });
 
   // ═══════════════════════════════════════════════════════════
-  // تنظیمات مکتب
+  // تنظیمات مکتب (بدون تغییر)
   // ═══════════════════════════════════════════════════════════
   async function loadSchoolSettings() {
     try {
@@ -1190,7 +1182,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // لیست کارمندان
+  // لیست کارمندان (بازطراحی شده مطابق دیاگرام)
   // ═══════════════════════════════════════════════════════════
   async function loadSchoolRecords() {
     const searchVal = document.getElementById('searchInput').value.trim();
@@ -1205,7 +1197,7 @@
     } catch (e) { console.error(e); }
 
     if (!searchVal) {
-      tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><div style="padding:30px;"><div style="font-size:50px; margin-bottom:15px;">🔍</div><div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div><div style="font-size:13px; color:#94a3b8;">نام، ولد، کُد بست یا عنوان بست را در کادر بالا جستجو کنید</div></div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><div style="padding:30px;"><div style="font-size:50px; margin-bottom:15px;">🔍</div><div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید یا دکمه «نمایش تمام لیست» را بزنید</div><div style="font-size:13px; color:#94a3b8;">نام، ولد، کُد بست یا عنوان بست را در کادر بالا جستجو کنید</div></div></td></tr>`;
       return;
     }
     
@@ -1243,6 +1235,41 @@
     } catch (err) { console.error(err); tbody.innerHTML = '<tr><td colspan="10" class="empty-state" style="color:red;">خطا در بارگذاری اطلاعات</td></tr>'; }
   }
 
+  function showAllEmployees() {
+    document.getElementById('searchInput').value = '';
+    loadSchoolRecords();
+    // نمایش تمام رکوردها با تنظیم یک جستجوی خالی
+    const tbody = document.getElementById('schoolTableBody');
+    if (cachedRecords.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" class="empty-state">هیچ کارمندی ثبت نشده است</td></tr>';
+      return;
+    }
+    let html = '';
+    cachedRecords.forEach((row) => {
+      const info = row.data || {};
+      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
+      const statusHtml = row.status === 'approved' ? '<span class="status-badge status-approved">✅ تایید</span>' : '<span class="status-badge status-pending">⏳ انتظار</span>';
+      html += `<tr>
+        <td>${row.id}</td>
+        <td><b>${escapeHtml(name)}</b></td>
+        <td>${escapeHtml(info.fatherName || '-')}</td>
+        <td>${escapeHtml(info.jobTitle || '-')}</td>
+        <td><code>${escapeHtml(info.jobCode || '—')}</code></td>
+        <td><code>${escapeHtml(info.eTazkira || '—')}</code></td>
+        <td>${escapeHtml(info.phone || '-')}</td>
+        <td>${escapeHtml(info.degree || '-')}</td>
+        <td>${statusHtml}</td>
+        <td>
+          <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>
+          <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="مشاهده">👁️</button>
+          <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرینت">🖨️</button>
+        </td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+  window.showAllEmployees = showAllEmployees;
+
   function updateStats(records) {
     const container = document.getElementById('statsContainer');
     if (!Array.isArray(records) || records.length === 0) {
@@ -1273,9 +1300,6 @@
     container.innerHTML = html;
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // ویرایش
-  // ═══════════════════════════════════════════════════════════
   function editRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) { showToast('رکورد یافت نشد', true); return; }
@@ -1370,7 +1394,6 @@
     const currentPositionDate = document.getElementById('eCurrentPositionDate').value.trim();
 
     if (!jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
-    // در ویرایش، اگر بست از تحصیل معاف نباشد، درجه تحصیل الزامی است
     if (!isEducationExemptJob(jobTitle) && !degree) {
       showToast('❌ برای این بست، درجه تحصیل الزامی است', true);
       return;
@@ -1430,9 +1453,6 @@
   }
   window.saveEditedRecord = saveEditedRecord;
 
-  // ═══════════════════════════════════════════════════════════
-  // مشاهده و پرینت
-  // ═══════════════════════════════════════════════════════════
   function viewRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) { showToast('رکورد یافت نشد', true); return; }
@@ -1522,12 +1542,9 @@
   }
   window.printRecord = printRecord;
 
-  // ═══════════════════════════════════════════════════════════
-  // پرینت لیست
-  // ═══════════════════════════════════════════════════════════
   function printEmployeeList() {
     if (!cachedRecords || cachedRecords.length === 0) {
-      showToast('❌ لیستی برای پرینت وجود ندارد. ابتدا جستجو کنید.', true);
+      showToast('❌ لیستی برای پرینت وجود ندارد. ابتدا جستجو کنید یا دکمه «نمایش تمام لیست» را بزنید.', true);
       return;
     }
 
@@ -1589,12 +1606,9 @@
   }
   window.printEmployeeList = printEmployeeList;
 
-  // ═══════════════════════════════════════════════════════════
-  // خروجی اکسل کامل
-  // ═══════════════════════════════════════════════════════════
   function exportEmployeeExcel() {
     if (!cachedRecords || cachedRecords.length === 0) {
-      showToast('❌ لیستی برای خروجی وجود ندارد. ابتدا جستجو کنید.', true);
+      showToast('❌ لیستی برای خروجی وجود ندارد. ابتدا جستجو کنید یا دکمه «نمایش تمام لیست» را بزنید.', true);
       return;
     }
 
@@ -1674,16 +1688,31 @@
   window.exportEmployeeExcel = exportEmployeeExcel;
 
   // ═══════════════════════════════════════════════════════════
-  // ارزیابی
+  // ارزیابی (بازطراحی شده مطابق دیاگرام)
   // ═══════════════════════════════════════════════════════════
   async function loadEvaluationTab() {
     try { const permRes = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } }); const permData = await permRes.json(); evalAllowed = !!permData.allowed; } catch (e) { evalAllowed = false; }
-    const lockedBox = document.getElementById('evalLockedBox'), formSection = document.getElementById('evalFormSection');
-    if (evalAllowed) { lockedBox.style.display = 'none'; formSection.style.display = 'block'; } else { lockedBox.style.display = 'block'; formSection.style.display = 'none'; }
+    const lockedBox = document.getElementById('evalLockedBox');
+    const buttonsSection = document.getElementById('evalButtonsSection');
+    if (evalAllowed) { lockedBox.style.display = 'none'; buttonsSection.style.display = 'flex'; } else { lockedBox.style.display = 'block'; buttonsSection.style.display = 'none'; }
     await loadEmployeeDropdownForEval();
     await loadEvaluationStats();
     await loadEvaluationList();
   }
+
+  function showEvalFormNew() {
+    document.getElementById('evalFormSection').style.display = 'block';
+    document.getElementById('evalListSection').style.display = 'none';
+    document.getElementById('evalFormSection').scrollIntoView({ behavior: 'smooth' });
+  }
+  window.showEvalFormNew = showEvalFormNew;
+
+  function showEvalListRegistered() {
+    document.getElementById('evalFormSection').style.display = 'none';
+    document.getElementById('evalListSection').style.display = 'block';
+    document.getElementById('evalListSection').scrollIntoView({ behavior: 'smooth' });
+  }
+  window.showEvalListRegistered = showEvalListRegistered;
 
   async function loadEmployeeDropdownForEval() {
     try {
@@ -1733,8 +1762,7 @@
   }
   window.autoSelectResult = autoSelectResult;
 
-  document.getElementById('evaluationForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  async function submitEvaluation() {
     if (!currentEvalRecord) { showToast('❌ کارمند انتخاب نشده', true); return; }
     if (!document.getElementById('evalAgreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
     const body = { record_id: currentEvalRecord.id, eval_date_prev: '', bust: document.getElementById('evalBust').value.trim(), grade: document.getElementById('evalGrade').value.trim(), eval_date: document.getElementById('evalNewDate').value.trim(), eval_score: document.getElementById('evalScore').value.trim(), eval_result: document.getElementById('evalResult').value };
@@ -1760,21 +1788,20 @@
       } else { showToast('❌ ' + (data.error || 'خطا'), true); }
     } catch (err) { showToast('❌ ارتباط برقرار نشد', true); }
     finally { btn.disabled = false; btn.innerText = '✅ موافقت و ارسال'; }
-  });
+  }
+  window.submitEvaluation = submitEvaluation;
 
   async function loadEvaluationStats() {
     try {
       const res = await fetch('/api/evaluations', { headers: { 'Authorization': 'Bearer ' + token } });
       const evals = await res.json();
       cachedEvaluations = Array.isArray(evals) ? evals : [];
-      let excellent = 0, good = 0, weak = 0, totalScore = 0;
-      cachedEvaluations.forEach(e => { if (e.eval_result === 'عالی') excellent++; else if (e.eval_result === 'خوب') good++; else if (e.eval_result === 'ضعیف') weak++; totalScore += Number(e.eval_score) || 0; });
-      const avg = cachedEvaluations.length > 0 ? Math.round(totalScore / cachedEvaluations.length) : 0;
+      let excellent = 0, good = 0, weak = 0;
+      cachedEvaluations.forEach(e => { if (e.eval_result === 'عالی') excellent++; else if (e.eval_result === 'خوب') good++; else if (e.eval_result === 'ضعیف') weak++; });
       document.getElementById('evalStatTotal').textContent = cachedEvaluations.length;
       document.getElementById('evalStatExcellent').textContent = excellent;
       document.getElementById('evalStatGood').textContent = good;
       document.getElementById('evalStatWeak').textContent = weak;
-      document.getElementById('evalStatAvg').textContent = avg;
     } catch (e) { console.error(e); }
   }
 
@@ -1847,13 +1874,11 @@
     showToast('✅ فایل خروجی دانلود شد. در Excel قابل بازکردن است.');
   }
 
-  function toggleEvalListVisibility() { const chk = document.getElementById('evalShowToggle'), container = document.getElementById('evalListContainer'); if (chk.checked) container.style.display = 'block'; else container.style.display = 'none'; }
-  window.toggleEvalListVisibility = toggleEvalListVisibility;
   function deleteEvaluation(id) { if (!confirm('حذف شود؟')) return; fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }).then(r => { if (r.ok) { showToast('🗑️ حذف شد'); loadEvaluationStats(); loadEvaluationList(); } else showToast('خطا', true); }); }
   window.deleteEvaluation = deleteEvaluation;
 
   // ═══════════════════════════════════════════════════════════
-  // معاشات
+  // معاشات (بازطراحی شده مطابق دیاگرام)
   // ═══════════════════════════════════════════════════════════
   function populateSalaryMonthSelect() {
     const sel = document.getElementById('newSalaryMonth');
@@ -1884,7 +1909,7 @@
   async function onSalaryEmployeeChange() {
     const id = document.getElementById('salaryEmployeeSelect').value;
     if (!id) {
-      document.getElementById('salaryEmployeeHeader').style.display = 'none';
+      document.getElementById('salaryEmployeeHeader')?.style.display = 'none';
       document.getElementById('salarySavedPanel').classList.remove('active');
       document.getElementById('salaryNewPanel').classList.remove('active');
       salaryCurrentEmployee = null;
@@ -2237,9 +2262,8 @@
   window.exportSalarySummaryExcel = exportSalarySummaryExcel;
 
   // ═══════════════════════════════════════════════════════════
-  // توابع اختصاصی پرینت و اکسل فرم م ۴۰ (دفتر معاش و کسرات)
+  // فرم م ۴۰
   // ═══════════════════════════════════════════════════════════
-
   async function getEmployeeSalaryDataForM40() {
       if (!salaryCurrentEmployee) {
           showToast('❌ لطفاً ابتدا یک کارمند را از منوی انتخاب کارمند انتخاب کنید.', true);
@@ -2247,7 +2271,6 @@
       }
 
       try {
-          // دریافت لیست معاشات کارمند
           const res = await fetch(`/api/salaries?record_id=${salaryCurrentEmployee.id}`, {
               headers: { 'Authorization': 'Bearer ' + token }
           });
@@ -2258,7 +2281,6 @@
               return null;
           }
 
-          // مرتب سازی بر اساس سال و ماه
           const MONTHS_ORDER = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
           salaries.sort((a, b) => {
               if (a.year !== b.year) return Number(a.year) - Number(b.year);
@@ -2276,7 +2298,6 @@
   function generateM40TableHTML(salaries, isPrint = false) {
       const info = salaryCurrentEmployee.data || {};
       
-      // محاسبه مجموع‌ها
       let totalBase = 0, totalFood = 0, totalAllowance = 0, totalEntitlement = 0;
       let totalAbsence = 0, totalTax = 0, totalDeductions = 0, totalNetPay = 0;
 
@@ -2291,7 +2312,6 @@
           totalNetPay += Number(s.net_pay || 0);
       });
 
-      // ساخت هدر فرم
       let html = `
       <div style="text-align:center; margin-bottom:15px;">
           <h3 style="margin:0; font-size:16px;">فرم م ۴۰ دفتر معاش و کسرات</h3>
@@ -2347,7 +2367,6 @@
           `;
       });
 
-      // ردیف مجموع
       html += `
               <tr style="background:#f8fafc; font-weight:bold;">
                   <td style="border:1px solid #000; padding:4px;">مجموعه</td>
@@ -2373,9 +2392,7 @@
   async function printFormM40() {
       const salaries = await getEmployeeSalaryDataForM40();
       if (!salaries) return;
-
       const html = generateM40TableHTML(salaries, true);
-      
       printHtmlDocument(html, `فرم م ۴۰ - ${salaryCurrentEmployee.data.firstName || ''}`, 'A4 portrait');
   }
   window.printFormM40 = printFormM40;
@@ -2446,9 +2463,8 @@
   window.exportFormM40Excel = exportFormM40Excel;
 
   // ═══════════════════════════════════════════════════════════
-  // پرینت جدول توحیدی ارزیابی معلمین (دقیقاً مطابق فرم فیزیکی)
+  // پرینت جدول توحیدی ارزیابی
   // ═══════════════════════════════════════════════════════════
-
   async function printUnifiedEvaluationTable() {
       if (!cachedEvaluations || cachedEvaluations.length === 0) {
           showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true);
@@ -2473,7 +2489,7 @@
           let html = `
           <div style="text-align:center; margin-bottom:15px; border-bottom:2px solid #000; padding-bottom:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                  <div style="width:20%; text-align:center;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=" alt="لوگو" style="height:50px; opacity:0.3;"></div>
+                  <div style="width:20%; text-align:center;"></div>
                   <div style="width:60%;">
                       <h3 style="margin:0; font-size:16px;">جمهوری اسلامی افغانستان</h3>
                       <h4 style="margin:2px 0; font-size:14px;">وزارت معارف</h4>
@@ -2482,7 +2498,7 @@
                       <h5 style="margin:2px 0; font-size:12px;">آمریت ارزیابی اجرائات</h5>
                       <h5 style="margin:2px 0; font-size:11px;">مدیریت عمومی ارزیابی اجرائات معلمان و استادان</h5>
                   </div>
-                  <div style="width:20%; text-align:center;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=" alt="لوگو" style="height:50px; opacity:0.3;"></div>
+                  <div style="width:20%; text-align:center;"></div>
               </div>
               <h4 style="margin:5px 0; font-size:14px; border:1px solid #000; padding:5px; display:inline-block;">جدول توحیدی ارزیابی اجرائات سابقه معلمان و مدرسین معارف — ${escapeHtml(user.schoolname || 'مکتب')}</h4>
           </div>

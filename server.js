@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V19.3 starting...');
+console.log('🔐 Server V21.0 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -39,7 +39,9 @@ const JOB_TITLES = [
 ];
 const NO_CODE_TITLES = [];
 const SERVICE_TITLES = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
-const SERVICE_KEYWORDS = ['ملازم', 'شب باش', 'شب‌باش', 'شبباش', 'معتمد جنسی', 'معتمد', 'اجیر خدماتی', 'اجیر', 'خدماتی', 'خدمه', 'نگهبان', 'آشپز', 'کارگر', 'راننده', 'باغبان', 'سرایدار'];
+
+// ⭐ بست‌هایی که از تحصیل معاف هستند (کارکن خدماتی، معتمد جنسی، سایر)
+const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
 
 const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
 
@@ -48,7 +50,6 @@ const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', '
 // ═══════════════════════════════════════════════════════════
 const JOBCODE_REGEX = /^27-\d{1,3}-\d{1,3}-\d{3,6}$/;
 const ETAZKIRA_REGEX = /^\d+-\d+-\d+$/;
-// ⭐ تذکره کاغذی: فقط عدد از ۱ تا ۲۰ رقم
 const PAPER_TAZKIRA_NUMERIC_REGEX = /^\d{1,20}$/;
 
 async function initDB() {
@@ -148,7 +149,6 @@ async function initDB() {
           createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-
       await client.query(`
         CREATE TABLE IF NOT EXISTS salaries (
           id SERIAL PRIMARY KEY,
@@ -184,7 +184,6 @@ async function initDB() {
           UNIQUE(record_id, year, month)
         );
       `);
-
       await client.query(`
         CREATE TABLE IF NOT EXISTS attendance (
           id SERIAL PRIMARY KEY,
@@ -205,12 +204,11 @@ async function initDB() {
           updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-
       await client.query(`
         ALTER TABLE attendance ADD COLUMN IF NOT EXISTS holidays REAL DEFAULT 0;
       `);
 
-      // ⭐ ایندکس یکتا برای کد بست
+      // ⭐ ایندکس‌های یکتا
       await client.query(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_records_jobcode
           ON records ((data::json->>'jobCode'))
@@ -218,7 +216,6 @@ async function initDB() {
             AND (data::json->>'jobCode') <> '';
       `).catch(e => console.log('⚠️ idx_records_jobcode:', e.message));
 
-      // ⭐ ایندکس یکتا برای تذکره کاغذی
       await client.query(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_records_papertazkira
           ON records ((data::json->>'paperTazkira'))
@@ -226,13 +223,19 @@ async function initDB() {
             AND (data::json->>'paperTazkira') <> '';
       `).catch(e => console.log('⚠️ idx_records_papertazkira:', e.message));
 
-      // ⭐ ایندکس یکتا برای تذکره الکترونیکی
       await client.query(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_records_etazkira
           ON records ((data::json->>'eTazkira'))
           WHERE (data::json->>'eTazkira') IS NOT NULL
             AND (data::json->>'eTazkira') <> '';
       `).catch(e => console.log('⚠️ idx_records_etazkira:', e.message));
+
+      // ⭐ ایندکس برای رشته تدریس (اختیاری برای جستجو)
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_records_teachingfield
+          ON records ((data::json->>'teachingField'))
+          WHERE (data::json->>'teachingField') IS NOT NULL;
+      `).catch(e => console.log('⚠️ idx_records_teachingfield:', e.message));
 
       console.log('✅ جداول دیتابیس آماده شدند.');
     } finally {
@@ -347,7 +350,6 @@ function validateShamsiDateServer(dateStr, fieldName) {
   return null;
 }
 
-// تذکره الکترونیکی: XXXXX-XXXXX-XXXX
 function validateTazkiraServer(tazkiraStr) {
   if (!tazkiraStr) return null;
   const cleaned = normalizeDigits(tazkiraStr).trim();
@@ -357,7 +359,6 @@ function validateTazkiraServer(tazkiraStr) {
   return null;
 }
 
-// ⭐ تذکره کاغذی: فقط عدد از ۱ تا ۲۰ رقم
 function validatePaperTazkiraServer(tazkiraStr) {
   if (!tazkiraStr) return null;
   const cleaned = normalizeDigits(tazkiraStr).trim().replace(/\s+/g, '');
@@ -391,9 +392,10 @@ function isServiceOrSupport(jobTitle) {
   return SERVICE_TITLES.includes(jobTitle);
 }
 
-// ═══════════════════════════════════════════════════════════
-// توابع بررسی یکتایی
-// ═══════════════════════════════════════════════════════════
+// ⭐ تابع بررسی معافیت تحصیلی
+function isEducationExemptJob(jobTitle) {
+  return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim());
+}
 
 async function checkJobCodeExact(jobCode, excludeRecordId = null) {
   if (!jobCode) return { exists: false };
@@ -723,7 +725,7 @@ app.get('/api/check-etazkira', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// اعتبارسنجی رکورد
+// اعتبارسنجی رکورد (با اعمال تغییرات بخش تحصیل)
 // ═══════════════════════════════════════════════════════════
 async function validateRecordBody(body, excludeId = null) {
   const job = String(body.jobTitle || '').trim();
@@ -746,6 +748,9 @@ async function validateRecordBody(body, excludeId = null) {
   const graduationDate = String(body.graduationDate || '').trim();
   const maritalStatus = String(body.maritalStatus || '').trim();
 
+  // ⭐ رشته تدریس (جایگزین مضمون تدریس) - با پشتیبانی از نام قدیمی
+  const teachingField = String(body.teachingField || body.subjectTeaching || '').trim();
+
   if (!job) return 'عنوان بست الزامی است';
   if (!JOB_TITLES.includes(job)) return '❌ عنوان بست انتخابی معتبر نیست';
   if (!firstName) return 'اسم الزامی است';
@@ -755,6 +760,7 @@ async function validateRecordBody(body, excludeId = null) {
 
   const isContract = isNoCodeTitle(job);
   const isService = isServiceOrSupport(job);
+  const isEducationExempt = isEducationExemptJob(job);
 
   if (isContract) {
     if (!eTazkira && !paperTazkira) return 'حداقل یکی از تذکره‌ها الزامی است';
@@ -768,7 +774,9 @@ async function validateRecordBody(body, excludeId = null) {
     if (!birthDate) return 'تاریخ تولد الزامی است';
     if (!firstAppointmentDate) return 'تاریخ اولین تقرر الزامی است';
     if (!currentPositionDate) return 'تاریخ تقرر فعلی الزامی است';
-    if (!isService) {
+
+    // ⭐ فقط برای بست‌های غیرمعاف، بخش تحصیل الزامی است
+    if (!isEducationExempt) {
       if (!degree) return 'درجه تحصیلی الزامی است';
       if (!majorVal) return 'رشته تحصیلی الزامی است';
       if (majorVal.length < 2) return 'رشته تحصیلی حداقل ۲ حرف';
@@ -779,6 +787,7 @@ async function validateRecordBody(body, excludeId = null) {
     }
   }
 
+  // اعتبارسنجی فرمت‌ها (مستقل از اجباری بودن)
   if (jobCode) {
     const err = validateJobCodeServer(jobCode);
     if (err) return '❌ ' + err;
@@ -812,6 +821,27 @@ async function validateRecordBody(body, excludeId = null) {
     if (err) return '❌ ' + err;
   }
 
+  // بررسی ترتیب تاریخ شمولیت/فراغت
+  if (enrollmentDate && graduationDate) {
+    const en = validateShamsiDateServer(enrollmentDate, 'تاریخ شمولیت');
+    const gr = validateShamsiDateServer(graduationDate, 'تاریخ فراغت');
+    if (!en && !gr) {
+      const normalize = (s) => normalizeDigits(s).trim().replace(/[.\-]/g, '/');
+      const enClean = normalize(enrollmentDate);
+      const grClean = normalize(graduationDate);
+      const enParts = enClean.split('/').map(p => parseInt(p.trim()));
+      const grParts = grClean.split('/').map(p => parseInt(p.trim()));
+      let enYear, enMonth, enDay, grYear, grMonth, grDay;
+      if (enParts[0] > 1000) { enYear = enParts[0]; enMonth = enParts[1]; enDay = enParts[2]; }
+      else { enYear = enParts[2]; enMonth = enParts[1]; enDay = enParts[0]; }
+      if (grParts[0] > 1000) { grYear = grParts[0]; grMonth = grParts[1]; grDay = grParts[2]; }
+      else { grYear = grParts[2]; grMonth = grParts[1]; grDay = grParts[0]; }
+      if (enYear > grYear || (enYear === grYear && enMonth > grMonth) || (enYear === grYear && enMonth === grMonth && enDay > grDay)) {
+        return '❌ تاریخ شمولیت نمی‌تواند بعد از تاریخ فراغت باشد';
+      }
+    }
+  }
+
   const workshopStatus = String(body.workshopStatus || '').trim();
   if (workshopStatus === 'بلی') {
     if (!String(body.workshopTitle || '').trim()) return '❌ عنوان ورکشاپ الزامی است';
@@ -831,6 +861,11 @@ async function validateRecordBody(body, excludeId = null) {
   if (totalTeachingHours) {
     const num = Number(normalizeDigits(totalTeachingHours));
     if (isNaN(num) || num < 0) return '❌ مجموعه ساعت درسی باید عددی مثبت باشد';
+  }
+
+  // اعتبارسنجی طول رشته تدریس (اگر وارد شده باشد)
+  if (teachingField && teachingField.length < 2) {
+    return '❌ رشته تدریس حداقل ۲ حرف';
   }
 
   if (excludeId === null && !body.agreement) return '❌ شما باید موافقت خود را اعلام کنید';
@@ -887,10 +922,17 @@ app.post('/api/records', authRequired, async (req, res) => {
       return res.status(400).json({ error });
     }
 
+    // ⭐ ذخیره رکورد با teachingField (و حذف subjectTeaching)
+    const dataToSave = { ...body };
+    delete dataToSave.subjectTeaching;
+    if (body.teachingField || body.subjectTeaching) {
+      dataToSave.teachingField = String(body.teachingField || body.subjectTeaching).trim();
+    }
+
     await pool.query(
       `INSERT INTO records (userid, schoolname, district, data, status)
        VALUES ($1, $2, $3, $4, 'pending')`,
-      [req.user.id, schoolName, district, JSON.stringify(body)]
+      [req.user.id, schoolName, district, JSON.stringify(dataToSave)]
     );
     res.json({ ok: true });
   } catch (err) {
@@ -906,7 +948,7 @@ app.post('/api/records', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// PUT /api/records/:id
+// PUT /api/records/:id (ویرایش)
 // ═══════════════════════════════════════════════════════════
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
@@ -928,15 +970,17 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
 
     let finalBody;
     if (req.user.role === 'school') {
+      // ⭐ در ویرایش، فیلدهای قابل تغییر: تذکره برداشته شده، رشته تدریس اضافه شده
       finalBody = {
         ...originalData,
         jobTitle: body.jobTitle !== undefined ? String(body.jobTitle).trim() : originalData.jobTitle,
         jobCode: body.jobCode !== undefined ? String(body.jobCode).trim() : originalData.jobCode,
-        eTazkira: body.eTazkira !== undefined ? String(body.eTazkira).trim() : originalData.eTazkira,
-        paperTazkira: body.paperTazkira !== undefined ? normalizeDigits(String(body.paperTazkira)).trim() : originalData.paperTazkira,
         bust: body.bust !== undefined ? String(body.bust).trim() : originalData.bust,
         grade: body.grade !== undefined ? String(body.grade).trim() : originalData.grade,
-        subjectTeaching: body.subjectTeaching !== undefined ? String(body.subjectTeaching).trim() : originalData.subjectTeaching,
+        // ⭐ رشته تدریس جایگزین مضمون تدریس
+        teachingField: body.teachingField !== undefined 
+          ? String(body.teachingField).trim() 
+          : (originalData.teachingField || originalData.subjectTeaching || ''),
         workshopStatus: body.workshopStatus !== undefined ? body.workshopStatus : originalData.workshopStatus,
         workshopTitle: body.workshopTitle !== undefined ? String(body.workshopTitle).trim() : originalData.workshopTitle,
         workshopDuration: body.workshopDuration !== undefined ? String(body.workshopDuration).trim() : originalData.workshopDuration,
@@ -949,8 +993,14 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
         serviceDate: body.serviceDate !== undefined ? String(body.serviceDate).trim() : (originalData.serviceDate || ''),
         agreement: true
       };
+      // حذف فیلد قدیمی برای جلوگیری از تکرار
+      delete finalBody.subjectTeaching;
     } else {
       finalBody = body;
+      if (finalBody.subjectTeaching && !finalBody.teachingField) {
+        finalBody.teachingField = finalBody.subjectTeaching;
+        delete finalBody.subjectTeaching;
+      }
     }
 
     if (finalBody.jobCode) {
@@ -1832,7 +1882,7 @@ app.get('/api/login-attempts', authRequired, async (req, res) => {
 });
 
 app.get('/api/test', (req, res) => {
-  res.json({ ok: true, version: '19.3.0', timestamp: new Date().toISOString() });
+  res.json({ ok: true, version: '21.0.0', timestamp: new Date().toISOString() });
 });
 
 app.get('*', (req, res) => {
@@ -1844,6 +1894,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V19.3 live on port ' + PORT);
+  console.log('🚀 Server V21.0 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

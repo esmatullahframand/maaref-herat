@@ -642,8 +642,8 @@
   const MONTHS_SHAMSI = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
   const JOB_TITLES_LIST = ['آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین', 'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش', 'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
 
-  // ⭐ بست‌هایی که از تحصیل معاف هستند
-  const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)'];
+  // ⭐ بست‌هایی که از تحصیل معاف هستند (کارکن خدماتی، معتمد جنسی، سایر)
+  const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
 
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
@@ -939,6 +939,7 @@
   }
 
   // ⭐ تغییر وضعیت الزامی بودن فیلدهای تحصیلی
+  // برای همه بست‌ها الزامی، فقط برای کارکن خدماتی / معتمد جنسی / سایر اختیاری
   function toggleEducationRequired() {
     const jobTitle = document.getElementById('jobTitle').value;
     const eduFields = document.querySelectorAll('.edu-field input');
@@ -946,19 +947,17 @@
 
     eduFields.forEach(input => {
       if (isExempt) {
+        // اختیاری
         input.removeAttribute('required');
         input.classList.remove('invalid');
-        // اگر پیام خطا داشت پاک شود
         const msg = input.nextElementSibling;
         if (msg && msg.classList.contains('date-msg')) {
-           msg.textContent = '';
-           msg.className = 'date-msg';
+          msg.textContent = '';
+          msg.className = 'date-msg';
         }
       } else {
-        // برای فیلدهای اجباری (به جز فیلدهایی که در حالت عادی اختیاری هستند)
-        if(['degree', 'major', 'eduInstitute', 'eduInstituteLocation', 'enrollmentDate', 'graduationDate'].includes(input.id)){
-            input.setAttribute('required', 'required');
-        }
+        // الزامی
+        input.setAttribute('required', 'required');
       }
     });
   }

@@ -281,7 +281,7 @@
       <div class="d-flex gap-2 flex-wrap">
         <button class="btn btn-dark fw-bold btn-sm px-3" id="toggleEvalListBtn" onclick="toggleEvalList()">👁️ نمایش لیست</button>
         <button class="btn btn-purple fw-bold btn-sm px-3" onclick="printEvalAdmin()">🖨️ پرنت توحیدی</button>
-        <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportEvalAdminExcel()">📊 اکسل</button>
+        <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportEvalAdminExcel()">📊 اکسل توحیدی</button>
       </div>
     </div>
 
@@ -911,7 +911,7 @@
   window.deleteSchoolAdmin = deleteSchoolAdmin;
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ بخش ارزیابی (Evaluation) — تغییرات جدید
+  // ⭐ بخش ارزیابی (Evaluation) 
   // ═══════════════════════════════════════════════════════════
   async function loadEvaluationPermission() { try { const res = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } }); const data = await res.json(); evalAllowed = !!data.allowed; updatePermissionUI(); } catch (e) { console.error(e); } }
   window.loadEvaluationPermission = loadEvaluationPermission;
@@ -1012,70 +1012,119 @@
   async function deleteEvalAdmin(id) { if (!confirm('⚠️ حذف شود؟')) return; try { const res = await fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAdminEvaluations(); } else showToast('خطا', true); } catch (e) { showToast('خطا', true); } }
   window.deleteEvalAdmin = deleteEvalAdmin;
 
-  // 🖨️ پرینت دقیق مشابه فورم توحیدی ارزیابی (PDF)
+  // 🖨️ پرینت دقیقاً مشابه فورم رسمی توحیدی ارزیابی (PDF)
   function printEvalAdmin() {
     if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('داده‌ای برای پرینت وجود ندارد', true); return; }
     
     let rowsHtml = '';
     filteredEvaluations.forEach((e, idx) => {
-      const g1 = e.eval_g1 || '—';
-      const g2 = e.eval_g2 || '—';
-      const g3 = e.eval_g3 || '—';
-      const g4 = e.eval_g4 || '—';
-      const totalVal = e.eval_score || '—';
+      const g1 = e.eval_g1 || '—'; const g2 = e.eval_g2 || '—'; const g3 = e.eval_g3 || '—';
+      const g4 = e.eval_g4 || '—'; const g5 = e.eval_g5 || '—'; const g6 = e.eval_g6 || '—';
+      const g7 = e.eval_g7 || '—'; const g8 = e.eval_g8 || '—'; const g9 = e.eval_g9 || '—';
+      
+      const appDate = e.appointment_date || '—';
+      const currDate = e.current_position_date || '—';
+      const gradDate = e.graduation_date || '—';
+      const prevEvalDate = e.prev_eval_date || '—';
+      const evalDate = e.eval_date || '—';
+      
+      const degree = e.degree || '—';
+      const bust = e.bust || '—';
+      const grade = e.grade || '—';
+      const jobCode = e.job_code || '—';
+      
+      let resHtml = '—';
+      if (e.eval_result === 'عالی') resHtml = '<span style="color:green; font-weight:bold;">عالی</span>';
+      else if (e.eval_result === 'خوب') resHtml = '<span style="color:blue; font-weight:bold;">خوب</span>';
+      else if (e.eval_result === 'ضعیف') resHtml = '<span style="color:red; font-weight:bold;">ضعیف</span>';
       
       rowsHtml += `
         <tr>
           <td>${idx + 1}</td>
-          <td>${escapeHtml(e.first_name || '')} ${escapeHtml(e.last_name || '')}</td>
+          <td>${escapeHtml(e.first_name || '')}</td>
+          <td>${escapeHtml(e.last_name || '')}</td>
           <td>${escapeHtml(e.father_name || '')}</td>
-          <td>${escapeHtml(e.tazkira || '—')}</td>
+          <td>${escapeHtml(jobCode)}</td>
+          <td>${escapeHtml(e.appointment_type || '—')}</td>
+          <td>${escapeHtml(e.birth_date || '—')}</td>
+          <td>${escapeHtml(e.service_duration || '—')}</td>
+          <td>${escapeHtml(degree)}</td>
+          <td>${escapeHtml(e.gender || '—')}</td>
           <td>${escapeHtml(e.job_title || '')}</td>
+          <td>${escapeHtml(e.district || '—')}</td>
           <td>${escapeHtml(e.schoolname || '')}</td>
-          <td>${escapeHtml(e.eval_date || '')}</td>
-          <td>${g1}</td><td>${g2}</td><td>${g3}</td><td>${g4}</td>
-          <td><strong>${totalVal}</strong></td>
-          <td>${e.eval_result || ''}</td>
+          <td>${escapeHtml(appDate)}</td>
+          <td>${escapeHtml(currDate)}</td>
+          <td>${escapeHtml(gradDate)}</td>
+          <td>${escapeHtml(prevEvalDate)}</td>
+          <td>${escapeHtml(bust)}</td>
+          <td>${escapeHtml(grade)}</td>
+          <td>${escapeHtml(evalDate)}</td>
+          <td>${g1}</td><td>${g2}</td><td>${g3}</td><td>${g4}</td><td>${g5}</td><td>${g6}</td><td>${g7}</td><td>${g8}</td><td>${g9}</td>
+          <td>${resHtml}</td>
         </tr>
       `;
     });
 
     const printHtml = `
-      <div class="print-area" dir="rtl">
+      <div class="print-area" dir="rtl" style="width: 100%;">
         <div style="text-align: center; margin-bottom: 15px;">
           <h3 style="margin: 0; font-size: 16px;">جمهوری اسلامی افغانستان</h3>
           <h4 style="margin: 3px 0; font-size: 14px;">وزارت معارف</h4>
           <h5 style="margin: 3px 0; font-size: 12px;">ریاست معارف ولایت هرات — آمریت ارزیابی اجرات معلمین و کارمندان</h5>
-          <h4 style="margin: 10px 0 5px 0; font-size: 14px; background: #eee; padding: 5px;">جدول توحیدی ارزیابی اجرات سالانه معلمین و مدرسین معارف</h4>
+          <h4 style="margin: 10px 0 5px 0; font-size: 14px; background: #eee; padding: 5px; border: 1px solid #000;">جدول توحیدی ارزیابی اجرات سالانه معلمین و مدرسین معارف</h4>
         </div>
         
-        <table class="print-table">
+        <table class="print-table" style="width:100%; border-collapse: collapse; font-size: 8px; text-align: center;">
           <thead>
             <tr>
-              <th rowspan="2">شماره</th>
-              <th colspan="2">شهرت</th>
-              <th rowspan="2">ولدیت</th>
-              <th rowspan="2">وظیفه</th>
-              <th rowspan="2">نام مکتب / اداره مربوطه</th>
-              <th rowspan="2">تاریخ ارزیابی</th>
-              <th colspan="4">نمرات ارزیابی</th>
-              <th rowspan="2">نمره کل</th>
-              <th rowspan="2">نتیجه ارزیابی</th>
+              <th rowspan="3" style="border: 1px solid #000; padding: 2px;">شماره</th>
+              <th colspan="5" style="border: 1px solid #000; padding: 2px;">شهرت</th>
+              <th colspan="5" style="border: 1px solid #000; padding: 2px;">مشخصات وظیفوی</th>
+              <th colspan="3" style="border: 1px solid #000; padding: 2px;">تاریخ تقرر / تاریخ معادلت / تاریخ فراغت</th>
+              <th rowspan="3" style="border: 1px solid #000; padding: 2px;">تاریخ ارزیابی قبلی</th>
+              <th colspan="2" style="border: 1px solid #000; padding: 2px;">بست و قدم موجود</th>
+              <th colspan="3" style="border: 1px solid #000; padding: 2px;">تاریخ ارزیابی</th>
+              <th rowspan="3" style="border: 1px solid #000; padding: 2px;">نمره ارزیابی</th>
+              <th colspan="3" style="border: 1px solid #000; padding: 2px;">نتیجه ارزیابی</th>
             </tr>
             <tr>
-              <th>اسم</th>
-              <th>تخلص</th>
-              <th>۱</th>
-              <th>۲</th>
-              <th>۳</th>
-              <th>۴</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">اسم</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ولد</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ولدیت</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">کود تشکیل</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">نوع تقرری</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">تاریخ تولد</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">مدت خدمت</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">درجه تحصیل</th>
+              <th colspan="2" style="border: 1px solid #000; padding: 2px;">جنسیت</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">وظیفه</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ناجیه / ولسوالی</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">نام مکتب / اداره مربوطه</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">روز</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ماه</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">سال</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">بست</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">قدم</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">روز</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ماه</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">سال</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">عالی</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">خوب</th>
+              <th rowspan="2" style="border: 1px solid #000; padding: 2px;">ضعیف</th>
+            </tr>
+            <tr>
+              <th style="border: 1px solid #000; padding: 2px;">حکمی</th>
+              <th style="border: 1px solid #000; padding: 2px;">رقابتی</th>
+              <th style="border: 1px solid #000; padding: 2px;">مرد</th>
+              <th style="border: 1px solid #000; padding: 2px;">زن</th>
             </tr>
           </thead>
           <tbody>
             ${rowsHtml}
           </tbody>
         </table>
-        <div style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 11px;">
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; font-size: 11px;">
           <div>امضاء آمر ارزیابی: ..........................</div>
           <div>امضاء مدیر مربوطه: ..........................</div>
         </div>
@@ -1083,19 +1132,57 @@
     `;
 
     const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت توحیدی</title><style>body{font-family:Tahoma;padding:15px;direction:rtl;}@media print{.no-print{display:none;}@page{size:A4 landscape;margin:10mm;}}</style></head><body>${printHtml}<div class="no-print" style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="padding:10px 30px;background:#7c3aed;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px;font-weight:bold;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
+    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت توحیدی</title><style>body{font-family:Tahoma;padding:10px;direction:rtl;}table, th, td {border: 1px solid #000 !important;} @media print{.no-print{display:none;}@page{size:A4 landscape;margin:5mm;}}</style></head><body>${printHtml}<div class="no-print" style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="padding:10px 30px;background:#7c3aed;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px;font-weight:bold;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
     win.document.close();
   }
   window.printEvalAdmin = printEvalAdmin;
 
+  // 📊 خروجی اکسل دقیقا مشابه فرم (با ساختار ساده‌شده اما حفظ تمام اطلاعات)
   function exportEvalAdminExcel() {
     if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('داده‌ای برای خروجی وجود ندارد', true); return; }
-    const headers = ['#', 'اسم', 'تخلص', 'ولد', 'وظیفه', 'مکتب', 'تاریخ ارزیابی', 'نمره کل', 'نتیجه'];
-    const rows = filteredEvaluations.map((e, idx) => [idx + 1, e.first_name || '', e.last_name || '', e.father_name || '', e.job_title || '', e.schoolname || '', e.eval_date || '', e.eval_score || '', e.eval_result || '']);
+    
+    const headers = [
+      'شماره', 'اسم', 'ولد', 'ولدیت', 'کود تشکیل', 'نوع تقرری', 
+      'تاریخ تولد', 'مدت خدمت', 'درجه تحصیل', 'جنسیت', 'وظیفه', 'ناجیه/ولسوالی', 'نام مکتب/اداره مربوطه',
+      'تاریخ تقرر', 'تاریخ معادلت', 'تاریخ فراغت', 
+      'تاریخ ارزیابی قبلی', 'بست', 'قدم',
+      'تاریخ ارزیابی', 'نمره ۱', 'نمره ۲', 'نمره ۳', 'نمره ۴', 'نمره ۵', 'نمره ۶', 'نمره ۷', 'نمره ۸', 'نمره ۹', 
+      'عالی', 'خوب', 'ضعیف'
+    ];
+    
+    const rows = filteredEvaluations.map((e, idx) => {
+      return [
+        idx + 1,
+        e.first_name || '',
+        e.last_name || '',
+        e.father_name || '',
+        e.job_code || '',
+        e.appointment_type || '',
+        e.birth_date || '',
+        e.service_duration || '',
+        e.degree || '',
+        e.gender || '',
+        e.job_title || '',
+        e.district || '',
+        e.schoolname || '',
+        e.appointment_date || '',
+        e.current_position_date || '',
+        e.graduation_date || '',
+        e.prev_eval_date || '',
+        e.bust || '',
+        e.grade || '',
+        e.eval_date || '',
+        e.eval_g1 || '', e.eval_g2 || '', e.eval_g3 || '', e.eval_g4 || '', e.eval_g5 || '', e.eval_g6 || '', e.eval_g7 || '', e.eval_g8 || '', e.eval_g9 || '',
+        e.eval_result === 'عالی' ? 'عالی' : '',
+        e.eval_result === 'خوب' ? 'خوب' : '',
+        e.eval_result === 'ضعیف' ? 'ضعیف' : ''
+      ];
+    });
+
     const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'Evaluation_Report_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = 'Evaluation_Tawhidi_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
     URL.revokeObjectURL(url);
     showToast('📊 اکسل دانلود شد');
   }

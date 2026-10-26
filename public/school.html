@@ -2548,35 +2548,52 @@
               <h4 style="margin:5px 0; font-size:14px; border:1px solid #000; padding:5px; display:inline-block;">جدول توحیدی ارزیابی اجرائات سابقه معلمان و مدرسین معارف — ${escapeHtml(user.schoolname || 'مکتب')}</h4>
           </div>
           
-          <table style="width:100%; border-collapse:collapse; font-size:9px; text-align:center; border:1px solid #000;">
+          <table style="width:100%; border-collapse:collapse; font-size:8px; text-align:center; border:1px solid #000;">
               <thead>
                   <tr style="background:#f0f0f0; font-weight:bold;">
-                      <th style="border:1px solid #000; padding:3px;" rowspan="2">شماره</th>
-                      <th style="border:1px solid #000; padding:3px;" colspan="4">شهرت</th>
-                      <th style="border:1px solid #000; padding:3px;" colspan="10">مشخصات وظیفوی</th>
-                      <th style="border:1px solid #000; padding:3px;" colspan="9">نتیجه ارزیابی</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="3">شماره</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="3">شهرت</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="12">مشخصات وظیفوی</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="3">تاریخ تقرر</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="3">تاریخ ارزیابی قبلی</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="2">بست و قدم موجود</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="3">تاریخ ارزیابی</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="3">نمره ارزیابی</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="3">نتیجه ارزیابی</th>
                   </tr>
                   <tr style="background:#f0f0f0; font-weight:bold;">
-                      <th style="border:1px solid #000; padding:3px;">اسم</th>
-                      <th style="border:1px solid #000; padding:3px;">ولد</th>
-                      <th style="border:1px solid #000; padding:3px;">ولدیت</th>
-                      <th style="border:1px solid #000; padding:3px;">کود تشکیل</th>
-                      <th style="border:1px solid #000; padding:3px;">نوع قرار</th>
-                      <th style="border:1px solid #000; padding:3px;">درجه تحصیل</th>
-                      <th style="border:1px solid #000; padding:3px;">جنسیت</th>
-                      <th style="border:1px solid #000; padding:3px;">وظیفه</th>
-                      <th style="border:1px solid #000; padding:3px;">نام مکتب/اداره مربوطه</th>
-                      <th style="border:1px solid #000; padding:3px;">ناحیه/ولسوالی</th>
-                      <th style="border:1px solid #000; padding:3px;">تاریخ تقرر فعلی</th>
-                      <th style="border:1px solid #000; padding:3px;">بست موجود</th>
-                      <th style="border:1px solid #000; padding:3px;">قدم</th>
-                      <th style="border:1px solid #000; padding:3px;">بست</th>
-                      <th style="border:1px solid #000; padding:3px;">تاریخ ارزیابی</th>
-                      <th style="border:1px solid #000; padding:3px;">نمره از (۱۰۰)</th>
-                      <th style="border:1px solid #000; padding:3px;">نتیجه نهایی</th>
-                      <th style="border:1px solid #000; padding:3px;">درصد</th>
-                      <th style="border:1px solid #000; padding:3px;">امتیاز</th>
-                      <th style="border:1px solid #000; padding:3px;">ملاحظات</th>
+                      <th style="border:1px solid #000; padding:2px;">اسم</th>
+                      <th style="border:1px solid #000; padding:2px;">ولد</th>
+                      <th style="border:1px solid #000; padding:2px;">ولدیت</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">کود تشکیل</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="2">نوع تقرری</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">تاریخ تولد</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">مدت خدمت</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">درجه تحصیل</th>
+                      <th style="border:1px solid #000; padding:2px;" colspan="2">جنسیت</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">وظیفه</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">ناحیه/ ولسوالی</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">نام مکتب/ اداره مربوطه</th>
+                      <th style="border:1px solid #000; padding:2px;">روز</th>
+                      <th style="border:1px solid #000; padding:2px;">ماه</th>
+                      <th style="border:1px solid #000; padding:2px;">سال</th>
+                      <th style="border:1px solid #000; padding:2px;">روز</th>
+                      <th style="border:1px solid #000; padding:2px;">ماه</th>
+                      <th style="border:1px solid #000; padding:2px;">سال</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">بست</th>
+                      <th style="border:1px solid #000; padding:2px;" rowspan="2">قدم</th>
+                      <th style="border:1px solid #000; padding:2px;">روز</th>
+                      <th style="border:1px solid #000; padding:2px;">ماه</th>
+                      <th style="border:1px solid #000; padding:2px;">سال</th>
+                      <th style="border:1px solid #000; padding:2px;">عالی</th>
+                      <th style="border:1px solid #000; padding:2px;">خوب</th>
+                      <th style="border:1px solid #000; padding:2px;">ضعیف</th>
+                  </tr>
+                  <tr style="background:#f0f0f0; font-weight:bold;">
+                      <th style="border:1px solid #000; padding:2px;">حکمی</th>
+                      <th style="border:1px solid #000; padding:2px;">رقابتی</th>
+                      <th style="border:1px solid #000; padding:2px;">مرد</th>
+                      <th style="border:1px solid #000; padding:2px;">زن</th>
                   </tr>
               </thead>
               <tbody>
@@ -2584,48 +2601,75 @@
 
           sortedEvals.forEach((ev, index) => {
               const recData = recordsMap[ev.record_id] || {};
+              
               const firstName = escapeHtml(ev.first_name || recData.firstName || '');
               const lastName = escapeHtml(ev.last_name || recData.lastName || '');
               const fatherName = escapeHtml(ev.father_name || recData.fatherName || '');
               const grandFatherName = escapeHtml(ev.grandfather_name || recData.grandfatherName || '');
               const jobCode = escapeHtml(ev.job_code || recData.jobCode || '');
+              const employmentType = escapeHtml(ev.employment_type || recData.employmentType || 'حکمی');
+              const birthYear = escapeHtml(ev.birth_year || recData.birthDate || '');
+              const serviceDuration = escapeHtml(ev.service_duration || '');
+              const degree = escapeHtml(ev.degree || recData.degree || '');
+              const gender = escapeHtml(ev.gender || recData.gender || '');
               const jobTitle = escapeHtml(ev.job_title || recData.jobTitle || '');
-              const degree = escapeHtml(recData.degree || '');
-              const gender = escapeHtml(recData.gender || '');
-              const schoolName = escapeHtml(user.schoolname || '');
-              const district = escapeHtml(recData.originDistrict || '');
-              const currentPosDate = escapeHtml(recData.currentPositionDate || '');
+              const district = escapeHtml(ev.origin_district || recData.originDistrict || '');
+              const schoolName = escapeHtml(ev.schoolname || user.schoolname || '');
+              const appointmentDate = escapeHtml(ev.appointment_date || recData.currentPositionDate || '');
+              const apptParts = appointmentDate ? appointmentDate.split('/').map(p => p.trim()) : ['', '', ''];
+              const apptDay = apptParts[2] || '';
+              const apptMonth = apptParts[1] || '';
+              const apptYear = apptParts[0] || '';
+              const evalDatePrev = escapeHtml(ev.eval_date_prev || '');
+              const prevParts = evalDatePrev ? evalDatePrev.split('/').map(p => p.trim()) : ['', '', ''];
+              const prevDay = prevParts[2] || '';
+              const prevMonth = prevParts[1] || '';
+              const prevYear = prevParts[0] || '';
               const bust = escapeHtml(ev.bust || recData.bust || '');
               const grade = escapeHtml(ev.grade || recData.grade || '');
               const evalDate = escapeHtml(ev.eval_date || '');
+              const evalParts = evalDate ? evalDate.split('/').map(p => p.trim()) : ['', '', ''];
+              const evalDay = evalParts[2] || '';
+              const evalMonth = evalParts[1] || '';
+              const evalYear = evalParts[0] || '';
               const score = Number(ev.eval_score) || 0;
               const result = escapeHtml(ev.eval_result || '');
-              const percent = score; 
-              const points = Math.round(score * 0.8); 
+              const isExcellent = result === 'عالی' ? '✓' : '';
+              const isGood = result === 'خوب' ? '✓' : '';
+              const isWeak = result === 'ضعیف' ? '✓' : '';
 
               html += `
                   <tr>
-                      <td style="border:1px solid #000; padding:3px;">${index + 1}</td>
-                      <td style="border:1px solid #000; padding:3px; text-align:right;">${firstName} ${lastName}</td>
-                      <td style="border:1px solid #000; padding:3px; text-align:right;">${fatherName}</td>
-                      <td style="border:1px solid #000; padding:3px; text-align:right;">${grandFatherName}</td>
-                      <td style="border:1px solid #000; padding:3px; direction:ltr;">${jobCode}</td>
-                      <td style="border:1px solid #000; padding:3px;">حکمی</td>
-                      <td style="border:1px solid #000; padding:3px;">${degree}</td>
-                      <td style="border:1px solid #000; padding:3px;">${gender}</td>
-                      <td style="border:1px solid #000; padding:3px;">${jobTitle}</td>
-                      <td style="border:1px solid #000; padding:3px;">${schoolName}</td>
-                      <td style="border:1px solid #000; padding:3px;">${district}</td>
-                      <td style="border:1px solid #000; padding:3px; direction:ltr;">${currentPosDate}</td>
-                      <td style="border:1px solid #000; padding:3px;">${bust}</td>
-                      <td style="border:1px solid #000; padding:3px;">${grade}</td>
-                      <td style="border:1px solid #000; padding:3px;">${bust}</td>
-                      <td style="border:1px solid #000; padding:3px; direction:ltr;">${evalDate}</td>
-                      <td style="border:1px solid #000; padding:3px; font-weight:bold;">${score}</td>
-                      <td style="border:1px solid #000; padding:3px; font-weight:bold;">${result}</td>
-                      <td style="border:1px solid #000; padding:3px;">${percent}%</td>
-                      <td style="border:1px solid #000; padding:3px;">${points}</td>
-                      <td style="border:1px solid #000; padding:3px;"></td>
+                      <td style="border:1px solid #000; padding:2px;">${index + 1}</td>
+                      <td style="border:1px solid #000; padding:2px; text-align:right;">${firstName} ${lastName}</td>
+                      <td style="border:1px solid #000; padding:2px; text-align:right;">${fatherName}</td>
+                      <td style="border:1px solid #000; padding:2px; text-align:right;">${grandFatherName}</td>
+                      <td style="border:1px solid #000; padding:2px; direction:ltr;">${jobCode}</td>
+                      <td style="border:1px solid #000; padding:2px;">${employmentType === 'حکمی' ? '✓' : ''}</td>
+                      <td style="border:1px solid #000; padding:2px;">${employmentType === 'رقابتی' ? '✓' : ''}</td>
+                      <td style="border:1px solid #000; padding:2px;">${birthYear}</td>
+                      <td style="border:1px solid #000; padding:2px;">${serviceDuration}</td>
+                      <td style="border:1px solid #000; padding:2px;">${degree}</td>
+                      <td style="border:1px solid #000; padding:2px;">${gender === 'مرد' ? '✓' : ''}</td>
+                      <td style="border:1px solid #000; padding:2px;">${gender === 'زن' ? '✓' : ''}</td>
+                      <td style="border:1px solid #000; padding:2px;">${jobTitle}</td>
+                      <td style="border:1px solid #000; padding:2px;">${district}</td>
+                      <td style="border:1px solid #000; padding:2px;">${schoolName}</td>
+                      <td style="border:1px solid #000; padding:2px;">${apptDay}</td>
+                      <td style="border:1px solid #000; padding:2px;">${apptMonth}</td>
+                      <td style="border:1px solid #000; padding:2px;">${apptYear}</td>
+                      <td style="border:1px solid #000; padding:2px;">${prevDay}</td>
+                      <td style="border:1px solid #000; padding:2px;">${prevMonth}</td>
+                      <td style="border:1px solid #000; padding:2px;">${prevYear}</td>
+                      <td style="border:1px solid #000; padding:2px;">${bust}</td>
+                      <td style="border:1px solid #000; padding:2px;">${grade}</td>
+                      <td style="border:1px solid #000; padding:2px;">${evalDay}</td>
+                      <td style="border:1px solid #000; padding:2px;">${evalMonth}</td>
+                      <td style="border:1px solid #000; padding:2px;">${evalYear}</td>
+                      <td style="border:1px solid #000; padding:2px; font-weight:bold;">${score}</td>
+                      <td style="border:1px solid #000; padding:2px; font-weight:bold;">${isExcellent}</td>
+                      <td style="border:1px solid #000; padding:2px; font-weight:bold;">${isGood}</td>
+                      <td style="border:1px solid #000; padding:2px; font-weight:bold;">${isWeak}</td>
                   </tr>
               `;
           });

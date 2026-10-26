@@ -64,6 +64,7 @@
   .toggle-switch input { width: 18px; height: 18px; cursor: pointer; accent-color: #10b981; }
   .stats-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 15px; }
   .stats-card-item h6 { margin: 0 0 12px 0; font-weight: bold; font-size: 14px; border-bottom: 2px solid; padding-bottom: 8px; }
+  .eval-table-hidden { display: none; }
 </style>
 </head>
 <body>
@@ -249,6 +250,7 @@
     </div>
   </div>
 </div>
+
 <!-- ══════════ تب ارزیابی ══════════ -->
 <div class="container-fluid px-4 py-3" id="tab-evaluation" style="display:none;">
 
@@ -277,12 +279,18 @@
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <h5 class="text-purple m-0 fw-bold">📋 لیست ارزیابی‌ها</h5>
       <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-purple fw-bold btn-sm px-3" onclick="printEvalAdmin()">🖨️ پرنت</button>
+        <button class="btn btn-dark fw-bold btn-sm px-3" id="toggleEvalListBtn" onclick="toggleEvalList()">👁️ نمایش لیست</button>
+        <button class="btn btn-purple fw-bold btn-sm px-3" onclick="printEvalAdmin()">🖨️ پرنت توحیدی</button>
         <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportEvalAdminExcel()">📊 اکسل</button>
       </div>
     </div>
 
+    <!-- فیلترها و جستجو -->
     <div class="filter-grid mb-3">
+      <div class="filter-item">
+        <label>🔍 جستجو (نام، ولد، وظیفه، کد بست، مکتب)</label>
+        <input type="text" id="evalSearchInput" class="form-control" placeholder="جستجو کنید..." oninput="applyEvalFilters()">
+      </div>
       <div class="filter-item">
         <label>🏫 نوع</label>
         <select id="evalSchoolTypeFilter" onchange="applyEvalFilters()" class="form-control">
@@ -299,7 +307,8 @@
       </div>
     </div>
 
-    <div class="table-responsive border rounded">
+    <!-- جدول نمایش در صفحه (مخفی به صورت پیش‌فرض) -->
+    <div class="table-responsive border rounded eval-table-hidden" id="evalListContainer">
       <table class="table table-hover align-middle mb-0 text-center">
         <thead class="table-light">
           <tr><th>#</th><th>اسم</th><th>ولد</th><th>وظیفه</th><th>کُد بست</th><th>مکتب</th><th>تاریخ ارزیابی</th><th>نمره</th><th>نتیجه</th><th>عملیات</th></tr>
@@ -343,6 +352,7 @@
     <div style="margin-top:20px;">
       <h6 style="color:#7c3aed; font-weight:bold; margin-bottom:12px;">🔍 فیلترهای جستجوی معاشات</h6>
       <div class="filter-grid">
+        <div class="filter-item"><label>📅 سال</label><select id="salaryYearFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه سال‌ها</option></select></div>
         <div class="filter-item"><label>🏫 نوع (مکاتب/مدارس)</label><select id="salaryTypeFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه</option><option value="مکاتب">🏫 مکاتب</option><option value="مدارس">🏛️ مدارس</option></select></div>
         <div class="filter-item"><label>📖 نوع مکتب</label><select id="salarySchoolTypeFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه</option><option value="لیسه">لیسه</option><option value="متوسطه">متوسطه</option><option value="ابتداییه">ابتداییه</option><option value="مدرسه">مدرسه</option></select></div>
         <div class="filter-item"><label>🏫 نام مکتب خاص</label><select id="salarySchoolNameFilter" class="form-control" onchange="onSalarySchoolChange()"><option value="">📋 همه مکاتب</option></select></div>
@@ -483,7 +493,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // ═══════════════════════════════════════════════════════════
-  // پنل ادمین — JavaScript کامل (نسخه نهایی با ۱۲ فیلتر)
+  // پنل ادمین — JavaScript کامل (نسخه نهایی با تغییرات درخواستی)
   // ═══════════════════════════════════════════════════════════
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
@@ -900,7 +910,9 @@
   async function deleteSchoolAdmin(id) { if (!confirm('⚠️ مطمئن هستید؟')) return; try { const res = await fetch('/api/users/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); await refreshManageSchools(); await loadSchoolsList(); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); } }
   window.deleteSchoolAdmin = deleteSchoolAdmin;
 
-  // ════ ارزیابی ════
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ بخش ارزیابی (Evaluation) — تغییرات جدید
+  // ═══════════════════════════════════════════════════════════
   async function loadEvaluationPermission() { try { const res = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } }); const data = await res.json(); evalAllowed = !!data.allowed; updatePermissionUI(); } catch (e) { console.error(e); } }
   window.loadEvaluationPermission = loadEvaluationPermission;
 
@@ -915,6 +927,23 @@
     try { const res = await fetch('/api/evaluation-permission', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ allowed }) }); if (res.ok) { evalAllowed = allowed; updatePermissionUI(); showToast(allowed ? '✅ فعال شد' : '❌ غیرفعال شد'); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); }
   }
   window.setEvaluationPermission = setEvaluationPermission;
+
+  let evalListVisible = false;
+  function toggleEvalList() {
+    evalListVisible = !evalListVisible;
+    const container = document.getElementById('evalListContainer');
+    const btn = document.getElementById('toggleEvalListBtn');
+    if (evalListVisible) {
+      container.classList.remove('eval-table-hidden');
+      btn.innerHTML = '🙈 مخفی کردن لیست';
+      btn.classList.replace('btn-dark', 'btn-secondary');
+    } else {
+      container.classList.add('eval-table-hidden');
+      btn.innerHTML = '👁️ نمایش لیست';
+      btn.classList.replace('btn-secondary', 'btn-dark');
+    }
+  }
+  window.toggleEvalList = toggleEvalList;
 
   async function loadAdminEvaluations() {
     const tbody = document.getElementById('evalAdminTableBody');
@@ -940,20 +969,34 @@
 
   function applyEvalFilters() {
     const tbody = document.getElementById('evalAdminTableBody');
+    const searchInput = (document.getElementById('evalSearchInput').value || '').trim().toLowerCase();
     const schoolTypeFilter = document.getElementById('evalSchoolTypeFilter').value;
     const schoolNameFilter = document.getElementById('evalSchoolNameFilter').value;
+    
     filteredEvaluations = cachedEvaluations.filter(e => {
       if (schoolNameFilter && e.schoolname !== schoolNameFilter) return false;
       if (schoolTypeFilter) { const type = detectSchoolType(e.schoolname); if (schoolTypeFilter === 'مکاتب') { if (type !== 'لیسه' && type !== 'متوسطه' && type !== 'ابتداییه') return false; } else if (schoolTypeFilter === 'مدارس') { if (type !== 'مدرسه' && type !== 'نامشخص') return false; } }
+      
+      if (searchInput) {
+        const fn = (e.first_name || '').toLowerCase();
+        const fa = (e.father_name || '').toLowerCase();
+        const jt = (e.job_title || '').toLowerCase();
+        const jc = (e.job_code || '').toLowerCase();
+        const sn = (e.schoolname || '').toLowerCase();
+        if (!fn.includes(searchInput) && !fa.includes(searchInput) && !jt.includes(searchInput) && !jc.includes(searchInput) && !sn.includes(searchInput)) return false;
+      }
       return true;
     });
+
     let excellent = 0, good = 0, weak = 0;
     filteredEvaluations.forEach(e => { if (e.eval_result === 'عالی') excellent++; else if (e.eval_result === 'خوب') good++; else if (e.eval_result === 'ضعیف') weak++; });
     document.getElementById('evalStatTotal').textContent = filteredEvaluations.length;
     document.getElementById('evalStatExcellent').textContent = excellent;
     document.getElementById('evalStatGood').textContent = good;
     document.getElementById('evalStatWeak').textContent = weak;
+    
     if (filteredEvaluations.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4 text-muted">یافت نشد</td></tr>'; return; }
+    
     let html = '';
     filteredEvaluations.forEach((e, idx) => {
       let resultBadge = '—';
@@ -969,13 +1012,98 @@
   async function deleteEvalAdmin(id) { if (!confirm('⚠️ حذف شود؟')) return; try { const res = await fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAdminEvaluations(); } else showToast('خطا', true); } catch (e) { showToast('خطا', true); } }
   window.deleteEvalAdmin = deleteEvalAdmin;
 
-  function printEvalAdmin() { showToast('در حال آماده‌سازی...'); setTimeout(() => window.print(), 300); }
+  // 🖨️ پرینت دقیق مشابه فورم توحیدی ارزیابی (PDF)
+  function printEvalAdmin() {
+    if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('داده‌ای برای پرینت وجود ندارد', true); return; }
+    
+    let rowsHtml = '';
+    filteredEvaluations.forEach((e, idx) => {
+      const g1 = e.eval_g1 || '—';
+      const g2 = e.eval_g2 || '—';
+      const g3 = e.eval_g3 || '—';
+      const g4 = e.eval_g4 || '—';
+      const totalVal = e.eval_score || '—';
+      
+      rowsHtml += `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(e.first_name || '')} ${escapeHtml(e.last_name || '')}</td>
+          <td>${escapeHtml(e.father_name || '')}</td>
+          <td>${escapeHtml(e.tazkira || '—')}</td>
+          <td>${escapeHtml(e.job_title || '')}</td>
+          <td>${escapeHtml(e.schoolname || '')}</td>
+          <td>${escapeHtml(e.eval_date || '')}</td>
+          <td>${g1}</td><td>${g2}</td><td>${g3}</td><td>${g4}</td>
+          <td><strong>${totalVal}</strong></td>
+          <td>${e.eval_result || ''}</td>
+        </tr>
+      `;
+    });
+
+    const printHtml = `
+      <div class="print-area" dir="rtl">
+        <div style="text-align: center; margin-bottom: 15px;">
+          <h3 style="margin: 0; font-size: 16px;">جمهوری اسلامی افغانستان</h3>
+          <h4 style="margin: 3px 0; font-size: 14px;">وزارت معارف</h4>
+          <h5 style="margin: 3px 0; font-size: 12px;">ریاست معارف ولایت هرات — آمریت ارزیابی اجرات معلمین و کارمندان</h5>
+          <h4 style="margin: 10px 0 5px 0; font-size: 14px; background: #eee; padding: 5px;">جدول توحیدی ارزیابی اجرات سالانه معلمین و مدرسین معارف</h4>
+        </div>
+        
+        <table class="print-table">
+          <thead>
+            <tr>
+              <th rowspan="2">شماره</th>
+              <th colspan="2">شهرت</th>
+              <th rowspan="2">ولدیت</th>
+              <th rowspan="2">وظیفه</th>
+              <th rowspan="2">نام مکتب / اداره مربوطه</th>
+              <th rowspan="2">تاریخ ارزیابی</th>
+              <th colspan="4">نمرات ارزیابی</th>
+              <th rowspan="2">نمره کل</th>
+              <th rowspan="2">نتیجه ارزیابی</th>
+            </tr>
+            <tr>
+              <th>اسم</th>
+              <th>تخلص</th>
+              <th>۱</th>
+              <th>۲</th>
+              <th>۳</th>
+              <th>۴</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+        <div style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 11px;">
+          <div>امضاء آمر ارزیابی: ..........................</div>
+          <div>امضاء مدیر مربوطه: ..........................</div>
+        </div>
+      </div>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت توحیدی</title><style>body{font-family:Tahoma;padding:15px;direction:rtl;}@media print{.no-print{display:none;}@page{size:A4 landscape;margin:10mm;}}</style></head><body>${printHtml}<div class="no-print" style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="padding:10px 30px;background:#7c3aed;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px;font-weight:bold;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
+    win.document.close();
+  }
   window.printEvalAdmin = printEvalAdmin;
-  function exportEvalAdminExcel() { showToast('در حال توسعه'); }
+
+  function exportEvalAdminExcel() {
+    if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('داده‌ای برای خروجی وجود ندارد', true); return; }
+    const headers = ['#', 'اسم', 'تخلص', 'ولد', 'وظیفه', 'مکتب', 'تاریخ ارزیابی', 'نمره کل', 'نتیجه'];
+    const rows = filteredEvaluations.map((e, idx) => [idx + 1, e.first_name || '', e.last_name || '', e.father_name || '', e.job_title || '', e.schoolname || '', e.eval_date || '', e.eval_score || '', e.eval_result || '']);
+    const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'Evaluation_Report_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('📊 اکسل دانلود شد');
+  }
   window.exportEvalAdminExcel = exportEvalAdminExcel;
 
+
   // ═══════════════════════════════════════════════════════════
-  // ⭐ بخش معاشات (Salaries) — عمومی + فیلتر
+  // ⭐ بخش معاشات (Salaries) — با فیلتر سال و آمار داینامیک
   // ═══════════════════════════════════════════════════════════
 
   async function loadSalaries() {
@@ -988,10 +1116,10 @@
       cachedSalaries = Array.isArray(data) ? data : [];
       salaryAllPersons = cachedSalaries.map(s => ({ id: s.record_id || s.id, name: `${s.first_name || ''} ${s.last_name || ''}`.trim(), school: s.schoolname }));
       
+      populateSalaryYearDropdown();
       populateSalarySchoolDropdown();
       populateSalaryPersonFilter();
       
-      // ⭐ نمایش عمومی (همه معاشات) در بدو ورود
       filteredSalaries = [...cachedSalaries];
       renderSalaries(filteredSalaries);
       updateSalaryTotals(filteredSalaries);
@@ -1009,6 +1137,15 @@
     }
   }
   window.loadSalaries = loadSalaries;
+
+  function populateSalaryYearDropdown() {
+    const sel = document.getElementById('salaryYearFilter');
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">📋 همه سال‌ها</option>';
+    const uniqueYears = [...new Set(cachedSalaries.map(s => s.year).filter(Boolean))].sort((a,b) => b - a); // نزولی
+    uniqueYears.forEach(year => { const o = document.createElement('option'); o.value = year; o.textContent = `📅 ${year}`; if (year === cur) o.selected = true; sel.appendChild(o); });
+  }
 
   function populateSalarySchoolDropdown() {
     const sel = document.getElementById('salarySchoolNameFilter');
@@ -1037,6 +1174,7 @@
   window.onSalarySchoolChange = onSalarySchoolChange;
 
   function applySalaryFilters() {
+    const yearFilter = document.getElementById('salaryYearFilter').value;
     const typeFilter = document.getElementById('salaryTypeFilter').value;
     const schoolTypeFilter = document.getElementById('salarySchoolTypeFilter').value;
     const schoolNameFilter = document.getElementById('salarySchoolNameFilter').value;
@@ -1046,12 +1184,11 @@
     const searchEl = document.getElementById('salarySearchBottom');
     const searchInput = searchEl ? searchEl.value.trim() : '';
 
-    const hasFilter = typeFilter || schoolTypeFilter || schoolNameFilter || jobTitleFilter || personFilter || searchInput;
+    const hasFilter = yearFilter || typeFilter || schoolTypeFilter || schoolNameFilter || jobTitleFilter || personFilter || searchInput;
 
     const tbody = document.getElementById('salariesTableBody');
     if (!tbody) return;
 
-    // ⭐ ۱. اگر هیچ فیلتری اعمال نشده، همه معاشات (عمومی) نمایش داده شود
     if (!hasFilter) {
       filteredSalaries = [...cachedSalaries];
       renderSalaries(filteredSalaries);
@@ -1066,9 +1203,10 @@
       return;
     }
 
-    // ⭐ ۲. اعمال فیلترها
     filteredSalaries = cachedSalaries.filter(s => {
       const schoolName = s.schoolname || '';
+      
+      if (yearFilter && String(s.year) !== String(yearFilter)) return false;
       
       if (typeFilter) {
         const st = detectSchoolType(schoolName);
@@ -1169,7 +1307,7 @@
     document.getElementById('salTotalDed').textContent = totalDed.toLocaleString();
     document.getElementById('salTotalNet').textContent = totalNet.toLocaleString();
 
-    // آمار سالانه
+    // آمار سالانه (داینامیک با فیلتر)
     const yearFinEl = document.getElementById('salYearFinancialStats');
     const years = Object.keys(yearFin).sort((a, b) => {
       if (a === 'نامشخص') return 1;
@@ -1196,7 +1334,7 @@
       yearFinEl.innerHTML = html;
     }
 
-    // آمار وظیفه
+    // آمار وظیفه (داینامیک با فیلتر)
     const roleEl = document.getElementById('salEmployeeRoleStats');
     const roles = Object.keys(roleStats).sort((a, b) => roleStats[b].size - roleStats[a].size);
 

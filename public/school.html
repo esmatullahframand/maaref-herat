@@ -2352,7 +2352,7 @@
       <div style="text-align:center; margin-bottom:10px;">
           <h3 style="margin:0; font-size:14px; border:1px solid #000; padding:4px; display:inline-block;">فرم م ۴۰ دفتر معاش و کسرات</h3>
       </div>
-      <table style="width:100%; border-collapse:collapse; font-size:10px; border:1px solid #000;">
+      <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:9px; border:1px solid #000;">
           <tr>
               <td colspan="2" style="border:1px solid #000; padding:4px; width:40%;">۱. اداره: مکتب ${escapeHtml(user.schoolname || '')}</td>
               <td colspan="2" style="border:1px solid #000; padding:4px; width:60%;">۲. اسم: ${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</td>
@@ -2485,7 +2485,7 @@
       const salaries = await getEmployeeSalaryDataForM40();
       if (!salaries) return;
       const html = generateM40TableHTML(salaries);
-      printHtmlDocument(html, `فرم م ۴۰ - ${salaryCurrentEmployee.data.firstName || ''}`, 'A4 landscape');
+      printHtmlDocument(html, `فرم م ۴۰ - ${salaryCurrentEmployee.data.firstName || ''}`, 'A3 landscape');
   }
   window.printFormM40 = printFormM40;
 
@@ -2493,57 +2493,30 @@
       const salaries = await getEmployeeSalaryDataForM40();
       if (!salaries) return;
       const info = salaryCurrentEmployee.data || {};
-      const columns = [
-          ['ماه', s => s.month],
-          ['رتبوی', s => s.base_salary],
-          ['مسلکی', s => s.professional],
-          ['ماکول', s => s.food],
-          ['سایر', s => s.allowance],
-          ['مجموعه استحقاق', s => s.total_entitlement],
-          ['غیرحاضری', s => s.absence],
-          ['۸%', s => '0'],
-          ['۳%', s => '0'],
-          ['۲%', s => '0'],
-          ['مالیه', s => s.tax],
-          ['مبلغ قابل پرداخت', s => s.net_pay],
-          ['ملاحظات', s => '']
-      ];
-      let totalBase = 0, totalProfessional = 0, totalFood = 0, totalAllowance = 0, totalEntitlement = 0;
-      let totalAbsence = 0, totalTax = 0, totalNetPay = 0;
-      salaries.forEach(s => {
-          totalBase += Number(s.base_salary || 0);
-          totalProfessional += Number(s.professional || 0);
-          totalFood += Number(s.food || 0);
-          totalAllowance += Number(s.allowance || 0);
-          totalEntitlement += Number(s.total_entitlement || 0);
-          totalAbsence += Number(s.absence || 0);
-          totalTax += Number(s.tax || 0);
-          totalNetPay += Number(s.net_pay || 0);
-      });
-      let csv = '\uFEFF';
-      csv += `"فرم م ۴۰ دفتر معاش و کسرات"\n`;
-      csv += `"۱. اداره:","مکتب ${user.schoolname || ''}","۲. اسم:","${info.firstName || ''} ${info.lastName || ''}"\n`;
-      csv += `"۳. ولد:","${info.fatherName || ''}","۴. نمبر:","${info.jobCode || ''}"\n`;
-      csv += `"۵. آدرس:","${info.originProvince || ''} ${info.originDistrict || ''}","۶. اجرآت متعلقه مامور:"\n\n`;
-      csv += columns.map(c => `"${c[0]}"`).join(',') + '\n';
-      salaries.forEach(s => {
-          csv += columns.map(c => {
-              let val = c[1](s);
-              if (val === null || val === undefined) val = '';
-              return `"${String(val).replace(/,/g, '،')}"`;
-          }).join(',') + '\n';
-      });
-      csv += `"مجموعه","${totalBase}","${totalProfessional}","${totalFood}","${totalAllowance}","${totalEntitlement}","${totalAbsence}","0","0","0","${totalTax}","${totalNetPay}",""\n`;
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      // استفاده از همان قالب فرم م ۴۰ در پرینت و اکسل برای یکسان‌ماندن ساختار
+      const tableHtml = generateM40TableHTML(salaries);
+      const excelHtml = `<!DOCTYPE html>
+      <html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+      <style>
+        body{font-family:Tahoma,Arial,sans-serif;direction:rtl}
+        table{border-collapse:collapse;width:100%;mso-table-lspace:0pt;mso-table-rspace:0pt}
+        td,th{border:1px solid #000;padding:4px;text-align:center;vertical-align:middle;white-space:normal}
+        tr{mso-height-source:auto}
+        @page{size:A3 landscape;margin:0.5in}
+      </style></head><body>
+      <div style="text-align:center;font-weight:bold;font-size:16px;margin-bottom:8px">دفتر معاش و کسرات — فورم م ۴۰</div>
+      ${tableHtml}
+      </body></html>`;
+      const blob = new Blob(['\uFEFF', excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `فرم_م۴۰_${info.firstName || 'کارمند'}_${Date.now()}.csv`);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `دفتر_معاش_و_کسرات_${String(info.firstName || 'کارمند').replace(/[\\/:*?"<>|]/g, '_')}_${Date.now()}.xls`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      showToast('✅ خروجی اکسل فرم م ۴۰ دانلود شد.');
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      showToast('✅ خروجی اکسل فرم م ۴۰ با ساختار همسان پرینت آماده شد.');
   }
   window.exportFormM40Excel = exportFormM40Excel;
 
@@ -2713,30 +2686,45 @@
       try {
           const { evaluations, recordsMap } = await getUnifiedEvaluationData();
           const rows = unifiedEvaluationRows(evaluations, recordsMap);
-          const html = `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
-            <style>
-              body{font-family:Tahoma,Arial,sans-serif;direction:rtl}
-              table{border-collapse:collapse;width:100%;direction:rtl}
-              th,td{border:1px solid #000;padding:4px;text-align:center;font-size:10px;mso-number-format:"\\@"}
-              th{background:#e8e8e8;font-weight:bold}
-              .name-cell{text-align:right}
-              .title{text-align:center;font-weight:bold;font-size:15px;padding:10px}
-            </style></head><body>
-            <table style="width:100%;border:0"><tr>
-              <td style="border:0;width:20%"><img src="${UNIFIED_MINISTRY_LOGO}" style="height:65px"></td>
-              <td style="border:0;text-align:center;width:60%">
-                <div class="title">معینیت مالی و اداری</div>
-                <div class="title">ریاست عمومی امور کارکنان</div>
-                <div>ریاست استخدام | آمریت ارزیابی اجراآت</div>
-                <div>مدیریت عمومی ارزیابی اجراآت معلمین و استادان</div>
-              </td>
-              <td style="border:0;width:20%"><img src="${UNIFIED_EMBLEM_LOGO}" style="height:65px"></td>
-            </tr></table>
-            <div class="title">جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ${escapeHtml(user.schoolname || 'مکتب')}</div>
-            <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
-            <p>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</p>
-            <p>مهر و امضا: ____________________</p>
-            </body></html>`;
+          // Excel HTML workbook: no external/logo images, to avoid broken-image placeholders.
+          // Keep the same merged header hierarchy and all evaluation rows as the official print table.
+          const html = `<!DOCTYPE html>
+          <html xmlns:o="urn:schemas-microsoft-com:office:office"
+                xmlns:x="urn:schemas-microsoft-com:office:excel"
+                xmlns="http://www.w3.org/TR/REC-html40" lang="fa" dir="rtl">
+          <head><meta charset="UTF-8">
+          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+          <x:Name>جدول توحیدی ارزیابی</x:Name><x:WorksheetOptions>
+          <x:DisplayRightToLeft/><x:PageSetup><x:Layout x:Orientation="Landscape"/>
+          <x:PageMargins x:Bottom="0.25" x:Left="0.2" x:Right="0.2" x:Top="0.25"/>
+          </x:PageSetup><x:FitToPage/><x:Print><x:FitWidth>1</x:FitWidth><x:FitHeight>0</x:FitHeight></x:Print>
+          </x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+          <style>
+          @page { size: A3 landscape; margin: 0.25in; }
+          body { font-family: Tahoma, Arial, sans-serif; direction: rtl; color:#000; }
+          table { border-collapse:collapse; width:100%; direction:rtl; table-layout:fixed; }
+          th,td { border:1px solid #000; padding:3px 2px; text-align:center; vertical-align:middle;
+                  font-family:Tahoma,Arial,sans-serif; font-size:9pt; white-space:normal; }
+          th { background:#e8e8e8; font-weight:bold; }
+          .official-title { font-weight:bold; text-align:center; font-size:12pt; padding:5px; }
+          .official-line { text-align:center; font-size:10pt; padding:2px; }
+          .name-cell { text-align:right; }
+          </style></head><body>
+          <table style="border:0;width:100%;margin-bottom:8px">
+            <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">معینیت مالی و اداری</td></tr>
+            <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">ریاست عمومی امور کارکنان</td></tr>
+            <tr><td colspan="3" style="border:0;text-align:center">ریاست استخدام — آمریت ارزیابی اجراآت</td></tr>
+            <tr><td colspan="3" style="border:0;text-align:center">مدیریت عمومی ارزیابی اجراآت معلمین و استادان</td></tr>
+            <tr><td colspan="3" class="official-title" style="border:1px solid #000">
+              جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ${escapeHtml(user.schoolname || 'مکتب')}
+            </td></tr>
+          </table>
+          <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
+          <table style="border:0;margin-top:10px"><tr>
+            <td style="border:0;text-align:right">تاریخ چاپ: ${escapeHtml(new Date().toLocaleDateString('fa-IR'))}</td>
+            <td style="border:0;text-align:left">مهر و امضا: ____________________</td>
+          </tr></table>
+          </body></html>`;
           const blob = new Blob(['\\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
@@ -2746,7 +2734,7 @@
           link.click();
           document.body.removeChild(link);
           setTimeout(() => URL.revokeObjectURL(url), 1500);
-          showToast('✅ فایل جدول توحیدی ارزیابی دانلود شد؛ در Excel باز می‌شود.');
+          showToast('✅ خروجی اکسل جدول توحیدی آماده شد؛ بدون تصویرهای شکسته و با همه ردیف‌ها.');
       } catch (e) {
           console.error(e);
           showToast('❌ خطا در تولید خروجی اکسل', true);

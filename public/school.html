@@ -144,10 +144,10 @@
           <h5>۲. شعبات درسی</h5>
           <div class="grid-4">
             <div class="form-group"><label>تعداد کل شعبات</label><input type="text" id="sBranchesTotal"></div>
-            <div class="form-group"><label>شعبات اول تا سوم</label><input type="text" id="sBranches13"></div>
-            <div class="form-group"><label>شعبات چهارم تا ششم</label><input type="text" id="sBranches46"></div>
-            <div class="form-group"><label>شعبات هفتم تا نهم</label><input type="text" id="sBranches79"></div>
-            <div class="form-group"><label>شعبات دهم تا دوازدهم</label><input type="text" id="sBranches1012"></div>
+            <div class="form-group"><label>تعداد شعبات اول تا سوم</label><input type="text" id="sBranches13"></div>
+            <div class="form-group"><label>تعداد شعبات چهارم تا ششم</label><input type="text" id="sBranches46"></div>
+            <div class="form-group"><label>تعداد شعبات هفتم تا نهم</label><input type="text" id="sBranches79"></div>
+            <div class="form-group"><label>تعداد شعبات دهم تا دوازدهم</label><input type="text" id="sBranches1012"></div>
           </div>
         </div>
         <div class="form-section">
@@ -945,7 +945,6 @@
   }
 
   // ⭐ تغییر وضعیت الزامی بودن فیلدهای تحصیلی
-  // برای همه بست‌ها الزامی، فقط برای کارکن خدماتی / معتمد جنسی / سایر اختیاری
   function toggleEducationRequired() {
     const jobTitle = document.getElementById('jobTitle').value;
     const eduFields = document.querySelectorAll('.edu-field input');
@@ -953,7 +952,6 @@
 
     eduFields.forEach(input => {
       if (isExempt) {
-        // اختیاری
         input.removeAttribute('required');
         input.classList.remove('invalid');
         const msg = input.nextElementSibling;
@@ -962,14 +960,12 @@
           msg.className = 'date-msg';
         }
       } else {
-        // الزامی
         input.setAttribute('required', 'required');
       }
     });
   }
   window.toggleEducationRequired = toggleEducationRequired;
 
-  // فراخوانی اولیه برای تنظیم وضعیت
   setTimeout(() => toggleEducationRequired(), 100);
 
   function validateEducationFields(jobTitle) {
@@ -1101,7 +1097,7 @@
           const el = document.getElementById(id);
           if (el) el.classList.remove('valid','invalid');
         });
-        toggleEducationRequired(); // بازنشانی وضعیت تحصیل
+        toggleEducationRequired();
         switchTab('list', document.querySelectorAll('.tab-btn')[2]);
       } else if (res.status === 409 && (data.code === 'DUPLICATE_JOBCODE' || data.code === 'DUPLICATE_ETAZKIRA')) {
         const kind = data.code === 'DUPLICATE_JOBCODE' ? 'jobcode' : 'etazkira';
@@ -1404,7 +1400,6 @@
     const currentPositionDate = document.getElementById('eCurrentPositionDate').value.trim();
 
     if (!jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
-    // در ویرایش، اگر بست از تحصیل معاف نباشد، درجه تحصیل الزامی است
     if (!isEducationExemptJob(jobTitle) && !degree) {
       showToast('❌ برای این بست، درجه تحصیل الزامی است', true);
       return;
@@ -2266,7 +2261,7 @@
   window.exportSalarySummaryExcel = exportSalarySummaryExcel;
 
   // ═══════════════════════════════════════════════════════════
-  // توابع اختصاصی پرینت و اکسل فرم م ۴۰ (دفتر معاش و کسرات)
+  // فرم م ۴۰ و جدول توحیدی
   // ═══════════════════════════════════════════════════════════
 
   async function getEmployeeSalaryDataForM40() {
@@ -2276,7 +2271,6 @@
       }
 
       try {
-          // دریافت لیست معاشات کارمند
           const res = await fetch(`/api/salaries?record_id=${salaryCurrentEmployee.id}`, {
               headers: { 'Authorization': 'Bearer ' + token }
           });
@@ -2287,7 +2281,6 @@
               return null;
           }
 
-          // مرتب سازی بر اساس سال و ماه
           const MONTHS_ORDER = ['حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله', 'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'];
           salaries.sort((a, b) => {
               if (a.year !== b.year) return Number(a.year) - Number(b.year);
@@ -2302,15 +2295,16 @@
       }
   }
 
-  function generateM40TableHTML(salaries, isPrint = false) {
+  function generateM40TableHTML(salaries) {
       const info = salaryCurrentEmployee.data || {};
       
-      // محاسبه مجموع‌ها
       let totalBase = 0, totalFood = 0, totalAllowance = 0, totalEntitlement = 0;
       let totalAbsence = 0, totalTax = 0, totalDeductions = 0, totalNetPay = 0;
+      let totalProfessional = 0;
 
       salaries.forEach(s => {
           totalBase += Number(s.base_salary || 0);
+          totalProfessional += Number(s.professional || 0);
           totalFood += Number(s.food || 0);
           totalAllowance += Number(s.allowance || 0);
           totalEntitlement += Number(s.total_entitlement || 0);
@@ -2320,136 +2314,184 @@
           totalNetPay += Number(s.net_pay || 0);
       });
 
-      // ساخت هدر فرم
       let html = `
-      <div style="text-align:center; margin-bottom:15px;">
-          <h3 style="margin:0; font-size:16px;">فرم م ۴۰ دفتر معاش و کسرات</h3>
-          <h4 style="margin:5px 0; font-size:14px;">مکتب ابتدایی ${escapeHtml(user.schoolname || '')}</h4>
+      <div style="text-align:center; margin-bottom:10px;">
+          <h3 style="margin:0; font-size:14px; border:1px solid #000; padding:4px; display:inline-block;">فرم م ۴۰ دفتر معاش و کسرات</h3>
       </div>
-      <table style="width:100%; border-collapse:collapse; font-size:11px; margin-bottom:15px; border:1px solid #000;">
+      <table style="width:100%; border-collapse:collapse; font-size:10px; border:1px solid #000;">
           <tr>
-              <td style="border:1px solid #000; padding:5px; background:#f0f0f0; font-weight:bold; width:15%;">اسم:</td>
-              <td style="border:1px solid #000; padding:5px; width:35%;">${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</td>
-              <td style="border:1px solid #000; padding:5px; background:#f0f0f0; font-weight:bold; width:15%;">ولد:</td>
-              <td style="border:1px solid #000; padding:5px; width:35%;">${escapeHtml(info.fatherName || '')}</td>
+              <td colspan="2" style="border:1px solid #000; padding:4px; width:40%;">۱. اداره: مکتب ${escapeHtml(user.schoolname || '')}</td>
+              <td colspan="2" style="border:1px solid #000; padding:4px; width:60%;">۲. اسم: ${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</td>
           </tr>
           <tr>
-              <td style="border:1px solid #000; padding:5px; background:#f0f0f0; font-weight:bold;">نمبر:</td>
-              <td style="border:1px solid #000; padding:5px;">${escapeHtml(info.jobCode || '')}</td>
-              <td style="border:1px solid #000; padding:5px; background:#f0f0f0; font-weight:bold;">آدرس:</td>
-              <td style="border:1px solid #000; padding:5px;">${escapeHtml(info.originProvince || '')} ${escapeHtml(info.originDistrict || '')}</td>
+              <td colspan="2" style="border:1px solid #000; padding:4px;">۳. ولد: ${escapeHtml(info.fatherName || '')}</td>
+              <td colspan="2" style="border:1px solid #000; padding:4px;">۴. نمبر: ${escapeHtml(info.jobCode || '')}</td>
           </tr>
-      </table>
-
-      <table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center; border:1px solid #000;">
-          <thead>
-              <tr style="background:#f0f0f0;">
-                  <th style="border:1px solid #000; padding:4px;" rowspan="2">ماه</th>
-                  <th style="border:1px solid #000; padding:4px;" colspan="3">استحقاق</th>
-                  <th style="border:1px solid #000; padding:4px;" colspan="3">کسورات</th>
-                  <th style="border:1px solid #000; padding:4px;" rowspan="2">مبلغ قابل پرداخت</th>
-              </tr>
-              <tr style="background:#f0f0f0;">
-                  <th style="border:1px solid #000; padding:4px;">رتبوی (معاش)</th>
-                  <th style="border:1px solid #000; padding:4px;">ماکول</th>
-                  <th style="border:1px solid #000; padding:4px;">سایر (حق‌الزحمه)</th>
-                  <th style="border:1px solid #000; padding:4px;">غیرحاضری</th>
-                  <th style="border:1px solid #000; padding:4px;">مالیات</th>
-                  <th style="border:1px solid #000; padding:4px;">سایر کسورات</th>
-              </tr>
-          </thead>
-          <tbody>
+          <tr>
+              <td colspan="2" style="border:1px solid #000; padding:4px;">۵. آدرس: ${escapeHtml(info.originProvince || '')} ${escapeHtml(info.originDistrict || '')}</td>
+              <td colspan="2" style="border:1px solid #000; padding:4px;">۶. اجرآت متعلقه مامور</td>
+          </tr>
+          <tr style="background:#f0f0f0;">
+              <td style="border:1px solid #000; padding:4px; text-align:center;">تاریخ</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">مراجعه</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">رتبه</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">ماموریت</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">منظور</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">مراجعه</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">مجموعه مبلغ</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">مبلغ ماهانه</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">تاریخ آغاز</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">تاریخ ختم</td>
+          </tr>
+          <tr>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">5</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">مدیر</td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+          </tr>
+          <tr>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">1</td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+              <td style="border:1px solid #000; padding:4px;"></td>
+          </tr>
+          <tr style="background:#f0f0f0;">
+              <td colspan="4" style="border:1px solid #000; padding:4px; text-align:center;">۷. کسورات مخصوص</td>
+              <td colspan="4" style="border:1px solid #000; padding:4px; text-align:center;">۸. کسورات عادی</td>
+              <td colspan="2" style="border:1px solid #000; padding:4px; text-align:center;">۹. یادداشت</td>
+          </tr>
+          <tr>
+              <td colspan="4" style="border:1px solid #000; padding:4px;"></td>
+              <td colspan="4" style="border:1px solid #000; padding:4px;">
+                  <table style="width:100%; border-collapse:collapse; font-size:9px;">
+                      <tr>
+                          <td style="border:1px solid #000; padding:2px; text-align:center;">تقاعد</td>
+                          <td style="border:1px solid #000; padding:2px; text-align:center;">کوپراتیف</td>
+                      </tr>
+                  </table>
+              </td>
+              <td colspan="2" style="border:1px solid #000; padding:4px;"></td>
+          </tr>
+          <tr style="background:#f0f0f0;">
+              <td rowspan="2" style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">ماه</td>
+              <td colspan="5" style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">۱۰. استحقاق</td>
+              <td colspan="5" style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">۱۱. کسورات عادی</td>
+              <td rowspan="2" style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">۱۲. مبلغ قابل پرداخت</td>
+              <td rowspan="2" style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">ملاحظات</td>
+          </tr>
+          <tr style="background:#f0f0f0;">
+              <td style="border:1px solid #000; padding:4px; text-align:center;">رتبوی</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">مسلکی</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">ماکول</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">سایر</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">مجموعه استحقاق</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">غیرحاضری</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">۸%</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">۳%</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">۲%</td>
+              <td style="border:1px solid #000; padding:4px; text-align:center;">مالیه</td>
+          </tr>
       `;
 
       salaries.forEach(s => {
           html += `
               <tr>
-                  <td style="border:1px solid #000; padding:4px; font-weight:bold;">${escapeHtml(s.month)}</td>
-                  <td style="border:1px solid #000; padding:4px;">${Number(s.base_salary || 0).toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${Number(s.food || 0).toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${Number(s.allowance || 0).toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${Number(s.absence || 0).toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${Number(s.tax || 0).toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${Number(s.total_deductions || 0).toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px; font-weight:bold; background:#e0f2fe;">${Number(s.net_pay || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">${escapeHtml(s.month)}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${Number(s.base_salary || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${Number(s.professional || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${Number(s.food || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${Number(s.allowance || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold;">${Number(s.total_entitlement || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${Number(s.absence || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">0</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">0</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">0</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${Number(s.tax || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center; font-weight:bold; background:#e0f2fe;">${Number(s.net_pay || 0).toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;"></td>
               </tr>
           `;
       });
 
-      // ردیف مجموع
       html += `
               <tr style="background:#f8fafc; font-weight:bold;">
-                  <td style="border:1px solid #000; padding:4px;">مجموعه</td>
-                  <td style="border:1px solid #000; padding:4px;">${totalBase.toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${totalFood.toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${totalAllowance.toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${totalAbsence.toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${totalTax.toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px;">${totalDeductions.toLocaleString()}</td>
-                  <td style="border:1px solid #000; padding:4px; background:#e0f2fe;">${totalNetPay.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">مجموعه</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${totalBase.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${totalProfessional.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${totalFood.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${totalAllowance.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${totalEntitlement.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${totalAbsence.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">0</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">0</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">0</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;">${totalTax.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center; background:#e0f2fe;">${totalNetPay.toLocaleString()}</td>
+                  <td style="border:1px solid #000; padding:4px; text-align:center;"></td>
               </tr>
           </tbody>
       </table>
       `;
-
-      if (!isPrint) {
-          return html;
-      }
-
       return html;
   }
 
   async function printFormM40() {
       const salaries = await getEmployeeSalaryDataForM40();
       if (!salaries) return;
-
-      const html = generateM40TableHTML(salaries, true);
-      
-      printHtmlDocument(html, `فرم م ۴۰ - ${salaryCurrentEmployee.data.firstName || ''}`, 'A4 portrait');
+      const html = generateM40TableHTML(salaries);
+      printHtmlDocument(html, `فرم م ۴۰ - ${salaryCurrentEmployee.data.firstName || ''}`, 'A4 landscape');
   }
   window.printFormM40 = printFormM40;
 
   async function exportFormM40Excel() {
       const salaries = await getEmployeeSalaryDataForM40();
       if (!salaries) return;
-
       const info = salaryCurrentEmployee.data || {};
-      
       const columns = [
           ['ماه', s => s.month],
-          ['رتبوی (معاش)', s => s.base_salary],
+          ['رتبوی', s => s.base_salary],
+          ['مسلکی', s => s.professional],
           ['ماکول', s => s.food],
-          ['سایر (حق‌الزحمه)', s => s.allowance],
-          ['مجموع استحقاق', s => s.total_entitlement],
+          ['سایر', s => s.allowance],
+          ['مجموعه استحقاق', s => s.total_entitlement],
           ['غیرحاضری', s => s.absence],
-          ['مالیات', s => s.tax],
-          ['سایر کسورات', s => s.total_deductions],
-          ['مجموع کسورات', s => s.total_deductions],
-          ['مبلغ قابل پرداخت', s => s.net_pay]
+          ['۸%', s => '0'],
+          ['۳%', s => '0'],
+          ['۲%', s => '0'],
+          ['مالیه', s => s.tax],
+          ['مبلغ قابل پرداخت', s => s.net_pay],
+          ['ملاحظات', s => '']
       ];
-
-      let totalBase = 0, totalFood = 0, totalAllowance = 0, totalEntitlement = 0;
-      let totalAbsence = 0, totalTax = 0, totalDeductions = 0, totalNetPay = 0;
-
+      let totalBase = 0, totalProfessional = 0, totalFood = 0, totalAllowance = 0, totalEntitlement = 0;
+      let totalAbsence = 0, totalTax = 0, totalNetPay = 0;
       salaries.forEach(s => {
           totalBase += Number(s.base_salary || 0);
+          totalProfessional += Number(s.professional || 0);
           totalFood += Number(s.food || 0);
           totalAllowance += Number(s.allowance || 0);
           totalEntitlement += Number(s.total_entitlement || 0);
           totalAbsence += Number(s.absence || 0);
           totalTax += Number(s.tax || 0);
-          totalDeductions += Number(s.total_deductions || 0);
           totalNetPay += Number(s.net_pay || 0);
       });
-
       let csv = '\uFEFF';
-      
       csv += `"فرم م ۴۰ دفتر معاش و کسرات"\n`;
-      csv += `"اسم:","${info.firstName || ''} ${info.lastName || ''}","ولد:","${info.fatherName || ''}"\n`;
-      csv += `"نمبر:","${info.jobCode || ''}","مکتب:","${user.schoolname || ''}"\n\n`;
-
+      csv += `"۱. اداره:","مکتب ${user.schoolname || ''}","۲. اسم:","${info.firstName || ''} ${info.lastName || ''}"\n`;
+      csv += `"۳. ولد:","${info.fatherName || ''}","۴. نمبر:","${info.jobCode || ''}"\n`;
+      csv += `"۵. آدرس:","${info.originProvince || ''} ${info.originDistrict || ''}","۶. اجرآت متعلقه مامور:"\n\n`;
       csv += columns.map(c => `"${c[0]}"`).join(',') + '\n';
-
       salaries.forEach(s => {
           csv += columns.map(c => {
               let val = c[1](s);
@@ -2457,9 +2499,7 @@
               return `"${String(val).replace(/,/g, '،')}"`;
           }).join(',') + '\n';
       });
-
-      csv += `"مجموعه","${totalBase}","${totalFood}","${totalAllowance}","${totalEntitlement}","${totalAbsence}","${totalTax}","${totalDeductions}","${totalDeductions}","${totalNetPay}"\n`;
-
+      csv += `"مجموعه","${totalBase}","${totalProfessional}","${totalFood}","${totalAllowance}","${totalEntitlement}","${totalAbsence}","0","0","0","${totalTax}","${totalNetPay}",""\n`;
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -2469,14 +2509,9 @@
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      
       showToast('✅ خروجی اکسل فرم م ۴۰ دانلود شد.');
   }
   window.exportFormM40Excel = exportFormM40Excel;
-
-  // ═══════════════════════════════════════════════════════════
-  // پرینت جدول توحیدی ارزیابی معلمین (دقیقاً مطابق فرم فیزیکی)
-  // ═══════════════════════════════════════════════════════════
 
   async function printUnifiedEvaluationTable() {
       if (!cachedEvaluations || cachedEvaluations.length === 0) {
@@ -2487,12 +2522,9 @@
       try {
           const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
           const records = await res.json();
-          
           const recordsMap = {};
           if (Array.isArray(records)) {
-              records.forEach(r => {
-                  recordsMap[r.id] = r.data || {};
-              });
+              records.forEach(r => { recordsMap[r.id] = r.data || {}; });
           }
 
           const sortedEvals = [...cachedEvaluations].sort((a, b) => {
@@ -2529,7 +2561,6 @@
                       <th style="border:1px solid #000; padding:3px;">ولد</th>
                       <th style="border:1px solid #000; padding:3px;">ولدیت</th>
                       <th style="border:1px solid #000; padding:3px;">کود تشکیل</th>
-                      
                       <th style="border:1px solid #000; padding:3px;">نوع قرار</th>
                       <th style="border:1px solid #000; padding:3px;">درجه تحصیل</th>
                       <th style="border:1px solid #000; padding:3px;">جنسیت</th>
@@ -2540,7 +2571,6 @@
                       <th style="border:1px solid #000; padding:3px;">بست موجود</th>
                       <th style="border:1px solid #000; padding:3px;">قدم</th>
                       <th style="border:1px solid #000; padding:3px;">بست</th>
-
                       <th style="border:1px solid #000; padding:3px;">تاریخ ارزیابی</th>
                       <th style="border:1px solid #000; padding:3px;">نمره از (۱۰۰)</th>
                       <th style="border:1px solid #000; padding:3px;">نتیجه نهایی</th>
@@ -2554,27 +2584,22 @@
 
           sortedEvals.forEach((ev, index) => {
               const recData = recordsMap[ev.record_id] || {};
-              
               const firstName = escapeHtml(ev.first_name || recData.firstName || '');
               const lastName = escapeHtml(ev.last_name || recData.lastName || '');
               const fatherName = escapeHtml(ev.father_name || recData.fatherName || '');
               const grandFatherName = escapeHtml(ev.grandfather_name || recData.grandfatherName || '');
               const jobCode = escapeHtml(ev.job_code || recData.jobCode || '');
-              
               const jobTitle = escapeHtml(ev.job_title || recData.jobTitle || '');
               const degree = escapeHtml(recData.degree || '');
               const gender = escapeHtml(recData.gender || '');
               const schoolName = escapeHtml(user.schoolname || '');
               const district = escapeHtml(recData.originDistrict || '');
               const currentPosDate = escapeHtml(recData.currentPositionDate || '');
-              
               const bust = escapeHtml(ev.bust || recData.bust || '');
               const grade = escapeHtml(ev.grade || recData.grade || '');
-              
               const evalDate = escapeHtml(ev.eval_date || '');
               const score = Number(ev.eval_score) || 0;
               const result = escapeHtml(ev.eval_result || '');
-              
               const percent = score; 
               const points = Math.round(score * 0.8); 
 
@@ -2585,7 +2610,6 @@
                       <td style="border:1px solid #000; padding:3px; text-align:right;">${fatherName}</td>
                       <td style="border:1px solid #000; padding:3px; text-align:right;">${grandFatherName}</td>
                       <td style="border:1px solid #000; padding:3px; direction:ltr;">${jobCode}</td>
-                      
                       <td style="border:1px solid #000; padding:3px;">حکمی</td>
                       <td style="border:1px solid #000; padding:3px;">${degree}</td>
                       <td style="border:1px solid #000; padding:3px;">${gender}</td>
@@ -2596,7 +2620,6 @@
                       <td style="border:1px solid #000; padding:3px;">${bust}</td>
                       <td style="border:1px solid #000; padding:3px;">${grade}</td>
                       <td style="border:1px solid #000; padding:3px;">${bust}</td>
-
                       <td style="border:1px solid #000; padding:3px; direction:ltr;">${evalDate}</td>
                       <td style="border:1px solid #000; padding:3px; font-weight:bold;">${score}</td>
                       <td style="border:1px solid #000; padding:3px; font-weight:bold;">${result}</td>

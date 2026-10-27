@@ -1029,24 +1029,24 @@
   async function deleteEvalAdmin(id) { if (!confirm('⚠️ حذف شود؟')) return; try { const res = await fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAdminEvaluations(); } else showToast('خطا', true); } catch (e) { showToast('خطا', true); } }
   window.deleteEvalAdmin = deleteEvalAdmin;
 
-  // 🖨️ پرینت دقیقاً مشابه فورم رسمی توحیدی ارزیابی (PDF)
+  // 🖨️ پرینت دقیقاً مشابه فورم رسمی توحیدی ارزیابی (PDF) - اصلاح نام فیلدها
   function printEvalAdmin() {
     const list = filteredEvaluations || [];
     if (!list.length) { showToast('داده‌ای برای پرینت وجود ندارد', true); return; }
     const dateParts = v => { const p=String(v||'').split(/[\/\-]/); return p.length===3 ? p : ['','','']; };
     const cell = v => escapeHtml(v == null || v === '' ? '' : String(v));
     const rows = list.map((e,i) => {
-      const bd=dateParts(e.birth_date), ad=dateParts(e.appointment_date), ed=dateParts(e.eval_date);
+      // اصلاح: استفاده از birth_year به جای birth_date
+      const bd=dateParts(e.birth_year || e.birth_date), ad=dateParts(e.appointment_date), ed=dateParts(e.eval_date);
       const result=e.eval_result||'';
       const mark=(yes)=>yes?'√':'';
       return `<tr>
       <td>${i+1}</td><td>${cell(e.first_name)}</td><td>${cell(e.last_name)}</td><td>${cell(e.father_name)}</td><td>${cell(e.job_code)}</td>
-      <td>${mark(String(e.appointment_type||'').includes('حکمی'))}</td><td>${mark(String(e.appointment_type||'').includes('رقابتی'))}</td>
+      <td>${mark(String(e.employment_type||'').includes('حکمی'))}</td><td>${mark(String(e.employment_type||'').includes('رقابتی'))}</td>
       <td>${cell(bd[0])}</td><td>${cell(e.service_duration)}</td><td>${cell(e.degree)}</td><td>${mark(e.gender==='مرد')}</td><td>${mark(e.gender==='زن')}</td>
       <td>${cell(e.job_title)}</td><td>${cell(e.district)}</td><td>${cell(e.schoolname)}</td>
       <td>${cell(ad[2])}</td><td>${cell(ad[1])}</td><td>${cell(ad[0])}</td>
-      <td>${cell(e.current_position_date)}</td><td>${cell(e.prev_eval_date)}</td>
-      <td>${cell(e.bust)}</td><td>${cell(e.grade)}</td>
+      <td>${cell(e.eval_date_prev)}</td><td>${cell(e.bust)}</td><td>${cell(e.grade)}</td>
       <td>${cell(ed[2])}</td><td>${cell(ed[1])}</td><td>${cell(ed[0])}</td>
       <td>${cell(e.eval_score ?? e.total_score ?? e.score ?? '')}</td><td>${mark(result==='عالی')}</td><td>${mark(result==='خوب')}</td><td>${mark(result==='ضعیف')}</td><td>${cell(e.remarks||e.notes||'')}</td></tr>`;
     }).join('');
@@ -1071,8 +1071,8 @@
     const safe=v=>escapeHtml(v==null?'':String(v));
     const rows=list.map((e,i)=>{
       const p=v=>{const a=String(v||'').split(/[\/\-]/);return a.length===3?a:['','',''];};
-      const bd=p(e.birth_date),ad=p(e.appointment_date),ed=p(e.eval_date),r=e.eval_result||'';
-      return `<tr>${[i+1,e.first_name,e.last_name,e.father_name,e.job_code,String(e.appointment_type||'').includes('حکمی')?'√':'',String(e.appointment_type||'').includes('رقابتی')?'√':'',bd[0],e.service_duration,e.degree,e.gender==='مرد'?'√':'',e.gender==='زن'?'√':'',e.job_title,e.district,e.schoolname,ad[2],ad[1],ad[0],e.current_position_date,e.bust,e.grade,ed[2],ed[1],ed[0],e.eval_score??e.total_score??e.score??'',r==='عالی'?'√':'',r==='خوب'?'√':'',r==='ضعیف'?'√':'',e.remarks||''].map(v=>`<td>${safe(v)}</td>`).join('')}</tr>`;
+      const bd=p(e.birth_year || e.birth_date),ad=p(e.appointment_date),ed=p(e.eval_date),r=e.eval_result||'';
+      return `<tr>${[i+1,e.first_name,e.last_name,e.father_name,e.job_code,String(e.employment_type||'').includes('حکمی')?'√':'',String(e.employment_type||'').includes('رقابتی')?'√':'',bd[0],e.service_duration,e.degree,e.gender==='مرد'?'√':'',e.gender==='زن'?'√':'',e.job_title,e.district,e.schoolname,ad[2],ad[1],ad[0],e.eval_date_prev,e.bust,e.grade,ed[2],ed[1],ed[0],e.eval_score??e.total_score??e.score??'',r==='عالی'?'√':'',r==='خوب'?'√':'',r==='ضعیف'?'√':'',e.remarks||''].map(v=>`<td>${safe(v)}</td>`).join('')}</tr>`;
     }).join('');
     const html=`<html><head><meta charset="utf-8"></head><body dir="rtl"><table border="1"><tr><th colspan="31">وزارت معارف — ریاست معارف ولایت هرات</th></tr><tr><th colspan="31">جدول توحیدی ارزیابی اجراات سالانه معلمین و مدرسین معارف</th></tr>
     <tr><th rowspan="3">شماره</th><th colspan="6">شهرت</th><th colspan="12">مشخصات وظیفوی</th><th colspan="3">تاریخ تقرر / معادلت / فراغت</th><th rowspan="3">تاریخ ارزیابی قبلی</th><th colspan="2">بست و قدم موجود</th><th colspan="3">تاریخ ارزیابی</th><th rowspan="3">نمره ارزیابی</th><th colspan="3">نتیجه ارزیابی</th><th rowspan="3">ملاحظات</th></tr>

@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V21.2 starting...');
+console.log('🔐 Server V21.3 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -364,7 +364,7 @@ async function checkJobCodeExact(jobCode, excludeRecordId = null) {
   if (!jobCode) return { exists: false };
   try {
     const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
-    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE r.data::json->>'jobCode' = $1`;
+    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'jobCode') = $1`;
     const params = [normalizedCode];
     if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
     sql += ' LIMIT 1';
@@ -380,7 +380,7 @@ async function checkETazkiraExact(eTazkira, excludeRecordId = null) {
   if (!eTazkira) return { exists: false };
   try {
     const cleaned = normalizeDigits(eTazkira).trim().replace(/\s+/g, '');
-    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE r.data::json->>'eTazkira' = $1`;
+    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'eTazkira') = $1`;
     const params = [cleaned];
     if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
     sql += ' LIMIT 1';
@@ -396,7 +396,7 @@ async function checkPaperTazkiraExact(tazkiraCode, excludeRecordId = null) {
   if (!tazkiraCode) return { exists: false };
   try {
     const cleaned = normalizeDigits(tazkiraCode).trim().replace(/\s+/g, '');
-    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE r.data::json->>'paperTazkira' = $1`;
+    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'paperTazkira') = $1`;
     const params = [cleaned];
     if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
     sql += ' LIMIT 1';
@@ -626,7 +626,6 @@ app.post('/api/records', authRequired, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'خطا در ثبت رکورد' }); }
 });
 
-// ⭐⭐⭐ تغییر مهم ۱: اضافه کردن PATCH برای اجازه ویرایش ⭐⭐⭐
 app.patch('/api/records/:id/edit-permission', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
@@ -649,7 +648,6 @@ app.patch('/api/records/:id/edit-permission', authRequired, async (req, res) => 
   }
 });
 
-// ⭐⭐⭐ تغییر مهم ۲: اصلاح PUT برای جلوگیری از خطای 400 ⭐⭐⭐
 app.put('/api/records/:id', authRequired, async (req, res) => {
   try {
     const id = req.params.id;
@@ -667,8 +665,6 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
     if (check.rows.length === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
 
     const originalData = JSON.parse(check.rows[0].data || '{}');
-
-    // اگر ادمین فقط editAllowed فرستاده باشد، بدون اعتبارسنجی کل فیلدها آن را ذخیره کن
     const bodyKeys = Object.keys(body || {});
     const isOnlyEditAllowed = req.user.role === 'admin' && bodyKeys.length === 1 && bodyKeys[0] === 'editAllowed';
 
@@ -866,6 +862,10 @@ app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// ⭐ مسیرهای معاشات (اصلاح شده و کامل)
+// ═══════════════════════════════════════════════════════════
+
 app.get('/api/salaries', authRequired, async (req, res) => {
   try {
     const { record_id, year, search } = req.query;
@@ -881,11 +881,63 @@ app.get('/api/salaries', authRequired, async (req, res) => {
       conditions.push(`(s.schoolname ILIKE $${i} OR s.district ILIKE $${i} OR CAST(r.data AS TEXT) ILIKE $${i})`);
     }
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    
+    // اصلاح: استفاده از CAST(r.data AS JSON)->> به جای r.data::json->>
     const result = await pool.query(
-      `SELECT s.*, r.data::json->>'firstName' AS first_name, r.data::json->>'lastName' AS last_name, r.data::json->>'fatherName' AS father_name, r.data::json->>'jobCode' AS job_code, r.data::json->>'jobTitle' AS job_title, a.present AS att_present, a.absent AS att_absent, a.sick AS att_sick 
-       FROM salaries s LEFT JOIN records r ON r.id = s.record_id LEFT JOIN attendance a ON a.salary_id = s.id ${where} ORDER BY s.year DESC, s.id DESC`, params);
+      `SELECT s.*, 
+              (CAST(r.data AS JSON)->>'firstName') AS first_name, 
+              (CAST(r.data AS JSON)->>'lastName') AS last_name, 
+              (CAST(r.data AS JSON)->>'fatherName') AS father_name, 
+              (CAST(r.data AS JSON)->>'jobCode') AS job_code, 
+              (CAST(r.data AS JSON)->>'jobTitle') AS job_title, 
+              a.present AS att_present, a.absent AS att_absent, a.sick AS att_sick 
+       FROM salaries s 
+       LEFT JOIN records r ON r.id = s.record_id 
+       LEFT JOIN attendance a ON a.salary_id = s.id 
+       ${where} 
+       ORDER BY s.year DESC, s.id DESC`, 
+      params
+    );
     res.json(result.rows);
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  } catch (err) { 
+    console.error('GET /api/salaries error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت لیست معاشات' }); 
+  }
+});
+
+app.get('/api/salaries/:id', authRequired, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID نامعتبر است' });
+
+    const conditions = ['s.id = $1'];
+    const params = [id];
+    if (req.user.role === 'school') {
+      conditions.push(`s.userid = $2`);
+      params.push(req.user.id);
+    } else if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+
+    const result = await pool.query(
+      `SELECT s.*, 
+              (CAST(r.data AS JSON)->>'firstName') AS first_name, 
+              (CAST(r.data AS JSON)->>'lastName') AS last_name, 
+              (CAST(r.data AS JSON)->>'fatherName') AS father_name, 
+              (CAST(r.data AS JSON)->>'jobCode') AS job_code, 
+              (CAST(r.data AS JSON)->>'jobTitle') AS job_title
+       FROM salaries s 
+       LEFT JOIN records r ON r.id = s.record_id 
+       WHERE ${conditions.join(' AND ')}`,
+      params
+    );
+
+    if (result.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('GET /api/salaries/:id error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت معاش' });
+  }
 });
 
 app.post('/api/salaries', authRequired, async (req, res) => {
@@ -910,7 +962,95 @@ app.post('/api/salaries', authRequired, async (req, res) => {
       [record_id, req.user.id, recCheck.rows[0].schoolname || '', recCheck.rows[0].district || '', year, month, String(body.bank_number || '').trim(), String(body.appointment_letter || '').trim(), num(body.base_salary), num(body.other_base), num(body.professional), num(body.other_professional), num(body.food), num(body.other_food), num(body.allowance), num(body.other_allowance), num(body.other_increase), totalEnt, num(body.absence), num(body.tax), num(body.other_tax), num(body.tax_10), num(body.deductions), num(body.other_deductions), totalDed, net]
     );
     res.json({ ok: true, id: result.rows[0].id });
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  } catch (err) { 
+    console.error('POST /api/salaries error:', err.message);
+    res.status(500).json({ error: 'خطا در ثبت معاش' }); 
+  }
+});
+
+app.put('/api/salaries/:id', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب' });
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID نامعتبر است' });
+
+    const check = await pool.query('SELECT * FROM salaries WHERE id = $1 AND userid = $2', [id, req.user.id]);
+    if (check.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
+    if (check.rows[0].status === 'approved') return res.status(400).json({ error: 'معاش تایید شده قابل ویرایش نیست' });
+
+    const body = req.body || {};
+    const num = (v) => Number(normalizeDigits(v || 0)) || 0;
+    const totalEnt = num(body.total_entitlement);
+    const totalDed = num(body.total_deductions);
+    const net = num(body.net_pay) || (totalEnt - totalDed);
+
+    await pool.query(
+      `UPDATE salaries SET year=$1, month=$2, bank_number=$3, appointment_letter=$4, base_salary=$5, other_base=$6, professional=$7, other_professional=$8, food=$9, other_food=$10, allowance=$11, other_allowance=$12, other_increase=$13, total_entitlement=$14, absence=$15, tax=$16, other_tax=$17, tax_10=$18, deductions=$19, other_deductions=$20, total_deductions=$21, net_pay=$22, updatedat=CURRENT_TIMESTAMP WHERE id=$23 AND userid=$24`,
+      [String(body.year || '').trim(), String(body.month || '').trim(), String(body.bank_number || '').trim(), String(body.appointment_letter || '').trim(), num(body.base_salary), num(body.other_base), num(body.professional), num(body.other_professional), num(body.food), num(body.other_food), num(body.allowance), num(body.other_allowance), num(body.other_increase), totalEnt, num(body.absence), num(body.tax), num(body.other_tax), num(body.tax_10), num(body.deductions), num(body.other_deductions), totalDed, net, id, req.user.id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('PUT /api/salaries/:id error:', err.message);
+    res.status(500).json({ error: 'خطا در به‌روزرسانی معاش' });
+  }
+});
+
+app.post('/api/salaries/:id/approve', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: 'ID نامعتبر است' });
+
+    let checkQuery = 'SELECT * FROM salaries WHERE id = $1';
+    const checkParams = [id];
+    if (req.user.role === 'school') {
+      checkQuery += ' AND userid = $2';
+      checkParams.push(req.user.id);
+    }
+    const check = await pool.query(checkQuery, checkParams);
+    if (check.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
+
+    const attCheck = await pool.query('SELECT id FROM attendance WHERE salary_id = $1', [id]);
+    if (attCheck.rows.length === 0) {
+      return res.status(400).json({ error: '❌ ابتدا راپور حاضری را ثبت کنید' });
+    }
+
+    await pool.query("UPDATE salaries SET status = 'approved', updatedat = CURRENT_TIMESTAMP WHERE id = $1", [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('POST /api/salaries/:id/approve error:', err.message);
+    res.status(500).json({ error: 'خطا در تایید معاش' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// ⭐ مسیرهای حاضری
+// ═══════════════════════════════════════════════════════════
+
+app.get('/api/attendance/:salary_id', authRequired, async (req, res) => {
+  try {
+    const salary_id = parseInt(req.params.salary_id);
+    if (isNaN(salary_id)) return res.status(400).json({ error: 'ID نامعتبر است' });
+
+    let checkQuery = 'SELECT id FROM salaries WHERE id = $1';
+    const checkParams = [salary_id];
+    if (req.user.role === 'school') {
+      checkQuery += ' AND userid = $2';
+      checkParams.push(req.user.id);
+    } else if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+    }
+    const check = await pool.query(checkQuery, checkParams);
+    if (check.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
+
+    const result = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [salary_id]);
+    res.json(result.rows[0] || null);
+  } catch (err) {
+    console.error('GET /api/attendance/:salary_id error:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت حاضری' });
+  }
 });
 
 app.post('/api/attendance', authRequired, async (req, res) => {
@@ -934,7 +1074,10 @@ app.post('/api/attendance', authRequired, async (req, res) => {
         [salary_id, num(body.present), num(body.absent), num(body.vacation), num(body.sick), num(body.essential), num(body.maternity), num(body.service_center), num(body.service_province), num(body.hajj), num(body.holidays), num(body.other), total_days]);
     }
     res.json({ ok: true, total_days });
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  } catch (err) { 
+    console.error('POST /api/attendance error:', err.message);
+    res.status(500).json({ error: 'خطا در ثبت حاضری' }); 
+  }
 });
 
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
@@ -1004,6 +1147,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V21.2 live on port ' + PORT);
+  console.log('🚀 Server V21.3 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

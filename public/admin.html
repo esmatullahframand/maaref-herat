@@ -132,7 +132,6 @@
       ⏳ به‌صورت پیش‌فرض، کارمندان <strong>در انتظار تایید</strong> نمایش داده می‌شوند.
     </div>
 
-    <!-- ۱۲ فیلتر کامل -->
     <div class="filter-grid">
       <div class="filter-item">
         <label>🔍 جستجوی عمومی</label>
@@ -285,7 +284,6 @@
       </div>
     </div>
 
-    <!-- فیلترها و جستجو -->
     <div class="filter-grid mb-3">
       <div class="filter-item">
         <label>🔍 جستجو (نام، ولد، وظیفه، کد بست، مکتب)</label>
@@ -307,7 +305,6 @@
       </div>
     </div>
 
-    <!-- جدول نمایش در صفحه (مخفی به صورت پیش‌فرض) -->
     <div class="table-responsive border rounded eval-table-hidden" id="evalListContainer">
       <table class="table table-hover align-middle mb-0 text-center">
         <thead class="table-light">
@@ -324,7 +321,6 @@
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-money-bill-wave"></i> مدیریت معاشات</h5>
 
-    <!-- آمار مالی بر اساس سال -->
     <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:2px solid #10b981; border-radius:10px; padding:15px 20px; margin-bottom:15px;">
       <h6 style="color:#065f46; font-weight:bold; margin:0 0 10px 0; font-size:14px;">💵 آمار مالی بر اساس سال</h6>
       <div id="salYearFinancialStats" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px;">
@@ -332,7 +328,6 @@
       </div>
     </div>
 
-    <!-- آمار کارمندان بر اساس وظیفه -->
     <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe); border:2px solid #3b82f6; border-radius:10px; padding:15px 20px; margin-bottom:15px;">
       <h6 style="color:#1e40af; font-weight:bold; margin:0 0 10px 0; font-size:14px;">👥 آمار کارمندان بر اساس وظیفه</h6>
       <div id="salEmployeeRoleStats" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px;">
@@ -340,7 +335,6 @@
       </div>
     </div>
 
-    <!-- جمع کل -->
     <div style="background:linear-gradient(135deg, #f0fdf4, #dcfce7); border:2px solid #10b981; border-radius:10px; padding:15px 20px; margin-bottom:20px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:15px;">
       <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">📋 تعداد معاشات</div><div style="font-size:20px; font-weight:bold; color:#065f46;" id="salCount">0</div></div>
       <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">💵 مجموع استحقاق</div><div style="font-size:20px; font-weight:bold; color:#065f46;" id="salTotalEnt">0</div></div>
@@ -348,7 +342,6 @@
       <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">💰 مجموع قابل پرداخت</div><div style="font-size:20px; font-weight:bold; color:#7c3aed;" id="salTotalNet">0</div></div>
     </div>
 
-    <!-- فیلترهای عمومی معاشات -->
     <div style="margin-top:20px;">
       <h6 style="color:#7c3aed; font-weight:bold; margin-bottom:12px;">🔍 فیلترهای جستجوی معاشات</h6>
       <div class="filter-grid">
@@ -431,7 +424,7 @@
       </div>
       <div class="modal-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">📊 تعداد مکاتب: <strong id="modalSchoolCount">0</strong></span>
+          <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px; background:#7c3aed;">📊 تعداد مکاتب: <strong id="modalSchoolCount">0</strong></span>
         </div>
         <div class="table-responsive border rounded">
           <table class="table table-hover table-bordered align-middle mb-0 text-center">
@@ -454,7 +447,7 @@
       </div>
       <div class="modal-body">
         <div class="mb-3"><input type="text" id="manageSchoolSearch" class="form-control form-control-lg" placeholder="🔍 جستجو..." oninput="filterManageSchools()"></div>
-        <div class="d-flex justify-content-between align-items-center mb-3"><span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">📊 تعداد: <strong id="manageSchoolCount">0</strong></span></div>
+        <div class="d-flex justify-content-between align-items-center mb-3"><span class="badge text-white px-3 py-2" style="font-size:13px; background:#7c3aed;">📊 تعداد: <strong id="manageSchoolCount">0</strong></span></div>
         <div class="table-responsive border rounded">
           <table class="table table-hover table-bordered align-middle mb-0">
             <thead class="table-light"><tr><th style="text-align:center;">#</th><th style="text-align:center;">🏫 نام مکتب</th><th style="text-align:center;">👤 کاربری</th><th style="text-align:center;">🔑 رمز</th><th style="text-align:center;">📍 ولسوالی</th><th style="text-align:center;">عملیات</th></tr></thead>
@@ -493,7 +486,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // ═══════════════════════════════════════════════════════════
-  // پنل ادمین — JavaScript کامل (نسخه نهایی با تغییرات درخواستی)
+  // پنل ادمین — JavaScript کامل
   // ═══════════════════════════════════════════════════════════
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
@@ -518,6 +511,11 @@
   let manageSchoolsCache = [];
   let evalAllowed = false;
   const RETIREMENT_AGE = 65;
+
+  // ═══ لوگوهای رسمی (دقیقا مثل مکتب) ═══
+  const UNIFIED_MINISTRY_LOGO = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4TEeRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAExAAIAAAAmAAAASgEyAAIAAAAUAAAAcIdpAAQAAAABAAAAhIglAAQAAAABAAAA8AAAAShXaW5kb3dzIFBob3RvIEVkaXRvciAxMC4wLjEwMDExLjE2Mzg0ADIwMjI6MDM6MTYgMDQ6MzQ6MDIAAAWQAwACAAAAFAAAAMaQBAACAAAAFAAAANqSkQACAAAAAzAwAACSkgACAAAAAzAwAACgAQADAAAAAQABAAAAAAAAMjAyMjowMzoxNiAwNDozMzowMgAyMDIyOjAzOjE2IDA0OjMzOjAyAAAAAAEACwACAAAAJgAAAQIAAAAAV2luZG93cyBQaG90byBFZGl0b3IgMTAuMC4xMDAxMS4xNjM4NAAABgEDAAMAAAABAAYAAAEaAAUAAAABAAABdgEbAAUAAAABAAABfgEoAAMAAAABAAIAAAIBAAQAAAABAAABhgICAAQAAAABAAAvjwAAAAAAAABgAAAAAQAAAGAAAAAB/9j/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAC3AMkDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//9k=';
+
+  const UNIFIED_EMBLEM_LOGO = 'data:image/jpeg;base64,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';
 
   function detectSchoolType(schoolName) {
     if (!schoolName) return 'نامشخص';
@@ -721,14 +719,20 @@
     const label = allowed ? 'اجازه ویرایش' : 'لغو اجازه ویرایش';
     if (!confirm(`آیا ${label} برای این کارمند فعال شود؟`)) return;
     try {
-      const res = await fetch('/api/records/' + id, {
-        method: 'PUT',
+      const res = await fetch('/api/records/' + id + '/edit-permission', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ editAllowed: !!allowed })
       });
       const data = await res.json().catch(() => ({}));
-      if (res.ok) { showToast(allowed ? '✅ اجازه ویرایش فعال شد' : '🔒 اجازه ویرایش لغو شد'); await loadAllRecords(); }
-      else showToast('❌ ' + (data.error || 'تغییر اجازه ویرایش ناکام شد'), true);
+      if (res.ok) {
+        showToast(allowed ? '✅ اجازه ویرایش فعال شد' : '🔒 اجازه ویرایش لغو شد');
+        const rec = loadedRecordsCache.find(r => r.id === id);
+        if (rec) { rec.data = rec.data || {}; rec.data.editAllowed = !!allowed; }
+        await loadAllRecords();
+      } else {
+        showToast('❌ ' + (data.error || 'تغییر اجازه ویرایش ناکام شد'), true);
+      }
     } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
   }
   window.setRecordEditPermission = setRecordEditPermission;
@@ -740,7 +744,7 @@
     const sections = [
       { title: '۱. هویت و اسناد تذکره', fields: [['عنوان بست', info.jobTitle], ['کُد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName], ['تذکره الکترونیکی', info.eTazkira], ['تذکره کاغذی', info.paperTazkira], ['قومیت', info.ethnicity]] },
       { title: '۲. اطلاعات شخصی', fields: [['جنسیت', info.gender], ['حالت مدنی', info.maritalStatus], ['تاریخ تولد', info.birthDate], ['سکونت اصلی', info.originAddress], ['سکونت فعلی', info.currentAddress], ['تاریخ اولین تقرر', info.firstAppointmentDate], ['شماره تماس', info.phone], ['معلولیت', info.disability]] },
-      { title: '۳. معلومات وظیفوی و تحصیلی', fields: [['بست', info.bust], ['قدم', info.grade], ['تاریخ تقرر فعلی', info.currentPositionDate], ['درجه تحصیلی', info.degree], ['رشته', info.major], ['مرجع تعلیمی', info.eduInstitute], ['موقعیت مرجع', info.eduInstituteLocation], ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate], ['مضمون تدریس', info.subjectTeaching]] },
+      { title: '۳. معلومات وظیفوی و تحصیلی', fields: [['بست', info.bust], ['قدم', info.grade], ['تاریخ تقرر فعلی', info.currentPositionDate], ['درجه تحصیلی', info.degree], ['رشته', info.major], ['مرجع تعلیمی', info.eduInstitute], ['موقعیت مرجع', info.eduInstituteLocation], ['تاریخ شمولیت', info.enrollmentDate], ['تاریخ فراغت', info.graduationDate], ['رشته تدریس', info.teachingField]] },
       { title: '۴. ورکشاپ', fields: [['ورکشاپ', info.workshopStatus || 'نخیر'], ['عنوان ورکشاپ', info.workshopTitle], ['مدت ورکشاپ', info.workshopDuration], ['مجموعه ساعت درسی', info.totalTeachingHours]] },
       { title: '۵. خدمتی رفته', fields: [['خدمتی رفته', info.serviceStatus || 'نخیر'], ['ولسوالی', info.serviceDistrict], ['مکتب', info.serviceSchool], ['تاریخ خدمتی', info.serviceDate]] }
     ];
@@ -928,7 +932,7 @@
   window.deleteSchoolAdmin = deleteSchoolAdmin;
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ بخش ارزیابی (Evaluation) 
+  // ⭐ بخش ارزیابی — نسخه ادمین دقیقاً مثل مکتب
   // ═══════════════════════════════════════════════════════════
   async function loadEvaluationPermission() { try { const res = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } }); const data = await res.json(); evalAllowed = !!data.allowed; updatePermissionUI(); } catch (e) { console.error(e); } }
   window.loadEvaluationPermission = loadEvaluationPermission;
@@ -989,11 +993,11 @@
     const searchInput = (document.getElementById('evalSearchInput').value || '').trim().toLowerCase();
     const schoolTypeFilter = document.getElementById('evalSchoolTypeFilter').value;
     const schoolNameFilter = document.getElementById('evalSchoolNameFilter').value;
-    
+
     filteredEvaluations = cachedEvaluations.filter(e => {
       if (schoolNameFilter && e.schoolname !== schoolNameFilter) return false;
       if (schoolTypeFilter) { const type = detectSchoolType(e.schoolname); if (schoolTypeFilter === 'مکاتب') { if (type !== 'لیسه' && type !== 'متوسطه' && type !== 'ابتداییه') return false; } else if (schoolTypeFilter === 'مدارس') { if (type !== 'مدرسه' && type !== 'نامشخص') return false; } }
-      
+
       if (searchInput) {
         const fn = (e.first_name || '').toLowerCase();
         const fa = (e.father_name || '').toLowerCase();
@@ -1011,9 +1015,9 @@
     document.getElementById('evalStatExcellent').textContent = excellent;
     document.getElementById('evalStatGood').textContent = good;
     document.getElementById('evalStatWeak').textContent = weak;
-    
+
     if (filteredEvaluations.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4 text-muted">یافت نشد</td></tr>'; return; }
-    
+
     let html = '';
     filteredEvaluations.forEach((e, idx) => {
       let resultBadge = '—';
@@ -1029,64 +1033,241 @@
   async function deleteEvalAdmin(id) { if (!confirm('⚠️ حذف شود؟')) return; try { const res = await fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAdminEvaluations(); } else showToast('خطا', true); } catch (e) { showToast('خطا', true); } }
   window.deleteEvalAdmin = deleteEvalAdmin;
 
-  // 🖨️ پرینت دقیقاً مشابه فورم رسمی توحیدی ارزیابی (PDF)
-  function printEvalAdmin() {
-    const list = filteredEvaluations || [];
-    if (!list.length) { showToast('داده‌ای برای پرینت وجود ندارد', true); return; }
-    const dateParts = v => { const p=String(v||'').split(/[\/\-]/); return p.length===3 ? p : ['','','']; };
-    const cell = v => escapeHtml(v == null || v === '' ? '' : String(v));
-    const rows = list.map((e,i) => {
-      const bd=dateParts(e.birth_date), ad=dateParts(e.appointment_date), ed=dateParts(e.eval_date);
-      const result=e.eval_result||'';
-      const mark=(yes)=>yes?'√':'';
-      return `<tr>
-      <td>${i+1}</td><td>${cell(e.first_name)}</td><td>${cell(e.last_name)}</td><td>${cell(e.father_name)}</td><td>${cell(e.job_code)}</td>
-      <td>${mark(String(e.appointment_type||'').includes('حکمی'))}</td><td>${mark(String(e.appointment_type||'').includes('رقابتی'))}</td>
-      <td>${cell(bd[0])}</td><td>${cell(e.service_duration)}</td><td>${cell(e.degree)}</td><td>${mark(e.gender==='مرد')}</td><td>${mark(e.gender==='زن')}</td>
-      <td>${cell(e.job_title)}</td><td>${cell(e.district)}</td><td>${cell(e.schoolname)}</td>
-      <td>${cell(ad[2])}</td><td>${cell(ad[1])}</td><td>${cell(ad[0])}</td>
-      <td>${cell(e.current_position_date)}</td><td>${cell(e.prev_eval_date)}</td>
-      <td>${cell(e.bust)}</td><td>${cell(e.grade)}</td>
-      <td>${cell(ed[2])}</td><td>${cell(ed[1])}</td><td>${cell(ed[0])}</td>
-      <td>${cell(e.eval_score ?? e.total_score ?? e.score ?? '')}</td><td>${mark(result==='عالی')}</td><td>${mark(result==='خوب')}</td><td>${mark(result==='ضعیف')}</td><td>${cell(e.remarks||e.notes||'')}</td></tr>`;
-    }).join('');
-    const html=`<div class="head"><div class="headleft"><b>وزارت معارف</b><br>ریاست معارف ولایت هرات</div><div class="headcenter">معینیت مالی و اداری<br>ریاست عمومی امور کارکنان<br>ریاست استخدام<br>آمریت ارزیابی اجراات<br>مدیریت عمومی ارزیابی اجراات معلمین و استادان</div><div class="headright"><b>د پوهنې وزارت</b></div></div>
-    <div class="caption">جدول توحیدی ارزیابی اجراات سالانه معلمین و مدرسین معارف (کشک رباط سنگی)</div>
-    <table><thead>
-    <tr><th rowspan="3">شماره</th><th colspan="6">شهرت</th><th colspan="12">مشخصات وظیفوی</th><th colspan="3">تاریخ تقرر / تاریخ معادلت / تاریخ فراغت</th><th rowspan="3">تاریخ ارزیابی قبلی</th><th colspan="2">بست و قدم موجود</th><th colspan="3">تاریخ ارزیابی</th><th rowspan="3">نمره ارزیابی</th><th colspan="3">نتیجه ارزیابی</th><th rowspan="3">ملاحظات</th></tr>
-    <tr><th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th><th rowspan="2">کود تشکیل</th><th colspan="2">نوع تقرری</th><th rowspan="2">تاریخ تولد</th><th rowspan="2">مدت خدمت</th><th rowspan="2">درجه تحصیل</th><th colspan="2">جنسیت</th><th rowspan="2">وظیفه</th><th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره مربوطه</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">تاریخ معادلت</th><th rowspan="2">بست</th><th rowspan="2">قدم</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th></tr>
-    <tr><th>حکمی</th><th>رقابتی</th><th>مرد</th><th>زن</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="foot">Page 1 of 1</div>`;
-    const win=window.open('','_blank'); if(!win){showToast('اجازه بازشدن پنجره چاپ را بدهید',true);return;}
-    win.document.write(`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>جدول توحیدی ارزیابی</title><style>
-    @page{size:A3 landscape;margin:5mm}*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;color:#000}.head{height:30mm;border:1px solid #222;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;text-align:center;padding:3mm;font-size:9px}.headleft,.headright{font-size:17px;font-weight:bold}.headcenter{line-height:1.8}.caption{text-align:center;border:1px solid #222;border-top:0;background:#e5e5e5;font-size:9px;padding:2mm}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7px;text-align:center}th,td{border:1px solid #222;padding:2px;overflow-wrap:anywhere}thead th{background:#e8e8e8;font-weight:bold}tbody td{height:6mm}.foot{text-align:center;font-size:8px;margin-top:5mm}@media screen{body{padding:8px}.no-print{text-align:center;margin:12px}}@media print{.no-print{display:none}}</style></head><body>${html}<div class="no-print"><button onclick="window.print()">🖨️ پرینت</button></div><script>setTimeout(()=>window.print(),600)<\/script></body></html>`);
-    win.document.close();
+  // ═══════════════════════════════════════════════════════════
+  // ابزارهای مشترک برای ارزیابی — دقیقا مثل مکتب
+  // ═══════════════════════════════════════════════════════════
+  async function getUnifiedEvaluationData() {
+    const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) throw new Error('دریافت معلومات کارمندان ناکام شد');
+    const records = await res.json();
+    const recordsMap = {};
+    if (Array.isArray(records)) records.forEach(r => { recordsMap[String(r.id)] = r.data || {}; });
+    const evaluations = [...(filteredEvaluations || cachedEvaluations || [])].sort((a, b) =>
+      String(a.first_name || '').localeCompare(String(b.first_name || ''), 'fa')
+    );
+    return { evaluations, recordsMap };
+  }
+
+  function unifiedEvaluationRows(evaluations, recordsMap) {
+    const esc = value => escapeHtml(value === null || value === undefined ? '' : String(value));
+    const pick = (a, b, fallback='') => a !== undefined && a !== null && a !== '' ? a : (b !== undefined && b !== null && b !== '' ? b : fallback);
+    const dateParts = value => {
+      const raw = value === null || value === undefined ? '' : normalizeDigits(String(value).trim());
+      if (!raw) return ['', '', ''];
+      const m = raw.match(/(\d{1,4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,4})/);
+      if (!m) return ['', '', raw];
+      if (m[1].length >= 3) return [m[3], m[2], m[1]];
+      return [m[1], m[2], m[3]];
+    };
+    return evaluations.map((ev, index) => {
+      const rec = recordsMap[String(ev.record_id)] || {};
+      const first = pick(ev.first_name, rec.firstName);
+      const father = pick(ev.father_name, rec.fatherName);
+      const grandfather = pick(ev.grandfather_name, rec.grandfatherName);
+      const birth = pick(ev.birth_date, rec.birthDate);
+      const appointment = pick(ev.appointment_date, rec.currentPositionDate || rec.firstAppointmentDate);
+      const previousEval = pick(ev.eval_date_prev, ev.previous_eval_date, rec.previousEvalDate);
+      const evalDate = pick(ev.eval_date, '');
+      const appointmentParts = dateParts(appointment);
+      const previousParts = dateParts(previousEval);
+      const evalParts = dateParts(evalDate);
+      const result = String(ev.eval_result || '').trim();
+      const values = [
+        pick(ev.private_number, ev.record_id, index + 1),
+        first, father, grandfather,
+        pick(ev.job_code, rec.jobCode),
+        pick(ev.appointment_type, rec.employmentType || rec.appointmentType || rec.typeOfAppointment),
+        ...dateParts(birth),
+        pick(ev.service_duration, rec.serviceDuration || rec.durationOfService),
+        pick(ev.degree, rec.degree),
+        pick(ev.gender, rec.gender),
+        pick(ev.job_title, rec.jobTitle),
+        pick(ev.district, rec.originDistrict || currentUser.district),
+        pick(ev.workplace, ev.schoolname || currentUser.schoolname),
+        ...appointmentParts,
+        ...previousParts,
+        pick(ev.bust, rec.bust), pick(ev.grade, rec.grade),
+        ...evalParts,
+        pick(ev.eval_score, ''),
+        result === 'عالی' ? '✓' : '',
+        result === 'خوب' ? '✓' : '',
+        result === 'ضعیف' ? '✓' : '',
+        pick(ev.remarks, ev.notes || ev.observations)
+      ];
+      return values.map(esc);
+    });
+  }
+
+  function unifiedEvaluationTableHead() {
+    return `
+    <thead>
+      <tr>
+        <th rowspan="3">شماره</th>
+        <th colspan="3">شهرت</th>
+        <th colspan="11">مشخصات وظیفوی</th>
+        <th colspan="3">تاریخ تقرر / تاریخ معادلت / تاریخ فراغت</th>
+        <th colspan="3">تاریخ ارزیابی قبلی</th>
+        <th colspan="2">بست و قدم موجود</th>
+        <th colspan="3">تاریخ ارزیابی</th>
+        <th rowspan="3">نمره ارزیابی</th>
+        <th colspan="3">نتیجه ارزیابی</th>
+        <th rowspan="3">ملاحظات</th>
+      </tr>
+      <tr>
+        <th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th>
+        <th rowspan="2">کود تشکیل</th><th rowspan="2">نوع تقرری</th>
+        <th colspan="3">تاریخ تولد</th><th rowspan="2">مدت خدمت</th>
+        <th rowspan="2">درجه تحصیل</th><th rowspan="2">جنسیت</th><th rowspan="2">وظیفه</th>
+        <th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره مربوطه</th>
+        <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+        <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+        <th rowspan="2">بست</th><th rowspan="2">قدم</th>
+        <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+        <th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th>
+      </tr>
+      <tr><th>روز</th><th>ماه</th><th>سال</th></tr>
+    </thead>`;
+  }
+
+  function unifiedEvaluationTableBody(rows) {
+    return '<tbody>' + rows.map(row =>
+      '<tr>' + row.map((cell, i) => `<td${i >= 1 && i <= 3 ? ' class="name-cell"' : ''}>${cell || ''}</td>`).join('') + '</tr>'
+    ).join('') + '</tbody>';
+  }
+
+  function unifiedEvaluationDocumentStyles() {
+    return `
+    <style>
+      html,body{margin:0;padding:0;font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#000}
+      .official-head{display:grid;grid-template-columns:1fr 3fr 1fr;align-items:center;text-align:center;margin-bottom:5px}
+      .official-head h2{font-size:17px;margin:2px}.official-head h3{font-size:14px;margin:2px}
+      .official-head p{font-size:10px;margin:2px}
+      .official-head img{max-height:60px;display:block;margin:0 auto 4px auto}
+      .table-title{text-align:center;font-weight:bold;font-size:12px;padding:5px;border:1px solid #000;margin:5px 0}
+      table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6.5px;direction:rtl}
+      th,td{border:1px solid #000;text-align:center;vertical-align:middle;padding:2px 1px;overflow-wrap:anywhere;line-height:1.15}
+      th{background:#e8e8e8;font-weight:bold}
+      td.name-cell{text-align:right}
+      .signature{display:flex;justify-content:space-between;margin-top:12px;font-size:10px}
+      @page{size:A3 landscape;margin:7mm}
+      @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+    </style>`;
+  }
+
+  function printHtmlDocument(html, title, pageSize = 'A4 landscape') {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>body{font-family:Tahoma,Arial,sans-serif;direction:rtl;padding:15px;color:#111}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #333;padding:7px;text-align:center}th{background:#eee} @media print{@page{size:${pageSize};margin:1cm}}</style></head><body>${html}</body></html>`);
+    doc.close();
+    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1200); }, 400);
+  }
+
+  // 🖨️ پرینت جدول توحیدی — دقیقا مثل مکتب
+  async function printEvalAdmin() {
+    if (!cachedEvaluations || cachedEvaluations.length === 0) {
+      showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true);
+      return;
+    }
+    try {
+      const { evaluations, recordsMap } = await getUnifiedEvaluationData();
+      const rows = unifiedEvaluationRows(evaluations, recordsMap);
+      const html = `
+        <div class="official-head">
+          <div class="head-side">
+            <img src="${UNIFIED_MINISTRY_LOGO}" alt="لوگوی وزارت معارف">
+            <h2>وزارت معارف</h2>
+          </div>
+          <div>
+            <p>معینیت مالی و اداری</p>
+            <p>ریاست عمومی امور کارکنان</p>
+            <p>ریاست استخدام</p>
+            <p>آمریت ارزیابی اجراآت</p>
+            <p>مدیریت عمومی ارزیابی اجراآت معلمین و استادان</p>
+          </div>
+          <div class="head-side">
+            <img src="${UNIFIED_EMBLEM_LOGO}" alt="نشان امارت اسلامی افغانستان">
+            <h2>د پوهنې وزارت</h2>
+          </div>
+        </div>
+        <div class="table-title">جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ${escapeHtml(currentUser.schoolname || 'ریاست معارف هرات')}</div>
+        <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
+        <div class="signature"><span>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</span><span>مهر و امضا: ____________________</span></div>`;
+      printHtmlDocument(unifiedEvaluationDocumentStyles() + html, 'جدول توحیدی ارزیابی معلمین', 'A3 landscape');
+    } catch (e) {
+      console.error(e);
+      showToast('❌ خطا در تولید جدول پرینت', true);
+    }
   }
   window.printEvalAdmin = printEvalAdmin;
 
-  // 📊 خروجی اکسل دقیقا مشابه فرم (با ساختار ساده‌شده اما حفظ تمام اطلاعات)
-  function exportEvalAdminExcel() {
-    const list=filteredEvaluations||[];
-    if(!list.length){showToast('داده‌ای برای خروجی وجود ندارد',true);return;}
-    const safe=v=>escapeHtml(v==null?'':String(v));
-    const rows=list.map((e,i)=>{
-      const p=v=>{const a=String(v||'').split(/[\/\-]/);return a.length===3?a:['','',''];};
-      const bd=p(e.birth_date),ad=p(e.appointment_date),ed=p(e.eval_date),r=e.eval_result||'';
-      return `<tr>${[i+1,e.first_name,e.last_name,e.father_name,e.job_code,String(e.appointment_type||'').includes('حکمی')?'√':'',String(e.appointment_type||'').includes('رقابتی')?'√':'',bd[0],e.service_duration,e.degree,e.gender==='مرد'?'√':'',e.gender==='زن'?'√':'',e.job_title,e.district,e.schoolname,ad[2],ad[1],ad[0],e.current_position_date,e.bust,e.grade,ed[2],ed[1],ed[0],e.eval_score??e.total_score??e.score??'',r==='عالی'?'√':'',r==='خوب'?'√':'',r==='ضعیف'?'√':'',e.remarks||''].map(v=>`<td>${safe(v)}</td>`).join('')}</tr>`;
-    }).join('');
-    const html=`<html><head><meta charset="utf-8"></head><body dir="rtl"><table border="1"><tr><th colspan="31">وزارت معارف — ریاست معارف ولایت هرات</th></tr><tr><th colspan="31">جدول توحیدی ارزیابی اجراات سالانه معلمین و مدرسین معارف</th></tr>
-    <tr><th rowspan="3">شماره</th><th colspan="6">شهرت</th><th colspan="12">مشخصات وظیفوی</th><th colspan="3">تاریخ تقرر / معادلت / فراغت</th><th rowspan="3">تاریخ ارزیابی قبلی</th><th colspan="2">بست و قدم موجود</th><th colspan="3">تاریخ ارزیابی</th><th rowspan="3">نمره ارزیابی</th><th colspan="3">نتیجه ارزیابی</th><th rowspan="3">ملاحظات</th></tr>
-    <tr><th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th><th rowspan="2">کود تشکیل</th><th colspan="2">نوع تقرری</th><th rowspan="2">تاریخ تولد</th><th rowspan="2">مدت خدمت</th><th rowspan="2">درجه تحصیل</th><th colspan="2">جنسیت</th><th rowspan="2">وظیفه</th><th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره مربوطه</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">تاریخ معادلت</th><th rowspan="2">بست</th><th rowspan="2">قدم</th><th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th><th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th></tr><tr><th>حکمی</th><th>رقابتی</th><th>مرد</th><th>زن</th></tr>${rows}</table></body></html>`;
-    const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-    a.href=url;a.download='جدول_توحیدی_ارزیابی.xls';a.click();URL.revokeObjectURL(url);showToast('📊 فایل اکسل توحیدی دانلود شد');
+  // 📊 خروجی اکسل توحیدی — دقیقا مثل مکتب
+  async function exportEvalAdminExcel() {
+    if (!cachedEvaluations || cachedEvaluations.length === 0) {
+      showToast('❌ هیچ ارزیابی ثبت شده‌ای برای خروجی اکسل وجود ندارد.', true);
+      return;
+    }
+    try {
+      const { evaluations, recordsMap } = await getUnifiedEvaluationData();
+      const rows = unifiedEvaluationRows(evaluations, recordsMap);
+      const html = `<!DOCTYPE html>
+      <html xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:x="urn:schemas-microsoft-com:office:excel"
+            xmlns="http://www.w3.org/TR/REC-html40" lang="fa" dir="rtl">
+      <head><meta charset="UTF-8">
+      <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+      <x:Name>جدول توحیدی ارزیابی</x:Name><x:WorksheetOptions>
+      <x:DisplayRightToLeft/><x:PageSetup><x:Layout x:Orientation="Landscape"/>
+      <x:PageMargins x:Bottom="0.25" x:Left="0.2" x:Right="0.2" x:Top="0.25"/>
+      </x:PageSetup><x:FitToPage/><x:Print><x:FitWidth>1</x:FitWidth><x:FitHeight>0</x:FitHeight></x:Print>
+      </x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+      <style>
+      @page { size: A3 landscape; margin: 0.25in; }
+      body { font-family: Tahoma, Arial, sans-serif; direction: rtl; color:#000; }
+      table { border-collapse:collapse; width:100%; direction:rtl; table-layout:fixed; }
+      th,td { border:1px solid #000; padding:3px 2px; text-align:center; vertical-align:middle;
+              font-family:Tahoma,Arial,sans-serif; font-size:9pt; white-space:normal; }
+      th { background:#e8e8e8; font-weight:bold; }
+      .official-title { font-weight:bold; text-align:center; font-size:12pt; padding:5px; }
+      .name-cell { text-align:right; }
+      </style></head><body>
+      <table style="border:0;width:100%;margin-bottom:8px">
+        <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">معینیت مالی و اداری</td></tr>
+        <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">ریاست عمومی امور کارکنان</td></tr>
+        <tr><td colspan="3" style="border:0;text-align:center">ریاست استخدام — آمریت ارزیابی اجراآت</td></tr>
+        <tr><td colspan="3" style="border:0;text-align:center">مدیریت عمومی ارزیابی اجراآت معلمین و استادان</td></tr>
+        <tr><td colspan="3" class="official-title" style="border:1px solid #000">
+          جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ${escapeHtml(currentUser.schoolname || 'ریاست معارف هرات')}
+        </td></tr>
+      </table>
+      <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
+      <table style="border:0;margin-top:10px"><tr>
+        <td style="border:0;text-align:right">تاریخ چاپ: ${escapeHtml(new Date().toLocaleDateString('fa-IR'))}</td>
+        <td style="border:0;text-align:left">مهر و امضا: ____________________</td>
+      </tr></table>
+      </body></html>`;
+      const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'جدول_توحیدی_ارزیابی_معلمین_' + Date.now() + '.xls';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      showToast('✅ خروجی اکسل جدول توحیدی آماده شد؛ بدون تصویرهای شکسته و با همه ردیف‌ها.');
+    } catch (e) {
+      console.error(e);
+      showToast('❌ خطا در تولید خروجی اکسل', true);
+    }
   }
   window.exportEvalAdminExcel = exportEvalAdminExcel;
 
-
   // ═══════════════════════════════════════════════════════════
-  // ⭐ بخش معاشات (Salaries) — با فیلتر سال و آمار داینامیک
+  // ⭐ بخش معاشات — بدون تغییر عمده
   // ═══════════════════════════════════════════════════════════
-
   async function loadSalaries() {
     const tbody = document.getElementById('salariesTableBody');
     if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
@@ -1096,22 +1277,21 @@
       const data = await res.json();
       cachedSalaries = Array.isArray(data) ? data : [];
       salaryAllPersons = cachedSalaries.map(s => ({ id: s.record_id || s.id, name: `${s.first_name || ''} ${s.last_name || ''}`.trim(), school: s.schoolname }));
-      
+
       populateSalaryYearDropdown();
       populateSalarySchoolDropdown();
       populateSalaryPersonFilter();
-      
+
       filteredSalaries = [...cachedSalaries];
       renderSalaries(filteredSalaries);
       updateSalaryTotals(filteredSalaries);
-      
+
       const statusBar = document.getElementById('salaryFilterStatus');
       if (statusBar) {
         statusBar.innerHTML = `ℹ️ در حال نمایش <strong>همه ${cachedSalaries.length} معاش</strong>. برای فیلتر، از گزینه‌های بالا استفاده کنید.`;
         statusBar.style.background = '#dbeafe';
         statusBar.style.color = '#1e3a8a';
       }
-      
     } catch (e) {
       console.error(e);
       if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="text-center text-danger p-4">خطا در بارگذاری</td></tr>';
@@ -1124,7 +1304,7 @@
     if (!sel) return;
     const cur = sel.value;
     sel.innerHTML = '<option value="">📋 همه سال‌ها</option>';
-    const uniqueYears = [...new Set(cachedSalaries.map(s => s.year).filter(Boolean))].sort((a,b) => b - a); // نزولی
+    const uniqueYears = [...new Set(cachedSalaries.map(s => s.year).filter(Boolean))].sort((a,b) => b - a);
     uniqueYears.forEach(year => { const o = document.createElement('option'); o.value = year; o.textContent = `📅 ${year}`; if (year === cur) o.selected = true; sel.appendChild(o); });
   }
 
@@ -1148,10 +1328,7 @@
     unique.forEach(name => { const o = document.createElement('option'); o.value = name; o.textContent = `👤 ${name}`; sel.appendChild(o); });
   }
 
-  function onSalarySchoolChange() {
-    populateSalaryPersonFilter();
-    applySalaryFilters();
-  }
+  function onSalarySchoolChange() { populateSalaryPersonFilter(); applySalaryFilters(); }
   window.onSalarySchoolChange = onSalarySchoolChange;
 
   function applySalaryFilters() {
@@ -1161,12 +1338,10 @@
     const schoolNameFilter = document.getElementById('salarySchoolNameFilter').value;
     const jobTitleFilter = document.getElementById('salaryJobTitleFilter').value;
     const personFilter = document.getElementById('salaryPersonFilter').value;
-    
     const searchEl = document.getElementById('salarySearchBottom');
     const searchInput = searchEl ? searchEl.value.trim() : '';
 
     const hasFilter = yearFilter || typeFilter || schoolTypeFilter || schoolNameFilter || jobTitleFilter || personFilter || searchInput;
-
     const tbody = document.getElementById('salariesTableBody');
     if (!tbody) return;
 
@@ -1174,7 +1349,6 @@
       filteredSalaries = [...cachedSalaries];
       renderSalaries(filteredSalaries);
       updateSalaryTotals(filteredSalaries);
-      
       const statusBar = document.getElementById('salaryFilterStatus');
       if (statusBar) {
         statusBar.innerHTML = `ℹ️ در حال نمایش <strong>همه ${cachedSalaries.length} معاش</strong>. برای فیلتر، از گزینه‌های بالا استفاده کنید.`;
@@ -1186,23 +1360,16 @@
 
     filteredSalaries = cachedSalaries.filter(s => {
       const schoolName = s.schoolname || '';
-      
       if (yearFilter && String(s.year) !== String(yearFilter)) return false;
-      
       if (typeFilter) {
         const st = detectSchoolType(schoolName);
         if (typeFilter === 'مکاتب') { if (st !== 'لیسه' && st !== 'متوسطه' && st !== 'ابتداییه') return false; }
         else if (typeFilter === 'مدارس') { if (st !== 'مدرسه' && st !== 'نامشخص') return false; }
       }
-      
       if (schoolTypeFilter && detectSchoolType(schoolName) !== schoolTypeFilter) return false;
       if (schoolNameFilter && schoolName !== schoolNameFilter) return false;
       if (jobTitleFilter && (s.job_title || '') !== jobTitleFilter) return false;
-      if (personFilter) {
-        const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim();
-        if (fullName !== personFilter) return false;
-      }
-      
+      if (personFilter) { const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim(); if (fullName !== personFilter) return false; }
       if (searchInput) {
         const ql = searchInput.toLowerCase();
         const fn = (s.first_name || '').toLowerCase();
@@ -1212,13 +1379,11 @@
         const fullName = `${fn} ${ln}`;
         if (!fn.includes(ql) && !ln.includes(ql) && !fa.includes(ql) && !jc.includes(ql) && !fullName.includes(ql)) return false;
       }
-      
       return true;
     });
 
     renderSalaries(filteredSalaries);
     updateSalaryTotals(filteredSalaries);
-    
     const statusBar = document.getElementById('salaryFilterStatus');
     if (statusBar) {
       statusBar.innerHTML = `🔍 نتایج فیلتر: <strong>${filteredSalaries.length} معاش</strong> از ${cachedSalaries.length} معاش کل.`;
@@ -1260,22 +1425,17 @@
 
   function updateSalaryTotals(list) {
     let totalEnt = 0, totalDed = 0, totalNet = 0;
-    const yearFin = {};
-    const roleStats = {};
-    const uniqueEmployees = new Set();
-
+    const yearFin = {}, roleStats = {}, uniqueEmployees = new Set();
     list.forEach(s => {
       totalEnt += Number(s.total_entitlement) || 0;
       totalDed += Number(s.total_deductions) || 0;
       totalNet += Number(s.net_pay) || 0;
-
       const year = s.year || 'نامشخص';
       if (!yearFin[year]) yearFin[year] = { ent: 0, ded: 0, net: 0, count: 0 };
       yearFin[year].ent += Number(s.total_entitlement) || 0;
       yearFin[year].ded += Number(s.total_deductions) || 0;
       yearFin[year].net += Number(s.net_pay) || 0;
       yearFin[year].count++;
-
       const role = s.job_title || 'نامشخص';
       const empKey = s.record_id || s.id || `${s.first_name}_${s.last_name}`;
       if (!roleStats[role]) roleStats[role] = new Set();
@@ -1288,14 +1448,8 @@
     document.getElementById('salTotalDed').textContent = totalDed.toLocaleString();
     document.getElementById('salTotalNet').textContent = totalNet.toLocaleString();
 
-    // آمار سالانه (داینامیک با فیلتر)
     const yearFinEl = document.getElementById('salYearFinancialStats');
-    const years = Object.keys(yearFin).sort((a, b) => {
-      if (a === 'نامشخص') return 1;
-      if (b === 'نامشخص') return -1;
-      return Number(b) - Number(a);
-    });
-
+    const years = Object.keys(yearFin).sort((a, b) => { if (a === 'نامشخص') return 1; if (b === 'نامشخص') return -1; return Number(b) - Number(a); });
     if (years.length === 0) {
       yearFinEl.innerHTML = '<span style="color:#94a3b8; font-size:13px;">هیچ سالی یافت نشد</span>';
     } else {
@@ -1315,10 +1469,8 @@
       yearFinEl.innerHTML = html;
     }
 
-    // آمار وظیفه (داینامیک با فیلتر)
     const roleEl = document.getElementById('salEmployeeRoleStats');
     const roles = Object.keys(roleStats).sort((a, b) => roleStats[b].size - roleStats[a].size);
-
     if (roles.length === 0) {
       roleEl.innerHTML = '<span style="color:#94a3b8; font-size:13px;">هیچ کارمندی یافت نشد</span>';
     } else {
@@ -1338,7 +1490,6 @@
   }
   window.updateSalaryTotals = updateSalaryTotals;
 
-  // ════ مشاهده، پرینت، حذف تک‌نفر ════
   async function viewSalaryAdmin(id) {
     if (!viewSalaryModal) viewSalaryModal = new bootstrap.Modal(document.getElementById('viewSalaryModal'));
     const content = document.getElementById('viewSalaryContent');
@@ -1428,17 +1579,10 @@
   }
   window.deleteSalaryAdmin = deleteSalaryAdmin;
 
-  function printSalaryFiltered() { 
-    const list = filteredSalaries.length > 0 ? filteredSalaries : cachedSalaries; 
-    if (!list || list.length === 0) { showToast('معاشی نیست', true); return; } 
-    printSalaryList(list, 'معاشات (فیلترشده)'); 
-  }
+  function printSalaryFiltered() { const list = filteredSalaries.length > 0 ? filteredSalaries : cachedSalaries; if (!list || list.length === 0) { showToast('معاشی نیست', true); return; } printSalaryList(list, 'معاشات (فیلترشده)'); }
   window.printSalaryFiltered = printSalaryFiltered;
 
-  function printSalaryAll() { 
-    if (!cachedSalaries || cachedSalaries.length === 0) { showToast('معاشی نیست', true); return; } 
-    printSalaryList(cachedSalaries, 'همه معاشات'); 
-  }
+  function printSalaryAll() { if (!cachedSalaries || cachedSalaries.length === 0) { showToast('معاشی نیست', true); return; } printSalaryList(cachedSalaries, 'همه معاشات'); }
   window.printSalaryAll = printSalaryAll;
 
   function printSalaryList(list, title) {
@@ -1471,17 +1615,10 @@
     win.document.close();
   }
 
-  function exportSalaryFiltered() { 
-    const list = filteredSalaries.length > 0 ? filteredSalaries : cachedSalaries; 
-    if (!list || list.length === 0) { showToast('معاشی نیست', true); return; } 
-    exportSalaryList(list, 'salaries_filtered'); 
-  }
+  function exportSalaryFiltered() { const list = filteredSalaries.length > 0 ? filteredSalaries : cachedSalaries; if (!list || list.length === 0) { showToast('معاشی نیست', true); return; } exportSalaryList(list, 'salaries_filtered'); }
   window.exportSalaryFiltered = exportSalaryFiltered;
 
-  function exportSalaryAll() { 
-    if (!cachedSalaries || cachedSalaries.length === 0) { showToast('معاشی نیست', true); return; } 
-    exportSalaryList(cachedSalaries, 'salaries_all'); 
-  }
+  function exportSalaryAll() { if (!cachedSalaries || cachedSalaries.length === 0) { showToast('معاشی نیست', true); return; } exportSalaryList(cachedSalaries, 'salaries_all'); }
   window.exportSalaryAll = exportSalaryAll;
 
   function exportSalaryList(list, filename) {

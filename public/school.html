@@ -1250,7 +1250,7 @@
           <td>${escapeHtml(info.degree || '-')}</td>
           <td>${statusHtml}</td>
           <td>
-            <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>
+            ${(info.editAllowed === true || row.editAllowed === true) ? `<button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>` : ''}
             <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="مشاهده">👁️</button>
             <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرینت">🖨️</button>
           </td>
@@ -1284,7 +1284,7 @@
         <td>${escapeHtml(info.degree || '-')}</td>
         <td>${statusHtml}</td>
         <td>
-          <button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>
+          ${(info.editAllowed === true || row.editAllowed === true) ? `<button class="btn-action btn-edit-row" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>` : ''}
           <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="مشاهده">👁️</button>
           <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرینت">🖨️</button>
         </td>
@@ -1327,146 +1327,69 @@
   // ═══════════════════════════════════════════════════════════
   // ویرایش
   // ═══════════════════════════════════════════════════════════
+  const EDITABLE_EMPLOYEE_FIELDS = [
+    ['jobTitle','عنوان بست','select',['JOB_TITLES_LIST']], ['jobCode','کود بست','text'],
+    ['firstName','اسم','text'], ['lastName','تخلص','text'], ['fatherName','ولد','text'], ['grandfatherName','ولدیت','text'],
+    ['eTazkira','تذکره الکترونیکی','text'], ['paperTazkira','تذکره کاغذی','text'], ['tazkiraPage','صفحه تذکره','text'], ['tazkiraVolume','جلد تذکره','text'], ['ethnicity','قومیت','text'],
+    ['gender','جنسیت','select',['مرد','زن']], ['maritalStatus','حالت مدنی','select',['مجرد','متاهل']], ['birthDate','تاریخ تولد','text'], ['birthProvince','ولایت تولد','text'], ['birthDistrict','ولسوالی تولد','text'],
+    ['originProvince','ولایت سکونت اصلی','text'], ['originDistrict','ولسوالی سکونت اصلی','text'], ['currentProvince','ولایت سکونت فعلی','text'], ['currentDistrict','ولسوالی سکونت فعلی','text'], ['phone','شماره تماس','text'], ['disability','معلولیت','select',['نخیر','بلی']],
+    ['bust','بست','text'], ['grade','قدم','text'], ['firstAppointmentDate','تاریخ اولین تقرر','text'], ['currentPositionDate','تاریخ تقرر فعلی','text'], ['positionType','موقف وظیفوی','select',['اصلی','سرپرستی']], ['employmentType','نوع تقرری','select',['حکمی','رقابتی']],
+    ['degree','درجه تحصیل','text'], ['major','رشته تحصیلی','text'], ['eduInstitute','مرجع تحصیلی','text'], ['eduInstituteLocation','موقعیت مرجع تحصیلی','text'], ['enrollmentDate','تاریخ شمولیت','text'], ['graduationDate','تاریخ فراغت','text'], ['teachingField','رشته تدریس','text'],
+    ['workshopStatus','ورکشاپ اخذ کرده؟','select',['نخیر','بلی']], ['workshopTitle','عنوان ورکشاپ','text'], ['workshopDuration','مدت ورکشاپ','text'], ['totalTeachingHours','مجموعه ساعت درسی','text'],
+    ['serviceStatus','خدمتی رفته؟','select',['نخیر','بلی']], ['serviceDistrict','نام ولسوالی خدمتی','text'], ['serviceSchool','نام مکتب خدمتی','text'], ['serviceDate','تاریخ خدمتی','text']
+  ];
   function editRecord(id) {
     const rec = cachedRecords.find(r => r.id === id);
     if (!rec) { showToast('رکورد یافت نشد', true); return; }
-    editingRecordId = id;
     const info = rec.data || {};
-
-    let jobOptions = '<option value="">— انتخاب —</option>';
-    JOB_TITLES_LIST.forEach(j => {
-      const selected = (info.jobTitle === j) ? 'selected' : '';
-      jobOptions += `<option value="${j}" ${selected}>${j}</option>`;
+    if (!(info.editAllowed === true || rec.editAllowed === true)) { showToast('❌ ویرایش این کارمند هنوز از طرف ادمین اجازه داده نشده است', true); return; }
+    editingRecordId = id;
+    let html = `<div style="background:#fef3c7;padding:10px 15px;border-radius:6px;margin-bottom:15px;font-size:13px;text-align:center"><strong>👤 کارمند:</strong> ${escapeHtml(info.firstName || '-')} ${escapeHtml(info.lastName || '')} | تمام معلومات قابل ویرایش است</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">`;
+    EDITABLE_EMPLOYEE_FIELDS.forEach(([key,label,type,opts]) => {
+      const val = info[key] == null ? '' : String(info[key]);
+      const idAttr = 'e_' + key;
+      if (type === 'select') {
+        const options = (opts && opts[0] === 'JOB_TITLES_LIST' ? JOB_TITLES_LIST : (opts || [])).map(v => `<option value="${escapeHtml(v)}" ${val===v?'selected':''}>${escapeHtml(v)}</option>`).join('');
+        html += `<div class="form-group"><label>${label}</label><select id="${idAttr}" data-edit-key="${key}"><option value="">— انتخاب —</option>${options}</select></div>`;
+      } else {
+        html += `<div class="form-group"><label>${label}</label><input type="text" id="${idAttr}" data-edit-key="${key}" value="${escapeHtml(val)}"></div>`;
+      }
     });
-
-    const wsYes = info.workshopStatus === 'بلی' ? 'selected' : '';
-    const wsNo  = info.workshopStatus === 'نخیر' ? 'selected' : '';
-    const showWsFields = info.workshopStatus === 'بلی';
-    const statusText = rec.status === 'approved' ? '✅ تایید شده' : '⏳ در انتظار';
-
-    const html = `
-      <div style="background:#fef3c7; padding:10px 15px; border-radius:6px; margin-bottom:15px; font-size:13px; text-align:center;">
-        <strong>👤 کارمند:</strong> ${escapeHtml(info.firstName || '-')} ${escapeHtml(info.lastName || '')}
-        | <strong>وضعیت:</strong> ${statusText}
-      </div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
-        <div class="form-group"><label>عنوان بست *</label><select id="eJobTitle">${jobOptions}</select></div>
-        <div class="form-group">
-          <label>کد بست</label>
-          <input type="text" id="eJobCode" value="${escapeHtml(info.jobCode || '')}" placeholder="27-32-02-13056">
-          <small id="eJobCodeMsg" class="date-msg pending">⏳ منتظر...</small>
-        </div>
-        <div class="form-group"><label>بست</label><input type="text" id="eBust" value="${escapeHtml(info.bust || '')}"></div>
-        <div class="form-group"><label>قدم</label><input type="text" id="eGrade" value="${escapeHtml(info.grade || '')}"></div>
-        <div class="form-group">
-          <label>ورکشاپ اخذ کرده؟</label>
-          <select id="eWorkshopStatus" onchange="toggleEditWorkshopFields()">
-            <option value="نخیر" ${wsNo}>نخیر</option>
-            <option value="بلی" ${wsYes}>بلی</option>
-          </select>
-        </div>
-        <div class="form-group" id="eWorkshopTitleGroup" style="display:${showWsFields ? 'flex' : 'none'};">
-          <label>عنوان ورکشاپ</label>
-          <input type="text" id="eWorkshopTitle" value="${escapeHtml(info.workshopTitle || '')}">
-        </div>
-        <div class="form-group" id="eWorkshopDurationGroup" style="display:${showWsFields ? 'flex' : 'none'};">
-          <label>مدت ورکشاپ</label>
-          <input type="text" id="eWorkshopDuration" value="${escapeHtml(info.workshopDuration || '')}">
-        </div>
-        <div class="form-group"><label>درجه تحصیل</label><input type="text" id="eDegree" value="${escapeHtml(info.degree || '')}"></div>
-        <div class="form-group"><label>رشته تدریس</label><input type="text" id="eTeachingField" value="${escapeHtml(info.teachingField || '')}"></div>
-        <div class="form-group"><label>مجموعه ساعت درسی</label><input type="text" id="eTotalTeachingHours" value="${escapeHtml(info.totalTeachingHours || '')}"></div>
-        <div class="form-group">
-          <label>تاریخ تقرر فعلی</label>
-          <input type="text" id="eCurrentPositionDate" value="${escapeHtml(info.currentPositionDate || '')}" placeholder="1400/03/20">
-          <small id="eCurrentPositionDateMsg" class="date-msg"></small>
-        </div>
-      </div>
-    `;
+    html += '</div>';
     document.getElementById('editContent').innerHTML = html;
     document.getElementById('editModal').classList.add('active');
-
-    attachLiveValidation('eCurrentPositionDate', validateShamsiDate, 'eCurrentPositionDateMsg');
-    attachUniqueFieldValidation('eJobCode', 'eJobCodeMsg', 'jobcode', editingRecordId);
   }
   window.editRecord = editRecord;
-
-  function toggleEditWorkshopFields() {
-    const status = document.getElementById('eWorkshopStatus').value;
-    const titleGroup = document.getElementById('eWorkshopTitleGroup');
-    const durationGroup = document.getElementById('eWorkshopDurationGroup');
-    if (status === 'بلی') { titleGroup.style.display = 'flex'; durationGroup.style.display = 'flex'; }
-    else { titleGroup.style.display = 'none'; durationGroup.style.display = 'none'; }
-  }
+  function toggleEditWorkshopFields() {}
   window.toggleEditWorkshopFields = toggleEditWorkshopFields;
-
   async function saveEditedRecord() {
     if (!editingRecordId) return;
-
-    const jobTitle = document.getElementById('eJobTitle').value.trim();
-    const jobCode = document.getElementById('eJobCode').value.trim();
-    const bust = document.getElementById('eBust').value.trim();
-    const grade = document.getElementById('eGrade').value.trim();
-    const workshopStatus = document.getElementById('eWorkshopStatus').value;
-    const workshopTitle = document.getElementById('eWorkshopTitle')?.value.trim() || '';
-    const workshopDuration = document.getElementById('eWorkshopDuration')?.value.trim() || '';
-    const degree = document.getElementById('eDegree').value.trim();
-    const teachingField = document.getElementById('eTeachingField').value.trim();
-    const totalTeachingHours = document.getElementById('eTotalTeachingHours').value.trim();
-    const currentPositionDate = document.getElementById('eCurrentPositionDate').value.trim();
-
-    if (!jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
-    if (!isEducationExemptJob(jobTitle) && !degree) {
-      showToast('❌ برای این بست، درجه تحصیل الزامی است', true);
-      return;
+    const body = {};
+    document.querySelectorAll('#editContent [data-edit-key]').forEach(el => { body[el.dataset.editKey] = el.value.trim(); });
+    const original = cachedRecords.find(r => r.id === editingRecordId);
+    const originalInfo = original?.data || {};
+    body.editAllowed = true;
+    if (!body.jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
+    if (!isEducationExemptJob(body.jobTitle) && !body.degree) { showToast('❌ برای این بست، درجه تحصیل الزامی است', true); return; }
+    for (const key of ['firstAppointmentDate','currentPositionDate','birthDate','enrollmentDate','graduationDate','serviceDate']) {
+      if (body[key]) { const d = validateShamsiDate(body[key]); if (!d.valid) { showToast('❌ ' + EDITABLE_EMPLOYEE_FIELDS.find(f=>f[0]===key)?.[1] + ': ' + d.error, true); return; } body[key] = d.formatted; }
     }
-    if (currentPositionDate) {
-      const d = validateShamsiDate(currentPositionDate);
-      if (!d.valid) { showToast('❌ تاریخ تقرر فعلی: ' + d.error, true); return; }
-    }
-    if (workshopStatus === 'بلی' && !workshopTitle) { showToast('❌ عنوان ورکشاپ الزامی است', true); return; }
-
-    if (jobCode) {
-      const jc = validateJobCode(jobCode);
+    if (body.workshopStatus !== 'بلی') { body.workshopTitle = ''; body.workshopDuration = ''; }
+    if (body.serviceStatus !== 'بلی') { body.serviceDistrict = ''; body.serviceSchool = ''; body.serviceDate = ''; }
+    if (body.jobCode) {
+      const jc = validateJobCode(body.jobCode);
       if (!jc.valid) { showToast('❌ ' + jc.error, true); return; }
-      const jcCheck = await checkJobCodeUnique(jc.formatted, editingRecordId);
-      if (!jcCheck.unique) { showToast(buildDuplicateMessage('jobcode', jcCheck), true); return; }
+      const check = await checkJobCodeUnique(jc.formatted, editingRecordId);
+      if (!check.unique) { showToast(buildDuplicateMessage('jobcode', check), true); return; }
+      body.jobCode = normalizeDigits(body.jobCode).trim();
     }
-
-    const body = {
-      jobTitle,
-      jobCode: jobCode ? normalizeDigits(jobCode).trim() : '',
-      bust,
-      grade,
-      workshopStatus,
-      workshopTitle: workshopStatus === 'بلی' ? workshopTitle : '',
-      workshopDuration: workshopStatus === 'بلی' ? workshopDuration : '',
-      degree,
-      teachingField,
-      totalTeachingHours,
-      currentPositionDate: currentPositionDate ? validateShamsiDate(currentPositionDate).formatted : ''
-    };
-
     try {
-      const res = await fetch('/api/records/' + editingRecordId, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok) {
-        showToast('✅ ذخیره شد');
-        closeModal('editModal');
-        loadSchoolRecords();
-      } else if (res.status === 409 && data.code === 'DUPLICATE_JOBCODE') {
-        showToast(buildDuplicateMessage('jobcode', data), true);
-      } else {
-        showToast('❌ ' + (data.error || 'خطا'), true);
-      }
-    } catch (e) {
-      showToast('❌ ارتباط برقرار نشد', true);
-    }
+      const res = await fetch('/api/records/' + editingRecordId, { method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify(body) });
+      const data = await res.json().catch(()=>({}));
+      if (res.ok) { showToast('✅ تمام معلومات کارمند ذخیره شد'); closeModal('editModal'); await loadSchoolRecords(); }
+      else if (res.status===409 && data.code==='DUPLICATE_JOBCODE') showToast(buildDuplicateMessage('jobcode',data),true);
+      else showToast('❌ '+(data.error||'خطا در ذخیره معلومات'),true);
+    } catch(e) { showToast('❌ ارتباط برقرار نشد',true); }
   }
   window.saveEditedRecord = saveEditedRecord;
 
@@ -1759,7 +1682,7 @@
       setEvalValue('evalDegree', info.degree);
       setEvalValue('evalMajor', info.major);
       setEvalValue('evalTeachingField', info.teachingField);
-      setEvalValue('evalAppointmentType', info.appointmentType || info.typeOfAppointment || '');
+      setEvalValue('evalAppointmentType', info.employmentType || info.appointmentType || info.typeOfAppointment || '');
       setEvalValue('evalAppointmentDate', info.currentPositionDate || info.firstAppointmentDate || info.equivalencyDate || info.graduationDate || '');
       setEvalValue('evalServiceDuration', info.serviceDuration || info.durationOfService || '');
       setEvalValue('evalBirthDate', info.birthDate);
@@ -1795,7 +1718,7 @@
     if (!currentEvalRecord) { showToast('❌ کارمند انتخاب نشده', true); return; }
     if (!document.getElementById('evalAgreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
     const info = currentEvalRecord.data || {};
-    const body = { record_id: currentEvalRecord.id, eval_date_prev: document.getElementById('evalPreviousDate').value.trim(), bust: document.getElementById('evalBust').value.trim(), grade: document.getElementById('evalGrade').value.trim(), rank: document.getElementById('evalRank').value.trim(), education_directorate: document.getElementById('evalEducationDirectorate').value.trim(), remarks: document.getElementById('evalRemarks').value.trim(), eval_date: document.getElementById('evalNewDate').value.trim(), eval_score: document.getElementById('evalScore').value.trim(), eval_result: document.getElementById('evalResult').value, first_name: info.firstName || '', last_name: info.lastName || '', father_name: info.fatherName || '', grandfather_name: info.grandfatherName || '', private_number: currentEvalRecord.id, job_title: info.jobTitle || '', degree: info.degree || '', major: info.major || '', teaching_field: info.teachingField || '', appointment_type: info.appointmentType || info.typeOfAppointment || '', appointment_date: info.currentPositionDate || info.firstAppointmentDate || info.equivalencyDate || info.graduationDate || '', service_duration: info.serviceDuration || info.durationOfService || '', birth_date: info.birthDate || '', tazkira_number: info.eTazkira || info.paperTazkira || '', gender: info.gender || '', ethnicity: info.ethnicity || '', job_code: info.jobCode || '', district: info.originDistrict || user.district || '', workplace: currentEvalRecord.schoolname || user.schoolname || '' };
+    const body = { record_id: currentEvalRecord.id, eval_date_prev: document.getElementById('evalPreviousDate').value.trim(), bust: document.getElementById('evalBust').value.trim(), grade: document.getElementById('evalGrade').value.trim(), rank: document.getElementById('evalRank').value.trim(), education_directorate: document.getElementById('evalEducationDirectorate').value.trim(), remarks: document.getElementById('evalRemarks').value.trim(), eval_date: document.getElementById('evalNewDate').value.trim(), eval_score: document.getElementById('evalScore').value.trim(), eval_result: document.getElementById('evalResult').value, first_name: info.firstName || '', last_name: info.lastName || '', father_name: info.fatherName || '', grandfather_name: info.grandfatherName || '', private_number: currentEvalRecord.id, job_title: info.jobTitle || '', degree: info.degree || '', major: info.major || '', teaching_field: info.teachingField || '', appointment_type: info.employmentType || info.appointmentType || info.typeOfAppointment || '', appointment_date: info.currentPositionDate || info.firstAppointmentDate || info.equivalencyDate || info.graduationDate || '', service_duration: info.serviceDuration || info.durationOfService || '', birth_date: info.birthDate || '', tazkira_number: info.eTazkira || info.paperTazkira || '', gender: info.gender || '', ethnicity: info.ethnicity || '', job_code: info.jobCode || '', district: info.originDistrict || user.district || '', workplace: currentEvalRecord.schoolname || user.schoolname || '' };
     if (!body.eval_date || !body.eval_score || !body.eval_result) { showToast('❌ فیلدهای الزامی', true); return; }
     const dateResult = validateShamsiDate(body.eval_date);
     if (!dateResult.valid) { showToast('❌ تاریخ: ' + dateResult.error, true); return; }
@@ -1865,9 +1788,9 @@
     if (!cachedEvaluations || cachedEvaluations.length === 0) { showToast('❌ ارزیابی‌ای برای پرینت وجود ندارد.', true); return; }
     let rows = '';
     cachedEvaluations.forEach((e, i) => {
-      rows += `<tr><td>${i + 1}</td><td>${escapeHtml(e.first_name || '-')}</td><td>${escapeHtml(e.father_name || '-')}</td><td>${escapeHtml(e.job_title || '-')}</td><td>${escapeHtml(e.job_code || '-')}</td><td>${escapeHtml(e.eval_date || '-')}</td><td>${escapeHtml(e.eval_score ?? '-')}</td><td>${escapeHtml(e.eval_result || '-')}</td></tr>`;
+      rows += `<tr><td>${i + 1}</td><td>${escapeHtml(e.first_name || '-')}</td><td>${escapeHtml(e.father_name || '-')}</td><td>${escapeHtml(e.job_title || '-')}</td><td>${escapeHtml(e.job_code || '-')}</td><td>${escapeHtml(e.appointment_type || '')}</td><td>${escapeHtml(e.eval_date || '-')}</td><td>${escapeHtml(e.eval_score ?? '-')}</td><td>${escapeHtml(e.eval_result || '-')}</td></tr>`;
     });
-    const html = `<div style="text-align:center;margin-bottom:16px"><h2>ریاست معارف ولایت هرات</h2><h3>لیست ارزیابی کارمندان - ${escapeHtml(user.schoolname || '')}</h3><p>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</p></div><table><thead><tr><th>#</th><th>اسم</th><th>ولد</th><th>وظیفه</th><th>کد بست</th><th>تاریخ</th><th>نمره</th><th>نتیجه</th></tr></thead><tbody>${rows}</tbody></table>`;
+    const html = `<div style="text-align:center;margin-bottom:16px"><h2>ریاست معارف ولایت هرات</h2><h3>لیست ارزیابی کارمندان - ${escapeHtml(user.schoolname || '')}</h3><p>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</p></div><table><thead><tr><th>#</th><th>اسم</th><th>ولد</th><th>وظیفه</th><th>کد بست</th><th>نوع تقرری</th><th>تاریخ</th><th>نمره</th><th>نتیجه</th></tr></thead><tbody>${rows}</tbody></table>`;
     printHtmlDocument(html, 'پرینت ارزیابی کارمندان', 'A4 landscape');
   }
   window.printEvaluationList = printEvaluationList;
@@ -2564,7 +2487,7 @@
           pick(ev.private_number, ev.record_id, index + 1),
           first, father, grandfather,
           pick(ev.job_code, rec.jobCode),
-          pick(ev.appointment_type, rec.appointmentType || rec.typeOfAppointment),
+          pick(ev.appointment_type, rec.employmentType || rec.appointmentType || rec.typeOfAppointment),
           ...dateParts(birth),
           pick(ev.service_duration, rec.serviceDuration || rec.durationOfService),
           pick(ev.degree, rec.degree),

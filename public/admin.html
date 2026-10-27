@@ -700,7 +700,8 @@
       const serviceHtml = info.serviceStatus === 'بلی' ? '<span class="badge-service-yes">🏢 رفته</span>' : '<span class="badge-service-no">—</span>';
       let actionsHtml = '';
       if (row.status === 'pending') actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})">✔️</button>`;
-      actionsHtml += `<button class="btn-action btn-view" onclick="viewRecordAdmin(${row.id})">👁️</button><button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})">🖨️</button><button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})">🗑️</button>`;
+      const editAllowed = info.editAllowed === true || row.editAllowed === true;
+      actionsHtml += `<button class="btn-action btn-view" onclick="viewRecordAdmin(${row.id})">👁️</button><button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})">🖨️</button><button class="btn-action" style="background:${editAllowed ? '#16a34a' : '#64748b'};color:#fff" onclick="setRecordEditPermission(${row.id},${!editAllowed})" title="${editAllowed ? 'لغو اجازه ویرایش' : 'اجازه ویرایش'}">${editAllowed ? '🔓' : '🔑'}</button><button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})">🗑️</button>`;
       const schoolName = row.schoolname || getSchoolNameById(row.userid) || '—';
       const district = row.district || getDistrictById(row.userid) || '—';
       const tr = document.createElement('tr');
@@ -715,6 +716,22 @@
 
   async function deleteRecord(id) { if (!confirm('⚠️ مطمئن هستید؟')) return; try { const res = await fetch('/api/records/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAllRecords(); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); } }
   window.deleteRecord = deleteRecord;
+
+  async function setRecordEditPermission(id, allowed) {
+    const label = allowed ? 'اجازه ویرایش' : 'لغو اجازه ویرایش';
+    if (!confirm(`آیا ${label} برای این کارمند فعال شود؟`)) return;
+    try {
+      const res = await fetch('/api/records/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ editAllowed: !!allowed })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { showToast(allowed ? '✅ اجازه ویرایش فعال شد' : '🔒 اجازه ویرایش لغو شد'); await loadAllRecords(); }
+      else showToast('❌ ' + (data.error || 'تغییر اجازه ویرایش ناکام شد'), true);
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.setRecordEditPermission = setRecordEditPermission;
 
   function viewRecordAdmin(id) {
     const rec = loadedRecordsCache.find(r => r.id === id);

@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V21.3 starting...');
+console.log('🔐 Server V21.4 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -863,7 +863,7 @@ app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ مسیرهای معاشات (اصلاح شده و کامل)
+// ⭐ مسیرهای معاشات (کامل و اصلاح شده)
 // ═══════════════════════════════════════════════════════════
 
 app.get('/api/salaries', authRequired, async (req, res) => {
@@ -882,7 +882,6 @@ app.get('/api/salaries', authRequired, async (req, res) => {
     }
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
     
-    // اصلاح: استفاده از CAST(r.data AS JSON)->> به جای r.data::json->>
     const result = await pool.query(
       `SELECT s.*, 
               (CAST(r.data AS JSON)->>'firstName') AS first_name, 
@@ -933,7 +932,12 @@ app.get('/api/salaries/:id', authRequired, async (req, res) => {
     );
 
     if (result.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
-    res.json(result.rows[0]);
+    
+    const salary = result.rows[0];
+    const attResult = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [id]);
+    salary.attendance = attResult.rows[0] || {};
+    
+    res.json(salary);
   } catch (err) {
     console.error('GET /api/salaries/:id error:', err.message);
     res.status(500).json({ error: 'خطا در دریافت معاش' });
@@ -1022,6 +1026,21 @@ app.post('/api/salaries/:id/approve', authRequired, async (req, res) => {
   } catch (err) {
     console.error('POST /api/salaries/:id/approve error:', err.message);
     res.status(500).json({ error: 'خطا در تایید معاش' });
+  }
+});
+
+// ⭐ مسیر جدید: حذف معاش توسط ادمین
+app.delete('/api/salaries/:id', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
+    const id = parseInt(req.params.id);
+    const result = await pool.query('DELETE FROM salaries WHERE id = $1', [id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
+    await pool.query('DELETE FROM attendance WHERE salary_id = $1', [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('DELETE /api/salaries/:id error:', err.message);
+    res.status(500).json({ error: 'خطا در حذف معاش' });
   }
 });
 
@@ -1122,6 +1141,37 @@ app.post('/api/users', authRequired, async (req, res) => {
   }
 });
 
+// ⭐ مسیر جدید: ویرایش مکتب توسط ادمین
+app.put('/api/users/:id', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
+    const id = parseInt(req.params.id);
+    const { username, password, schoolName, district } = req.body || {};
+    
+    const check = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    if (check.rows.length === 0) return res.status(404).json({ error: 'کاربر یافت نشد' });
+
+    let updateQuery = 'UPDATE users SET username = $1, schoolname = $2, district = $3';
+    let params = [username.trim(), schoolName.trim(), (district || '').trim()];
+    
+    if (password && password.trim() !== '') {
+      const hash = bcrypt.hashSync(password, 10);
+      updateQuery += ', password = $4';
+      params.push(hash);
+    }
+    
+    updateQuery += ' WHERE id = $' + (params.length + 1);
+    params.push(id);
+    
+    await pool.query(updateQuery, params);
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.code === '23505') return res.status(400).json({ error: 'نام کاربری تکراری است' });
+    console.error('PUT /api/users/:id error:', err.message);
+    res.status(500).json({ error: 'خطا در ویرایش مکتب' });
+  }
+});
+
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
@@ -1147,6 +1197,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V21.3 live on port ' + PORT);
+  console.log('🚀 Server V21.4 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

@@ -1,1 +1,608 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل ادمین — معاشات</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+  body { font-family: Tahoma, Arial, sans-serif; background: #f0f4f8; margin: 0; direction: rtl; }
+  .topbar { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .topbar h5 { margin: 0; font-size: 18px; font-weight: bold; }
+  .nav-tabs-custom { display: flex; gap: 5px; background: #fff; border-bottom: 2px solid #e2e8f0; padding: 0 15px; flex-wrap: wrap; }
+  .nav-tab-btn { padding: 15px 25px; border: none; background: transparent; font-weight: bold; color: #64748b; cursor: pointer; font-family: inherit; font-size: 14px; border-bottom: 3px solid transparent; transition: all 0.2s; text-decoration: none; display: inline-block; }
+  .nav-tab-btn:hover { color: #7c3aed; background: #f8fafc; }
+  .nav-tab-btn.active { color: #7c3aed; border-bottom-color: #7c3aed; background: #f3e8ff; }
+  .card-custom { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,.04); margin-bottom: 25px; }
+  .text-purple { color: #7c3aed !important; }
+  .btn-purple { background-color: #7c3aed; color: white; border: none; }
+  .btn-purple:hover { background-color: #6d28d9; color: white; }
+  .form-control, .table { font-size: 14px; }
+  th { background-color: #f8fafc !important; color: #475569; }
+  .btn-action { padding: 4px 10px; font-size: 12px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; margin: 0 2px; }
+  .btn-delete-row { background: #dc2626; color: #fff; }
+  .btn-view { background: #3b82f6; color: #fff; }
+  .btn-print { background: #7c3aed; color: #fff; }
+  .info-banner { background: #dbeafe; border-right: 5px solid #3b82f6; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #1e3a8a; }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 8px; font-weight: bold; z-index: 9999; display: none; max-width: 90%; text-align: center; }
+  .toast.error { background: #ef4444; }
+  .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 15px; background: #f8fafc; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+  .filter-item label { font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; display: block; }
+  .filter-item select, .filter-item input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .modal-header-purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; }
+  .modal-header-purple .btn-close { filter: invert(1); }
+  .sal-stat-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; text-align: center; }
+  .sal-stat-box .value { font-size: 20px; font-weight: bold; color: #065f46; margin-top: 5px; }
+</style>
+</head>
+<body>
 
+<div class="topbar">
+  <div>
+    <h5>🎛️ پنل ادمین — معاشات</h5>
+    <small>مدیریت و گزارش‌گیری معاشات تمام مکاتب</small>
+  </div>
+  <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="nav-tabs-custom" id="adminTabs">
+  <a href="admin-main.html" class="nav-tab-btn">🏠 صفحه اصلی</a>
+  <a href="admin-evaluation.html" class="nav-tab-btn">⭐ ارزیابی</a>
+  <a href="admin-salaries.html" class="nav-tab-btn active">💰 معاشات</a>
+</div>
+
+<div class="container-fluid px-4 py-3" id="tab-salaries">
+  <div class="card-custom">
+    <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-money-bill-wave"></i> مدیریت معاشات</h5>
+
+    <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:2px solid #10b981; border-radius:10px; padding:15px 20px; margin-bottom:15px;">
+      <h6 style="color:#065f46; font-weight:bold; margin:0 0 10px 0; font-size:14px;">💵 آمار مالی بر اساس سال</h6>
+      <div id="salYearFinancialStats" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px;">
+        <span style="color:#94a3b8; font-size:13px;">در حال بارگذاری...</span>
+      </div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe); border:2px solid #3b82f6; border-radius:10px; padding:15px 20px; margin-bottom:15px;">
+      <h6 style="color:#1e40af; font-weight:bold; margin:0 0 10px 0; font-size:14px;">👥 آمار کارمندان بر اساس وظیفه</h6>
+      <div id="salEmployeeRoleStats" style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px;">
+        <span style="color:#94a3b8; font-size:13px;">در حال بارگذاری...</span>
+      </div>
+    </div>
+
+    <div style="background:linear-gradient(135deg, #f0fdf4, #dcfce7); border:2px solid #10b981; border-radius:10px; padding:15px 20px; margin-bottom:20px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:15px;">
+      <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">📋 تعداد معاشات</div><div style="font-size:20px; font-weight:bold; color:#065f46;" id="salCount">0</div></div>
+      <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">💵 مجموع استحقاق</div><div style="font-size:20px; font-weight:bold; color:#065f46;" id="salTotalEnt">0</div></div>
+      <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">✂️ مجموع کسرات</div><div style="font-size:20px; font-weight:bold; color:#b91c1c;" id="salTotalDed">0</div></div>
+      <div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold; margin-bottom:4px;">💰 مجموع قابل پرداخت</div><div style="font-size:20px; font-weight:bold; color:#7c3aed;" id="salTotalNet">0</div></div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <h6 style="color:#7c3aed; font-weight:bold; margin-bottom:12px;">🔍 فیلترهای جستجوی معاشات</h6>
+      <div class="filter-grid">
+        <div class="filter-item"><label>📅 سال</label><select id="salaryYearFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه سال‌ها</option></select></div>
+        <div class="filter-item"><label>🏫 نوع (مکاتب/مدارس)</label><select id="salaryTypeFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه</option><option value="مکاتب">🏫 مکاتب</option><option value="مدارس">🏛️ مدارس</option></select></div>
+        <div class="filter-item"><label>📖 نوع مکتب</label><select id="salarySchoolTypeFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه</option><option value="لیسه">لیسه</option><option value="متوسطه">متوسطه</option><option value="ابتداییه">ابتداییه</option><option value="مدرسه">مدرسه</option></select></div>
+        <div class="filter-item"><label>🏫 نام مکتب خاص</label><select id="salarySchoolNameFilter" class="form-control" onchange="onSalarySchoolChange()"><option value="">📋 همه مکاتب</option></select></div>
+        <div class="filter-item"><label>👨‍🏫 عنوان وظیفه</label><select id="salaryJobTitleFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه</option><option value="آمر">آمر</option><option value="مدیر">مدیر</option><option value="معلم">معلم</option><option value="کارکن خدماتی">کارکن خدماتی</option><option value="معتمد جنسی (تحویلدار)">معتمد جنسی</option></select></div>
+        <div class="filter-item" style="grid-column: span 2;"><label>👤 فیلتر شخص</label><select id="salaryPersonFilter" class="form-control" onchange="applySalaryFilters()"><option value="">📋 همه کارمندان</option></select></div>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin:15px 0; padding:12px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0;">
+        <span style="font-weight:bold; color:#475569; padding:8px 5px;">📥 خروجی:</span>
+        <button class="btn btn-purple btn-sm fw-bold px-3" onclick="printSalaryFiltered()">🖨️ پرنت فیلترشده</button>
+        <button class="btn btn-success btn-sm fw-bold px-3" onclick="exportSalaryFiltered()">📊 اکسل فیلترشده</button>
+        <button class="btn btn-primary btn-sm fw-bold px-3" onclick="printSalaryAll()">🖨️ پرنت همه</button>
+        <button class="btn btn-warning btn-sm fw-bold px-3" onclick="exportSalaryAll()">📊 اکسل همه</button>
+      </div>
+
+      <div style="background:#fffbeb; border:2px solid #f59e0b; border-radius:10px; padding:12px 18px; margin-bottom:15px;">
+        <label style="font-weight:bold; color:#92400e; margin-bottom:6px; display:block;">🔍 جستجو در معاشات (نام، تخلص، ولد، کد بست)</label>
+        <input type="text" id="salarySearchBottom" class="form-control" placeholder="مثال: احمد، محمود، 27-32-02-13056..." oninput="applySalaryFilters()" style="border-color:#f59e0b;">
+      </div>
+
+      <div class="info-banner" id="salaryFilterStatus">ℹ️ در حال نمایش همه معاشات. برای فیلتر، از گزینه‌های بالا استفاده کنید.</div>
+
+      <div class="table-responsive border rounded">
+        <table class="table table-hover align-middle mb-0 text-center" style="font-size:13px;">
+          <thead class="table-light">
+            <tr><th>#</th><th>نام و تخلص</th><th>کد بست</th><th>مکتب</th><th>وظیفه</th><th>سال</th><th>ماه</th><th>استحقاق</th><th>کسرات</th><th>قابل پرداخت</th><th>حاضر</th><th>غیر حاضر</th><th>مریض</th><th>عملیات</th></tr>
+          </thead>
+          <tbody id="salariesTableBody">
+            <tr><td colspan="14" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal مشاهده کامل معاش -->
+<div class="modal fade" id="viewSalaryModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header modal-header-purple">
+        <h5 class="modal-title">💰 معلومات کامل معاش</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="viewSalaryContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+        <button type="button" class="btn btn-purple fw-bold" onclick="printCurrentSalary()">🖨️ پرینت این معاش</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ═══════════════════════════════════════════════════════════
+  // بررسی امنیتی و توابع پایه
+  // ═══════════════════════════════════════════════════════════
+  (function() {
+    const token = localStorage.getItem('hr_token');
+    const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
+    if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; return; }
+    if (user.role !== 'admin') { window.location.href = '/school-settings.html'; return; }
+  })();
+
+  const token = localStorage.getItem('hr_token');
+  const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
+
+  let cachedSalaries = [];
+  let filteredSalaries = [];
+  let salaryAllPersons = [];
+  let currentViewSalary = null;
+  let viewSalaryModal = null;
+
+  function logout() { localStorage.clear(); window.location.href = '/'; }
+  window.logout = logout;
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast' + (isError ? ' error' : ''); t.style.display = 'block';
+    clearTimeout(t._timer); t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+
+  function normalizeDigits(str) {
+    if (!str) return '';
+    const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
+    return str.split('').map(ch => { const pi = p.indexOf(ch); if (pi !== -1) return pi; const ai = a.indexOf(ch); if (ai !== -1) return ai; return ch; }).join('');
+  }
+
+  function detectSchoolType(schoolName) {
+    if (!schoolName) return 'نامشخص';
+    const name = String(schoolName).trim().replace(/\s+/g, ' ');
+    if (name.includes('لیسه') || name.includes('لیسهٔ')) return 'لیسه';
+    if (name.includes('متوسطه') || name.includes('متوسطۀ')) return 'متوسطه';
+    if (name.includes('ابتداییه') || name.includes('ابتدائیه')) return 'ابتداییه';
+    if (name.includes('مدرسه') || name.includes('مکتب') || name.includes('دارالعلوم')) return 'مدرسه';
+    return 'نامشخص';
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // بارگذاری و فیلتر
+  // ═══════════════════════════════════════════════════════════
+  async function loadSalaries() {
+    const tbody = document.getElementById('salariesTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
+    try {
+      const res = await fetch('/api/salaries', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
+      const data = await res.json();
+      cachedSalaries = Array.isArray(data) ? data : [];
+      salaryAllPersons = cachedSalaries.map(s => ({ id: s.record_id || s.id, name: `${s.first_name || ''} ${s.last_name || ''}`.trim(), school: s.schoolname }));
+      
+      populateSalaryYearDropdown();
+      populateSalarySchoolDropdown();
+      populateSalaryPersonFilter();
+      
+      filteredSalaries = [...cachedSalaries];
+      renderSalaries(filteredSalaries);
+      updateSalaryTotals(filteredSalaries);
+      
+      const statusBar = document.getElementById('salaryFilterStatus');
+      if (statusBar) {
+        statusBar.innerHTML = `ℹ️ در حال نمایش <strong>همه ${cachedSalaries.length} معاش</strong>. برای فیلتر، از گزینه‌های بالا استفاده کنید.`;
+        statusBar.style.background = '#dbeafe';
+        statusBar.style.color = '#1e3a8a';
+      }
+    } catch (e) {
+      console.error(e);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="text-center text-danger p-4">خطا در بارگذاری</td></tr>';
+    }
+  }
+  window.loadSalaries = loadSalaries;
+
+  function populateSalaryYearDropdown() {
+    const sel = document.getElementById('salaryYearFilter');
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">📋 همه سال‌ها</option>';
+    const uniqueYears = [...new Set(cachedSalaries.map(s => s.year).filter(Boolean))].sort((a,b) => b - a);
+    uniqueYears.forEach(year => { const o = document.createElement('option'); o.value = year; o.textContent = `📅 ${year}`; if (year === cur) o.selected = true; sel.appendChild(o); });
+  }
+
+  function populateSalarySchoolDropdown() {
+    const sel = document.getElementById('salarySchoolNameFilter');
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">📋 همه مکاتب</option>';
+    const unique = [...new Set(cachedSalaries.map(s => s.schoolname).filter(Boolean))].sort();
+    unique.forEach(name => { const o = document.createElement('option'); o.value = name; o.textContent = `🏫 ${name}`; if (name === cur) o.selected = true; sel.appendChild(o); });
+  }
+
+  function populateSalaryPersonFilter() {
+    const sel = document.getElementById('salaryPersonFilter');
+    if (!sel) return;
+    const currentSchool = document.getElementById('salarySchoolNameFilter').value;
+    sel.innerHTML = '<option value="">📋 همه کارمندان</option>';
+    let persons = salaryAllPersons;
+    if (currentSchool) persons = salaryAllPersons.filter(p => p.school === currentSchool);
+    const unique = [...new Set(persons.map(p => p.name).filter(Boolean))].sort();
+    unique.forEach(name => { const o = document.createElement('option'); o.value = name; o.textContent = `👤 ${name}`; sel.appendChild(o); });
+  }
+
+  function onSalarySchoolChange() {
+    populateSalaryPersonFilter();
+    applySalaryFilters();
+  }
+  window.onSalarySchoolChange = onSalarySchoolChange;
+
+  function applySalaryFilters() {
+    const yearFilter = document.getElementById('salaryYearFilter').value;
+    const typeFilter = document.getElementById('salaryTypeFilter').value;
+    const schoolTypeFilter = document.getElementById('salarySchoolTypeFilter').value;
+    const schoolNameFilter = document.getElementById('salarySchoolNameFilter').value;
+    const jobTitleFilter = document.getElementById('salaryJobTitleFilter').value;
+    const personFilter = document.getElementById('salaryPersonFilter').value;
+    
+    const searchEl = document.getElementById('salarySearchBottom');
+    const searchInput = searchEl ? searchEl.value.trim() : '';
+
+    const hasFilter = yearFilter || typeFilter || schoolTypeFilter || schoolNameFilter || jobTitleFilter || personFilter || searchInput;
+
+    const tbody = document.getElementById('salariesTableBody');
+    if (!tbody) return;
+
+    if (!hasFilter) {
+      filteredSalaries = [...cachedSalaries];
+      renderSalaries(filteredSalaries);
+      updateSalaryTotals(filteredSalaries);
+      
+      const statusBar = document.getElementById('salaryFilterStatus');
+      if (statusBar) {
+        statusBar.innerHTML = `ℹ️ در حال نمایش <strong>همه ${cachedSalaries.length} معاش</strong>. برای فیلتر، از گزینه‌های بالا استفاده کنید.`;
+        statusBar.style.background = '#dbeafe';
+        statusBar.style.color = '#1e3a8a';
+      }
+      return;
+    }
+
+    filteredSalaries = cachedSalaries.filter(s => {
+      const schoolName = s.schoolname || '';
+      if (yearFilter && String(s.year) !== String(yearFilter)) return false;
+      
+      if (typeFilter) {
+        const st = detectSchoolType(schoolName);
+        if (typeFilter === 'مکاتب') { if (st !== 'لیسه' && st !== 'متوسطه' && st !== 'ابتداییه') return false; }
+        else if (typeFilter === 'مدارس') { if (st !== 'مدرسه' && st !== 'نامشخص') return false; }
+      }
+      
+      if (schoolTypeFilter && detectSchoolType(schoolName) !== schoolTypeFilter) return false;
+      if (schoolNameFilter && schoolName !== schoolNameFilter) return false;
+      if (jobTitleFilter && (s.job_title || '') !== jobTitleFilter) return false;
+      if (personFilter) {
+        const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim();
+        if (fullName !== personFilter) return false;
+      }
+      
+      if (searchInput) {
+        const ql = searchInput.toLowerCase();
+        const fn = (s.first_name || '').toLowerCase();
+        const ln = (s.last_name || '').toLowerCase();
+        const fa = (s.father_name || '').toLowerCase();
+        const jc = (s.job_code || '').toLowerCase();
+        const fullName = `${fn} ${ln}`;
+        if (!fn.includes(ql) && !ln.includes(ql) && !fa.includes(ql) && !jc.includes(ql) && !fullName.includes(ql)) return false;
+      }
+      return true;
+    });
+
+    renderSalaries(filteredSalaries);
+    updateSalaryTotals(filteredSalaries);
+    
+    const statusBar = document.getElementById('salaryFilterStatus');
+    if (statusBar) {
+      statusBar.innerHTML = `🔍 نتایج فیلتر: <strong>${filteredSalaries.length} معاش</strong> از ${cachedSalaries.length} معاش کل.`;
+      statusBar.style.background = '#fef3c7';
+      statusBar.style.color = '#92400e';
+    }
+  }
+  window.applySalaryFilters = applySalaryFilters;
+
+  function renderSalaries(list) {
+    const tbody = document.getElementById('salariesTableBody');
+    if (!tbody) return;
+    if (!list || list.length === 0) { tbody.innerHTML = '<tr><td colspan="14" class="text-center p-4 text-muted">هیچ معاشی با این فیلترها یافت نشد</td></tr>'; return; }
+    let html = '';
+    list.forEach((s, idx) => {
+      html += `<tr>
+        <td>${idx + 1}</td>
+        <td><b>${escapeHtml(s.first_name || '')} ${escapeHtml(s.last_name || '')}</b><br><small class="text-muted">${escapeHtml(s.father_name || '')}</small></td>
+        <td><code>${escapeHtml(s.job_code || '—')}</code></td>
+        <td>${escapeHtml(s.schoolname || '-')}</td>
+        <td><span class="badge bg-light text-dark">${escapeHtml(s.job_title || '-')}</span></td>
+        <td>${escapeHtml(s.year || '-')}</td>
+        <td>${escapeHtml(s.month || '-')}</td>
+        <td><strong style="color:#065f46;">${Number(s.total_entitlement || 0).toLocaleString()}</strong></td>
+        <td><strong style="color:#b91c1c;">${Number(s.total_deductions || 0).toLocaleString()}</strong></td>
+        <td><strong style="color:#7c3aed;">${Number(s.net_pay || 0).toLocaleString()}</strong></td>
+        <td>${s.att_present || 0}</td>
+        <td>${s.att_absent || 0}</td>
+        <td>${s.att_sick || 0}</td>
+        <td>
+          <button class="btn-action btn-view" onclick="viewSalaryAdmin(${s.id})">👁️</button>
+          <button class="btn-action btn-delete-row" onclick="deleteSalaryAdmin(${s.id})">🗑️</button>
+          <button class="btn-action btn-print" onclick="printSingleSalary(${s.id})">🖨️</button>
+        </td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateSalaryTotals(list) {
+    let totalEnt = 0, totalDed = 0, totalNet = 0;
+    const yearFin = {};
+    const roleStats = {};
+    const uniqueEmployees = new Set();
+
+    list.forEach(s => {
+      totalEnt += Number(s.total_entitlement) || 0;
+      totalDed += Number(s.total_deductions) || 0;
+      totalNet += Number(s.net_pay) || 0;
+
+      const year = s.year || 'نامشخص';
+      if (!yearFin[year]) yearFin[year] = { ent: 0, ded: 0, net: 0, count: 0 };
+      yearFin[year].ent += Number(s.total_entitlement) || 0;
+      yearFin[year].ded += Number(s.total_deductions) || 0;
+      yearFin[year].net += Number(s.net_pay) || 0;
+      yearFin[year].count++;
+
+      const role = s.job_title || 'نامشخص';
+      const empKey = s.record_id || s.id || `${s.first_name}_${s.last_name}`;
+      if (!roleStats[role]) roleStats[role] = new Set();
+      roleStats[role].add(empKey);
+      uniqueEmployees.add(empKey);
+    });
+
+    document.getElementById('salCount').textContent = list.length;
+    document.getElementById('salTotalEnt').textContent = totalEnt.toLocaleString();
+    document.getElementById('salTotalDed').textContent = totalDed.toLocaleString();
+    document.getElementById('salTotalNet').textContent = totalNet.toLocaleString();
+
+    const yearFinEl = document.getElementById('salYearFinancialStats');
+    const years = Object.keys(yearFin).sort((a, b) => {
+      if (a === 'نامشخص') return 1;
+      if (b === 'نامشخص') return -1;
+      return Number(b) - Number(a);
+    });
+
+    if (years.length === 0) {
+      yearFinEl.innerHTML = '<span style="color:#94a3b8; font-size:13px;">هیچ سالی یافت نشد</span>';
+    } else {
+      let html = '';
+      years.forEach(year => {
+        const d = yearFin[year];
+        html += `<div style="background:#fff; border:2px solid #10b981; border-radius:8px; padding:10px 14px; min-width:220px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+          <div style="font-size:14px; color:#065f46; font-weight:bold; margin-bottom:8px; text-align:center; border-bottom:1px solid #10b981; padding-bottom:4px;">📅 سال ${year}</div>
+          <div style="display:grid; grid-template-columns:auto auto; gap:4px 8px; font-size:12px;">
+            <span style="color:#64748b;">📋 تعداد معاشات:</span><span style="font-weight:bold; color:#1e293b;">${d.count}</span>
+            <span style="color:#64748b;">💵 استحقاق:</span><span style="font-weight:bold; color:#065f46;">${d.ent.toLocaleString()}</span>
+            <span style="color:#64748b;">✂️ کسرات:</span><span style="font-weight:bold; color:#b91c1c;">${d.ded.toLocaleString()}</span>
+            <span style="color:#64748b;">💰 قابل پرداخت:</span><span style="font-weight:bold; color:#7c3aed;">${d.net.toLocaleString()}</span>
+          </div>
+        </div>`;
+      });
+      yearFinEl.innerHTML = html;
+    }
+
+    const roleEl = document.getElementById('salEmployeeRoleStats');
+    const roles = Object.keys(roleStats).sort((a, b) => roleStats[b].size - roleStats[a].size);
+
+    if (roles.length === 0) {
+      roleEl.innerHTML = '<span style="color:#94a3b8; font-size:13px;">هیچ کارمندی یافت نشد</span>';
+    } else {
+      let html = `<div style="background:#1e40af; color:#fff; border-radius:8px; padding:10px 16px; text-align:center; min-width:100px;">
+        <div style="font-size:11px; opacity:0.8;">👥 کل</div>
+        <div style="font-size:20px; font-weight:bold;">${uniqueEmployees.size}</div>
+      </div>`;
+      roles.forEach(role => {
+        html += `<div style="background:#fff; border:1px solid #3b82f6; border-radius:8px; padding:10px 14px; text-align:center; min-width:110px;">
+          <div style="font-size:11px; color:#1e40af; font-weight:bold; margin-bottom:4px;">${escapeHtml(role)}</div>
+          <div style="font-size:18px; color:#3b82f6; font-weight:bold;">${roleStats[role].size}</div>
+          <div style="font-size:10px; color:#64748b;">کارمند</div>
+        </div>`;
+      });
+      roleEl.innerHTML = html;
+    }
+  }
+  window.updateSalaryTotals = updateSalaryTotals;
+
+  // ═══════════════════════════════════════════════════════════
+  // مشاهده، پرینت، حذف
+  // ═══════════════════════════════════════════════════════════
+  async function viewSalaryAdmin(id) {
+    if (!viewSalaryModal) viewSalaryModal = new bootstrap.Modal(document.getElementById('viewSalaryModal'));
+    const content = document.getElementById('viewSalaryContent');
+    content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
+    try {
+      const res = await fetch('/api/salaries/' + id, { headers: { 'Authorization': 'Bearer ' + token } });
+      const s = await res.json();
+      if (!s || s.error) { content.innerHTML = '<div class="text-center p-4 text-danger">یافت نشد</div>'; return; }
+      currentViewSalary = s;
+      const att = s.attendance || {};
+      const sections = [
+        { title: '👤 معلومات کارمند', items: [['اسم', s.first_name], ['تخلص', s.last_name], ['ولد', s.father_name], ['وظیفه', s.job_title], ['کُد بست', s.job_code], ['مکتب', s.schoolname], ['سال', s.year], ['ماه', s.month], ['نمبر بانکی', s.bank_number], ['نمبر مکتوب', s.appointment_letter]] },
+        { title: '💰 استحقاق', items: [['۱. معاش', s.base_salary], ['۲. سایر معاش', s.other_base], ['۳. مسلکی', s.professional], ['۴. سایر مسلکی', s.other_professional], ['۵. ماکول', s.food], ['۶. سایر ماکول', s.other_food], ['۷. حق الزحمه', s.allowance], ['۸. سایر حق الزحمه', s.other_allowance], ['۹. سایر افزودی', s.other_increase]] },
+        { title: '✂️ کسرات', items: [['۱۱. کسرات غیر حاضری', s.absence], ['۱۲. مالیه', s.tax], ['۱۳. سایر مالیه', s.other_tax], ['۱۴. مالیه ده فیصد', s.tax_10], ['۱۵. کسرات', s.deductions], ['۱۶. سایر کسرات', s.other_deductions]] },
+        { title: '📝 راپور حاضری', items: [['حاضر', att.present], ['غیر حاضر', att.absent], ['تفریحی', att.vacation], ['مریضی', att.sick], ['ضروری', att.essential], ['ولادی', att.maternity], ['خدمتی مرکز', att.service_center], ['خدمتی ولایتی', att.service_province], ['حج', att.hajj], ['ایام تعطیل', att.holidays], ['سایر', att.other], ['مجموع', att.total_days]] }
+      ];
+      let html = `<div style="text-align:center; margin-bottom:20px; padding:15px; background:#f0fdf4; border-radius:8px; border:2px solid #10b981;"><h4 style="margin:0; color:#065f46;">💰 ${escapeHtml(s.first_name || '')} ${escapeHtml(s.last_name || '')} — ${escapeHtml(s.month || '')} ${escapeHtml(s.year || '')}</h4><div style="margin-top:8px; font-size:13px; color:#475569;">مکتب: <strong>${escapeHtml(s.schoolname || '-')}</strong> | وظیفه: <strong>${escapeHtml(s.job_title || '-')}</strong></div></div>`;
+      sections.forEach(sec => {
+        html += `<h6 style="background:#7c3aed; color:#fff; padding:8px 14px; border-radius:6px; margin-top:15px;">${sec.title}</h6><div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:10px; padding:10px 0;">`;
+        sec.items.forEach(([label, value]) => { html += `<div style="background:#f8fafc; padding:8px 12px; border-radius:6px; border-right:3px solid #7c3aed;"><div style="font-size:11px; color:#64748b; font-weight:600;">${label}</div><div style="font-size:13px; color:#1e293b; font-weight:bold;">${escapeHtml(value ?? '0')}</div></div>`; });
+        html += `</div>`;
+      });
+      html += `<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:20px; padding:15px; background:linear-gradient(135deg, #f0fdf4, #dcfce7); border:2px solid #10b981; border-radius:10px;"><div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold;">مجموعه استحقاق</div><div style="font-size:20px; color:#065f46; font-weight:bold;">${Number(s.total_entitlement || 0).toLocaleString()}</div></div><div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold;">مجموعه کسرات</div><div style="font-size:20px; color:#b91c1c; font-weight:bold;">${Number(s.total_deductions || 0).toLocaleString()}</div></div><div style="text-align:center;"><div style="font-size:12px; color:#475569; font-weight:bold;">مبلغ قابل پرداخت</div><div style="font-size:20px; color:#7c3aed; font-weight:bold;">${Number(s.net_pay || 0).toLocaleString()}</div></div></div>`;
+      content.innerHTML = html;
+      viewSalaryModal.show();
+    } catch (e) { content.innerHTML = '<div class="text-center p-4 text-danger">خطا</div>'; }
+  }
+  window.viewSalaryAdmin = viewSalaryAdmin;
+
+  function printCurrentSalary() { if (currentViewSalary) printSalaryData(currentViewSalary); }
+  window.printCurrentSalary = printCurrentSalary;
+
+  async function printSingleSalary(id) {
+    try {
+      const res = await fetch('/api/salaries/' + id, { headers: { 'Authorization': 'Bearer ' + token } });
+      const s = await res.json();
+      if (!s || s.error) { showToast('یافت نشد', true); return; }
+      printSalaryData(s);
+    } catch (e) { showToast('خطا', true); }
+  }
+  window.printSingleSalary = printSingleSalary;
+
+  function printSalaryData(s) {
+    const att = s.attendance || {};
+    const html = `
+      <div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;"><h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2><h4 style="margin:5px 0 0 0; font-size:13px;">فورم معاش — ${escapeHtml(s.first_name || '')} ${escapeHtml(s.last_name || '')}</h4><div style="font-size:11px; margin-top:5px;">سال: ${escapeHtml(s.year)} | ماه: ${escapeHtml(s.month)}</div></div>
+      <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+        <tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">مکتب</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(s.schoolname || '')}</td><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">وظیفه</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(s.job_title || '')}</td></tr>
+        <tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">ولد</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(s.father_name || '')}</td><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">کُد بست</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(s.job_code || '')}</td></tr>
+        <tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">نمبر بانکی</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(s.bank_number || '')}</td><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold;">نمبر مکتوب</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(s.appointment_letter || '')}</td></tr>
+      </table>
+      <h4 style="background:#10b981; color:#fff; padding:6px 12px; margin:10px 0 5px 0; border-radius:5px;">💰 استحقاق</h4>
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <tr><td style="border:1px solid #333; padding:5px;">۱. معاش</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.base_salary || 0}</td><td style="border:1px solid #333; padding:5px;">۲. سایر معاش</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.other_base || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">۳. مسلکی</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.professional || 0}</td><td style="border:1px solid #333; padding:5px;">۴. سایر مسلکی</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.other_professional || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">۵. ماکول</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.food || 0}</td><td style="border:1px solid #333; padding:5px;">۶. سایر ماکول</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.other_food || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">۷. حق الزحمه</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.allowance || 0}</td><td style="border:1px solid #333; padding:5px;">۸. سایر حق الزحمه</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.other_allowance || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">۹. سایر افزودی</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.other_increase || 0}</td><td style="border:1px solid #333; padding:5px; background:#dcfce7; font-weight:bold;">مجموعه استحقاق</td><td style="border:1px solid #333; padding:5px; text-align:center; background:#dcfce7; font-weight:bold;">${s.total_entitlement || 0}</td></tr>
+      </table>
+      <h4 style="background:#ef4444; color:#fff; padding:6px 12px; margin:15px 0 5px 0; border-radius:5px;">✂️ کسرات</h4>
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <tr><td style="border:1px solid #333; padding:5px;">۱۱. کسرات غیر حاضری</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.absence || 0}</td><td style="border:1px solid #333; padding:5px;">۱۲. مالیه</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.tax || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">۱۳. سایر مالیه</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.other_tax || 0}</td><td style="border:1px solid #333; padding:5px;">۱۴. مالیه ده فیصد</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.tax_10 || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">۱۵. کسرات</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.deductions || 0}</td><td style="border:1px solid #333; padding:5px;">۱۶. سایر کسرات</td><td style="border:1px solid #333; padding:5px; text-align:center;">${s.other_deductions || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px; background:#fee2e2; font-weight:bold;" colspan="3">مجموعه کسرات</td><td style="border:1px solid #333; padding:5px; text-align:center; background:#fee2e2; font-weight:bold;">${s.total_deductions || 0}</td></tr>
+      </table>
+      <h4 style="background:#3b82f6; color:#fff; padding:6px 12px; margin:15px 0 5px 0; border-radius:5px;">📝 راپور حاضری</h4>
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <tr><td style="border:1px solid #333; padding:5px;">حاضر</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.present || 0}</td><td style="border:1px solid #333; padding:5px;">غیر حاضر</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.absent || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">تفریحی</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.vacation || 0}</td><td style="border:1px solid #333; padding:5px;">مریضی</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.sick || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">ضروری</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.essential || 0}</td><td style="border:1px solid #333; padding:5px;">ولادی</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.maternity || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">خدمتی مرکز</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.service_center || 0}</td><td style="border:1px solid #333; padding:5px;">خدمتی ولایتی</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.service_province || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">حج</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.hajj || 0}</td><td style="border:1px solid #333; padding:5px;">ایام تعطیل</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.holidays || 0}</td></tr>
+        <tr><td style="border:1px solid #333; padding:5px;">سایر</td><td style="border:1px solid #333; padding:5px; text-align:center;">${att.other || 0}</td><td style="border:1px solid #333; padding:5px; font-weight:bold;">مجموع روزها</td><td style="border:1px solid #333; padding:5px; text-align:center; font-weight:bold;">${att.total_days || 0}</td></tr>
+      </table>
+      <div style="text-align:center; margin-top:20px; padding:15px; background:#e0e7ff; border-radius:8px; border:2px solid #7c3aed;"><div style="font-size:14px; color:#3730a3; font-weight:bold;">💰 مبلغ قابل پرداخت</div><div style="font-size:28px; color:#7c3aed; font-weight:bold;">${Number(s.net_pay || 0).toLocaleString()}</div></div>
+    `;
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرینت معاش</title><style>body{font-family:Tahoma;padding:15px;direction:rtl;}@media print{.no-print{display:none;}@page{size:A4;margin:10mm;}}</style></head><body>${html}<div class="no-print" style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="padding:10px 30px;background:#7c3aed;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:16px;font-weight:bold;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
+    win.document.close();
+  }
+  window.printSalaryData = printSalaryData;
+
+  async function deleteSalaryAdmin(id) {
+    if (!confirm('⚠️ این معاش حذف شود؟')) return;
+    try { const res = await fetch('/api/salaries/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadSalaries(); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); }
+  }
+  window.deleteSalaryAdmin = deleteSalaryAdmin;
+
+  // ═══════════════════════════════════════════════════════════
+  // پرینت و خروجی گروهی
+  // ═══════════════════════════════════════════════════════════
+  function printSalaryFiltered() { 
+    const list = filteredSalaries.length > 0 ? filteredSalaries : cachedSalaries; 
+    if (!list || list.length === 0) { showToast('معاشی نیست', true); return; } 
+    printSalaryList(list, 'معاشات (فیلترشده)'); 
+  }
+  window.printSalaryFiltered = printSalaryFiltered;
+
+  function printSalaryAll() { 
+    if (!cachedSalaries || cachedSalaries.length === 0) { showToast('معاشی نیست', true); return; } 
+    printSalaryList(cachedSalaries, 'همه معاشات'); 
+  }
+  window.printSalaryAll = printSalaryAll;
+
+  function printSalaryList(list, title) {
+    const months=['حمل','ثور','جوزا','سرطان','اسد','سنبله','میزان','عقرب','قوس','جدی','دلو','حوت'];
+    const esc=v=>escapeHtml(v==null?'':String(v));
+    const groups={}; (list||[]).forEach(s=>{const k=[s.job_code||'',s.first_name||'',s.last_name||'',s.father_name||'',s.schoolname||''].join('|');(groups[k] ||= []).push(s);});
+    const pages=Object.values(groups).map((items,ix)=>{
+      const first=items[0], byMonth={}; items.forEach(s=>byMonth[String(s.month||'').trim()]=s);
+      let ent=0,ded=0,net=0,absent=0;
+      const trs=months.map(m=>{
+        const s=byMonth[m]||byMonth[({'حمل':'1','ثور':'2','جوزا':'3','سرطان':'4','اسد':'5','سنبله':'6','میزان':'7','عقرب':'8','قوس':'9','جدی':'10','دلو':'11','حوت':'12'})[m]]||{};
+        const e=Number(s.total_entitlement)||0,d=Number(s.total_deductions)||0,n=Number(s.net_pay)||0;
+        ent+=e;ded+=d;net+=n;absent+=Number(s.att_absent)||0;
+        return `<tr><td>${m}</td><td>${esc(s.base_salary??s.salary_grade??'')}</td><td>${esc(s.professional_allowance??'')}</td><td>${esc(s.other_allowance??'')}</td><td>${e||''}</td><td>${esc(s.att_absent||'')}</td><td>${esc(s.att_sick||'')}</td><td>${esc(s.att_present||'')}</td><td>${esc(s.tax||'')}</td><td>${d||''}</td><td>${n||''}</td><td></td></tr>`;
+      }).join('');
+      return `<section class="sheet ${ix?'pagebreak':''}">
+      <table class="top"><tr><th colspan="6">فورم - م 40 ر | دفتر معاش و کسرات</th><th colspan="6">1. اداره: ${esc(first.schoolname||'')}</th></tr>
+      <tr><th colspan="4">5. آدرس: ${esc(first.address||first.district||'')}</th><th colspan="4">4. نمبر: ${esc(first.bank_number||'')}</th><th colspan="4">2. اسم: ${esc((first.first_name||'')+' '+(first.last_name||''))}</th></tr>
+      <tr><th colspan="12">3. ولد: ${esc(first.father_name||'')}</th></tr></table>
+      <table class="top"><tr><th colspan="6">7. کسرات مخصوص</th><th colspan="6">6. اجراآت متعلق مامور</th></tr>
+      <tr><td colspan="6" style="height:12mm"></td><td colspan="6" style="height:12mm">رتبه ماموریت: ${esc(first.job_title||'')}　　سال: ${esc(first.year||'')}</td></tr>
+      <tr><th colspan="6">8. کسرات عادی</th><th colspan="6">9. یادداشت</th></tr><tr><td colspan="6" style="height:10mm"></td><td colspan="6"></td></tr></table>
+      <table class="pay"><thead><tr><th rowspan="2">ماه</th><th colspan="4">10. استحقاق</th><th colspan="5">11. کسرات عادی</th><th rowspan="2">12. مبلغ قابل تادیه</th><th rowspan="2">ملاحظات</th></tr>
+      <tr><th>رتبوی</th><th>مسلکی</th><th>ماکول</th><th>مجموعه استحقاق</th><th>غیرحاضری</th><th>مریض</th><th>سایر</th><th>مالیه</th><th>مجموعه کسرات</th></tr></thead><tbody>${trs}
+      <tr class="total"><th>مجموعه</th><td></td><td></td><td></td><td>${ent.toLocaleString()}</td><td>${absent}</td><td></td><td></td><td></td><td>${ded.toLocaleString()}</td><td>${net.toLocaleString()}</td><td></td></tr></tbody></table></section>`;
+    }).join('');
+    const win=window.open('','_blank');if(!win){showToast('اجازه بازشدن پنجره چاپ را بدهید',true);return;}
+    win.document.write(`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+    @page{size:A4 landscape;margin:12mm}*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#000;font-size:10px}.sheet{width:100%;page-break-after:always}.sheet:last-child{page-break-after:auto}table{width:100%;border-collapse:collapse;table-layout:fixed;text-align:center;margin-bottom:0}th,td{border:1px solid #000;padding:5px 3px;height:7mm}th{font-weight:bold}.top{font-size:10px}.pay{margin-top:6mm;font-size:9px}.pay thead th{height:12mm}.total{font-weight:bold}.pagebreak{page-break-before:always}@media screen{body{padding:10px}.no-print{text-align:center;margin:15px}}@media print{.no-print{display:none}}</style></head><body>${pages}<div class="no-print"><button onclick="window.print()">🖨️ پرینت</button></div><script>setTimeout(()=>window.print(),600)<\/script></body></html>`);
+    win.document.close();
+  }
+
+  function exportSalaryFiltered() { 
+    const list = filteredSalaries.length > 0 ? filteredSalaries : cachedSalaries; 
+    if (!list || list.length === 0) { showToast('معاشی نیست', true); return; } 
+    exportSalaryList(list, 'salaries_filtered'); 
+  }
+  window.exportSalaryFiltered = exportSalaryFiltered;
+
+  function exportSalaryAll() { 
+    if (!cachedSalaries || cachedSalaries.length === 0) { showToast('معاشی نیست', true); return; } 
+    exportSalaryList(cachedSalaries, 'salaries_all'); 
+  }
+  window.exportSalaryAll = exportSalaryAll;
+
+  function exportSalaryList(list, filename) {
+    const months=['حمل','ثور','جوزا','سرطان','اسد','سنبله','میزان','عقرب','قوس','جدی','دلو','حوت'];
+    const esc=v=>escapeHtml(v==null?'':String(v));
+    const groups={};(list||[]).forEach(s=>{const k=[s.job_code||'',s.first_name||'',s.last_name||'',s.father_name||'',s.schoolname||''].join('|');(groups[k] ||= []).push(s);});
+    const sheets=Object.values(groups).map(items=>{
+      const f=items[0],m={};items.forEach(s=>m[String(s.month||'').trim()]=s);
+      const rows=months.map(month=>{const s=m[month]||m[({'حمل':'1','ثور':'2','جوزا':'3','سرطان':'4','اسد':'5','سنبله':'6','میزان':'7','عقرب':'8','قوس':'9','جدی':'10','دلو':'11','حوت':'12'})[month]]||{};
+        return `<tr><td>${month}</td><td>${esc(s.base_salary??'')}</td><td>${esc(s.professional_allowance??'')}</td><td>${esc(s.other_allowance??'')}</td><td>${esc(s.total_entitlement||0)}</td><td>${esc(s.att_absent||0)}</td><td>${esc(s.att_sick||0)}</td><td>${esc(s.att_present||0)}</td><td>${esc(s.tax||0)}</td><td>${esc(s.total_deductions||0)}</td><td>${esc(s.net_pay||0)}</td><td></td></tr>`;}).join('');
+      return `<table border="1" style="border-collapse:collapse;width:100%;text-align:center" dir="rtl"><tr><th colspan="6">فورم - م 40 ر | دفتر معاش و کسرات</th><th colspan="6">1. اداره: ${esc(f.schoolname||'')}</th></tr><tr><th colspan="4">5. آدرس: ${esc(f.address||f.district||'')}</th><th colspan="4">4. نمبر: ${esc(f.bank_number||'')}</th><th colspan="4">2. اسم: ${esc((f.first_name||'')+' '+(f.last_name||''))}</th></tr><tr><th colspan="12">3. ولد: ${esc(f.father_name||'')}</th></tr><tr><th colspan="12">6. اجراآت متعلق مامور　　رتبه ماموریت: ${esc(f.job_title||'')}　　سال: ${esc(f.year||'')}</th></tr><tr><th rowspan="2">ماه</th><th colspan="4">10. استحقاق</th><th colspan="5">11. کسرات عادی</th><th rowspan="2">12. مبلغ قابل تادیه</th><th rowspan="2">ملاحظات</th></tr><tr><th>رتبوی</th><th>مسلکی</th><th>ماکول</th><th>مجموعه استحقاق</th><th>غیرحاضری</th><th>مریض</th><th>سایر</th><th>مالیه</th><th>مجموعه کسرات</th></tr>${rows}</table><br><br>`;
+    }).join('');
+    const html=`<html><head><meta charset="utf-8"></head><body dir="rtl">${sheets}</body></html>`;
+    const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=filename+'_دفتر_معاش_و_کسرات.xls';a.click();URL.revokeObjectURL(url);showToast('📊 فایل اکسل دفتر معاش دانلود شد');
+  }
+
+  // شروع
+  loadSalaries();
+</script>
+</body>
+</html>

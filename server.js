@@ -13,12 +13,15 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V21.4 starting...');
+console.log('🔐 Server V21.5 starting (Modular Structure)...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+// ═══════════════════════════════════════════════════════════
+// اتصال به دیتابیس PostgreSQL
+// ═══════════════════════════════════════════════════════════
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false, checkServerIdentity: () => undefined },
@@ -47,6 +50,9 @@ const JOBCODE_REGEX = /^27-\d{1,3}-\d{1,3}-\d{3,6}$/;
 const ETAZKIRA_REGEX = /^\d+-\d+-\d+$/;
 const PAPER_TAZKIRA_NUMERIC_REGEX = /^\d{1,20}$/;
 
+// ═══════════════════════════════════════════════════════════
+// ساخت جداول دیتابیس
+// ═══════════════════════════════════════════════════════════
 async function initDB() {
   try {
     const client = await pool.connect();
@@ -203,6 +209,7 @@ async function initDB() {
         ALTER TABLE attendance ADD COLUMN IF NOT EXISTS holidays REAL DEFAULT 0;
       `);
 
+      // ایندکس‌های یکتایی برای جلوگیری از تکرار کد بست و تذکره
       await client.query(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_records_jobcode
           ON records ((data::json->>'jobCode'))
@@ -234,10 +241,14 @@ async function initDB() {
 }
 initDB();
 
+// ═══════════════════════════════════════════════════════════
+// میدل‌ورها (Middleware)
+// ═══════════════════════════════════════════════════════════
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// جلوگیری از کش شدن فایل‌های HTML
 app.use((req, res, next) => {
   if (req.url.endsWith('.html') || req.url === '/' || req.url.startsWith('/?')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -247,8 +258,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// سرو کردن فایل‌های استاتیک از پوشه public
 app.use(express.static(path.join(__dirname, 'public')));
 
+// تنظیمات CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -258,6 +271,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// محدودیت تلاش برای ورود
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -267,6 +281,9 @@ const loginLimiter = rateLimit({
   message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است.' }
 });
 
+// ═══════════════════════════════════════════════════════════
+// میدل‌ور احراز هویت (Auth Middleware)
+// ═══════════════════════════════════════════════════════════
 function authRequired(req, res, next) {
   let token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
   if (!token && req.query.token) token = req.query.token;
@@ -286,6 +303,7 @@ function authRequired(req, res, next) {
   }
 }
 
+// توابع کمکی لاگین
 async function logLoginAttempt(ip, username, success) {
   try {
     await pool.query(
@@ -297,6 +315,9 @@ async function logLoginAttempt(ip, username, success) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+// توابع اعتبارسنجی سرور
+// ═══════════════════════════════════════════════════════════
 function normalizeDigits(str) {
   if (!str) return '';
   const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -360,6 +381,9 @@ function isNoCodeTitle(jobTitle) { return NO_CODE_TITLES.some(t => jobTitle === 
 function isServiceOrSupport(jobTitle) { return SERVICE_TITLES.includes(jobTitle); }
 function isEducationExemptJob(jobTitle) { return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim()); }
 
+// ═══════════════════════════════════════════════════════════
+// توابع بررسی یکتایی (دیتابیس)
+// ═══════════════════════════════════════════════════════════
 async function checkJobCodeExact(jobCode, excludeRecordId = null) {
   if (!jobCode) return { exists: false };
   try {
@@ -414,28 +438,41 @@ function buildDuplicateResponse(kind, dup, currentUserId) {
   return { error: `${label} تکراری است`, code: kind === 'jobcode' ? 'DUPLICATE_JOBCODE' : kind === 'etazkira' ? 'DUPLICATE_ETAZKIRA' : 'DUPLICATE_TAZKIRA', isSameSchool, schoolname: isSameSchool ? null : dup.schoolname, district: isSameSchool ? null : dup.district, employeeName: isSameSchool ? dup.employeeName : null, recordId: dup.recordId };
 }
 
+// ═══════════════════════════════════════════════════════════
+// API: ورود (Login)
+// ═══════════════════════════════════════════════════════════
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const clientIp = req.ip || 'unknown';
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
+
+    // ورود ادمین
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
       const payload = { id: 0, username: 'admin', role: 'admin' };
       const token = jwt.sign(payload, JWT_SECRET_CONSTANT, { expiresIn: '7d', algorithm: JWT_ALGORITHM });
-      return res.json({ token, user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' }, redirect: '/admin.html' });
+      // ⭐ تغییر مسیر ادمین به admin-main.html
+      return res.json({ token, user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' }, redirect: '/admin-main.html' });
     }
+
+    // ورود مکتب
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length === 0) { await logLoginAttempt(clientIp, username, false); return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' }); }
     const user = result.rows[0];
     if (!bcrypt.compareSync(password, user.password)) { await logLoginAttempt(clientIp, username, false); return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' }); }
+    
     await logLoginAttempt(clientIp, username, true);
     const payload = { id: user.id, username: user.username, role: user.role };
     const token = jwt.sign(payload, JWT_SECRET_CONSTANT, { expiresIn: '7d', algorithm: JWT_ALGORITHM });
-    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname || '', district: user.district || '' }, redirect: '/school.html' });
+    // ⭐ تغییر مسیر مکتب به school-settings.html
+    res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname || '', district: user.district || '' }, redirect: '/school-settings.html' });
   } catch (e) { res.status(500).json({ error: 'خطای سرور' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// API: رکوردها (Records)
+// ═══════════════════════════════════════════════════════════
 app.get('/api/records', authRequired, async (req, res) => {
   try {
     const search = (req.query.search || '').trim();
@@ -624,28 +661,6 @@ app.post('/api/records', authRequired, async (req, res) => {
     await pool.query(`INSERT INTO records (userid, schoolname, district, data, status) VALUES ($1, $2, $3, $4, 'pending')`, [req.user.id, schoolName, district, JSON.stringify(dataToSave)]);
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: 'خطا در ثبت رکورد' }); }
-});
-
-app.patch('/api/records/:id/edit-permission', authRequired, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    const id = req.params.id;
-    const allowed = req.body?.editAllowed === true || req.body?.editAllowed === 'true';
-
-    const check = await pool.query('SELECT * FROM records WHERE id = $1', [id]);
-    if (check.rows.length === 0) return res.status(404).json({ error: 'رکورد یافت نشد' });
-
-    let info = {};
-    try { info = JSON.parse(check.rows[0].data || '{}'); } catch (e) {}
-
-    info.editAllowed = allowed;
-
-    await pool.query('UPDATE records SET data = $1 WHERE id = $2', [JSON.stringify(info), id]);
-    res.json({ ok: true, editAllowed: allowed });
-  } catch (err) {
-    console.error('edit-permission PATCH error:', err.message);
-    res.status(500).json({ error: 'خطا در تغییر اجازه ویرایش' });
-  }
 });
 
 app.put('/api/records/:id', authRequired, async (req, res) => {
@@ -863,9 +878,8 @@ app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ مسیرهای معاشات (کامل و اصلاح شده)
+// API: معاشات (Salaries)
 // ═══════════════════════════════════════════════════════════
-
 app.get('/api/salaries', authRequired, async (req, res) => {
   try {
     const { record_id, year, search } = req.query;
@@ -1029,7 +1043,6 @@ app.post('/api/salaries/:id/approve', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ مسیر جدید: حذف معاش توسط ادمین
 app.delete('/api/salaries/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
@@ -1045,9 +1058,8 @@ app.delete('/api/salaries/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ مسیرهای حاضری
+// API: حاضری (Attendance)
 // ═══════════════════════════════════════════════════════════
-
 app.get('/api/attendance/:salary_id', authRequired, async (req, res) => {
   try {
     const salary_id = parseInt(req.params.salary_id);
@@ -1099,6 +1111,9 @@ app.post('/api/attendance', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// API: تایید و حذف رکورد
+// ═══════════════════════════════════════════════════════════
 app.post('/api/records/:id/approve', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
@@ -1119,6 +1134,9 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// API: مدیریت کاربران (مکاتب)
+// ═══════════════════════════════════════════════════════════
 app.get('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
@@ -1141,7 +1159,6 @@ app.post('/api/users', authRequired, async (req, res) => {
   }
 });
 
-// ⭐ مسیر جدید: ویرایش مکتب توسط ادمین
 app.put('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
@@ -1188,6 +1205,9 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// مسیر پیش‌فرض (404 و هدایت به لاگین)
+// ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.setHeader('Pragma', 'no-cache');
@@ -1195,8 +1215,12 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// ═══════════════════════════════════════════════════════════
+// شروع سرور
+// ═══════════════════════════════════════════════════════════
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V21.4 live on port ' + PORT);
+  console.log('🚀 Server V21.5 live on port ' + PORT);
+  console.log('🌐 Ready to serve modular files...');
   console.log('═══════════════════════════════════════');
 });

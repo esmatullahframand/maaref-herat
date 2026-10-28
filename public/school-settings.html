@@ -1,1 +1,236 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تنظیمات مکتب - پنل مکتب</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; direction: rtl; color: #222; }
+  .topbar { background: #10b981; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 100; }
+  .topbar h3 { margin: 0; font-size: 18px; }
+  .topbar small { color: #e6fffa; }
+  .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; }
+  .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
+  .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); margin-bottom: 20px; }
+  .card h4 { margin-top: 0; color: #10b981; font-size: 17px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+  .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap; background: #fff; padding: 0 15px; }
+  .tab-btn { padding: 12px 24px; border: none; background: transparent; color: #475569; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; font-family: inherit; font-size: 14px; text-decoration: none; display: inline-block; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab-btn:hover { background: #f1f5f9; }
+  .tab-btn.active { color: #10b981; border-bottom-color: #10b981; background: #f0fdf4; }
+  .form-section { background: #fdfdfd; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px; border-right: 5px solid #10b981; }
+  .form-section h5 { margin-top: 0; color: #10b981; font-size: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
+  .form-group { display: flex; flex-direction: column; }
+  label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #4a5568; }
+  input[type="text"], select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; background-color: #fff; width: 100%; }
+  input:focus, select:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+  input:disabled, select:disabled { background: #f1f5f9; cursor: not-allowed; opacity: 0.7; }
+  .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background-color: #10b981; font-family: inherit; font-size: 14px; }
+  .btn:hover { background-color: #059669; }
+  .btn:disabled { background-color: #94a3b8; cursor: not-allowed; opacity: 0.6; }
+  .btn-submit { width: 100%; padding: 14px; font-size: 16px; }
+  .info-banner { background: #fef3c7; border-right: 5px solid #f59e0b; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #78350f; }
+  .agreement-box { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 10px; padding: 18px 20px; margin: 20px 0; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; transition: all 0.2s; user-select: none; }
+  .agreement-box:hover { background: #fde68a; border-color: #d97706; }
+  .agreement-box.checked { background: #dcfce7; border-color: #10b981; }
+  .agreement-box input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #10b981; margin-top: 3px; flex-shrink: 0; pointer-events: none; }
+  .agreement-text { font-size: 14px; color: #78350f; font-weight: bold; line-height: 1.6; text-align: right; }
+  .agreement-box.checked .agreement-text { color: #065f46; }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 8px; font-weight: bold; z-index: 9999; display: none; max-width: 90%; text-align: center; }
+  .toast.error { background: #ef4444; }
+</style>
+</head>
+<body>
 
+<div class="topbar no-print">
+  <div>
+    <h3>پنل اختصاصی مکتب — تنظیمات</h3>
+    <small id="schoolInfo"></small>
+  </div>
+  <button class="btn-logout" onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="container">
+
+  <!-- منوی ناوبری (لینک‌های واقعی به فایل‌های دیگر) -->
+  <div class="tabs no-print">
+    <a href="school-settings.html" class="tab-btn active">🏫 مدیریت مکتب</a>
+    <a href="school-register.html" class="tab-btn">➕ ثبت کارمند جدید</a>
+    <a href="school-list.html" class="tab-btn">📋 لیست کارمندان</a>
+    <a href="school-evaluation.html" class="tab-btn">⭐ ارزیابی کارمندان</a>
+    <a href="school-salaries.html" class="tab-btn">💰 معاشات</a>
+  </div>
+
+  <!-- محتوای تب تنظیمات -->
+  <div class="card">
+    <h4>🏫 مدیریت مکتب</h4>
+    <div class="info-banner" id="settingsBanner">⚠️ <strong>توجه:</strong> تا زمانیکه اطلاعات مکتب را ثبت نکنید، نمی‌توانید کارمند جدید ثبت کنید.</div>
+    <form id="settingsForm">
+      <div class="form-section">
+        <h5>۱. اطلاعات عمومی مکتب</h5>
+        <div class="grid-4">
+          <div class="form-group"><label>تایم مکتب *</label><select id="sTimeType" required><option value="یک تایم">یک تایم</option><option value="دو تایم">دو تایم</option><option value="سه تایم">سه تایم</option></select></div>
+          <div class="form-group"><label>عضو علمی مکتب (نام و تخلص) *</label><input type="text" id="sAcademicMember" placeholder="نام و تخلص عضو علمی" required></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h5>۲. شعبات درسی</h5>
+        <div class="grid-4">
+          <div class="form-group"><label>تعداد کل شعبات</label><input type="text" id="sBranchesTotal"></div>
+          <div class="form-group"><label>تعداد شعبات اول تا سوم</label><input type="text" id="sBranches13"></div>
+          <div class="form-group"><label>تعداد شعبات چهارم تا ششم</label><input type="text" id="sBranches46"></div>
+          <div class="form-group"><label>تعداد شعبات هفتم تا نهم</label><input type="text" id="sBranches79"></div>
+          <div class="form-group"><label>تعداد شعبات دهم تا دوازدهم</label><input type="text" id="sBranches1012"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h5>۳. وضعیت بست</h5>
+        <div class="grid-4">
+          <div class="form-group"><label>وضعیت بست *</label><select id="sBudgetStatus" onchange="toggleBudgetFields()" required><option value="عادی">عادی</option><option value="اضافه بست">اضافه بست</option><option value="کمبود بست">کمبود بست</option></select></div>
+          <div class="form-group" id="extraBustCountGroup" style="display:none;"><label>تعداد اضافه بست *</label><input type="text" id="sExtraBustCount"></div>
+          <div class="form-group" id="extraBustFieldGroup" style="display:none;"><label>رشته اضافه بست *</label><input type="text" id="sExtraBustField"></div>
+          <div class="form-group" id="lackBustCountGroup" style="display:none;"><label>تعداد کمبود بست *</label><input type="text" id="sLackBustCount"></div>
+          <div class="form-group" id="lackBustFieldGroup" style="display:none;"><label>رشته کمبود بست *</label><input type="text" id="sLackBustField"></div>
+        </div>
+      </div>
+      <div class="agreement-box" id="settingsAgreementBox" onclick="toggleSettingsAgreement()">
+        <input type="checkbox" id="settingsAgreementCheckbox">
+        <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد.</div>
+      </div>
+      <button type="submit" id="settingsSubmitBtn" class="btn btn-submit" disabled>💾 ذخیره اطلاعات مکتب</button>
+    </form>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ═══════════════════════════════════════════════════════════
+  // بررسی امنیتی و توابع پایه
+  // ═══════════════════════════════════════════════════════════
+  (function() {
+    const token = localStorage.getItem('hr_token');
+    const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
+    if (!token || token === 'undefined' || token === 'null') {
+      localStorage.clear(); window.location.href = '/'; return;
+    }
+    if (user.role !== 'school') {
+      window.location.href = '/admin-main.html'; return;
+    }
+  })();
+
+  const token = localStorage.getItem('hr_token');
+  const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
+  document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
+
+  function logout() { localStorage.clear(); window.location.href = '/'; }
+  window.logout = logout;
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast' + (isError ? ' error' : ''); t.style.display = 'block';
+    clearTimeout(t._timer); t._timer = setTimeout(() => { t.style.display = 'none'; }, 4000);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // عملکردهای صفحه تنظیمات
+  // ═══════════════════════════════════════════════════════════
+  function toggleBudgetFields() {
+    const status = document.getElementById('sBudgetStatus').value;
+    const ec = document.getElementById('extraBustCountGroup'), ef = document.getElementById('extraBustFieldGroup');
+    const lc = document.getElementById('lackBustCountGroup'), lf = document.getElementById('lackBustFieldGroup');
+    ec.style.display = 'none'; ef.style.display = 'none'; lc.style.display = 'none'; lf.style.display = 'none';
+    if (status === 'اضافه بست') { ec.style.display = 'flex'; ef.style.display = 'flex'; }
+    else if (status === 'کمبود بست') { lc.style.display = 'flex'; lf.style.display = 'flex'; }
+  }
+  window.toggleBudgetFields = toggleBudgetFields;
+
+  function toggleSettingsAgreement() {
+    const c = document.getElementById('settingsAgreementCheckbox'), b = document.getElementById('settingsAgreementBox'), s = document.getElementById('settingsSubmitBtn');
+    c.checked = !c.checked;
+    if (c.checked) { b.classList.add('checked'); s.disabled = false; } else { b.classList.remove('checked'); s.disabled = true; }
+  }
+  window.toggleSettingsAgreement = toggleSettingsAgreement;
+
+  async function loadSchoolSettings() {
+    try {
+      const res = await fetch('/api/school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
+      const data = await res.json();
+      if (data.exists && data.settings) {
+        const s = data.settings;
+        document.getElementById('sTimeType').value = s.time_type || 'یک تایم';
+        document.getElementById('sAcademicMember').value = s.academic_member || '';
+        document.getElementById('sBranchesTotal').value = s.branches_total || '';
+        document.getElementById('sBranches13').value = s.branches_1_3 || '';
+        document.getElementById('sBranches46').value = s.branches_4_6 || '';
+        document.getElementById('sBranches79').value = s.branches_7_9 || '';
+        document.getElementById('sBranches1012').value = s.branches_10_12 || '';
+        document.getElementById('sBudgetStatus').value = s.budget_status || 'عادی';
+        toggleBudgetFields();
+        document.getElementById('settingsBanner').innerHTML = '✅ اطلاعات مکتب شما ثبت شده است.';
+        document.getElementById('settingsBanner').style.background = '#dcfce7';
+        document.getElementById('settingsBanner').style.color = '#15803d';
+        document.getElementById('settingsSubmitBtn').innerText = '💾 به‌روزرسانی';
+        document.getElementById('settingsSubmitBtn').disabled = false;
+        document.getElementById('settingsAgreementCheckbox').checked = true;
+        document.getElementById('settingsAgreementBox').classList.add('checked');
+      } else {
+        document.getElementById('settingsSubmitBtn').disabled = true;
+        document.getElementById('settingsAgreementCheckbox').checked = false;
+        document.getElementById('settingsAgreementBox').classList.remove('checked');
+      }
+    } catch (e) { console.error(e); }
+  }
+
+  document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!document.getElementById('settingsAgreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
+    const btn = document.getElementById('settingsSubmitBtn');
+    btn.disabled = true; btn.innerText = '⏳ در حال ذخیره...';
+    const body = {
+      timeType: document.getElementById('sTimeType').value,
+      academicMember: document.getElementById('sAcademicMember').value.trim(),
+      branchesTotal: document.getElementById('sBranchesTotal').value.trim(),
+      branches13: document.getElementById('sBranches13').value.trim(),
+      branches46: document.getElementById('sBranches46').value.trim(),
+      branches79: document.getElementById('sBranches79').value.trim(),
+      branches1012: document.getElementById('sBranches1012').value.trim(),
+      budgetStatus: document.getElementById('sBudgetStatus').value,
+      extraBustCount: document.getElementById('sExtraBustCount').value.trim(),
+      extraBustField: document.getElementById('sExtraBustField').value.trim(),
+      lackBustCount: document.getElementById('sLackBustCount').value.trim(),
+      lackBustField: document.getElementById('sLackBustField').value.trim()
+    };
+    if (!body.academicMember) { showToast('❌ نام عضو علمی الزامی است', true); btn.disabled = false; btn.innerText = '💾 ذخیره'; return; }
+    
+    try {
+      const res = await fetch('/api/school-settings', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, 
+        body: JSON.stringify(body) 
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { 
+        showToast('✅ ذخیره شد'); 
+        document.getElementById('settingsAgreementCheckbox').checked = false; 
+        document.getElementById('settingsAgreementBox').classList.remove('checked'); 
+        loadSchoolSettings(); 
+      } else { 
+        showToast('❌ ' + (data.error || 'خطا'), true); 
+      }
+    } catch (e) { 
+      showToast('❌ ارتباط برقرار نشد', true); 
+    } finally { 
+      btn.disabled = false; 
+      if(document.getElementById('settingsSubmitBtn').innerText.includes('ذخیره')) btn.innerText = '💾 ذخیره اطلاعات مکتب';
+    }
+  });
+
+  // شروع
+  loadSchoolSettings();
+</script>
+</body>
+</html>

@@ -56,8 +56,6 @@
 </div>
 
 <script>
-  // ⭐ خطوط localStorage.clear() از اینجا حذف شدند تا توکن پاک نشود
-
   const loginForm = document.getElementById('loginForm');
   const submitBtn = document.getElementById('submitBtn');
   const errorBox = document.getElementById('errorBox');
@@ -72,62 +70,32 @@
     const op = ops[Math.floor(Math.random() * ops.length)];
     let a, b, answer;
 
-    if (op === '+') {
-      a = Math.floor(Math.random() * 20) + 5;
-      b = Math.floor(Math.random() * 20) + 5;
-      answer = a + b;
-    } else if (op === '-') {
-      a = Math.floor(Math.random() * 20) + 15;
-      b = Math.floor(Math.random() * 10) + 2;
-      answer = a - b;
-    } else {
-      a = Math.floor(Math.random() * 8) + 2;
-      b = Math.floor(Math.random() * 8) + 2;
-      answer = a * b;
-    }
+    if (op === '+') { a = Math.floor(Math.random() * 20) + 5; b = Math.floor(Math.random() * 20) + 5; answer = a + b; } 
+    else if (op === '-') { a = Math.floor(Math.random() * 20) + 15; b = Math.floor(Math.random() * 10) + 2; answer = a - b; } 
+    else { a = Math.floor(Math.random() * 8) + 2; b = Math.floor(Math.random() * 8) + 2; answer = a * b; }
 
     captchaCorrectAnswer = answer;
-
     const ctx = captchaCanvas.getContext('2d');
-    const w = captchaCanvas.width;
-    const h = captchaCanvas.height;
+    const w = captchaCanvas.width, h = captchaCanvas.height;
 
     ctx.clearRect(0, 0, w, h);
     const gradient = ctx.createLinearGradient(0, 0, w, h);
-    gradient.addColorStop(0, '#f1f5f9');
-    gradient.addColorStop(1, '#e2e8f0');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, w, h);
+    gradient.addColorStop(0, '#f1f5f9'); gradient.addColorStop(1, '#e2e8f0');
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, w, h);
 
     for (let i = 0; i < 5; i++) {
       ctx.strokeStyle = `rgba(${Math.random()*200}, ${Math.random()*200}, ${Math.random()*200}, 0.4)`;
-      ctx.lineWidth = 1 + Math.random() * 2;
-      ctx.beginPath();
-      ctx.moveTo(Math.random() * w, Math.random() * h);
-      ctx.lineTo(Math.random() * w, Math.random() * h);
-      ctx.stroke();
+      ctx.lineWidth = 1 + Math.random() * 2; ctx.beginPath();
+      ctx.moveTo(Math.random() * w, Math.random() * h); ctx.lineTo(Math.random() * w, Math.random() * h); ctx.stroke();
     }
-
     for (let i = 0; i < 30; i++) {
       ctx.fillStyle = `rgba(${Math.random()*200}, ${Math.random()*200}, ${Math.random()*200}, 0.5)`;
-      ctx.beginPath();
-      ctx.arc(Math.random() * w, Math.random() * h, Math.random() * 2, 0, 2 * Math.PI);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(Math.random() * w, Math.random() * h, Math.random() * 2, 0, 2 * Math.PI); ctx.fill();
     }
-
-    ctx.font = 'bold 26px Tahoma';
-    ctx.fillStyle = '#1e293b';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 26px Tahoma'; ctx.fillStyle = '#1e293b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(`${a} ${op} ${b} = ?`, w / 2, h / 2);
-
-    ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(10, h - 10);
-    ctx.lineTo(w - 10, 10);
-    ctx.stroke();
-
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.moveTo(10, h - 10); ctx.lineTo(w - 10, 10); ctx.stroke();
     captchaAnswer.value = '';
   }
 
@@ -138,75 +106,46 @@
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorBox.style.display = 'none';
-
     const userAnswer = parseInt(captchaAnswer.value.trim());
     if (isNaN(userAnswer) || userAnswer !== captchaCorrectAnswer) {
-      showError('❌ کد امنیتی اشتباه است');
-      generateCaptcha();
-      return;
+      showError('❌ کد امنیتی اشتباه است'); generateCaptcha(); return;
     }
-
-    submitBtn.disabled = true;
-    submitBtn.innerText = 'در حال بررسی...';
-
+    submitBtn.disabled = true; submitBtn.innerText = 'در حال بررسی...';
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
 
     try {
-      // ⭐ پاک کردن localStorage قبل از لاگین (فقط زمانی که کاربر دکمه ورود را می‌زند)
       localStorage.clear();
-
       const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-
       const data = await res.json().catch(() => ({}));
 
-      // ⭐ بررسی وجود توکن قبل از ذخیره
       if (res.ok && data.token) {
         localStorage.setItem('hr_token', data.token);
         localStorage.setItem('hr_user', JSON.stringify(data.user || {}));
-
-        if (data.user && data.user.schoolname) {
-          localStorage.setItem('hr_schoolname', data.user.schoolname);
-        }
-        if (data.user && data.user.district) {
-          localStorage.setItem('hr_district', data.user.district);
-        }
-
-        console.log('✅ Login successful, redirecting...');
-
-        const redirectTo = data.redirect ||
-          (data.user && data.user.role === 'admin' ? '/admin.html' : '/school.html');
-
+        if (data.user && data.user.schoolname) localStorage.setItem('hr_schoolname', data.user.schoolname);
+        if (data.user && data.user.district) localStorage.setItem('hr_district', data.user.district);
+        
+        // ⭐ اصلاح شده: هدایت به فایل‌های جدید
+        const redirectTo = data.redirect || (data.user && data.user.role === 'admin' ? '/admin-main.html' : '/school-settings.html');
         window.location.href = redirectTo;
       } else {
-        // ⭐ اگر توکن نیامد یا خطا بود
         localStorage.clear();
         showError(data.error || 'نام کاربری یا رمز عبور اشتباه است');
-        generateCaptcha();
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'ورود به سیستم';
+        generateCaptcha(); submitBtn.disabled = false; submitBtn.innerText = 'ورود به سیستم';
       }
     } catch (err) {
-      console.error(err);
-      localStorage.clear();
-      showError('خطا در ارتباط با سرور');
-      generateCaptcha();
-      submitBtn.disabled = false;
-      submitBtn.innerText = 'ورود به سیستم';
+      localStorage.clear(); showError('خطا در ارتباط با سرور');
+      generateCaptcha(); submitBtn.disabled = false; submitBtn.innerText = 'ورود به سیستم';
     }
   });
 
   function showError(message) {
-    errorBox.innerText = message;
-    errorBox.style.display = 'block';
-    submitBtn.disabled = false;
-    submitBtn.innerText = 'ورود به سیستم';
+    errorBox.innerText = message; errorBox.style.display = 'block';
+    submitBtn.disabled = false; submitBtn.innerText = 'ورود به سیستم';
   }
 </script>
-
 </body>
 </html>

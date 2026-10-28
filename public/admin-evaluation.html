@@ -1,1 +1,499 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل ادمین — ارزیابی</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+  body { font-family: Tahoma, Arial, sans-serif; background: #f0f4f8; margin: 0; direction: rtl; }
+  .topbar { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .topbar h5 { margin: 0; font-size: 18px; font-weight: bold; }
+  .nav-tabs-custom { display: flex; gap: 5px; background: #fff; border-bottom: 2px solid #e2e8f0; padding: 0 15px; flex-wrap: wrap; }
+  .nav-tab-btn { padding: 15px 25px; border: none; background: transparent; font-weight: bold; color: #64748b; cursor: pointer; font-family: inherit; font-size: 14px; border-bottom: 3px solid transparent; transition: all 0.2s; text-decoration: none; display: inline-block; }
+  .nav-tab-btn:hover { color: #7c3aed; background: #f8fafc; }
+  .nav-tab-btn.active { color: #7c3aed; border-bottom-color: #7c3aed; background: #f3e8ff; }
+  .card-custom { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,.04); margin-bottom: 25px; }
+  .stat-card { background: linear-gradient(135deg, #eef6ff, #dbeafe); border: 1px solid #bcd8f5; border-radius: 10px; padding: 15px; text-align: center; }
+  .stat-card .value { font-size: 24px; font-weight: bold; color: #0056b3; margin-top: 5px; }
+  .text-purple { color: #7c3aed !important; }
+  .btn-purple { background-color: #7c3aed; color: white; border: none; }
+  .btn-purple:hover { background-color: #6d28d9; color: white; }
+  .form-control, .table { font-size: 14px; }
+  th { background-color: #f8fafc !important; color: #475569; }
+  .badge-pending { background: #fef3c7; color: #92400e; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .badge-approved { background: #def7ec; color: #03543f; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .btn-action { padding: 4px 10px; font-size: 12px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; margin: 0 2px; }
+  .btn-delete-row { background: #dc2626; color: #fff; }
+  .btn-view { background: #3b82f6; color: #fff; }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 8px; font-weight: bold; z-index: 9999; display: none; max-width: 90%; text-align: center; }
+  .toast.error { background: #ef4444; }
+  .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 15px; background: #f8fafc; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+  .filter-item label { font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; display: block; }
+  .filter-item select, .filter-item input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .modal-header-purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; }
+  .modal-header-purple .btn-close { filter: invert(1); }
+  .eval-permission-box { background: #fff; border-radius: 12px; padding: 20px 25px; margin-bottom: 20px; border: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+  .eval-permission-box.allowed { border-color: #10b981; background: #f0fdf4; }
+  .eval-permission-box.denied { border-color: #ef4444; background: #fef2f2; }
+  .eval-permission-status { font-size: 16px; font-weight: bold; }
+  .eval-permission-status.allowed { color: #15803d; }
+  .eval-permission-status.denied { color: #b91c1c; }
+  .switch-btn-group { display: flex; gap: 10px; }
+  .switch-btn { padding: 10px 25px; border: 2px solid #cbd5e1; background: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; transition: all 0.2s; }
+  .switch-btn:hover { background: #f1f5f9; }
+  .switch-btn.active-yes { background: #10b981; color: #fff; border-color: #10b981; }
+  .switch-btn.active-no { background: #ef4444; color: #fff; border-color: #ef4444; }
+  .result-badge-excellent { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .result-badge-good { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .result-badge-weak { background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+  .toggle-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; padding: 8px 14px; background: #f1f5f9; border-radius: 8px; border: 2px solid #cbd5e1; font-weight: bold; font-size: 13px; transition: all 0.2s; }
+  .toggle-switch:hover { background: #e2e8f0; }
+  .toggle-switch input { width: 18px; height: 18px; cursor: pointer; accent-color: #10b981; }
+  .eval-table-hidden { display: none; }
+</style>
+</head>
+<body>
 
+<div class="topbar">
+  <div>
+    <h5>🎛️ پنل ادمین — ارزیابی</h5>
+    <small>مدیریت و کنترل ارزیابی کارمندان مکاتب</small>
+  </div>
+  <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="nav-tabs-custom" id="adminTabs">
+  <a href="admin-main.html" class="nav-tab-btn">🏠 صفحه اصلی</a>
+  <a href="admin-evaluation.html" class="nav-tab-btn active">⭐ ارزیابی</a>
+  <a href="admin-salaries.html" class="nav-tab-btn">💰 معاشات</a>
+</div>
+
+<div class="container-fluid px-4 py-3" id="tab-evaluation">
+
+  <div class="eval-permission-box denied" id="evalPermissionBox">
+    <div>
+      <div style="font-size:13px; color:#64748b; margin-bottom:5px;">🔑 اجازه ارزیابی به مکاتب:</div>
+      <div class="eval-permission-status denied" id="evalPermissionStatus">❌ غیرفعال</div>
+    </div>
+    <div class="switch-btn-group">
+      <button class="switch-btn" id="btnAllowYes" onclick="setEvaluationPermission(true)">✅ بلی (فعال)</button>
+      <button class="switch-btn" id="btnAllowNo" onclick="setEvaluationPermission(false)">❌ نخیر (غیرفعال)</button>
+    </div>
+  </div>
+
+  <div class="card-custom">
+    <h5 class="text-purple mb-3 fw-bold">📊 آمار ارزیابی‌ها</h5>
+    <div class="row g-3">
+      <div class="col-md-3"><div class="stat-card"><div class="text-muted">📋 کل</div><div class="value" id="evalStatTotal">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0);"><div class="text-muted">🌟 عالی</div><div class="value text-success" id="evalStatExcellent">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card"><div class="text-muted">✅ خوب</div><div class="value" id="evalStatGood">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #fee2e2, #fecaca);"><div class="text-muted">⚠️ ضعیف</div><div class="value text-danger" id="evalStatWeak">0</div></div></div>
+    </div>
+  </div>
+
+  <div class="card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h5 class="text-purple m-0 fw-bold">📋 لیست ارزیابی‌ها</h5>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-dark fw-bold btn-sm px-3" id="toggleEvalListBtn" onclick="toggleEvalList()">👁️ نمایش لیست</button>
+        <button class="btn btn-purple fw-bold btn-sm px-3" onclick="printEvalAdmin()">🖨️ پرنت توحیدی</button>
+        <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportEvalAdminExcel()">📊 اکسل توحیدی</button>
+      </div>
+    </div>
+
+    <div class="filter-grid mb-3">
+      <div class="filter-item">
+        <label>🔍 جستجو (نام، ولد، وظیفه، کد بست، مکتب)</label>
+        <input type="text" id="evalSearchInput" class="form-control" placeholder="جستجو کنید..." oninput="applyEvalFilters()">
+      </div>
+      <div class="filter-item">
+        <label>🏫 نوع</label>
+        <select id="evalSchoolTypeFilter" onchange="applyEvalFilters()" class="form-control">
+          <option value="">📋 همه</option>
+          <option value="مکاتب">🏫 مکاتب</option>
+          <option value="مدارس">🏛️ مدارس</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>🏫 مکتب خاص</label>
+        <select id="evalSchoolNameFilter" onchange="applyEvalFilters()" class="form-control">
+          <option value="">📋 همه</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-responsive border rounded eval-table-hidden" id="evalListContainer">
+      <table class="table table-hover align-middle mb-0 text-center">
+        <thead class="table-light">
+          <tr><th>#</th><th>اسم</th><th>ولد</th><th>وظیفه</th><th>کُد بست</th><th>مکتب</th><th>تاریخ ارزیابی</th><th>نمره</th><th>نتیجه</th><th>عملیات</th></tr>
+        </thead>
+        <tbody id="evalAdminTableBody"><tr><td colspan="10" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ═══════════════════════════════════════════════════════════
+  // بررسی امنیتی و توابع پایه
+  // ═══════════════════════════════════════════════════════════
+  (function() {
+    const token = localStorage.getItem('hr_token');
+    const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
+    if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; return; }
+    if (user.role !== 'admin') { window.location.href = '/school-settings.html'; return; }
+  })();
+
+  const token = localStorage.getItem('hr_token');
+  const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
+
+  let cachedEvaluations = [];
+  let filteredEvaluations = [];
+  let evalAllowed = false;
+  let evalListVisible = false;
+
+  function logout() { localStorage.clear(); window.location.href = '/'; }
+  window.logout = logout;
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast' + (isError ? ' error' : ''); t.style.display = 'block';
+    clearTimeout(t._timer); t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+
+  function normalizeDigits(str) {
+    if (!str) return '';
+    const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
+    return str.split('').map(ch => { const pi = p.indexOf(ch); if (pi !== -1) return pi; const ai = a.indexOf(ch); if (ai !== -1) return ai; return ch; }).join('');
+  }
+
+  function detectSchoolType(schoolName) {
+    if (!schoolName) return 'نامشخص';
+    const name = String(schoolName).trim().replace(/\s+/g, ' ');
+    if (name.includes('لیسه') || name.includes('لیسهٔ')) return 'لیسه';
+    if (name.includes('متوسطه') || name.includes('متوسطۀ')) return 'متوسطه';
+    if (name.includes('ابتداییه') || name.includes('ابتدائیه')) return 'ابتداییه';
+    if (name.includes('مدرسه') || name.includes('مکتب') || name.includes('دارالعلوم')) return 'مدرسه';
+    return 'نامشخص';
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // مجوز ارزیابی
+  // ═══════════════════════════════════════════════════════════
+  async function loadEvaluationPermission() { 
+    try { const res = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } }); const data = await res.json(); evalAllowed = !!data.allowed; updatePermissionUI(); } catch (e) { console.error(e); } 
+  }
+  window.loadEvaluationPermission = loadEvaluationPermission;
+
+  function updatePermissionUI() {
+    const box = document.getElementById('evalPermissionBox'), status = document.getElementById('evalPermissionStatus'), btnYes = document.getElementById('btnAllowYes'), btnNo = document.getElementById('btnAllowNo');
+    btnYes.classList.remove('active-yes', 'active-no'); btnNo.classList.remove('active-yes', 'active-no'); box.classList.remove('allowed', 'denied'); status.classList.remove('allowed', 'denied');
+    if (evalAllowed) { box.classList.add('allowed'); status.classList.add('allowed'); status.textContent = '✅ فعال'; btnYes.classList.add('active-yes'); }
+    else { box.classList.add('denied'); status.classList.add('denied'); status.textContent = '❌ غیرفعال'; btnNo.classList.add('active-no'); }
+  }
+
+  async function setEvaluationPermission(allowed) {
+    try { const res = await fetch('/api/evaluation-permission', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ allowed }) }); if (res.ok) { evalAllowed = allowed; updatePermissionUI(); showToast(allowed ? '✅ فعال شد' : '❌ غیرفعال شد'); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); }
+  }
+  window.setEvaluationPermission = setEvaluationPermission;
+
+  function toggleEvalList() {
+    evalListVisible = !evalListVisible;
+    const container = document.getElementById('evalListContainer');
+    const btn = document.getElementById('toggleEvalListBtn');
+    if (evalListVisible) {
+      container.classList.remove('eval-table-hidden');
+      btn.innerHTML = '🙈 مخفی کردن لیست';
+      btn.classList.replace('btn-dark', 'btn-secondary');
+    } else {
+      container.classList.add('eval-table-hidden');
+      btn.innerHTML = '👁️ نمایش لیست';
+      btn.classList.replace('btn-secondary', 'btn-dark');
+    }
+  }
+  window.toggleEvalList = toggleEvalList;
+
+  // ═══════════════════════════════════════════════════════════
+  // بارگذاری و فیلتر
+  // ═══════════════════════════════════════════════════════════
+  async function loadAdminEvaluations() {
+    const tbody = document.getElementById('evalAdminTableBody');
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
+    try {
+      const res = await fetch('/api/evaluations', { headers: { 'Authorization': 'Bearer ' + token } });
+      let evals = await res.json();
+      cachedEvaluations = Array.isArray(evals) ? evals : [];
+      populateEvalSchoolDropdown();
+      applyEvalFilters();
+    } catch (err) { tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger p-4">خطا</td></tr>'; }
+  }
+  window.loadAdminEvaluations = loadAdminEvaluations;
+
+  function populateEvalSchoolDropdown() {
+    const select = document.getElementById('evalSchoolNameFilter');
+    if (!select) return;
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">📋 همه مکاتب</option>';
+    const uniqueSchools = [...new Set(cachedEvaluations.map(e => e.schoolname).filter(Boolean))].sort();
+    uniqueSchools.forEach(school => { const opt = document.createElement('option'); opt.value = school; opt.textContent = `🏫 ${school}`; if (school === currentVal) opt.selected = true; select.appendChild(opt); });
+  }
+
+  function applyEvalFilters() {
+    const tbody = document.getElementById('evalAdminTableBody');
+    const searchInput = (document.getElementById('evalSearchInput').value || '').trim().toLowerCase();
+    const schoolTypeFilter = document.getElementById('evalSchoolTypeFilter').value;
+    const schoolNameFilter = document.getElementById('evalSchoolNameFilter').value;
+    
+    filteredEvaluations = cachedEvaluations.filter(e => {
+      if (schoolNameFilter && e.schoolname !== schoolNameFilter) return false;
+      if (schoolTypeFilter) { const type = detectSchoolType(e.schoolname); if (schoolTypeFilter === 'مکاتب') { if (type !== 'لیسه' && type !== 'متوسطه' && type !== 'ابتداییه') return false; } else if (schoolTypeFilter === 'مدارس') { if (type !== 'مدرسه' && type !== 'نامشخص') return false; } }
+      
+      if (searchInput) {
+        const fn = (e.first_name || '').toLowerCase();
+        const fa = (e.father_name || '').toLowerCase();
+        const jt = (e.job_title || '').toLowerCase();
+        const jc = (e.job_code || '').toLowerCase();
+        const sn = (e.schoolname || '').toLowerCase();
+        if (!fn.includes(searchInput) && !fa.includes(searchInput) && !jt.includes(searchInput) && !jc.includes(searchInput) && !sn.includes(searchInput)) return false;
+      }
+      return true;
+    });
+
+    let excellent = 0, good = 0, weak = 0;
+    filteredEvaluations.forEach(e => { if (e.eval_result === 'عالی') excellent++; else if (e.eval_result === 'خوب') good++; else if (e.eval_result === 'ضعیف') weak++; });
+    document.getElementById('evalStatTotal').textContent = filteredEvaluations.length;
+    document.getElementById('evalStatExcellent').textContent = excellent;
+    document.getElementById('evalStatGood').textContent = good;
+    document.getElementById('evalStatWeak').textContent = weak;
+    
+    if (filteredEvaluations.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4 text-muted">یافت نشد</td></tr>'; return; }
+    
+    let html = '';
+    filteredEvaluations.forEach((e, idx) => {
+      let resultBadge = '—';
+      if (e.eval_result === 'عالی') resultBadge = '<span class="result-badge-excellent">🌟 عالی</span>';
+      else if (e.eval_result === 'خوب') resultBadge = '<span class="result-badge-good">✅ خوب</span>';
+      else if (e.eval_result === 'ضعیف') resultBadge = '<span class="result-badge-weak">⚠️ ضعیف</span>';
+      html += `<tr><td>${idx + 1}</td><td><b>${escapeHtml(e.first_name || '-')}</b></td><td>${escapeHtml(e.father_name || '-')}</td><td>${escapeHtml(e.job_title || '-')}</td><td><code>${escapeHtml(e.job_code || '—')}</code></td><td>${escapeHtml(e.schoolname || '-')}</td><td>${escapeHtml(e.eval_date || '-')}</td><td><strong>${e.eval_score}</strong></td><td>${resultBadge}</td><td><button class="btn-action btn-delete-row" onclick="deleteEvalAdmin(${e.id})">🗑️</button></td></tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+  window.applyEvalFilters = applyEvalFilters;
+
+  async function deleteEvalAdmin(id) { if (!confirm('⚠️ حذف شود؟')) return; try { const res = await fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAdminEvaluations(); } else showToast('خطا', true); } catch (e) { showToast('خطا', true); } }
+  window.deleteEvalAdmin = deleteEvalAdmin;
+
+  // ═══════════════════════════════════════════════════════════
+  // پرینت و اکسل توحیدی
+  // ═══════════════════════════════════════════════════════════
+  async function getUnifiedEvaluationData() {
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) throw new Error('دریافت معلومات کارمندان ناکام شد');
+      const records = await res.json();
+      const recordsMap = {};
+      if (Array.isArray(records)) records.forEach(r => { recordsMap[String(r.id)] = r.data || {}; });
+      const evaluations = [...(cachedEvaluations || [])].sort((a, b) => String(a.first_name || '').localeCompare(String(b.first_name || ''), 'fa'));
+      return { evaluations, recordsMap };
+  }
+
+  function unifiedEvaluationRows(evaluations, recordsMap) {
+      const esc = value => escapeHtml(value === null || value === undefined ? '' : String(value));
+      const pick = (a, b, fallback='') => a !== undefined && a !== null && a !== '' ? a : (b !== undefined && b !== null && b !== '' ? b : fallback);
+      const dateParts = value => {
+        const raw = value === null || value === undefined ? '' : normalizeDigits(String(value).trim());
+        if (!raw) return ['', '', ''];
+        const m = raw.match(/(\d{1,4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,4})/);
+        if (!m) return ['', '', raw];
+        if (m[1].length >= 3) return [m[3], m[2], m[1]];
+        return [m[1], m[2], m[3]];
+      };
+      return evaluations.map((ev, index) => {
+        const rec = recordsMap[String(ev.record_id)] || {};
+        const first = pick(ev.first_name, rec.firstName);
+        const father = pick(ev.father_name, rec.fatherName);
+        const grandfather = pick(ev.grandfather_name, rec.grandfatherName);
+        const birth = pick(ev.birth_date, rec.birthDate);
+        const appointment = pick(ev.appointment_date, rec.currentPositionDate || rec.firstAppointmentDate);
+        const previousEval = pick(ev.eval_date_prev, ev.previous_eval_date, rec.previousEvalDate);
+        const evalDate = pick(ev.eval_date, '');
+        const appointmentParts = dateParts(appointment);
+        const previousParts = dateParts(previousEval);
+        const evalParts = dateParts(evalDate);
+        const result = String(ev.eval_result || '').trim();
+        const values = [
+          pick(ev.private_number, ev.record_id, index + 1),
+          first, father, grandfather,
+          pick(ev.job_code, rec.jobCode),
+          pick(ev.appointment_type, rec.employmentType || rec.appointmentType || rec.typeOfAppointment),
+          ...dateParts(birth),
+          pick(ev.service_duration, rec.serviceDuration || rec.durationOfService),
+          pick(ev.degree, rec.degree),
+          pick(ev.gender, rec.gender),
+          pick(ev.job_title, rec.jobTitle),
+          pick(ev.district, rec.originDistrict || currentUser.district),
+          pick(ev.workplace, ev.schoolname || currentUser.schoolname),
+          ...appointmentParts,
+          ...previousParts,
+          pick(ev.bust, rec.bust), pick(ev.grade, rec.grade),
+          ...evalParts,
+          pick(ev.eval_score, ''),
+          result === 'عالی' ? '✓' : '',
+          result === 'خوب' ? '✓' : '',
+          result === 'ضعیف' ? '✓' : '',
+          pick(ev.remarks, ev.notes || ev.observations)
+        ];
+        return values.map(esc);
+      });
+  }
+
+  function unifiedEvaluationTableHead() {
+      return `
+      <thead>
+        <tr>
+          <th rowspan="3">شماره</th>
+          <th colspan="3">شهرت</th>
+          <th colspan="11">مشخصات وظیفوی</th>
+          <th colspan="3">تاریخ تقرر / تاریخ معادلت / تاریخ فراغت</th>
+          <th colspan="3">تاریخ ارزیابی قبلی</th>
+          <th colspan="2">بست و قدم موجود</th>
+          <th colspan="3">تاریخ ارزیابی</th>
+          <th rowspan="3">نمره ارزیابی</th>
+          <th colspan="3">نتیجه ارزیابی</th>
+          <th rowspan="3">ملاحظات</th>
+        </tr>
+        <tr>
+          <th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th>
+          <th rowspan="2">کود تشکیل</th><th rowspan="2">نوع تقرری</th>
+          <th colspan="3">تاریخ تولد</th><th rowspan="2">مدت خدمت</th>
+          <th rowspan="2">درجه تحصیل</th><th rowspan="2">جنسیت</th><th rowspan="2">وظیفه</th>
+          <th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره مربوطه</th>
+          <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+          <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+          <th rowspan="2">بست</th><th rowspan="2">قدم</th>
+          <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+          <th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th>
+        </tr>
+        <tr><th>روز</th><th>ماه</th><th>سال</th></tr>
+      </thead>`;
+  }
+
+  function unifiedEvaluationTableBody(rows) {
+      return '<tbody>' + rows.map(row =>
+        '<tr>' + row.map((cell, i) => `<td${i >= 1 && i <= 3 ? ' class="name-cell"' : ''}>${cell || ''}</td>`).join('') + '</tr>'
+      ).join('') + '</tbody>';
+  }
+
+  function unifiedEvaluationDocumentStyles() {
+      return `
+      <style>
+        html,body{margin:0;padding:0;font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#000}
+        .official-head{display:grid;grid-template-columns:1fr 3fr 1fr;align-items:center;text-align:center;margin-bottom:5px}
+        .official-head h2{font-size:17px;margin:2px}.official-head h3{font-size:14px;margin:2px}
+        .official-head p{font-size:10px;margin:2px}
+        .table-title{text-align:center;font-weight:bold;font-size:12px;padding:5px;border:1px solid #000;margin:5px 0}
+        table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6.5px;direction:rtl}
+        th,td{border:1px solid #000;text-align:center;vertical-align:middle;padding:2px 1px;overflow-wrap:anywhere;line-height:1.15}
+        th{background:#e8e8e8;font-weight:bold}
+        td.name-cell{text-align:right}
+        .signature{display:flex;justify-content:space-between;margin-top:12px;font-size:10px}
+        @page{size:A3 landscape;margin:7mm}
+        @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+      </style>`;
+  }
+
+  async function printEvalAdmin() {
+      if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true); return; }
+      try {
+          const recordsMap = {};
+          const { evaluations } = await getUnifiedEvaluationData();
+          const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
+          const html = `
+            <div class="official-head">
+              <div class="head-side"><h2>وزارت معارف</h2></div>
+              <div><p>معینیت مالی و اداری</p><p>ریاست عمومی امور کارکنان</p><p>ریاست استخدام</p><p>آمریت ارزیابی اجراآت</p><p>مدیریت عمومی ارزیابی اجراآت معلمین و استادان</p></div>
+              <div class="head-side"><h2>د پوهنې وزارت</h2></div>
+            </div>
+            <div class="table-title">جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ریاست معارف ولایت هرات</div>
+            <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
+            <div class="signature"><span>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</span><span>مهر و امضا: ____________________</span></div>`;
+          printHtmlDocument(unifiedEvaluationDocumentStyles() + html, 'جدول توحیدی ارزیابی معلمین', 'A3 landscape');
+      } catch (e) { console.error(e); showToast('❌ خطا در تولید جدول پرینت', true); }
+  }
+  window.printEvalAdmin = printEvalAdmin;
+
+  async function exportEvalAdminExcel() {
+      if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای خروجی اکسل وجود ندارد.', true); return; }
+      try {
+          const recordsMap = {};
+          const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
+          const html = `<!DOCTYPE html>
+          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40" lang="fa" dir="rtl">
+          <head><meta charset="UTF-8">
+          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+          <x:Name>جدول توحیدی ارزیابی</x:Name><x:WorksheetOptions>
+          <x:DisplayRightToLeft/><x:PageSetup><x:Layout x:Orientation="Landscape"/>
+          </x:PageSetup><x:FitToPage/><x:Print><x:FitWidth>1</x:FitWidth><x:FitHeight>0</x:FitHeight></x:Print>
+          </x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+          <style>
+          @page { size: A3 landscape; margin: 0.25in; }
+          body { font-family: Tahoma, Arial, sans-serif; direction: rtl; color:#000; }
+          table { border-collapse:collapse; width:100%; direction:rtl; table-layout:fixed; }
+          th,td { border:1px solid #000; padding:3px 2px; text-align:center; vertical-align:middle; font-family:Tahoma,Arial,sans-serif; font-size:9pt; white-space:normal; }
+          th { background:#e8e8e8; font-weight:bold; }
+          .official-title { font-weight:bold; text-align:center; font-size:12pt; padding:5px; }
+          </style></head><body>
+          <table style="border:0;width:100%;margin-bottom:8px">
+            <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">معینیت مالی و اداری</td></tr>
+            <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">ریاست عمومی امور کارکنان</td></tr>
+            <tr><td colspan="3" style="border:0;text-align:center">ریاست استخدام — آمریت ارزیابی اجراآت</td></tr>
+            <tr><td colspan="3" class="official-title" style="border:1px solid #000">جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ریاست معارف ولایت هرات</td></tr>
+          </table>
+          <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
+          <table style="border:0;margin-top:10px"><tr>
+            <td style="border:0;text-align:right">تاریخ چاپ: ${escapeHtml(new Date().toLocaleDateString('fa-IR'))}</td>
+            <td style="border:0;text-align:left">مهر و امضا: ____________________</td>
+          </tr></table>
+          </body></html>`;
+          const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'جدول_توحیدی_ارزیابی_معلمین_' + Date.now() + '.xls';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+          showToast('✅ خروجی اکسل جدول توحیدی آماده شد.');
+      } catch (e) { console.error(e); showToast('❌ خطا در تولید خروجی اکسل', true); }
+  }
+  window.exportEvalAdminExcel = exportEvalAdminExcel;
+
+  function printHtmlDocument(html, title, pageSize = 'A4 landscape') {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>body{font-family:Tahoma,Arial,sans-serif;direction:rtl;padding:15px;color:#111}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #333;padding:7px;text-align:center}th{background:#eee} @media print{@page{size:${pageSize};margin:1cm}}</style></head><body>${html}</body></html>`);
+    doc.close();
+    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1200); }, 400);
+  }
+  window.printHtmlDocument = printHtmlDocument;
+
+  // شروع
+  (async function init() {
+    await loadEvaluationPermission();
+    await loadAdminEvaluations();
+  })();
+</script>
+</body>
+</html>

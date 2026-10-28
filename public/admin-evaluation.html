@@ -293,7 +293,7 @@
   window.deleteEvalAdmin = deleteEvalAdmin;
 
   // ═══════════════════════════════════════════════════════════
-  // پرینت و اکسل توحیدی
+  // پرینت و اکسل توحیدی (اصلاح شده)
   // ═══════════════════════════════════════════════════════════
   async function getUnifiedEvaluationData() {
       const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -413,8 +413,7 @@
   async function printEvalAdmin() {
       if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true); return; }
       try {
-          const recordsMap = {};
-          const { evaluations } = await getUnifiedEvaluationData();
+          const { recordsMap } = await getUnifiedEvaluationData(); // ⭐ اصلاح شد
           const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
           const html = `
             <div class="official-head">
@@ -433,7 +432,7 @@
   async function exportEvalAdminExcel() {
       if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای خروجی اکسل وجود ندارد.', true); return; }
       try {
-          const recordsMap = {};
+          const { recordsMap } = await getUnifiedEvaluationData(); // ⭐ اصلاح شد
           const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
           const html = `<!DOCTYPE html>
           <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40" lang="fa" dir="rtl">

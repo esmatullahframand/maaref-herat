@@ -29,9 +29,9 @@
     flex-direction: column;
   }
 
-  /* ====== هدر بالا (مشکی/تیره) ====== */
+  /* ====== هدر بالا (سبز) ====== */
   .topbar { 
-    background: #0f172a; 
+    background: #10b981; 
     color: #fff; 
     padding: 15px 30px; 
     display: flex; 
@@ -39,9 +39,10 @@
     align-items: center; 
     flex-wrap: wrap; 
     gap: 10px; 
+    box-shadow: 0 2px 10px rgba(16,185,129,0.2);
   }
   .topbar h3 { margin: 0; font-size: 18px; color: #fff; }
-  .topbar small { color: #94a3b8; }
+  .topbar small { color: #e6fffa; }
   .btn-logout { 
     background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; 
     font-weight: bold; cursor: pointer; font-family: inherit; transition: 0.2s;
@@ -213,7 +214,7 @@
 
 <div class="main-container">
   
-  <!-- ۱. نوار بالایی (مشکی) -->
+  <!-- ۱. نوار بالایی -->
   <div class="topbar">
     <div>
       <h3>پنل اختصاصی مکتب — معاشات</h3>
@@ -222,7 +223,7 @@
     <button class="btn-logout" onclick="logout()">🚪 خروج</button>
   </div>
 
-  <!-- ۲. منوی تب‌های اصلی (لینک به بقیه صفحات) -->
+  <!-- ۲. منوی تب‌ها -->
   <div class="main-tabs">
     <a href="school-settings.html" class="main-tab-btn">🏫 مدیریت مکتب</a>
     <a href="school-register.html" class="main-tab-btn">➕ ثبت کارمند جدید</a>
@@ -231,7 +232,7 @@
     <a href="school-salaries.html" class="main-tab-btn active">💰 معاشات</a>
   </div>
 
-  <!-- ۳. هدر آبی (عنوان صفحه) -->
+  <!-- ۳. هدر آبی -->
   <div class="page-header">💰 معاشات</div>
 
   <!-- ۴. نوار آمار -->

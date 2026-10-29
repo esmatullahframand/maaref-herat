@@ -48,7 +48,7 @@
   .stats-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 15px; }
   .stats-card-item h6 { margin: 0 0 12px 0; font-weight: bold; font-size: 14px; border-bottom: 2px solid; padding-bottom: 8px; }
 
-  /* استایل جدید برای نمایش آمار مکتب انتخاب شده */
+  /* استایل کارت آمار مکتب */
   .school-info-card {
     background: #f8fafc;
     border: 2px solid #3b82f6;
@@ -56,14 +56,21 @@
     padding: 20px;
     margin-bottom: 20px;
     display: none;
+    box-shadow: 0 4px 12px rgba(59,130,246,0.15);
   }
-  .school-info-card.active { display: block; }
+  .school-info-card.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   .school-info-card h5 { color: #1e40af; font-weight: 800; margin-bottom: 15px; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-  .info-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; margin-bottom: 15px; }
+  .info-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; margin-bottom: 15px; background: #fff; border-radius: 8px; overflow: hidden; }
   .info-table th, .info-table td { border: 1px solid #cbd5e1; padding: 8px; }
   .info-table th { background: #eff6ff; color: #1e40af; font-weight: 800; }
   .info-table td { background: #fff; font-weight: bold; }
   .info-table td.total-col { background: #dcfce7; color: #15803d; }
+
+  /* فیلترهای انتخابی */
+  .combo-filter { display: flex; gap: 5px; }
+  .combo-filter select { flex: 1; }
+  .combo-filter input { flex: 1; }
 </style>
 </head>
 <body>
@@ -132,7 +139,10 @@
 
     <div class="filter-grid">
       <div class="filter-item"><label>🔍 جستجوی عمومی</label><input class="form-control" id="searchInput" placeholder="نام، تخلص، ولد، وظیفه یا کُد بست..." oninput="debouncedLoad()"></div>
-      <div class="filter-item"><label>🏫 مکتب / مدرسه</label><select id="schoolFilter" onchange="onSchoolFilterChange()"><option value="">📋 همه</option></select></div>
+      <div class="filter-item">
+        <label>🏫 مکتب / مدرسه</label>
+        <select id="schoolFilter" onchange="onSchoolFilterChange()"><option value="">📋 همه</option></select>
+      </div>
       <div class="filter-item"><label>📖 نوع مکتب</label><select id="schoolTypeFilter" onchange="loadAllRecords()"><option value="">📋 همه انواع</option><option value="لیسه">لیسه</option><option value="متوسطه">متوسطه</option><option value="ابتداییه">ابتداییه</option><option value="مدرسه">مدرسه</option></select></div>
       <div class="filter-item"><label>👨‍🏫 عنوان بست</label><select id="jobTitleFilter" onchange="loadAllRecords()"><option value="">📋 همه عناوین</option><option value="آمر">آمر</option><option value="مدیر">مدیر</option><option value="مدیر اجرائیه">مدیر اجرائیه</option><option value="معلم">معلم</option><option value="سر معلم">سر معلم</option><option value="معلم همکار">معلم همکار</option><option value="معلم سپورت">معلم سپورت</option><option value="معلم لابرانت">معلم لابرانت</option><option value="عضو علمی معلمان">عضو علمی معلمان</option><option value="عضو علمی مدرسین">عضو علمی مدرسین</option><option value="عضو مسلکی امور مالی و کارکنان">عضو مسلکی امور مالی</option><option value="عضو مسلکی نظارت احصاییه و گزارش">نظارت احصاییه</option><option value="عضو مسلکی تاسیسات و ترمیمات">تاسیسات و ترمیمات</option><option value="عضو مسلکی شوراها">عضو مسلکی شوراها</option><option value="کارکن خدماتی">کارکن خدماتی</option><option value="معتمد جنسی (تحویلدار)">معتمد جنسی</option><option value="سایر">سایر</option></select></div>
       <div class="filter-item"><label>👤 جنسیت</label><select id="genderFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="مرد">مرد</option><option value="زن">زن</option></select></div>
@@ -141,30 +151,48 @@
       <div class="filter-item"><label>👤 وضعیت کارمند</label><select id="empStatusFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="active">✅ فعال</option><option value="retired">🎖️ متقاعد</option></select></div>
       <div class="filter-item"><label>🏢 خدمتی رفته</label><select id="serviceFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="بلی">✅ خدمتی رفته</option><option value="نخیر">❌ خدمتی نرفته</option></select></div>
       <div class="filter-item"><label>📊 وضعیت تایید</label><select id="approvalFilter" onchange="loadAllRecords()"><option value="" selected>📋 همه</option><option value="pending">⏳ در انتظار تایید</option><option value="approved">✅ تایید شده</option></select></div>
-      <div class="filter-item" style="grid-column: span 2;">
-        <label>📅 تاریخ تقرر (از تاریخ ... تا تاریخ ...)</label>
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="appDateFrom" class="form-control" placeholder="از: 1400/01/01" onchange="loadAllRecords()">
-          <input type="text" id="appDateTo" class="form-control" placeholder="تا: 1400/12/30" onchange="loadAllRecords()">
+      
+      <!-- فیلترهای انتخابی (منوی کشویی + عدد) -->
+      <div class="filter-item">
+        <label>📚 فیلتر تعداد شعبات</label>
+        <div class="combo-filter">
+          <select id="filterBranchesType" class="form-control" onchange="loadAllRecords()">
+            <option value="total">کل</option>
+            <option value="1_3">اول تا سوم</option>
+            <option value="4_6">چهارم تا ششم</option>
+            <option value="7_9">هفتم تا نهم</option>
+            <option value="10_12">دهم تا دوازدهم</option>
+          </select>
+          <input type="text" id="filterBranchesValue" class="form-control" placeholder="حداقل..." oninput="debouncedLoad()">
         </div>
       </div>
-      
-      <!-- ۳ فیلتر اصلی که شما خواستید (با عنوان‌های دقیق) -->
+
       <div class="filter-item">
-        <label>🏫 تعداد شعبات (کل)</label>
-        <input type="number" id="fTotalBranches" class="form-control" placeholder="حداقل تعداد..." oninput="loadAllRecords()">
+        <label>👥 فیلتر تعداد داخله</label>
+        <div class="combo-filter">
+          <select id="filterInType" class="form-control" onchange="loadAllRecords()">
+            <option value="total">کل</option>
+            <option value="female">اناث</option>
+            <option value="male">ذکور</option>
+          </select>
+          <input type="text" id="filterInValue" class="form-control" placeholder="حداقل..." oninput="debouncedLoad()">
+        </div>
       </div>
+
       <div class="filter-item">
-        <label>👥 تعداد شاگردان (داخله)</label>
-        <input type="number" id="fTotalIn" class="form-control" placeholder="حداقل تعداد..." oninput="loadAllRecords()">
-      </div>
-      <div class="filter-item">
-        <label>✅ تعداد شاگردان (حاضر)</label>
-        <input type="number" id="fTotalPresent" class="form-control" placeholder="حداقل تعداد..." oninput="loadAllRecords()">
+        <label>✅ فیلتر تعداد حاضر</label>
+        <div class="combo-filter">
+          <select id="filterPresentType" class="form-control" onchange="loadAllRecords()">
+            <option value="total">کل</option>
+            <option value="female">اناث</option>
+            <option value="male">ذکور</option>
+          </select>
+          <input type="text" id="filterPresentValue" class="form-control" placeholder="حداقل..." oninput="debouncedLoad()">
+        </div>
       </div>
     </div>
 
-    <!-- کارت نمایش آمار مکتب انتخاب شده (با تفکیک دقیق) -->
+    <!-- کارت آمار مکتب (با انتخاب مکتب باز می‌شود) -->
     <div class="school-info-card" id="schoolInfoCard">
       <h5><i class="fa-solid fa-school"></i> آمار مکتب انتخاب شده: <span id="selectedSchoolName">—</span></h5>
       
@@ -220,9 +248,6 @@
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ═══════════════════════════════════════════════════════════
-  // بررسی امنیتی و توابع پایه
-  // ═══════════════════════════════════════════════════════════
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
   if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; throw new Error('No token'); }
@@ -262,14 +287,15 @@
       empStatus: document.getElementById('empStatusFilter').value,
       service: document.getElementById('serviceFilter').value,
       approval: document.getElementById('approvalFilter').value,
-      appDateFrom: document.getElementById('appDateFrom').value.trim(),
-      appDateTo: document.getElementById('appDateTo').value.trim(),
-      fTotalBranches: document.getElementById('fTotalBranches').value.trim(),
-      fTotalIn: document.getElementById('fTotalIn').value.trim(),
-      fTotalPresent: document.getElementById('fTotalPresent').value.trim()
+      filterBranchesType: document.getElementById('filterBranchesType').value,
+      filterBranchesValue: document.getElementById('filterBranchesValue').value.trim(),
+      filterInType: document.getElementById('filterInType').value,
+      filterInValue: document.getElementById('filterInValue').value.trim(),
+      filterPresentType: document.getElementById('filterPresentType').value,
+      filterPresentValue: document.getElementById('filterPresentValue').value.trim()
     };
   }
-  function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo || f.fTotalBranches || f.fTotalIn || f.fTotalPresent); }
+  function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.filterBranchesValue || f.filterInValue || f.filterPresentValue); }
 
   // ═══════════════════════════════════════════════════════════
   // نمایش آمار مکتب انتخاب شده (به تفکیک)
@@ -356,20 +382,37 @@
         records = records.filter(row => { let sName = row.schoolname; if (!sName && row.userid) sName = getSchoolNameById(row.userid); return sName && schoolNames.includes(sName); });
       }
 
-      // فیلترهای جدید (تعداد کل)
-      if (f.fTotalBranches || f.fTotalIn || f.fTotalPresent) {
+      // فیلترهای انتخابی (شعبات، داخله، حاضر)
+      if (f.filterBranchesValue || f.filterInValue || f.filterPresentValue) {
         const validSchoolNames = allSchoolSettings.filter(s => {
-          const check = (val, actual) => !val || actual >= Number(val);
-          return check(f.fTotalBranches, s.branches_total || 0) &&
-                 check(f.fTotalIn, (s.total_in_female || 0) + (s.total_in_male || 0)) &&
-                 check(f.fTotalPresent, (s.total_present_female || 0) + (s.total_present_male || 0));
+          let check = true;
+          if (f.filterBranchesValue) {
+            const val = Number(f.filterBranchesValue);
+            if (f.filterBranchesType === 'total') check = check && ((s.branches_f_1_3||0)+(s.branches_m_1_3||0)+(s.branches_x_1_3||0) + (s.branches_f_4_6||0)+(s.branches_m_4_6||0)+(s.branches_x_4_6||0) + (s.branches_f_7_9||0)+(s.branches_m_7_9||0)+(s.branches_x_7_9||0) + (s.branches_f_10_12||0)+(s.branches_m_10_12||0)+(s.branches_x_10_12||0)) >= val;
+            else if (f.filterBranchesType === '1_3') check = check && ((s.branches_f_1_3||0)+(s.branches_m_1_3||0)+(s.branches_x_1_3||0)) >= val;
+            else if (f.filterBranchesType === '4_6') check = check && ((s.branches_f_4_6||0)+(s.branches_m_4_6||0)+(s.branches_x_4_6||0)) >= val;
+            else if (f.filterBranchesType === '7_9') check = check && ((s.branches_f_7_9||0)+(s.branches_m_7_9||0)+(s.branches_x_7_9||0)) >= val;
+            else if (f.filterBranchesType === '10_12') check = check && ((s.branches_f_10_12||0)+(s.branches_m_10_12||0)+(s.branches_x_10_12||0)) >= val;
+          }
+          if (f.filterInValue) {
+            const val = Number(f.filterInValue);
+            if (f.filterInType === 'total') check = check && ((s.total_in_female||0)+(s.total_in_male||0)) >= val;
+            else if (f.filterInType === 'female') check = check && (s.total_in_female||0) >= val;
+            else if (f.filterInType === 'male') check = check && (s.total_in_male||0) >= val;
+          }
+          if (f.filterPresentValue) {
+            const val = Number(f.filterPresentValue);
+            if (f.filterPresentType === 'total') check = check && ((s.total_present_female||0)+(s.total_present_male||0)) >= val;
+            else if (f.filterPresentType === 'female') check = check && (s.total_present_female||0) >= val;
+            else if (f.filterPresentType === 'male') check = check && (s.total_present_male||0) >= val;
+          }
+          return check;
         }).map(s => s.schoolname);
         records = records.filter(row => { let sName = row.schoolname; if (!sName && row.userid) sName = getSchoolNameById(row.userid); return sName && validSchoolNames.includes(sName); });
       }
 
       if (f.empStatus) records = records.filter(row => { const info = row.data || {}; const emp = getEmployeeStatus(info); const isRetired = emp.status.includes('متقاعد'); if (f.empStatus === 'retired') return isRetired; if (f.empStatus === 'active') return !isRetired && emp.age !== '—'; return true; });
       if (f.service) records = records.filter(row => { const info = row.data || {}; return (info.serviceStatus || 'نخیر') === f.service; });
-      if (f.appDateFrom || f.appDateTo) { const fromP = parseShamsi(f.appDateFrom), toP = parseShamsi(f.appDateTo); records = records.filter(row => { const info = row.data || {}; const appDate = parseShamsi(info.currentPositionDate || info.firstAppointmentDate); if (!appDate) return false; if (fromP && appDate.numeric < fromP.numeric) return false; if (toP && appDate.numeric > toP.numeric) return false; return true; }); }
       
       loadedRecordsCache = records;
       if (!records || records.length === 0) {

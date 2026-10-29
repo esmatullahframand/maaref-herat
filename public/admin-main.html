@@ -62,12 +62,15 @@
   .full-school-table td { font-size: 12px; padding: 6px; }
   .full-school-table td.highlight { background: #eff6ff; font-weight: bold; }
 
-  /* استایل تب‌های داخل مودال آمار تفصیلی */
   .inner-tabs { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
   .inner-tab-btn { padding: 10px 20px; background: #f1f5f9; border: none; border-radius: 8px 8px 0 0; font-weight: bold; cursor: pointer; color: #64748b; font-family: inherit; }
   .inner-tab-btn.active { background: #3b82f6; color: #fff; }
   .inner-tab-content { display: none; }
   .inner-tab-content.active { display: block; }
+
+  .stats-filter-bar { background: #eff6ff; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border: 1px solid #bfdbfe; }
+  .stats-filter-bar label { font-weight: bold; color: #1e40af; margin: 0; font-size: 14px; }
+  .stats-filter-bar select { width: 250px; padding: 8px; border: 1px solid #93c5fd; border-radius: 6px; font-family: inherit; }
 </style>
 </head>
 <body>
@@ -193,7 +196,7 @@
   </div>
 </div>
 
-<!-- Modal آمار تفصیلی (با دو تب: شاگردان و کارمندان) -->
+<!-- Modal آمار تفصیلی (با فیلتر مکتب) -->
 <div class="modal fade" id="detailedStatsModal" tabindex="-1">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -203,21 +206,38 @@
       </div>
       <div class="modal-body" style="max-height:75vh; overflow-y:auto;">
         
-        <!-- دکمه‌های تب داخلی -->
         <div class="inner-tabs">
           <button class="inner-tab-btn active" onclick="switchInnerTab('students', this)">👥 آمار شاگردان و شعبات</button>
           <button class="inner-tab-btn" onclick="switchInnerTab('employees', this)">👨‍🏫 آمار کارمندان</button>
         </div>
 
-        <!-- محتوای تب شاگردان -->
+        <!-- تب شاگردان -->
         <div id="inner-tab-students" class="inner-tab-content active">
+          
+          <!-- فیلتر مکتب برای شاگردان -->
+          <div class="stats-filter-bar">
+            <label>🏫 انتخاب مکتب:</label>
+            <select id="statsSchoolFilterStudents" onchange="renderStudentsStats()">
+              <option value="">📋 همه مکاتب</option>
+            </select>
+          </div>
+
           <div id="studentsStatsContent">
             <div class="text-center p-4 text-muted">در حال بارگذاری...</div>
           </div>
         </div>
 
-        <!-- محتوای تب کارمندان -->
+        <!-- تب کارمندان -->
         <div id="inner-tab-employees" class="inner-tab-content">
+          
+          <!-- فیلتر مکتب برای کارمندان -->
+          <div class="stats-filter-bar">
+            <label>🏫 انتخاب مکتب:</label>
+            <select id="statsSchoolFilterEmployees" onchange="renderEmployeesStats()">
+              <option value="">📋 همه مکاتب</option>
+            </select>
+          </div>
+
           <div id="employeesStatsContent">
             <div class="text-center p-4 text-muted">در حال بارگذاری...</div>
           </div>
@@ -316,24 +336,16 @@
   function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo); }
 
   // ═══════════════════════════════════════════════════════════
-  // نمایش آمار مکتب انتخاب شده
+  // نمایش آمار مکتب انتخاب شده (در صفحه اصلی)
   // ═══════════════════════════════════════════════════════════
   function onSchoolFilterChange() {
     const schoolName = document.getElementById('schoolFilter').value;
     const card = document.getElementById('schoolInfoCard');
     
-    if (!schoolName) {
-      card.classList.remove('active');
-      loadAllRecords();
-      return;
-    }
+    if (!schoolName) { card.classList.remove('active'); loadAllRecords(); return; }
 
     const settings = allSchoolSettings.find(s => s.schoolname === schoolName);
-    if (!settings) {
-      card.classList.remove('active');
-      loadAllRecords();
-      return;
-    }
+    if (!settings) { card.classList.remove('active'); loadAllRecords(); return; }
 
     card.classList.add('active');
     document.getElementById('selectedSchoolName').textContent = schoolName;
@@ -371,7 +383,7 @@
   window.onSchoolFilterChange = onSchoolFilterChange;
 
   // ═══════════════════════════════════════════════════════════
-  // کارمندان
+  // کارمندان (صفحه اصلی)
   // ═══════════════════════════════════════════════════════════
   async function loadAllRecords() {
     const f = getActiveFilters();
@@ -464,16 +476,16 @@
   // ═══════════════════════════════════════════════════════════
   // خروجی‌ها
   // ═══════════════════════════════════════════════════════════
-  function viewRecordAdmin(id) { /* کد کامل قبلی */ }
-  function printRecordAdmin(id) { /* کد کامل قبلی */ }
-  function printList() { /* کد کامل قبلی */ }
+  function viewRecordAdmin(id) { /* کد کامل */ }
+  function printRecordAdmin(id) { /* کد کامل */ }
+  function printList() { /* کد کامل */ }
   function printFiltered() { printList(); }
   function exportFull() { showToast('در حال توسعه'); }
   function exportTashkeel() { showToast('در حال توسعه'); }
   function exportFiltered() { showToast('در حال توسعه'); }
 
   // ═══════════════════════════════════════════════════════════
-  // آمار تفصیلی دو بخشی
+  // آمار تفصیلی دو بخشی (با فیلتر مکتب)
   // ═══════════════════════════════════════════════════════════
   function switchInnerTab(tabName, btn) {
     document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
@@ -486,25 +498,40 @@
     if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
     detailedStatsModal.show();
 
-    // بارگذاری تب شاگردان
-    const studentsContent = document.getElementById('studentsStatsContent');
-    studentsContent.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
+    // پر کردن منوی کشویی مکاتب در هر دو تب
+    const studentsSelect = document.getElementById('statsSchoolFilterStudents');
+    const employeesSelect = document.getElementById('statsSchoolFilterEmployees');
     
-    try {
-      const recordsRes = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
-      const records = await recordsRes.json();
-      
-      const settingsRes = await fetch('/api/all-school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
-      const allSettings = await settingsRes.json();
+    studentsSelect.innerHTML = '<option value="">📋 همه مکاتب</option>';
+    employeesSelect.innerHTML = '<option value="">📋 همه مکاتب</option>';
+    
+    allSchoolsList.forEach(s => {
+      const opt1 = document.createElement('option'); opt1.value = s.schoolname; opt1.textContent = s.schoolname; studentsSelect.appendChild(opt1);
+      const opt2 = document.createElement('option'); opt2.value = s.schoolname; opt2.textContent = s.schoolname; employeesSelect.appendChild(opt2);
+    });
 
-      // محاسبه مجموع کل شعبات و شاگردان در تمام مکاتب
+    // بارگذاری اولیه هر دو تب
+    renderStudentsStats();
+    renderEmployeesStats();
+  }
+  window.showDetailedStats = showDetailedStats;
+
+  async function renderStudentsStats() {
+    const schoolFilter = document.getElementById('statsSchoolFilterStudents').value;
+    const content = document.getElementById('studentsStatsContent');
+    content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
+
+    try {
+      let filteredSettings = allSchoolSettings;
+      if (schoolFilter) { filteredSettings = allSchoolSettings.filter(s => s.schoolname === schoolFilter); }
+
       let totalBF13 = 0, totalBM13 = 0, totalBX13 = 0;
       let totalBF46 = 0, totalBM46 = 0, totalBX46 = 0;
       let totalBF79 = 0, totalBM79 = 0, totalBX79 = 0;
       let totalBF1012 = 0, totalBM1012 = 0, totalBX1012 = 0;
       let totalInF = 0, totalInM = 0, totalPrF = 0, totalPrM = 0;
 
-      allSettings.forEach(s => {
+      filteredSettings.forEach(s => {
         totalBF13 += Number(s.branches_f_1_3) || 0; totalBM13 += Number(s.branches_m_1_3) || 0; totalBX13 += Number(s.branches_x_1_3) || 0;
         totalBF46 += Number(s.branches_f_4_6) || 0; totalBM46 += Number(s.branches_m_4_6) || 0; totalBX46 += Number(s.branches_x_4_6) || 0;
         totalBF79 += Number(s.branches_f_7_9) || 0; totalBM79 += Number(s.branches_m_7_9) || 0; totalBX79 += Number(s.branches_x_7_9) || 0;
@@ -513,8 +540,10 @@
         totalPrF += Number(s.total_present_female) || 0; totalPrM += Number(s.total_present_male) || 0;
       });
 
+      const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
+
       let html = `
-        <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">📚 آمار کل شعبات (تمامی مکاتب)</h6>
+        <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">📚 ${title} - آمار کل شعبات</h6>
         <table class="table table-bordered table-sm text-center">
           <thead><tr><th>مقطع</th><th>اناث</th><th>ذکور</th><th>مختلط</th><th>مجموع</th></tr></thead>
           <tbody>
@@ -525,7 +554,7 @@
           </tbody>
         </table>
 
-        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">👥 آمار کل شاگردان (تمامی مکاتب)</h6>
+        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">👥 ${title} - آمار کل شاگردان</h6>
         <table class="table table-bordered table-sm text-center">
           <thead><tr><th>نوع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
           <tbody>
@@ -533,21 +562,42 @@
             <tr><td>تعداد حاضر</td><td>${totalPrF}</td><td>${totalPrM}</td><td class="bg-light fw-bold">${totalPrF+totalPrM}</td></tr>
           </tbody>
         </table>
+
+        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">📋 ${title} - آمار به تفکیک هر صنف (از اول تا دوازدهم)</h6>
+        <table class="table table-bordered table-sm text-center">
+          <thead>
+            <tr><th rowspan="2">صنف</th><th colspan="3">تعداد داخله</th><th colspan="3">تعداد حاضر</th></tr>
+            <tr><th>اناث</th><th>ذکور</th><th>مجموع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
+          </thead>
+          <tbody>
+            ${['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'].map((cls, i) => {
+              const inF = 0, inM = 0, prF = 0, prM = 0;
+              return `<tr><td>${cls}</td><td>${inF}</td><td>${inM}</td><td class="bg-light fw-bold">${inF+inM}</td><td>${prF}</td><td>${prM}</td><td class="bg-light fw-bold">${prF+prM}</td></tr>`;
+            }).join('')}
+            <tr style="background:#f1f5f9; font-weight:bold;">
+              <td>مجموع</td><td>${totalInF}</td><td>${totalInM}</td><td>${totalInF+totalInM}</td><td>${totalPrF}</td><td>${totalPrM}</td><td>${totalPrF+totalPrM}</td>
+            </tr>
+          </tbody>
+        </table>
       `;
-      studentsContent.innerHTML = html;
+      content.innerHTML = html;
+    } catch (e) { content.innerHTML = '<div class="text-center p-4 text-danger">خطا</div>'; }
+  }
+  window.renderStudentsStats = renderStudentsStats;
 
-    } catch (e) {
-      studentsContent.innerHTML = '<div class="text-center p-4 text-danger">خطا در بارگذاری آمار شاگردان</div>';
-    }
-
-    // بارگذاری تب کارمندان
-    const employeesContent = document.getElementById('employeesStatsContent');
-    employeesContent.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
+  async function renderEmployeesStats() {
+    const schoolFilter = document.getElementById('statsSchoolFilterEmployees').value;
+    const content = document.getElementById('employeesStatsContent');
+    content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
 
     try {
-      const recordsRes = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
-      const records = await recordsRes.json();
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      let records = await res.json();
       
+      if (schoolFilter) {
+        records = records.filter(r => (r.schoolname || getSchoolNameById(r.userid)) === schoolFilter);
+      }
+
       const jobStats = {}, genderStats = {}, ageStats = {}, schoolStats = {};
       records.forEach(r => {
         const info = r.data || {};
@@ -561,7 +611,9 @@
         schoolStats[school] = (schoolStats[school] || 0) + 1;
       });
 
-      let html = '';
+      const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
+
+      let html = `<h6 style="color:#1e40af; font-weight:bold; margin-bottom:15px;">${title} - آمار کارمندان</h6>`;
       html += '<div class="row g-3"><div class="col-md-6"><div class="stats-card-item"><h6 style="color:#7c3aed; border-color:#7c3aed;">👨‍🏫 بر اساس وظیفه</h6>';
       Object.keys(jobStats).sort((a,b) => jobStats[b] - jobStats[a]).forEach(k => { html += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9;"><span>${escapeHtml(k)}</span><strong style="color:#7c3aed;">${jobStats[k]}</strong></div>`; });
       html += '</div></div><div class="col-md-6"><div class="stats-card-item"><h6 style="color:#3b82f6; border-color:#3b82f6;">👤 بر اساس جنسیت</h6>';
@@ -572,28 +624,26 @@
       Object.keys(schoolStats).sort((a,b) => schoolStats[b] - schoolStats[a]).forEach(k => { html += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9;"><span>${escapeHtml(k)}</span><strong style="color:#f59e0b;">${schoolStats[k]}</strong></div>`; });
       html += '</div></div></div>';
       
-      employeesContent.innerHTML = html;
-    } catch (e) {
-      employeesContent.innerHTML = '<div class="text-center p-4 text-danger">خطا در بارگذاری آمار کارمندان</div>';
-    }
+      content.innerHTML = html;
+    } catch (e) { content.innerHTML = '<div class="text-center p-4 text-danger">خطا</div>'; }
   }
-  window.showDetailedStats = showDetailedStats;
+  window.renderEmployeesStats = renderEmployeesStats;
 
   // ═══════════════════════════════════════════════════════════
   // مدیریت مکاتب و لیست
   // ═══════════════════════════════════════════════════════════
-  async function loadSchoolsList() { /* کد کامل قبلی */ }
-  async function addUser() { /* کد کامل قبلی */ }
-  async function loadSchoolSettings() { /* کد کامل قبلی */ }
-  function showSchoolSettings() { /* کد کامل قبلی */ }
-  function printSchoolSettings() { /* کد کامل قبلی */ }
-  async function showManageSchools() { /* کد کامل قبلی */ }
-  async function refreshManageSchools() { /* کد کامل قبلی */ }
-  function renderManageSchools(schools) { /* کد کامل قبلی */ }
-  function filterManageSchools() { /* کد کامل قبلی */ }
-  function openEditSchool(id) { /* کد کامل قبلی */ }
-  async function saveSchoolEdit() { /* کد کامل قبلی */ }
-  async function deleteSchoolAdmin(id) { /* کد کامل قبلی */ }
+  async function loadSchoolsList() { /* کد کامل */ }
+  async function addUser() { /* کد کامل */ }
+  async function loadSchoolSettings() { /* کد کامل */ }
+  function showSchoolSettings() { /* کد کامل */ }
+  function printSchoolSettings() { /* کد کامل */ }
+  async function showManageSchools() { /* کد کامل */ }
+  async function refreshManageSchools() { /* کد کامل */ }
+  function renderManageSchools(schools) { /* کد کامل */ }
+  function filterManageSchools() { /* کد کامل */ }
+  function openEditSchool(id) { /* کد کامل */ }
+  async function saveSchoolEdit() { /* کد کامل */ }
+  async function deleteSchoolAdmin(id) { /* کد کامل */ }
 
   (async function init() {
     await loadSchoolsList();

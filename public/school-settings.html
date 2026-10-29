@@ -48,26 +48,21 @@
   .form-section { background: #fdfdfd; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 25px; border-right: 5px solid #10b981; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
   .form-section h5 { margin-top: 0; color: #10b981; font-size: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
   
-  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   label { font-size: 13px; font-weight: 700; color: #475569; }
   input[type="text"], select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: #fff; width: 100%; transition: 0.2s; }
   input:focus, select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
   input[readonly] { background: #f1f5f9; color: #475569; cursor: not-allowed; font-weight: bold; border: 1px solid #cbd5e1; }
   
-  .sub-section { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-  .sub-section h6 { margin: 0 0 12px 0; color: #334155; font-size: 14px; font-weight: 800; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
-
-  .total-box { background: #eff6ff; border: 1px solid #3b82f6; border-radius: 8px; padding: 10px; margin-top: 10px; }
-  .total-box label { color: #1e40af; font-weight: 800; }
-  .total-box input { background: #dbeafe; color: #1e40af; font-weight: bold; text-align: center; border: 1px solid #3b82f6; }
-
+  /* استایل جدول‌ها */
   .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 10px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: center; }
   th, td { border: 1px solid #cbd5e1; padding: 10px; }
-  th { background: #f1f5f9; color: #475569; font-weight: 700; }
-  td input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-family: inherit; }
+  th { background: #f1f5f9; color: #334155; font-weight: 800; }
+  td input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-family: inherit; font-weight: bold; }
   td input:focus { border-color: #3b82f6; outline: none; }
+  .total-row td { background: #eff6ff; font-weight: 800; color: #1e40af; }
   
   .btn { padding: 14px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background: linear-gradient(135deg, #10b981, #059669); font-family: inherit; font-size: 16px; transition: 0.2s; box-shadow: 0 4px 12px rgba(16,185,129,0.3); width: 100%; margin-top: 10px; }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); }
@@ -124,93 +119,62 @@
         </div>
       </div>
 
-      <!-- ۲. شعبات درسی -->
+      <!-- ۲. شعبات درسی (جدول مقایسه‌ای ساده) -->
       <div class="form-section">
-        <h5>۲. شعبات درسی (تعداد هر صنف)</h5>
-        
-        <!-- اناث -->
-        <div class="sub-section">
-          <h6>📚 شعبات اناث</h6>
-          <div class="grid-4" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));">
-            <div class="form-group"><label>اول</label><input type="text" id="sF1" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دوم</label><input type="text" id="sF2" oninput="calcBranches()"></div>
-            <div class="form-group"><label>سوم</label><input type="text" id="sF3" oninput="calcBranches()"></div>
-            <div class="form-group"><label>چهارم</label><input type="text" id="sF4" oninput="calcBranches()"></div>
-            <div class="form-group"><label>پنجم</label><input type="text" id="sF5" oninput="calcBranches()"></div>
-            <div class="form-group"><label>ششم</label><input type="text" id="sF6" oninput="calcBranches()"></div>
-            <div class="form-group"><label>هفتم</label><input type="text" id="sF7" oninput="calcBranches()"></div>
-            <div class="form-group"><label>هشتم</label><input type="text" id="sF8" oninput="calcBranches()"></div>
-            <div class="form-group"><label>نهم</label><input type="text" id="sF9" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دهم</label><input type="text" id="sF10" oninput="calcBranches()"></div>
-            <div class="form-group"><label>یازدهم</label><input type="text" id="sF11" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دوازدهم</label><input type="text" id="sF12" oninput="calcBranches()"></div>
-          </div>
-          <div class="grid-4" style="margin-top:10px; grid-template-columns: repeat(4, 1fr);">
-            <div class="total-box"><label>مجموع ۱-۳</label><input type="text" id="sFB13" readonly></div>
-            <div class="total-box"><label>مجموع ۴-۶</label><input type="text" id="sFB46" readonly></div>
-            <div class="total-box"><label>مجموع ۷-۹</label><input type="text" id="sFB79" readonly></div>
-            <div class="total-box"><label>مجموع ۱۰-۱۲</label><input type="text" id="sFB1012" readonly></div>
-          </div>
-        </div>
-
-        <!-- ذکور -->
-        <div class="sub-section">
-          <h6>📚 شعبات ذکور</h6>
-          <div class="grid-4" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));">
-            <div class="form-group"><label>اول</label><input type="text" id="sM1" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دوم</label><input type="text" id="sM2" oninput="calcBranches()"></div>
-            <div class="form-group"><label>سوم</label><input type="text" id="sM3" oninput="calcBranches()"></div>
-            <div class="form-group"><label>چهارم</label><input type="text" id="sM4" oninput="calcBranches()"></div>
-            <div class="form-group"><label>پنجم</label><input type="text" id="sM5" oninput="calcBranches()"></div>
-            <div class="form-group"><label>ششم</label><input type="text" id="sM6" oninput="calcBranches()"></div>
-            <div class="form-group"><label>هفتم</label><input type="text" id="sM7" oninput="calcBranches()"></div>
-            <div class="form-group"><label>هشتم</label><input type="text" id="sM8" oninput="calcBranches()"></div>
-            <div class="form-group"><label>نهم</label><input type="text" id="sM9" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دهم</label><input type="text" id="sM10" oninput="calcBranches()"></div>
-            <div class="form-group"><label>یازدهم</label><input type="text" id="sM11" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دوازدهم</label><input type="text" id="sM12" oninput="calcBranches()"></div>
-          </div>
-          <div class="grid-4" style="margin-top:10px; grid-template-columns: repeat(4, 1fr);">
-            <div class="total-box"><label>مجموع ۱-۳</label><input type="text" id="sMB13" readonly></div>
-            <div class="total-box"><label>مجموع ۴-۶</label><input type="text" id="sMB46" readonly></div>
-            <div class="total-box"><label>مجموع ۷-۹</label><input type="text" id="sMB79" readonly></div>
-            <div class="total-box"><label>مجموع ۱۰-۱۲</label><input type="text" id="sMB1012" readonly></div>
-          </div>
-        </div>
-
-        <!-- مختلط -->
-        <div class="sub-section">
-          <h6>📚 شعبات مختلط</h6>
-          <div class="grid-4" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));">
-            <div class="form-group"><label>اول</label><input type="text" id="sX1" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دوم</label><input type="text" id="sX2" oninput="calcBranches()"></div>
-            <div class="form-group"><label>سوم</label><input type="text" id="sX3" oninput="calcBranches()"></div>
-            <div class="form-group"><label>چهارم</label><input type="text" id="sX4" oninput="calcBranches()"></div>
-            <div class="form-group"><label>پنجم</label><input type="text" id="sX5" oninput="calcBranches()"></div>
-            <div class="form-group"><label>ششم</label><input type="text" id="sX6" oninput="calcBranches()"></div>
-            <div class="form-group"><label>هفتم</label><input type="text" id="sX7" oninput="calcBranches()"></div>
-            <div class="form-group"><label>هشتم</label><input type="text" id="sX8" oninput="calcBranches()"></div>
-            <div class="form-group"><label>نهم</label><input type="text" id="sX9" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دهم</label><input type="text" id="sX10" oninput="calcBranches()"></div>
-            <div class="form-group"><label>یازدهم</label><input type="text" id="sX11" oninput="calcBranches()"></div>
-            <div class="form-group"><label>دوازدهم</label><input type="text" id="sX12" oninput="calcBranches()"></div>
-          </div>
-          <div class="grid-4" style="margin-top:10px; grid-template-columns: repeat(4, 1fr);">
-            <div class="total-box"><label>مجموع ۱-۳</label><input type="text" id="sXB13" readonly></div>
-            <div class="total-box"><label>مجموع ۴-۶</label><input type="text" id="sXB46" readonly></div>
-            <div class="total-box"><label>مجموع ۷-۹</label><input type="text" id="sXB79" readonly></div>
-            <div class="total-box"><label>مجموع ۱۰-۱۲</label><input type="text" id="sXB1012" readonly></div>
-          </div>
-        </div>
-
-        <!-- مجموع کل -->
-        <div class="form-group" style="margin-top: 20px;">
-          <label style="font-size: 15px; color: #1e40af;">🔢 تعداد کل شعبات (به صورت اتومات)</label>
-          <input type="text" id="sBranchesTotal" readonly style="background:#dbeafe; color:#1e40af; font-weight:bold; font-size:18px; text-align:center; border:2px solid #3b82f6;">
+        <h5>۲. شعبات درسی (تعداد در هر مقطع)</h5>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>مقطع درسی</th>
+                <th>تعداد شعبات اناث</th>
+                <th>تعداد شعبات ذکور</th>
+                <th>تعداد شعبات مختلط</th>
+                <th>مجموع مقطع</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:bold;">اول تا سوم</td>
+                <td><input type="text" id="sF13" oninput="calcBranches()"></td>
+                <td><input type="text" id="sM13" oninput="calcBranches()"></td>
+                <td><input type="text" id="sX13" oninput="calcBranches()"></td>
+                <td><input type="text" id="sTotal13" readonly style="background:#eff6ff; color:#1e40af;"></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold;">چهارم تا ششم</td>
+                <td><input type="text" id="sF46" oninput="calcBranches()"></td>
+                <td><input type="text" id="sM46" oninput="calcBranches()"></td>
+                <td><input type="text" id="sX46" oninput="calcBranches()"></td>
+                <td><input type="text" id="sTotal46" readonly style="background:#eff6ff; color:#1e40af;"></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold;">هفتم تا نهم</td>
+                <td><input type="text" id="sF79" oninput="calcBranches()"></td>
+                <td><input type="text" id="sM79" oninput="calcBranches()"></td>
+                <td><input type="text" id="sX79" oninput="calcBranches()"></td>
+                <td><input type="text" id="sTotal79" readonly style="background:#eff6ff; color:#1e40af;"></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold;">دهم تا دوازدهم</td>
+                <td><input type="text" id="sF1012" oninput="calcBranches()"></td>
+                <td><input type="text" id="sM1012" oninput="calcBranches()"></td>
+                <td><input type="text" id="sX1012" oninput="calcBranches()"></td>
+                <td><input type="text" id="sTotal1012" readonly style="background:#eff6ff; color:#1e40af;"></td>
+              </tr>
+              <tr class="total-row">
+                <td>مجموع کل</td>
+                <td><input type="text" id="sTotalFemale" readonly></td>
+                <td><input type="text" id="sTotalMale" readonly></td>
+                <td><input type="text" id="sTotalMixed" readonly></td>
+                <td><input type="text" id="sBranchesTotal" readonly style="background:#dbeafe; font-size:16px;"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- ۳. آمار داخله و حاضر -->
+      <!-- ۳. آمار داخله و حاضر (مجموع) -->
       <div class="form-section">
         <h5>۳. آمار داخله و حاضر (مجموع)</h5>
         <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">این مقادیر به صورت خودکار از جدول آمار اصناف (بخش ۴) محاسبه می‌شوند.</p>
@@ -296,36 +260,29 @@
   function numVal(id) { const el = document.getElementById(id); return el ? Number(el.value) || 0 : 0; }
   function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
 
-  // محاسبه مجموع شعبات و مجموع هر مقطع
+  // محاسبه مجموع شعبات
   function calcBranches() {
-    // اناث
-    const f13 = numVal('sF1') + numVal('sF2') + numVal('sF3');
-    const f46 = numVal('sF4') + numVal('sF5') + numVal('sF6');
-    const f79 = numVal('sF7') + numVal('sF8') + numVal('sF9');
-    const f1012 = numVal('sF10') + numVal('sF11') + numVal('sF12');
-    setVal('sFB13', f13); setVal('sFB46', f46); setVal('sFB79', f79); setVal('sFB1012', f1012);
+    const f13 = numVal('sF13'), f46 = numVal('sF46'), f79 = numVal('sF79'), f1012 = numVal('sF1012');
+    const m13 = numVal('sM13'), m46 = numVal('sM46'), m79 = numVal('sM79'), m1012 = numVal('sM1012');
+    const x13 = numVal('sX13'), x46 = numVal('sX46'), x79 = numVal('sX79'), x1012 = numVal('sX1012');
 
-    // ذکور
-    const m13 = numVal('sM1') + numVal('sM2') + numVal('sM3');
-    const m46 = numVal('sM4') + numVal('sM5') + numVal('sM6');
-    const m79 = numVal('sM7') + numVal('sM8') + numVal('sM9');
-    const m1012 = numVal('sM10') + numVal('sM11') + numVal('sM12');
-    setVal('sMB13', m13); setVal('sMB46', m46); setVal('sMB79', m79); setVal('sMB1012', m1012);
+    // مجموع هر مقطع
+    setVal('sTotal13', f13 + m13 + x13);
+    setVal('sTotal46', f46 + m46 + x46);
+    setVal('sTotal79', f79 + m79 + x79);
+    setVal('sTotal1012', f1012 + m1012 + x1012);
 
-    // مختلط
-    const x13 = numVal('sX1') + numVal('sX2') + numVal('sX3');
-    const x46 = numVal('sX4') + numVal('sX5') + numVal('sX6');
-    const x79 = numVal('sX7') + numVal('sX8') + numVal('sX9');
-    const x1012 = numVal('sX10') + numVal('sX11') + numVal('sX12');
-    setVal('sXB13', x13); setVal('sXB46', x46); setVal('sXB79', x79); setVal('sXB1012', x1012);
+    // مجموع هر ستون
+    setVal('sTotalFemale', f13 + f46 + f79 + f1012);
+    setVal('sTotalMale', m13 + m46 + m79 + m1012);
+    setVal('sTotalMixed', x13 + x46 + x79 + x1012);
 
     // مجموع کل
-    const total = f13 + f46 + f79 + f1012 + m13 + m46 + m79 + m1012 + x13 + x46 + x79 + x1012;
-    document.getElementById('sBranchesTotal').value = total;
+    setVal('sBranchesTotal', f13 + f46 + f79 + f1012 + m13 + m46 + m79 + m1012 + x13 + x46 + x79 + x1012);
   }
   window.calcBranches = calcBranches;
 
-  // محاسبه مجموع داخله و حاضر از جدول اصناف
+  // محاسبه مجموع داخله و حاضر
   function calcTotals() {
     let inF = 0, inM = 0, prF = 0, prM = 0;
     for (let i = 1; i <= 12; i++) {
@@ -369,21 +326,15 @@
         document.getElementById('sTimeType').value = s.time_type || 'یک تایم';
         document.getElementById('sAcademicMember').value = s.academic_member || '';
 
-        // بارگذاری شعبات (اگر در دیتابیس به صورت تفکیک‌شده ذخیره شده باشند)
-        // اگر قبلاً به صورت مجموع ذخیره شده بود، ما آن‌ها را در فیلد اول می‌گذاریم تا کاربر بتواند ویرایش کند.
-        // در این نسخه فرض می‌کنیم همیشه از این به بعد تفکیک‌شده ذخیره می‌شود، پس فیلدها را خالی می‌گذاریم یا مقدار پیش‌فرض می‌دهیم.
-        // اما برای اطمینان، فیلدهای صنف را از ستون‌های قدیمی پر می‌کنیم اگر وجود داشته باشند.
-        
-        // (چون سرور را تغییر دادیم، بهتر است فیلدهای صنف را در دیتابیس ذخیره کنیم. اما فعلاً برای سازگاری با کد قبلی، فیلدهای مجموع را نمایش می‌دهیم و فیلدهای صنف را خالی می‌گذاریم. 
-        // در نسخه نهایی، باید سرور را طوری تغییر دهیم که ۳۶ ستون برای صنف‌ها داشته باشد. 
-        // برای اینکه در این پیام کد HTML کامل باشد، فیلدهای صنف را از دیتابیس نمی‌خوانیم و فقط فیلدهای مجموع را می‌خوانیم تا کاربر مجبور شود دوباره وارد کند. 
-        // این کار باعث می‌شود داده‌های قبلی از دست نروند اما نیاز به وارد کردن مجدد صنف‌ها باشد.)
-        
+        // بارگذاری شعبات
+        setVal('sF13', s.branches_f_1_3); setVal('sM13', s.branches_m_1_3); setVal('sX13', s.branches_x_1_3);
+        setVal('sF46', s.branches_f_4_6); setVal('sM46', s.branches_m_4_6); setVal('sX46', s.branches_x_4_6);
+        setVal('sF79', s.branches_f_7_9); setVal('sM79', s.branches_m_7_9); setVal('sX79', s.branches_x_7_9);
+        setVal('sF1012', s.branches_f_10_12); setVal('sM1012', s.branches_m_10_12); setVal('sX1012', s.branches_x_10_12);
+
         // بارگذاری آمار کل و اصناف
-        setVal('sTotalInFemale', s.total_in_female);
-        setVal('sTotalInMale', s.total_in_male);
-        setVal('sTotalPresentFemale', s.total_present_female);
-        setVal('sTotalPresentMale', s.total_present_male);
+        setVal('sTotalInFemale', s.total_in_female); setVal('sTotalInMale', s.total_in_male);
+        setVal('sTotalPresentFemale', s.total_present_female); setVal('sTotalPresentMale', s.total_present_male);
 
         for (let i = 1; i <= 12; i++) {
           setVal(`c${i}_in_f`, s[`c${i}_in_f`]);
@@ -392,9 +343,8 @@
           setVal(`c${i}_pr_m`, s[`c${i}_pr_m`]);
         }
 
-        // محاسبه مجدد مجموع‌ها
-        calcTotals();
         calcBranches();
+        calcTotals();
 
         document.getElementById('sBudgetStatus').value = s.budget_status || 'عادی';
         toggleBudgetFields();
@@ -424,19 +374,14 @@
     const btn = document.getElementById('settingsSubmitBtn');
     btn.disabled = true; btn.innerText = '⏳ در حال ذخیره...';
 
-    // چون ستون‌های دیتابیس برای صنف‌های جداگانه را نداریم، مجبوریم مجموع هر مقطع را در ستون‌های قبلی (1_3 و ...) ذخیره کنیم
-    // اما برای اینکه داده‌ها گم نشوند، بهترین کار این است که ۳۶ ستون جدید به دیتابیس اضافه کنیم. 
-    // من در این کد، مجموع هر مقطع را به همان ستون‌های قبلی می‌فرستم تا حداقل اطلاعات کلی ذخیره شود. 
-    // (اگر می‌خواهید صنف‌ها هم ذخیره شوند، باید سرور را تغییر دهیم. اما فعلاً با همین ساختار پیش می‌رویم).
-    
     const body = {
       timeType: document.getElementById('sTimeType').value,
       academicMember: document.getElementById('sAcademicMember').value.trim(),
       
-      // شعبات (ارسال مجموع هر مقطع به ستون‌های موجود)
-      branchesF13: numVal('sFB13'), branchesF46: numVal('sFB46'), branchesF79: numVal('sFB79'), branchesF1012: numVal('sFB1012'),
-      branchesM13: numVal('sMB13'), branchesM46: numVal('sMB46'), branchesM79: numVal('sMB79'), branchesM1012: numVal('sMB1012'),
-      branchesX13: numVal('sXB13'), branchesX46: numVal('sXB46'), branchesX79: numVal('sXB79'), branchesX1012: numVal('sXB1012'),
+      // شعبات (فقط مجموع هر مقطع را به سرور می‌فرستیم)
+      branchesF13: numVal('sF13'), branchesF46: numVal('sF46'), branchesF79: numVal('sF79'), branchesF1012: numVal('sF1012'),
+      branchesM13: numVal('sM13'), branchesM46: numVal('sM46'), branchesM79: numVal('sM79'), branchesM1012: numVal('sM1012'),
+      branchesX13: numVal('sX13'), branchesX46: numVal('sX46'), branchesX79: numVal('sX79'), branchesX1012: numVal('sX1012'),
       branchesTotal: numVal('sBranchesTotal'),
 
       // آمار کل

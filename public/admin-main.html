@@ -211,34 +211,24 @@
           <button class="inner-tab-btn" onclick="switchInnerTab('employees', this)">👨‍🏫 آمار کارمندان</button>
         </div>
 
-        <!-- تب شاگردان -->
         <div id="inner-tab-students" class="inner-tab-content active">
-          
           <div class="stats-filter-bar">
             <label>🏫 انتخاب مکتب:</label>
             <select id="statsSchoolFilterStudents" onchange="renderStudentsStats()">
               <option value="">📋 همه مکاتب</option>
             </select>
           </div>
-
-          <div id="studentsStatsContent">
-            <div class="text-center p-4 text-muted">در حال بارگذاری...</div>
-          </div>
+          <div id="studentsStatsContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
         </div>
 
-        <!-- تب کارمندان -->
         <div id="inner-tab-employees" class="inner-tab-content">
-          
           <div class="stats-filter-bar">
             <label>🏫 انتخاب مکتب:</label>
             <select id="statsSchoolFilterEmployees" onchange="renderEmployeesStats()">
               <option value="">📋 همه مکاتب</option>
             </select>
           </div>
-
-          <div id="employeesStatsContent">
-            <div class="text-center p-4 text-muted">در حال بارگذاری...</div>
-          </div>
+          <div id="employeesStatsContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
         </div>
 
       </div>
@@ -535,7 +525,6 @@
 
   function exportTashkeel() {
     if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
-    // خروجی تشکیل (فقط فیلدهای ضروری)
     const columns = [
       ['آی‌دی', r => r.id], ['اسم', r => r.data?.firstName], ['تخلص', r => r.data?.lastName], ['ولد', r => r.data?.fatherName], ['ولدیت', r => r.data?.grandfatherName], ['عنوان بست', r => r.data?.jobTitle], ['کُد بست', r => r.data?.jobCode], ['درجه تحصیل', r => r.data?.degree], ['رشته تحصیلی', r => r.data?.major], ['شماره تماس', r => r.data?.phone], ['وضعیت', r => r.status === 'approved' ? 'تایید شده' : 'در انتظار']
     ];
@@ -552,7 +541,6 @@
   }
 
   function exportFiltered() {
-    // در اینجا هم مثل خروجی کامل عمل می‌کنیم اما فقط برای رکوردهای فیلتر شده
     exportFull();
   }
 

@@ -29,9 +29,9 @@
     flex-direction: column;
   }
 
-  /* ====== هدر بالا (مشکی) ====== */
+  /* ====== هدر بالا (سبز) ====== */
   .topbar { 
-    background: #0f172a; 
+    background: #10b981; 
     color: #fff; 
     padding: 15px 30px; 
     display: flex; 
@@ -39,9 +39,10 @@
     align-items: center; 
     flex-wrap: wrap; 
     gap: 10px; 
+    box-shadow: 0 2px 10px rgba(16,185,129,0.2);
   }
   .topbar h3 { margin: 0; font-size: 18px; color: #fff; }
-  .topbar small { color: #94a3b8; }
+  .topbar small { color: #e6fffa; }
   .btn-logout { 
     background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; 
     font-weight: bold; cursor: pointer; font-family: inherit; transition: 0.2s;
@@ -484,7 +485,7 @@
     if (evalAllowed) { 
       lockedBox.style.display = 'none'; 
       statsSection.style.display = 'block'; 
-      actionPanels.forEach(p => p.style.display = 'grid'); // اینجا همه دکمه‌ها نمایش داده می‌شن
+      actionPanels.forEach(p => p.style.display = 'grid'); 
     } else { 
       lockedBox.style.display = 'block'; 
       statsSection.style.display = 'none'; 
@@ -563,7 +564,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // ساخت منوی درختی ارزیابی (سال > کارمند > ماه)
+  // ساخت منوی درختی ارزیابی
   // ═══════════════════════════════════════════════════════════
   async function loadEvaluationList() {
     const container = document.getElementById('treeMenu');
@@ -588,10 +589,8 @@
       return;
     }
 
-    // گروه‌بندی بر اساس سال
     const byYear = {};
     evaluations.forEach(e => {
-      // استخراج سال از تاریخ ارزیابی (فرمت YYYY/MM/DD)
       let year = 'نامشخص';
       if (e.eval_date) {
         const parts = normalizeDigits(e.eval_date).replace(/[.\-]/g, '/').split('/');
@@ -609,8 +608,6 @@
     let html = '';
     years.forEach(year => {
       const yearEvals = byYear[year];
-      
-      // گروه‌بندی بر اساس کارمند
       const byEmployee = {};
       yearEvals.forEach(e => {
         const empKey = e.record_id || e.id;
@@ -644,7 +641,6 @@
           </div>
           <div class="tree-employee-content">`;
 
-        // لیست ماه‌های ارزیابی
         emp.evals.forEach(e => {
           const isExcellent = e.eval_result === 'عالی';
           const isGood = e.eval_result === 'خوب';
@@ -783,7 +779,7 @@
   });
 
   // ═══════════════════════════════════════════════════════════
-  // جدول توحیدی و اکسل (بدون تغییر)
+  // جدول توحیدی و اکسل
   // ═══════════════════════════════════════════════════════════
   async function getUnifiedEvaluationData() {
       const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });

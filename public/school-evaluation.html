@@ -332,7 +332,7 @@
           <div class="form-grid">
             <div class="form-group"><label>بست</label><input type="text" id="evalBust"></div>
             <div class="form-group"><label>قدم</label><input type="text" id="evalGrade"></div>
-            <div class="form-group"><label>رتبه</label><input type="text" id="evalRank" placeholder="رتبه کارمند"></div>
+            <!-- فیلد رتبه حذف شد -->
             <div class="form-group"><label>آمریت معارف</label><input type="text" id="evalEducationDirectorate" placeholder="نام آمریت"></div>
             <div class="form-group"><label>تاریخ ارزیابی قبلی</label><input type="text" id="evalPreviousDate" placeholder="1403/07/24"></div>
             <div class="form-group"><label>تاریخ ارزیابی *</label><input type="text" id="evalNewDate" placeholder="1404/09/30"><small id="evalNewDateMsg" class="date-msg"></small></div>
@@ -539,7 +539,6 @@
       setEvalValue('evalSchoolName', rec.schoolname || user.schoolname || '');
       setEvalValue('evalBust', info.bust);
       setEvalValue('evalGrade', info.grade);
-      setEvalValue('evalRank', '');
       setEvalValue('evalEducationDirectorate', user.district || info.originDistrict || '');
       setEvalValue('evalRemarks', '');
       setEvalValue('evalPreviousDate', info.previousEvalDate || '');
@@ -736,7 +735,8 @@
     const body = { 
       record_id: currentEvalRecord.id, eval_date_prev: document.getElementById('evalPreviousDate').value.trim(), 
       bust: document.getElementById('evalBust').value.trim(), grade: document.getElementById('evalGrade').value.trim(), 
-      rank: document.getElementById('evalRank').value.trim(), education_directorate: document.getElementById('evalEducationDirectorate').value.trim(), 
+      // rank: document.getElementById('evalRank').value.trim(), // حذف شد
+      education_directorate: document.getElementById('evalEducationDirectorate').value.trim(), 
       remarks: document.getElementById('evalRemarks').value.trim(), eval_date: document.getElementById('evalNewDate').value.trim(), 
       eval_score: document.getElementById('evalScore').value.trim(), eval_result: document.getElementById('evalResult').value, 
       first_name: info.firstName || '', last_name: info.lastName || '', father_name: info.fatherName || '', 

@@ -119,7 +119,7 @@
         </div>
       </div>
 
-      <!-- ۲. شعبات درسی (جدول مقایسه‌ای ساده) -->
+      <!-- ۲. شعبات درسی (جدول مقایسه‌ای) -->
       <div class="form-section">
         <h5>۲. شعبات درسی (تعداد در هر مقطع)</h5>
         <div class="table-responsive">
@@ -136,30 +136,30 @@
             <tbody>
               <tr>
                 <td style="font-weight:bold;">اول تا سوم</td>
-                <td><input type="text" id="sF13" oninput="calcBranches()"></td>
-                <td><input type="text" id="sM13" oninput="calcBranches()"></td>
-                <td><input type="text" id="sX13" oninput="calcBranches()"></td>
+                <td><input type="text" id="sF13" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sM13" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sX13" oninput="calcBranches()" placeholder="تعداد"></td>
                 <td><input type="text" id="sTotal13" readonly style="background:#eff6ff; color:#1e40af;"></td>
               </tr>
               <tr>
                 <td style="font-weight:bold;">چهارم تا ششم</td>
-                <td><input type="text" id="sF46" oninput="calcBranches()"></td>
-                <td><input type="text" id="sM46" oninput="calcBranches()"></td>
-                <td><input type="text" id="sX46" oninput="calcBranches()"></td>
+                <td><input type="text" id="sF46" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sM46" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sX46" oninput="calcBranches()" placeholder="تعداد"></td>
                 <td><input type="text" id="sTotal46" readonly style="background:#eff6ff; color:#1e40af;"></td>
               </tr>
               <tr>
                 <td style="font-weight:bold;">هفتم تا نهم</td>
-                <td><input type="text" id="sF79" oninput="calcBranches()"></td>
-                <td><input type="text" id="sM79" oninput="calcBranches()"></td>
-                <td><input type="text" id="sX79" oninput="calcBranches()"></td>
+                <td><input type="text" id="sF79" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sM79" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sX79" oninput="calcBranches()" placeholder="تعداد"></td>
                 <td><input type="text" id="sTotal79" readonly style="background:#eff6ff; color:#1e40af;"></td>
               </tr>
               <tr>
                 <td style="font-weight:bold;">دهم تا دوازدهم</td>
-                <td><input type="text" id="sF1012" oninput="calcBranches()"></td>
-                <td><input type="text" id="sM1012" oninput="calcBranches()"></td>
-                <td><input type="text" id="sX1012" oninput="calcBranches()"></td>
+                <td><input type="text" id="sF1012" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sM1012" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sX1012" oninput="calcBranches()" placeholder="تعداد"></td>
                 <td><input type="text" id="sTotal1012" readonly style="background:#eff6ff; color:#1e40af;"></td>
               </tr>
               <tr class="total-row">
@@ -188,26 +188,26 @@
 
       <!-- ۴. آمار هر صنف -->
       <div class="form-section">
-        <h5>۴. آمار هر صنف (داخله و حاضر به تفکیک جنسیت)</h5>
+        <h5>۴. آمار هر صنف (تعداد داخله و حاضر به تفکیک جنسیت)</h5>
         <div class="table-responsive">
           <table>
             <thead>
-              <tr><th rowspan="2">صنف</th><th colspan="2">داخله</th><th colspan="2">حاضر</th></tr>
+              <tr><th rowspan="2">صنف</th><th colspan="2">تعداد داخله</th><th colspan="2">تعداد حاضر</th></tr>
               <tr><th>اناث</th><th>ذکور</th><th>اناث</th><th>ذکور</th></tr>
             </thead>
             <tbody>
-              <tr><td>اول</td><td><input type="text" id="c1_in_f" oninput="calcTotals()"></td><td><input type="text" id="c1_in_m" oninput="calcTotals()"></td><td><input type="text" id="c1_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c1_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>دوم</td><td><input type="text" id="c2_in_f" oninput="calcTotals()"></td><td><input type="text" id="c2_in_m" oninput="calcTotals()"></td><td><input type="text" id="c2_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c2_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>سوم</td><td><input type="text" id="c3_in_f" oninput="calcTotals()"></td><td><input type="text" id="c3_in_m" oninput="calcTotals()"></td><td><input type="text" id="c3_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c3_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>چهارم</td><td><input type="text" id="c4_in_f" oninput="calcTotals()"></td><td><input type="text" id="c4_in_m" oninput="calcTotals()"></td><td><input type="text" id="c4_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c4_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>پنجم</td><td><input type="text" id="c5_in_f" oninput="calcTotals()"></td><td><input type="text" id="c5_in_m" oninput="calcTotals()"></td><td><input type="text" id="c5_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c5_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>ششم</td><td><input type="text" id="c6_in_f" oninput="calcTotals()"></td><td><input type="text" id="c6_in_m" oninput="calcTotals()"></td><td><input type="text" id="c6_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c6_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>هفتم</td><td><input type="text" id="c7_in_f" oninput="calcTotals()"></td><td><input type="text" id="c7_in_m" oninput="calcTotals()"></td><td><input type="text" id="c7_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c7_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>هشتم</td><td><input type="text" id="c8_in_f" oninput="calcTotals()"></td><td><input type="text" id="c8_in_m" oninput="calcTotals()"></td><td><input type="text" id="c8_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c8_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>نهم</td><td><input type="text" id="c9_in_f" oninput="calcTotals()"></td><td><input type="text" id="c9_in_m" oninput="calcTotals()"></td><td><input type="text" id="c9_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c9_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>دهم</td><td><input type="text" id="c10_in_f" oninput="calcTotals()"></td><td><input type="text" id="c10_in_m" oninput="calcTotals()"></td><td><input type="text" id="c10_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c10_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>یازدهم</td><td><input type="text" id="c11_in_f" oninput="calcTotals()"></td><td><input type="text" id="c11_in_m" oninput="calcTotals()"></td><td><input type="text" id="c11_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c11_pr_m" oninput="calcTotals()"></td></tr>
-              <tr><td>دوازدهم</td><td><input type="text" id="c12_in_f" oninput="calcTotals()"></td><td><input type="text" id="c12_in_m" oninput="calcTotals()"></td><td><input type="text" id="c12_pr_f" oninput="calcTotals()"></td><td><input type="text" id="c12_pr_m" oninput="calcTotals()"></td></tr>
+              <tr><td>اول</td><td><input type="text" id="c1_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c1_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c1_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c1_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>دوم</td><td><input type="text" id="c2_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c2_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c2_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c2_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>سوم</td><td><input type="text" id="c3_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c3_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c3_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c3_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>چهارم</td><td><input type="text" id="c4_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c4_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c4_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c4_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>پنجم</td><td><input type="text" id="c5_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c5_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c5_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c5_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>ششم</td><td><input type="text" id="c6_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c6_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c6_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c6_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>هفتم</td><td><input type="text" id="c7_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c7_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c7_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c7_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>هشتم</td><td><input type="text" id="c8_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c8_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c8_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c8_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>نهم</td><td><input type="text" id="c9_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c9_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c9_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c9_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>دهم</td><td><input type="text" id="c10_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c10_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c10_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c10_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>یازدهم</td><td><input type="text" id="c11_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c11_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c11_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c11_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
+              <tr><td>دوازدهم</td><td><input type="text" id="c12_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c12_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c12_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c12_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>
             </tbody>
           </table>
         </div>
@@ -218,9 +218,9 @@
         <h5>۵. وضعیت بست</h5>
         <div class="grid-4">
           <div class="form-group"><label>وضعیت بست *</label><select id="sBudgetStatus" onchange="toggleBudgetFields()" required><option value="عادی">عادی</option><option value="اضافه بست">اضافه بست</option><option value="کمبود بست">کمبود بست</option></select></div>
-          <div class="form-group" id="extraBustCountGroup" style="display:none;"><label>تعداد اضافه بست *</label><input type="text" id="sExtraBustCount"></div>
+          <div class="form-group" id="extraBustCountGroup" style="display:none;"><label>تعداد اضافه بست *</label><input type="text" id="sExtraBustCount" placeholder="تعداد"></div>
           <div class="form-group" id="extraBustFieldGroup" style="display:none;"><label>رشته اضافه بست *</label><input type="text" id="sExtraBustField"></div>
-          <div class="form-group" id="lackBustCountGroup" style="display:none;"><label>تعداد کمبود بست *</label><input type="text" id="sLackBustCount"></div>
+          <div class="form-group" id="lackBustCountGroup" style="display:none;"><label>تعداد کمبود بست *</label><input type="text" id="sLackBustCount" placeholder="تعداد"></div>
           <div class="form-group" id="lackBustFieldGroup" style="display:none;"><label>رشته کمبود بست *</label><input type="text" id="sLackBustField"></div>
         </div>
       </div>
@@ -378,7 +378,7 @@
       timeType: document.getElementById('sTimeType').value,
       academicMember: document.getElementById('sAcademicMember').value.trim(),
       
-      // شعبات (فقط مجموع هر مقطع را به سرور می‌فرستیم)
+      // شعبات (مجموع هر مقطع)
       branchesF13: numVal('sF13'), branchesF46: numVal('sF46'), branchesF79: numVal('sF79'), branchesF1012: numVal('sF1012'),
       branchesM13: numVal('sM13'), branchesM46: numVal('sM46'), branchesM79: numVal('sM79'), branchesM1012: numVal('sM1012'),
       branchesX13: numVal('sX13'), branchesX46: numVal('sX46'), branchesX79: numVal('sX79'), branchesX1012: numVal('sX1012'),

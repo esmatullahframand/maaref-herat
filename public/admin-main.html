@@ -149,50 +149,28 @@
         </div>
       </div>
       
-      <!-- فیلترهای جدید دقیقاً مطابق تصویر اکسل -->
+      <!-- ۳ فیلتر اصلی که شما خواستید (با عنوان‌های دقیق) -->
       <div class="filter-item">
-        <label>🏫 تعداد شعبات (اول تا سوم)</label>
-        <input type="number" id="fB13" class="form-control" placeholder="مثلاً 5" oninput="loadAllRecords()">
+        <label>🏫 تعداد شعبات (کل)</label>
+        <input type="number" id="fTotalBranches" class="form-control" placeholder="حداقل تعداد..." oninput="loadAllRecords()">
       </div>
       <div class="filter-item">
-        <label>🏫 تعداد شعبات (چهارم تا ششم)</label>
-        <input type="number" id="fB46" class="form-control" placeholder="مثلاً 4" oninput="loadAllRecords()">
+        <label>👥 تعداد شاگردان (داخله)</label>
+        <input type="number" id="fTotalIn" class="form-control" placeholder="حداقل تعداد..." oninput="loadAllRecords()">
       </div>
       <div class="filter-item">
-        <label>🏫 تعداد شعبات (هفتم تا نهم)</label>
-        <input type="number" id="fB79" class="form-control" placeholder="مثلاً 3" oninput="loadAllRecords()">
-      </div>
-      <div class="filter-item">
-        <label>🏫 تعداد شعبات (دهم تا دوازدهم)</label>
-        <input type="number" id="fB1012" class="form-control" placeholder="مثلاً 2" oninput="loadAllRecords()">
-      </div>
-      <div class="filter-item">
-        <label>👥 تعداد داخله (اناث)</label>
-        <input type="number" id="fInF" class="form-control" placeholder="مثلاً 100" oninput="loadAllRecords()">
-      </div>
-      <div class="filter-item">
-        <label>👥 تعداد داخله (ذکور)</label>
-        <input type="number" id="fInM" class="form-control" placeholder="مثلاً 120" oninput="loadAllRecords()">
-      </div>
-      <div class="filter-item">
-        <label>👥 تعداد حاضر (اناث)</label>
-        <input type="number" id="fPrF" class="form-control" placeholder="مثلاً 90" oninput="loadAllRecords()">
-      </div>
-      <div class="filter-item">
-        <label>👥 تعداد حاضر (ذکور)</label>
-        <input type="number" id="fPrM" class="form-control" placeholder="مثلاً 110" oninput="loadAllRecords()">
+        <label>✅ تعداد شاگردان (حاضر)</label>
+        <input type="number" id="fTotalPresent" class="form-control" placeholder="حداقل تعداد..." oninput="loadAllRecords()">
       </div>
     </div>
 
-    <!-- بخش جدید: نمایش آمار مکتب انتخاب شده (به تفکیک مقاطع و جنسیت) -->
+    <!-- کارت نمایش آمار مکتب انتخاب شده (با تفکیک دقیق) -->
     <div class="school-info-card" id="schoolInfoCard">
       <h5><i class="fa-solid fa-school"></i> آمار مکتب انتخاب شده: <span id="selectedSchoolName">—</span></h5>
       
       <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">📚 شعبات درسی</h6>
       <table class="info-table">
-        <thead>
-          <tr><th>مقطع</th><th>اناث</th><th>ذکور</th><th>مختلط</th><th>مجموع</th></tr>
-        </thead>
+        <thead><tr><th>مقطع</th><th>اناث</th><th>ذکور</th><th>مختلط</th><th>مجموع</th></tr></thead>
         <tbody>
           <tr><td>اول تا سوم</td><td id="infoBF13">0</td><td id="infoBM13">0</td><td id="infoBX13">0</td><td id="infoBT13" class="total-col">0</td></tr>
           <tr><td>چهارم تا ششم</td><td id="infoBF46">0</td><td id="infoBM46">0</td><td id="infoBX46">0</td><td id="infoBT46" class="total-col">0</td></tr>
@@ -204,9 +182,7 @@
 
       <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">👥 آمار شاگردان (داخله و حاضر)</h6>
       <table class="info-table">
-        <thead>
-          <tr><th>نوع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
-        </thead>
+        <thead><tr><th>نوع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
         <tbody>
           <tr><td>تعداد داخله</td><td id="infoInF">0</td><td id="infoInM">0</td><td id="infoInTotal" class="total-col">0</td></tr>
           <tr><td>تعداد حاضر</td><td id="infoPrF">0</td><td id="infoPrM">0</td><td id="infoPrTotal" class="total-col">0</td></tr>
@@ -220,9 +196,7 @@
     <div class="table-responsive border rounded">
       <table class="table table-hover align-middle mb-0 text-center">
         <thead class="table-light">
-          <tr>
-            <th>آی‌دی</th><th>مکتب</th><th>ولسوالی</th><th>نام کارمند</th><th>ولد</th><th>عنوان بست</th><th>درجه</th><th>جنسیت</th><th>سن</th><th>وضعیت</th><th>خدمتی</th><th>تایید</th><th>عملیات</th>
-          </tr>
+          <tr><th>آی‌دی</th><th>مکتب</th><th>ولسوالی</th><th>نام کارمند</th><th>ولد</th><th>عنوان بست</th><th>درجه</th><th>جنسیت</th><th>سن</th><th>وضعیت</th><th>خدمتی</th><th>تایید</th><th>عملیات</th></tr>
         </thead>
         <tbody id="allTableBody"><tr><td colspan="13" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody>
       </table>
@@ -230,89 +204,19 @@
   </div>
 </div>
 
-<!-- Modal آمار تفصیلی -->
+<!-- Modals -->
 <div class="modal fade" id="detailedStatsModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header" style="background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff;">
-        <h5 class="modal-title">📊 آمار تفصیلی کارمندان</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
-      </div>
-      <div class="modal-body" id="detailedStatsBody" style="max-height:75vh; overflow-y:auto;">
-        <div class="text-center p-4 text-muted">در حال بارگذاری...</div>
-      </div>
-    </div>
-  </div>
+  <div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header" style="background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff;"><h5 class="modal-title">📊 آمار تفصیلی کارمندان</h5><button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button></div><div class="modal-body" id="detailedStatsBody" style="max-height:75vh; overflow-y:auto;"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div></div></div>
 </div>
-
-<!-- Modal مدیریت مکاتب -->
 <div class="modal fade" id="schoolSettingsModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header modal-header-purple">
-        <h5 class="modal-title">🏫 مدیریت مکاتب — اطلاعات کامل</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">📊 تعداد مکاتب: <strong id="modalSchoolCount">0</strong></span>
-        </div>
-        <div class="table-responsive border rounded">
-          <table class="table table-hover table-bordered align-middle mb-0 text-center">
-            <thead class="table-light"><tr><th>#</th><th>🏫 مکتب</th><th>📍 ولسوالی</th><th>⏰ تایم</th><th>🎓 عضو علمی</th><th>📚 شعبات</th><th>💼 وضعیت بست</th></tr></thead>
-            <tbody id="schoolSettingsModalBody"><tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header modal-header-purple"><h5 class="modal-title">🏫 مدیریت مکاتب</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex justify-content-between align-items-center mb-3"><span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">📊 تعداد: <strong id="modalSchoolCount">0</strong></span></div><div class="table-responsive border rounded"><table class="table table-hover table-bordered align-middle mb-0 text-center"><thead class="table-light"><tr><th>#</th><th>🏫 مکتب</th><th>📍 ولسوالی</th><th>⏰ تایم</th><th>🎓 عضو علمی</th><th>📚 شعبات</th><th>💼 وضعیت بست</th></tr></thead><tbody id="schoolSettingsModalBody"><tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody></table></div></div></div></div>
 </div>
-
-<!-- Modal مدیریت لیست مکاتب -->
 <div class="modal fade" id="manageSchoolsModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header modal-header-purple">
-        <h5 class="modal-title">👥 مدیریت لیست مکاتب</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3"><input type="text" id="manageSchoolSearch" class="form-control form-control-lg" placeholder="🔍 جستجو..." oninput="filterManageSchools()"></div>
-        <div class="d-flex justify-content-between align-items-center mb-3"><span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">📊 تعداد: <strong id="manageSchoolCount">0</strong></span></div>
-        <div class="table-responsive border rounded">
-          <table class="table table-hover table-bordered align-middle mb-0">
-            <thead class="table-light"><tr><th style="text-align:center;">#</th><th style="text-align:center;">🏫 نام مکتب</th><th style="text-align:center;">👤 کاربری</th><th style="text-align:center;">🔑 رمز</th><th style="text-align:center;">📍 ولسوالی</th><th style="text-align:center;">عملیات</th></tr></thead>
-            <tbody id="manageSchoolsBody"><tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header modal-header-purple"><h5 class="modal-title">👥 مدیریت لیست مکاتب</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><input type="text" id="manageSchoolSearch" class="form-control form-control-lg" placeholder="🔍 جستجو..." oninput="filterManageSchools()"></div><div class="d-flex justify-content-between align-items-center mb-3"><span class="badge bg-purple text-white px-3 py-2" style="font-size:13px;">📊 تعداد: <strong id="manageSchoolCount">0</strong></span></div><div class="table-responsive border rounded"><table class="table table-hover table-bordered align-middle mb-0"><thead class="table-light"><tr><th style="text-align:center;">#</th><th style="text-align:center;">🏫 نام مکتب</th><th style="text-align:center;">👤 کاربری</th><th style="text-align:center;">🔑 رمز</th><th style="text-align:center;">📍 ولسوالی</th><th style="text-align:center;">عملیات</th></tr></thead><tbody id="manageSchoolsBody"><tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr></tbody></table></div></div></div></div>
 </div>
-
-<!-- Modal ویرایش مکتب -->
 <div class="modal fade" id="editSchoolModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header modal-header-orange">
-        <h5 class="modal-title">✏️ ویرایش مکتب</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="editSchoolId">
-        <div class="mb-3"><label class="form-label fw-bold">نام کاربری</label><input type="text" id="editSchoolUsername" class="form-control"></div>
-        <div class="mb-3"><label class="form-label fw-bold">رمز جدید (اختیاری)</label><input type="text" id="editSchoolPassword" class="form-control"><small class="text-muted">⚠️ خالی = بدون تغییر</small></div>
-        <div class="mb-3"><label class="form-label fw-bold">نام مکتب</label><input type="text" id="editSchoolName" class="form-control"></div>
-        <div class="mb-3"><label class="form-label fw-bold">ولسوالی</label><input type="text" id="editSchoolDistrict" class="form-control"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-        <button type="button" class="btn btn-warning fw-bold text-white" onclick="saveSchoolEdit()">💾 ذخیره</button>
-      </div>
-    </div>
-  </div>
+  <div class="modal-dialog"><div class="modal-content"><div class="modal-header modal-header-orange"><h5 class="modal-title">✏️ ویرایش مکتب</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="editSchoolId"><div class="mb-3"><label class="form-label fw-bold">نام کاربری</label><input type="text" id="editSchoolUsername" class="form-control"></div><div class="mb-3"><label class="form-label fw-bold">رمز جدید (اختیاری)</label><input type="text" id="editSchoolPassword" class="form-control"></div><div class="mb-3"><label class="form-label fw-bold">نام مکتب</label><input type="text" id="editSchoolName" class="form-control"></div><div class="mb-3"><label class="form-label fw-bold">ولسوالی</label><input type="text" id="editSchoolDistrict" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button><button type="button" class="btn btn-warning fw-bold text-white" onclick="saveSchoolEdit()">💾 ذخیره</button></div></div></div>
 </div>
-
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -360,17 +264,12 @@
       approval: document.getElementById('approvalFilter').value,
       appDateFrom: document.getElementById('appDateFrom').value.trim(),
       appDateTo: document.getElementById('appDateTo').value.trim(),
-      fB13: document.getElementById('fB13').value.trim(),
-      fB46: document.getElementById('fB46').value.trim(),
-      fB79: document.getElementById('fB79').value.trim(),
-      fB1012: document.getElementById('fB1012').value.trim(),
-      fInF: document.getElementById('fInF').value.trim(),
-      fInM: document.getElementById('fInM').value.trim(),
-      fPrF: document.getElementById('fPrF').value.trim(),
-      fPrM: document.getElementById('fPrM').value.trim()
+      fTotalBranches: document.getElementById('fTotalBranches').value.trim(),
+      fTotalIn: document.getElementById('fTotalIn').value.trim(),
+      fTotalPresent: document.getElementById('fTotalPresent').value.trim()
     };
   }
-  function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo || f.fB13 || f.fB46 || f.fB79 || f.fB1012 || f.fInF || f.fInM || f.fPrF || f.fPrM); }
+  function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo || f.fTotalBranches || f.fTotalIn || f.fTotalPresent); }
 
   // ═══════════════════════════════════════════════════════════
   // نمایش آمار مکتب انتخاب شده (به تفکیک)
@@ -457,16 +356,13 @@
         records = records.filter(row => { let sName = row.schoolname; if (!sName && row.userid) sName = getSchoolNameById(row.userid); return sName && schoolNames.includes(sName); });
       }
 
-      // فیلترهای جدید (تعداد شعبات و شاگردان)
-      if (f.fB13 || f.fB46 || f.fB79 || f.fB1012 || f.fInF || f.fInM || f.fPrF || f.fPrM) {
+      // فیلترهای جدید (تعداد کل)
+      if (f.fTotalBranches || f.fTotalIn || f.fTotalPresent) {
         const validSchoolNames = allSchoolSettings.filter(s => {
-          const check = (key, val) => !val || (Number(s[key]) || 0) >= Number(val);
-          return check('branches_f_1_3', f.fB13) && check('branches_m_1_3', f.fB13) && check('branches_x_1_3', f.fB13) &&
-                 check('branches_f_4_6', f.fB46) && check('branches_m_4_6', f.fB46) && check('branches_x_4_6', f.fB46) &&
-                 check('branches_f_7_9', f.fB79) && check('branches_m_7_9', f.fB79) && check('branches_x_7_9', f.fB79) &&
-                 check('branches_f_10_12', f.fB1012) && check('branches_m_10_12', f.fB1012) && check('branches_x_10_12', f.fB1012) &&
-                 check('total_in_female', f.fInF) && check('total_in_male', f.fInM) &&
-                 check('total_present_female', f.fPrF) && check('total_present_male', f.fPrM);
+          const check = (val, actual) => !val || actual >= Number(val);
+          return check(f.fTotalBranches, s.branches_total || 0) &&
+                 check(f.fTotalIn, (s.total_in_female || 0) + (s.total_in_male || 0)) &&
+                 check(f.fTotalPresent, (s.total_present_female || 0) + (s.total_present_male || 0));
         }).map(s => s.schoolname);
         records = records.filter(row => { let sName = row.schoolname; if (!sName && row.userid) sName = getSchoolNameById(row.userid); return sName && validSchoolNames.includes(sName); });
       }

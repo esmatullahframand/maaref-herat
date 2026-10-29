@@ -6,7 +6,7 @@
 <title>ثبت کارمند جدید - پنل مکتب</title>
 <link rel="stylesheet" href="common.css">
 <style>
-  /* استایل‌های مخصوص فرم ثبت کارمند (فقط موارد ضروری) */
+  /* استایل‌های مخصوص فرم ثبت (فقط موارد ضروری که در common.css نیست) */
   input.valid { border-color: #10b981 !important; background: #f0fdf4; }
   input.invalid { border-color: #ef4444 !important; background: #fff5f5; }
   .date-msg { display: block; font-size: 11px; margin-top: 4px; min-height: 16px; font-weight: bold; transition: all 0.3s; }
@@ -190,9 +190,6 @@
 <div class="toast" id="toast"></div>
 <script src="common.js"></script>
 <script>
-  // ═══════════════════════════════════════════════════════════
-  // توابع اختصاصی فرم ثبت کارمند
-  // ═══════════════════════════════════════════════════════════
   document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
   function toggleAgreement() { const c = document.getElementById('agreementCheckbox'), b = document.getElementById('agreementBox'), s = document.getElementById('submitBtn'); c.checked = !c.checked; if (c.checked) { b.classList.add('checked'); s.disabled = false; } else { b.classList.remove('checked'); s.disabled = true; } }
@@ -239,9 +236,6 @@
     return { valid: true };
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // اعتبارسنجی‌های زنده (Live Validation)
-  // ═══════════════════════════════════════════════════════════
   function attachLiveValidation(inputId, validateFn, msgId) {
     const input = document.getElementById(inputId);
     const msg = msgId ? document.getElementById(msgId) : null;
@@ -323,9 +317,6 @@
   attachUniqueFieldValidation('eTazkira', 'eTazkiraMsg', 'etazkira', null);
   attachUniqueFieldValidation('paperTazkira', 'paperTazkiraMsg', 'tazkira', null);
 
-  // ═══════════════════════════════════════════════════════════
-  // ارسال فرم
-  // ═══════════════════════════════════════════════════════════
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!document.getElementById('agreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }

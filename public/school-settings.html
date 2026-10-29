@@ -82,9 +82,7 @@
         <div class="table-responsive">
           <table>
             <thead><tr><th rowspan="2">صنف</th><th colspan="2">تعداد داخله</th><th colspan="2">تعداد حاضر</th></tr><tr><th>اناث</th><th>ذکور</th><th>اناث</th><th>ذکور</th></tr></thead>
-            <tbody id="classTableBody">
-              <!-- ردیف‌ها به صورت داینامیک توسط JS ساخته می‌شوند تا کد کم شود -->
-            </tbody>
+            <tbody id="classTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -125,9 +123,7 @@
 <div class="toast" id="toast"></div>
 <script src="common.js"></script>
 <script>
-  // ═══════════════════════════════════════════════════════════
-  // ساخت داینامیک جدول آمار اصناف (برای کاهش حجم کد)
-  // ═══════════════════════════════════════════════════════════
+  // ساخت جدول آمار اصناف
   const classNames = ['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'];
   const tbody = document.getElementById('classTableBody');
   let html = '';
@@ -143,9 +139,9 @@
   });
   tbody.innerHTML = html;
 
-  // ═══════════════════════════════════════════════════════════
-  // توابع اختصاصی این صفحه
-  // ═══════════════════════════════════════════════════════════
+  document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
+
+  // محاسبات
   function calcBranches() {
     const f13 = numVal('sF13'), f46 = numVal('sF46'), f79 = numVal('sF79'), f1012 = numVal('sF1012');
     const m13 = numVal('sM13'), m46 = numVal('sM46'), m79 = numVal('sM79'), m1012 = numVal('sM1012');

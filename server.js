@@ -13,7 +13,7 @@ const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V21.5 starting (Modular Structure)...');
+console.log('🔐 Server V22.0 starting (Ultimate Edition)...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -51,12 +51,13 @@ const ETAZKIRA_REGEX = /^\d+-\d+-\d+$/;
 const PAPER_TAZKIRA_NUMERIC_REGEX = /^\d{1,20}$/;
 
 // ═══════════════════════════════════════════════════════════
-// ساخت جداول دیتابیس
+// ساخت جداول دیتابیس و به‌روزرسانی ستون‌ها
 // ═══════════════════════════════════════════════════════════
 async function initDB() {
   try {
     const client = await pool.connect();
     try {
+      // --- جداول پایه ---
       await client.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -205,30 +206,59 @@ async function initDB() {
           updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
+
+      // --- به‌روزرسانی جدول school_settings با ستون‌های جدید ---
       await client.query(`
-        ALTER TABLE attendance ADD COLUMN IF NOT EXISTS holidays REAL DEFAULT 0;
+        ALTER TABLE school_settings 
+        ADD COLUMN IF NOT EXISTS branches_f_1_3 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_f_4_6 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_f_7_9 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_f_10_12 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_m_1_3 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_m_4_6 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_m_7_9 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_m_10_12 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_x_1_3 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_x_4_6 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_x_7_9 INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS branches_x_10_12 INTEGER DEFAULT 0,
+        
+        ADD COLUMN IF NOT EXISTS total_in_female INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS total_in_male INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS total_present_female INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS total_present_male INTEGER DEFAULT 0,
+
+        ADD COLUMN IF NOT EXISTS c1_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c1_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c1_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c1_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c2_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c2_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c2_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c2_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c3_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c3_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c3_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c3_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c4_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c4_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c4_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c4_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c5_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c5_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c5_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c5_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c6_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c6_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c6_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c6_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c7_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c7_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c7_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c7_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c8_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c8_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c8_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c8_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c9_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c9_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c9_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c9_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c10_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c10_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c10_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c10_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c11_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c11_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c11_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c11_pr_m INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS c12_in_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c12_in_m INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c12_pr_f INTEGER DEFAULT 0, ADD COLUMN IF NOT EXISTS c12_pr_m INTEGER DEFAULT 0;
       `);
 
-      // ایندکس‌های یکتایی برای جلوگیری از تکرار کد بست و تذکره
+      // ایندکس‌های یکتایی
       await client.query(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_records_jobcode
           ON records ((data::json->>'jobCode'))
-          WHERE (data::json->>'jobCode') IS NOT NULL
-            AND (data::json->>'jobCode') <> '';
+          WHERE (data::json->>'jobCode') IS NOT NULL AND (data::json->>'jobCode') <> '';
       `).catch(e => console.log('⚠️ idx_records_jobcode:', e.message));
 
       await client.query(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_records_papertazkira
           ON records ((data::json->>'paperTazkira'))
-          WHERE (data::json->>'paperTazkira') IS NOT NULL
-            AND (data::json->>'paperTazkira') <> '';
+          WHERE (data::json->>'paperTazkira') IS NOT NULL AND (data::json->>'paperTazkira') <> '';
       `).catch(e => console.log('⚠️ idx_records_papertazkira:', e.message));
 
       await client.query(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_records_etazkira
           ON records ((data::json->>'eTazkira'))
-          WHERE (data::json->>'eTazkira') IS NOT NULL
-            AND (data::json->>'eTazkira') <> '';
+          WHERE (data::json->>'eTazkira') IS NOT NULL AND (data::json->>'eTazkira') <> '';
       `).catch(e => console.log('⚠️ idx_records_etazkira:', e.message));
 
       console.log('✅ جداول دیتابیس آماده شدند.');
@@ -248,7 +278,6 @@ app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// جلوگیری از کش شدن فایل‌های HTML
 app.use((req, res, next) => {
   if (req.url.endsWith('.html') || req.url === '/' || req.url.startsWith('/?')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -258,10 +287,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// سرو کردن فایل‌های استاتیک از پوشه public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// تنظیمات CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -271,7 +298,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// محدودیت تلاش برای ورود
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -281,9 +307,6 @@ const loginLimiter = rateLimit({
   message: { error: '❌ تعداد تلاش‌های شما بیش از حد مجاز است.' }
 });
 
-// ═══════════════════════════════════════════════════════════
-// میدل‌ور احراز هویت (Auth Middleware)
-// ═══════════════════════════════════════════════════════════
 function authRequired(req, res, next) {
   let token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
   if (!token && req.query.token) token = req.query.token;
@@ -292,9 +315,7 @@ function authRequired(req, res, next) {
   token = String(token).trim().replace(/^["']|["']$/g, '');
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET_CONSTANT, {
-      algorithms: [JWT_ALGORITHM]
-    });
+    const decoded = jwt.verify(token, JWT_SECRET_CONSTANT, { algorithms: [JWT_ALGORITHM] });
     req.user = decoded;
     next();
   } catch (e) {
@@ -303,20 +324,14 @@ function authRequired(req, res, next) {
   }
 }
 
-// توابع کمکی لاگین
 async function logLoginAttempt(ip, username, success) {
   try {
-    await pool.query(
-      'INSERT INTO login_attempts (ip, username, success) VALUES ($1, $2, $3)',
-      [ip || 'unknown', username || 'unknown', success]
-    );
-  } catch (e) {
-    console.error('Log attempt error:', e.message);
-  }
+    await pool.query('INSERT INTO login_attempts (ip, username, success) VALUES ($1, $2, $3)', [ip || 'unknown', username || 'unknown', success]);
+  } catch (e) { console.error('Log attempt error:', e.message); }
 }
 
 // ═══════════════════════════════════════════════════════════
-// توابع اعتبارسنجی سرور
+// توابع اعتبارسنجی
 // ═══════════════════════════════════════════════════════════
 function normalizeDigits(str) {
   if (!str) return '';
@@ -333,9 +348,7 @@ function validateShamsiDateServer(dateStr, fieldName) {
   const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
   const parts = cleaned.split('/').map(p => p.trim());
   if (parts.length !== 3) return `${fieldName} باید فرمت YYYY/MM/DD داشته باشد`;
-  const p1 = parseInt(parts[0]);
-  const p2 = parseInt(parts[1]);
-  const p3 = parseInt(parts[2]);
+  const p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]);
   if (isNaN(p1) || isNaN(p2) || isNaN(p3)) return `${fieldName} باید فقط شامل اعداد باشد`;
   let year, month, day;
   if (parts[0].length === 4 || (p1 >= 1300 && p1 <= 1450)) { year = p1; month = p2; day = p3; }
@@ -350,39 +363,17 @@ function validateShamsiDateServer(dateStr, fieldName) {
   return null;
 }
 
-function validateTazkiraServer(tazkiraStr) {
-  if (!tazkiraStr) return null;
-  const cleaned = normalizeDigits(tazkiraStr).trim();
-  if (!ETAZKIRA_REGEX.test(cleaned)) return 'فرمت تذکره الکترونیکی اشتباه است';
-  return null;
-}
-
-function validatePaperTazkiraServer(tazkiraStr) {
-  if (!tazkiraStr) return null;
-  const cleaned = normalizeDigits(tazkiraStr).trim().replace(/\s+/g, '');
-  if (!PAPER_TAZKIRA_NUMERIC_REGEX.test(cleaned)) return 'فرمت تذکره کاغذی اشتباه است (فقط عدد)';
-  return null;
-}
-
-function validateJobCodeServer(jobCode) {
-  if (!jobCode) return null;
-  const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
-  if (!JOBCODE_REGEX.test(cleaned)) return 'فرمت کُد بست اشتباه است';
-  return null;
-}
-
-function isValidJobCode(jobCode) {
-  if (!jobCode) return false;
-  const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
-  return JOBCODE_REGEX.test(cleaned);
-}
+function validateTazkiraServer(tazkiraStr) { if (!tazkiraStr) return null; const cleaned = normalizeDigits(tazkiraStr).trim(); if (!ETAZKIRA_REGEX.test(cleaned)) return 'فرمت تذکره الکترونیکی اشتباه است'; return null; }
+function validatePaperTazkiraServer(tazkiraStr) { if (!tazkiraStr) return null; const cleaned = normalizeDigits(tazkiraStr).trim().replace(/\s+/g, ''); if (!PAPER_TAZKIRA_NUMERIC_REGEX.test(cleaned)) return 'فرمت تذکره کاغذی اشتباه است (فقط عدد)'; return null; }
+function validateJobCodeServer(jobCode) { if (!jobCode) return null; const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, ''); if (!JOBCODE_REGEX.test(cleaned)) return 'فرمت کُد بست اشتباه است'; return null; }
+function isValidJobCode(jobCode) { if (!jobCode) return false; const cleaned = normalizeDigits(jobCode).trim().replace(/\s+/g, ''); return JOBCODE_REGEX.test(cleaned); }
 
 function isNoCodeTitle(jobTitle) { return NO_CODE_TITLES.some(t => jobTitle === t); }
 function isServiceOrSupport(jobTitle) { return SERVICE_TITLES.includes(jobTitle); }
 function isEducationExemptJob(jobTitle) { return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim()); }
 
 // ═══════════════════════════════════════════════════════════
-// توابع بررسی یکتایی (دیتابیس)
+// توابع بررسی یکتایی
 // ═══════════════════════════════════════════════════════════
 async function checkJobCodeExact(jobCode, excludeRecordId = null) {
   if (!jobCode) return { exists: false };
@@ -447,16 +438,13 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
 
-    // ورود ادمین
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
       const payload = { id: 0, username: 'admin', role: 'admin' };
       const token = jwt.sign(payload, JWT_SECRET_CONSTANT, { expiresIn: '7d', algorithm: JWT_ALGORITHM });
-      // ⭐ تغییر مسیر ادمین به admin-main.html
       return res.json({ token, user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' }, redirect: '/admin-main.html' });
     }
 
-    // ورود مکتب
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length === 0) { await logLoginAttempt(clientIp, username, false); return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' }); }
     const user = result.rows[0];
@@ -465,7 +453,6 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     await logLoginAttempt(clientIp, username, true);
     const payload = { id: user.id, username: user.username, role: user.role };
     const token = jwt.sign(payload, JWT_SECRET_CONSTANT, { expiresIn: '7d', algorithm: JWT_ALGORITHM });
-    // ⭐ تغییر مسیر مکتب به school-settings.html
     res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname || '', district: user.district || '' }, redirect: '/school-settings.html' });
   } catch (e) { res.status(500).json({ error: 'خطای سرور' }); }
 });
@@ -756,6 +743,9 @@ app.put('/api/records/:id', authRequired, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// API: تنظیمات مکتب (با ستون‌های جدید)
+// ═══════════════════════════════════════════════════════════
 app.get('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -773,24 +763,92 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
     if (!academicMember) return res.status(400).json({ error: 'نام عضو علمی الزامی است' });
     const schoolName = req.user.schoolname || '';
     const district = req.user.district || '';
+    
     const check = await pool.query('SELECT id FROM school_settings WHERE userid = $1', [req.user.id]);
+    
+    // لیست تمام ستون‌های جدول school_settings
+    const columns = [
+      'schoolname', 'district', 'academic_member',
+      // شعبات
+      'branches_f_1_3', 'branches_f_4_6', 'branches_f_7_9', 'branches_f_10_12',
+      'branches_m_1_3', 'branches_m_4_6', 'branches_m_7_9', 'branches_m_10_12',
+      'branches_x_1_3', 'branches_x_4_6', 'branches_x_7_9', 'branches_x_10_12',
+      'branches_total',
+      // آمار کل
+      'total_in_female', 'total_in_male', 'total_present_female', 'total_present_male',
+      // آمار اصناف
+      'c1_in_f', 'c1_in_m', 'c1_pr_f', 'c1_pr_m',
+      'c2_in_f', 'c2_in_m', 'c2_pr_f', 'c2_pr_m',
+      'c3_in_f', 'c3_in_m', 'c3_pr_f', 'c3_pr_m',
+      'c4_in_f', 'c4_in_m', 'c4_pr_f', 'c4_pr_m',
+      'c5_in_f', 'c5_in_m', 'c5_pr_f', 'c5_pr_m',
+      'c6_in_f', 'c6_in_m', 'c6_pr_f', 'c6_pr_m',
+      'c7_in_f', 'c7_in_m', 'c7_pr_f', 'c7_pr_m',
+      'c8_in_f', 'c8_in_m', 'c8_pr_f', 'c8_pr_m',
+      'c9_in_f', 'c9_in_m', 'c9_pr_f', 'c9_pr_m',
+      'c10_in_f', 'c10_in_m', 'c10_pr_f', 'c10_pr_m',
+      'c11_in_f', 'c11_in_m', 'c11_pr_f', 'c11_pr_m',
+      'c12_in_f', 'c12_in_m', 'c12_pr_f', 'c12_pr_m',
+      // بست
+      'budget_status', 'extra_bust_count', 'extra_bust_field', 'lack_bust_count', 'lack_bust_field'
+    ];
+
+    // مقادیر متناظر از body
+    const values = [
+      schoolName, district, academicMember,
+      // شعبات
+      body.branchesF13 || 0, body.branchesF46 || 0, body.branchesF79 || 0, body.branchesF1012 || 0,
+      body.branchesM13 || 0, body.branchesM46 || 0, body.branchesM79 || 0, body.branchesM1012 || 0,
+      body.branchesX13 || 0, body.branchesX46 || 0, body.branchesX79 || 0, body.branchesX1012 || 0,
+      body.branchesTotal || 0,
+      // آمار کل
+      body.totalInFemale || 0, body.totalInMale || 0, body.totalPresentFemale || 0, body.totalPresentMale || 0,
+      // آمار اصناف
+      body.c1_in_f || 0, body.c1_in_m || 0, body.c1_pr_f || 0, body.c1_pr_m || 0,
+      body.c2_in_f || 0, body.c2_in_m || 0, body.c2_pr_f || 0, body.c2_pr_m || 0,
+      body.c3_in_f || 0, body.c3_in_m || 0, body.c3_pr_f || 0, body.c3_pr_m || 0,
+      body.c4_in_f || 0, body.c4_in_m || 0, body.c4_pr_f || 0, body.c4_pr_m || 0,
+      body.c5_in_f || 0, body.c5_in_m || 0, body.c5_pr_f || 0, body.c5_pr_m || 0,
+      body.c6_in_f || 0, body.c6_in_m || 0, body.c6_pr_f || 0, body.c6_pr_m || 0,
+      body.c7_in_f || 0, body.c7_in_m || 0, body.c7_pr_f || 0, body.c7_pr_m || 0,
+      body.c8_in_f || 0, body.c8_in_m || 0, body.c8_pr_f || 0, body.c8_pr_m || 0,
+      body.c9_in_f || 0, body.c9_in_m || 0, body.c9_pr_f || 0, body.c9_pr_m || 0,
+      body.c10_in_f || 0, body.c10_in_m || 0, body.c10_pr_f || 0, body.c10_pr_m || 0,
+      body.c11_in_f || 0, body.c11_in_m || 0, body.c11_pr_f || 0, body.c11_pr_m || 0,
+      body.c12_in_f || 0, body.c12_in_m || 0, body.c12_pr_f || 0, body.c12_pr_m || 0,
+      // بست
+      body.budgetStatus || 'عادی', body.extraBustCount || 0, body.extraBustField || '', body.lackBustCount || 0, body.lackBustField || ''
+    ];
+
     if (check.rows.length > 0) {
-      await pool.query(`UPDATE school_settings SET schoolname = $1, district = $2, academic_member = $3, updatedat = CURRENT_TIMESTAMP WHERE userid = $4`, [schoolName, district, academicMember, req.user.id]);
+      // به‌روزرسانی
+      const setClauses = columns.map((col, i) => `${col} = $${i + 1}`).join(', ');
+      const query = `UPDATE school_settings SET ${setClauses}, updatedat = CURRENT_TIMESTAMP WHERE userid = $${columns.length + 1}`;
+      await pool.query(query, [...values, req.user.id]);
     } else {
-      await pool.query(`INSERT INTO school_settings (userid, schoolname, district, academic_member) VALUES ($1, $2, $3, $4)`, [req.user.id, schoolName, district, academicMember]);
+      // درج
+      const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+      const query = `INSERT INTO school_settings (userid, ${columns.join(', ')}) VALUES ($${columns.length + 1}, ${placeholders})`;
+      await pool.query(query, [req.user.id, ...values]);
     }
     res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  } catch (err) { 
+    console.error('POST /api/school-settings error:', err.message);
+    res.status(500).json({ error: 'خطا در ذخیره تنظیمات' }); 
+  }
 });
 
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    const result = await pool.query(`SELECT s.id, s.userid, s.time_type, s.academic_member, s.branches_total, s.budget_status, s.extra_bust_count, s.lack_bust_count, u.username, COALESCE(NULLIF(s.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(s.district, ''), u.district) AS district FROM school_settings s LEFT JOIN users u ON u.id = s.userid ORDER BY s.id DESC`);
+    const result = await pool.query(`SELECT s.*, u.username, COALESCE(NULLIF(s.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(s.district, ''), u.district) AS district FROM school_settings s LEFT JOIN users u ON u.id = s.userid ORDER BY s.id DESC`);
     res.json(result.rows);
   } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// API: ارزیابی‌ها (Evaluations) و مجوز
+// ═══════════════════════════════════════════════════════════
 app.get('/api/evaluation-permission', authRequired, async (req, res) => {
   try {
     const result = await pool.query("SELECT value FROM app_settings WHERE key = 'evaluation_allowed'");
@@ -925,12 +983,8 @@ app.get('/api/salaries/:id', authRequired, async (req, res) => {
 
     const conditions = ['s.id = $1'];
     const params = [id];
-    if (req.user.role === 'school') {
-      conditions.push(`s.userid = $2`);
-      params.push(req.user.id);
-    } else if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
-    }
+    if (req.user.role === 'school') { conditions.push(`s.userid = $2`); params.push(req.user.id); }
+    else if (req.user.role !== 'admin') { return res.status(403).json({ error: 'دسترسی غیرمجاز' }); }
 
     const result = await pool.query(
       `SELECT s.*, 
@@ -946,11 +1000,9 @@ app.get('/api/salaries/:id', authRequired, async (req, res) => {
     );
 
     if (result.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
-    
     const salary = result.rows[0];
     const attResult = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [id]);
     salary.attendance = attResult.rows[0] || {};
-    
     res.json(salary);
   } catch (err) {
     console.error('GET /api/salaries/:id error:', err.message);
@@ -1023,17 +1075,12 @@ app.post('/api/salaries/:id/approve', authRequired, async (req, res) => {
 
     let checkQuery = 'SELECT * FROM salaries WHERE id = $1';
     const checkParams = [id];
-    if (req.user.role === 'school') {
-      checkQuery += ' AND userid = $2';
-      checkParams.push(req.user.id);
-    }
+    if (req.user.role === 'school') { checkQuery += ' AND userid = $2'; checkParams.push(req.user.id); }
     const check = await pool.query(checkQuery, checkParams);
     if (check.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
 
     const attCheck = await pool.query('SELECT id FROM attendance WHERE salary_id = $1', [id]);
-    if (attCheck.rows.length === 0) {
-      return res.status(400).json({ error: '❌ ابتدا راپور حاضری را ثبت کنید' });
-    }
+    if (attCheck.rows.length === 0) return res.status(400).json({ error: '❌ ابتدا راپور حاضری را ثبت کنید' });
 
     await pool.query("UPDATE salaries SET status = 'approved', updatedat = CURRENT_TIMESTAMP WHERE id = $1", [id]);
     res.json({ ok: true });
@@ -1067,12 +1114,8 @@ app.get('/api/attendance/:salary_id', authRequired, async (req, res) => {
 
     let checkQuery = 'SELECT id FROM salaries WHERE id = $1';
     const checkParams = [salary_id];
-    if (req.user.role === 'school') {
-      checkQuery += ' AND userid = $2';
-      checkParams.push(req.user.id);
-    } else if (req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'دسترسی غیرمجاز' });
-    }
+    if (req.user.role === 'school') { checkQuery += ' AND userid = $2'; checkParams.push(req.user.id); }
+    else if (req.user.role !== 'admin') { return res.status(403).json({ error: 'دسترسی غیرمجاز' }); }
     const check = await pool.query(checkQuery, checkParams);
     if (check.rows.length === 0) return res.status(404).json({ error: 'معاش یافت نشد' });
 
@@ -1164,7 +1207,6 @@ app.put('/api/users/:id', authRequired, async (req, res) => {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
     const id = parseInt(req.params.id);
     const { username, password, schoolName, district } = req.body || {};
-    
     const check = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
     if (check.rows.length === 0) return res.status(404).json({ error: 'کاربر یافت نشد' });
 
@@ -1206,7 +1248,7 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// مسیر پیش‌فرض (404 و هدایت به لاگین)
+// مسیر پیش‌فرض
 // ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -1220,7 +1262,6 @@ app.get('*', (req, res) => {
 // ═══════════════════════════════════════════════════════════
 app.listen(PORT, '0.0.0.0', () => {
   console.log('═══════════════════════════════════════');
-  console.log('🚀 Server V21.5 live on port ' + PORT);
-  console.log('🌐 Ready to serve modular files...');
+  console.log('🚀 Server V22.0 live on port ' + PORT);
   console.log('═══════════════════════════════════════');
 });

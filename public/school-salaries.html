@@ -21,7 +21,7 @@
   /* ====== کانتینر اصلی ====== */
   .main-container { 
     width: 100%; 
-    max-width: 1000px; 
+    max-width: 1100px; 
     background: #ffffff; 
     border-radius: 16px; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05); 
@@ -66,7 +66,6 @@
   .stat-box .label { font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 8px; }
   .stat-box .value { font-size: 22px; font-weight: 800; color: #0f172a; }
   
-  /* رنگ‌های اختصاصی هر باکس آمار */
   .stat-box:nth-child(1) .value { color: #2563eb; }
   .stat-box:nth-child(2) .value { color: #10b981; }
   .stat-box:nth-child(3) .value { color: #ef4444; }
@@ -100,7 +99,6 @@
   .panel-btn .icon { font-size: 32px; }
   .panel-btn .title { font-size: 18px; font-weight: 800; }
 
-  /* دکمه ثبت شده‌ها */
   .panel-saved { 
     background: linear-gradient(135deg, #10b981, #059669); 
     color: #ffffff; 
@@ -108,7 +106,6 @@
   }
   .panel-saved:hover { box-shadow: 0 12px 25px rgba(16,185,129,0.4); }
 
-  /* دکمه ثبت جدید */
   .panel-new { 
     background: #ffffff; 
     color: #1e40af; 
@@ -178,7 +175,7 @@
     box-shadow: 0 0 0 4px rgba(59,130,246,0.1); 
   }
 
-  /* ====== بخش‌های مخفی (لیست و فرم) ====== */
+  /* ====== بخش‌های مخفی ====== */
   .hidden-section { 
     display: none; 
     padding: 30px; 
@@ -197,6 +194,120 @@
     align-items: center; 
     gap: 10px;
   }
+
+  /* ====== تب‌های داخلی (معاش و حاضری) ====== */
+  .inner-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0;
+  }
+  .inner-tab-btn {
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    margin-bottom: -2px;
+  }
+  .inner-tab-btn:hover { color: #1e40af; background: #f8fafc; border-radius: 8px 8px 0 0; }
+  .inner-tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+  .inner-tab-content { display: none; }
+  .inner-tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+  /* ====== فرم‌ها ====== */
+  .form-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 15px; 
+    margin-bottom: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 13px; font-weight: 700; color: #475569; }
+  .form-group input, .form-group select { 
+    padding: 12px 15px; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 8px; 
+    font-family: inherit; 
+    font-size: 14px; 
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { 
+    border-color: #3b82f6; 
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1); 
+  }
+  .form-group input[readonly] { background: #f1f5f9; color: #475569; cursor: not-allowed; font-weight: bold; }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e40af;
+    margin: 25px 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  /* ====== دکمه‌های عملیات ====== */
+  .btn-action-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+  }
+  .btn-primary { 
+    padding: 14px 28px; 
+    background: linear-gradient(135deg, #10b981, #059669); 
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    font-family: inherit; 
+    font-size: 15px; 
+    font-weight: 800; 
+    cursor: pointer; 
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+    flex: 1;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-secondary { 
+    padding: 14px 28px; 
+    background: #ffffff; 
+    color: #475569; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 10px; 
+    font-family: inherit; 
+    font-size: 15px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: #f8fafc; border-color: #94a3b8; }
+
+  .btn-blue { 
+    padding: 14px 28px; 
+    background: linear-gradient(135deg, #3b82f6, #2563eb); 
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    font-family: inherit; 
+    font-size: 15px; 
+    font-weight: 800; 
+    cursor: pointer; 
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+  }
+  .btn-blue:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(37,99,235,0.4); }
 
   /* ====== جدول ====== */
   .table-responsive { 
@@ -219,48 +330,6 @@
   tr:hover td { background: #f8fafc; }
   td { color: #334155; }
   td b { color: #0f172a; }
-
-  /* ====== فرم ثبت جدید ====== */
-  .form-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 15px; 
-    margin-bottom: 20px;
-  }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label { font-size: 13px; font-weight: 700; color: #475569; }
-  .form-group input, .form-group select { 
-    padding: 12px 15px; 
-    border: 1px solid #cbd5e1; 
-    border-radius: 8px; 
-    font-family: inherit; 
-    font-size: 14px; 
-    color: #1e293b;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .form-group input:focus, .form-group select:focus { 
-    border-color: #3b82f6; 
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1); 
-  }
-  .form-group input[readonly] { background: #f1f5f9; color: #475569; cursor: not-allowed; }
-
-  .btn-save { 
-    width: 100%; 
-    padding: 15px; 
-    background: linear-gradient(135deg, #10b981, #059669); 
-    color: white; 
-    border: none; 
-    border-radius: 10px; 
-    font-family: inherit; 
-    font-size: 16px; 
-    font-weight: 800; 
-    cursor: pointer; 
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
-  }
-  .btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); }
-  .btn-save:active { transform: scale(0.98); }
 
   /* ====== مودال ====== */
   .modal-overlay { 
@@ -345,6 +414,7 @@
     .action-buttons { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
     .stats-bar { grid-template-columns: 1fr 1fr; }
+    .inner-tabs { flex-wrap: wrap; }
   }
   @media (max-width: 480px) {
     .stats-bar { grid-template-columns: 1fr; }
@@ -428,9 +498,9 @@
     </div>
   </div>
 
-  <!-- بخش مخفی: ثبت جدید -->
+  <!-- بخش مخفی: ثبت جدید (با تب‌های معاش و حاضری) -->
   <div id="section-new" class="hidden-section">
-    <h3>➕ ثبت معاش جدید</h3>
+    <h3>➕ ثبت جدید معاش و حاضری</h3>
     
     <div class="form-group" style="margin-bottom:20px;">
       <label>انتخاب کارمند:</label>
@@ -440,27 +510,80 @@
     </div>
 
     <div id="newSalaryForm" style="display:none;">
-      <div class="form-grid">
-        <div class="form-group"><label>سال</label><input type="text" id="newYear" placeholder="1404"></div>
-        <div class="form-group"><label>ماه</label><select id="newMonth">
-          <option value="حمل">حمل</option><option value="ثور">ثور</option><option value="جوزا">جوزا</option>
-          <option value="سرطان">سرطان</option><option value="اسد">اسد</option><option value="سنبله">سنبله</option>
-          <option value="میزان">میزان</option><option value="عقرب">عقرب</option><option value="قوس">قوس</option>
-          <option value="جدی">جدی</option><option value="دلو">دلو</option><option value="حوت">حوت</option>
-        </select></div>
-        
-        <div class="form-group"><label>معاش (رتبوی)</label><input type="text" id="newBase" oninput="calcNewTotals()"></div>
-        <div class="form-group"><label>مسلکی</label><input type="text" id="newProfessional" oninput="calcNewTotals()"></div>
-        <div class="form-group"><label>ماکول</label><input type="text" id="newFood" oninput="calcNewTotals()"></div>
-        <div class="form-group"><label>حق الزحمه</label><input type="text" id="newAllowance" oninput="calcNewTotals()"></div>
-        <div class="form-group"><label>کسرات غیر حاضری</label><input type="text" id="newAbsence" oninput="calcNewTotals()"></div>
-        <div class="form-group"><label>مالیه</label><input type="text" id="newTax" oninput="calcNewTotals()"></div>
-        
-        <div class="form-group"><label>مجموعه استحقاق</label><input type="text" id="newTotalEnt" readonly></div>
-        <div class="form-group"><label>مجموعه کسرات</label><input type="text" id="newTotalDed" readonly></div>
-        <div class="form-group" style="grid-column: 1 / -1;"><label>مبلغ قابل پرداخت</label><input type="text" id="newNetPay" readonly style="background:#f0fdf4; color:#10b981; font-weight:bold; font-size:16px;"></div>
+      
+      <!-- تب‌های داخلی -->
+      <div class="inner-tabs">
+        <button class="inner-tab-btn active" onclick="switchInnerTab('salary', this)">💰 فرم معاش</button>
+        <button class="inner-tab-btn" onclick="switchInnerTab('attendance', this)">📝 راپور حاضری</button>
       </div>
-      <button class="btn-save" onclick="saveNewSalary()">💾 ذخیره معاش</button>
+
+      <!-- تب معاش -->
+      <div id="inner-tab-salary" class="inner-tab-content active">
+        <div class="form-grid">
+          <div class="form-group"><label>سال *</label><input type="text" id="newYear" placeholder="1404"></div>
+          <div class="form-group"><label>ماه *</label><select id="newMonth">
+            <option value="حمل">حمل</option><option value="ثور">ثور</option><option value="جوزا">جوزا</option>
+            <option value="سرطان">سرطان</option><option value="اسد">اسد</option><option value="سنبله">سنبله</option>
+            <option value="میزان">میزان</option><option value="عقرب">عقرب</option><option value="قوس">قوس</option>
+            <option value="جدی">جدی</option><option value="دلو">دلو</option><option value="حوت">حوت</option>
+          </select></div>
+          <div class="form-group"><label>نمبر بانکی</label><input type="text" id="newBankNumber"></div>
+          <div class="form-group"><label>نمبر مکتوب</label><input type="text" id="newAppointmentLetter"></div>
+        </div>
+
+        <div class="section-title">💰 استحقاق</div>
+        <div class="form-grid">
+          <div class="form-group"><label>۱. معاش (رتبوی) *</label><input type="text" id="newBase" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۲. سایر معاش</label><input type="text" id="newOtherBase" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۳. مسلکی</label><input type="text" id="newProfessional" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۴. سایر مسلکی</label><input type="text" id="newOtherProfessional" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۵. ماکول</label><input type="text" id="newFood" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۶. سایر ماکول</label><input type="text" id="newOtherFood" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۷. حق الزحمه</label><input type="text" id="newAllowance" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۸. سایر حق الزحمه</label><input type="text" id="newOtherAllowance" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۹. سایر افزودی</label><input type="text" id="newOtherIncrease" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۱۰. مجموعه استحقاق</label><input type="text" id="newTotalEnt" readonly></div>
+        </div>
+
+        <div class="section-title">✂️ کسرات</div>
+        <div class="form-grid">
+          <div class="form-group"><label>۱۱. کسرات غیر حاضری</label><input type="text" id="newAbsence" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۱۲. مالیه</label><input type="text" id="newTax" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۱۳. سایر مالیه</label><input type="text" id="newOtherTax" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۱۴. مالیه ده فیصد</label><input type="text" id="newTax10" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۱۵. کسرات</label><input type="text" id="newDeductions" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۱۶. سایر کسرات</label><input type="text" id="newOtherDeductions" oninput="calcNewTotals()"></div>
+          <div class="form-group"><label>۱۷. جمله کسرات</label><input type="text" id="newTotalDed" readonly></div>
+          <div class="form-group"><label>۱۸. مبلغ قابل پرداخت</label><input type="text" id="newNetPay" readonly style="background:#f0fdf4; color:#10b981; font-weight:bold; font-size:16px;"></div>
+        </div>
+
+        <div class="btn-action-group">
+          <button class="btn-primary" onclick="saveNewSalary()">💾 ذخیره معاش</button>
+        </div>
+      </div>
+
+      <!-- تب حاضری -->
+      <div id="inner-tab-attendance" class="inner-tab-content">
+        <div class="section-title">📝 راپور حاضری (۱۱ فیلد)</div>
+        <div class="form-grid">
+          <div class="form-group"><label>۱. حاضر</label><input type="text" id="attPresent" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۲. غیر حاضر</label><input type="text" id="attAbsent" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۳. تفریحی</label><input type="text" id="attVacation" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۴. مریضی</label><input type="text" id="attSick" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۵. ضروری</label><input type="text" id="attEssential" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۶. ولادی</label><input type="text" id="attMaternity" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۷. خدمتی مرکز</label><input type="text" id="attServiceCenter" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۸. خدمتی ولایتی</label><input type="text" id="attServiceProvince" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۹. حج</label><input type="text" id="attHajj" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۱۰. ایام تعطیل</label><input type="text" id="attHolidays" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>۱۱. سایر</label><input type="text" id="attOther" oninput="calcAttendance()"></div>
+          <div class="form-group"><label>مجموع روزها</label><input type="text" id="attTotal" readonly></div>
+        </div>
+        <div class="btn-action-group">
+          <button class="btn-blue" onclick="saveAttendance()">💾 ذخیره حاضری</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -497,6 +620,7 @@
   let cachedRecords = [];
   let cachedSalaries = [];
   let currentViewSalary = null;
+  let currentDraftSalaryId = null;
 
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
@@ -511,15 +635,27 @@
   function numVal(id) { const el = document.getElementById(id); return el ? Number(normalizeDigits(el.value)) || 0 : 0; }
 
   // ═══════════════════════════════════════════════════════════
-  // مدیریت نمایش بخش‌ها
+  // مدیریت نمایش بخش‌ها و تب‌ها
   // ═══════════════════════════════════════════════════════════
   function showSection(sec) {
     document.getElementById('section-list').style.display = 'none';
     document.getElementById('section-new').style.display = 'none';
     if (sec === 'list') document.getElementById('section-list').style.display = 'block';
-    if (sec === 'new') document.getElementById('section-new').style.display = 'block';
+    if (sec === 'new') {
+      document.getElementById('section-new').style.display = 'block';
+      document.getElementById('newSalaryForm').style.display = 'none';
+      document.getElementById('newSalaryEmployee').value = '';
+    }
   }
   window.showSection = showSection;
+
+  function switchInnerTab(tab, btn) {
+    document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.inner-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('inner-tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+  window.switchInnerTab = switchInnerTab;
 
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   window.closeModal = closeModal;
@@ -598,40 +734,56 @@
       (s.schoolname || '').toLowerCase().includes(q)
     );
     renderSalariesList(filtered);
-    showSection('list'); // وقتی جستجو می‌شود، لیست باز شود
+    showSection('list'); 
   }
   window.handleSearch = handleSearch;
 
   // ═══════════════════════════════════════════════════════════
-  // ثبت معاش جدید
+  // ثبت معاش و حاضری
   // ═══════════════════════════════════════════════════════════
   function onEmployeeSelect() {
     const id = document.getElementById('newSalaryEmployee').value;
     document.getElementById('newSalaryForm').style.display = id ? 'block' : 'none';
+    currentDraftSalaryId = null; // ریست کردن آی‌دی پیش‌نویس
   }
   window.onEmployeeSelect = onEmployeeSelect;
 
   function calcNewTotals() {
-    const ent = numVal('newBase') + numVal('newProfessional') + numVal('newFood') + numVal('newAllowance');
-    const ded = numVal('newAbsence') + numVal('newTax');
+    const ent = numVal('newBase') + numVal('newOtherBase') + numVal('newProfessional') + numVal('newOtherProfessional') + numVal('newFood') + numVal('newOtherFood') + numVal('newAllowance') + numVal('newOtherAllowance') + numVal('newOtherIncrease');
+    const ded = numVal('newAbsence') + numVal('newTax') + numVal('newOtherTax') + numVal('newTax10') + numVal('newDeductions') + numVal('newOtherDeductions');
     document.getElementById('newTotalEnt').value = ent;
     document.getElementById('newTotalDed').value = ded;
     document.getElementById('newNetPay').value = ent - ded;
   }
   window.calcNewTotals = calcNewTotals;
 
+  function calcAttendance() {
+    const total = numVal('attPresent') + numVal('attAbsent') + numVal('attVacation') + numVal('attSick') + numVal('attEssential') + numVal('attMaternity') + numVal('attServiceCenter') + numVal('attServiceProvince') + numVal('attHajj') + numVal('attHolidays') + numVal('attOther');
+    document.getElementById('attTotal').value = total;
+  }
+  window.calcAttendance = calcAttendance;
+
   async function saveNewSalary() {
     const empId = document.getElementById('newSalaryEmployee').value;
     const year = document.getElementById('newYear').value.trim();
     const month = document.getElementById('newMonth').value;
-    if (!empId || !year || !month) { showToast('فیلدهای اصلی را پر کنید', true); return; }
+    if (!empId || !year || !month) { showToast('فیلدهای سال و ماه الزامی است', true); return; }
+    if (!numVal('newBase')) { showToast('معاش (رتبوی) الزامی است', true); return; }
 
     const payload = {
       record_id: parseInt(empId), year, month,
-      base_salary: numVal('newBase'), professional: numVal('newProfessional'),
-      food: numVal('newFood'), allowance: numVal('newAllowance'),
-      absence: numVal('newAbsence'), tax: numVal('newTax'),
-      total_entitlement: numVal('newTotalEnt'), total_deductions: numVal('newTotalDed'), net_pay: numVal('newNetPay')
+      bank_number: document.getElementById('newBankNumber').value.trim(),
+      appointment_letter: document.getElementById('newAppointmentLetter').value.trim(),
+      base_salary: numVal('newBase'), other_base: numVal('newOtherBase'),
+      professional: numVal('newProfessional'), other_professional: numVal('newOtherProfessional'),
+      food: numVal('newFood'), other_food: numVal('newOtherFood'),
+      allowance: numVal('newAllowance'), other_allowance: numVal('newOtherAllowance'),
+      other_increase: numVal('newOtherIncrease'),
+      total_entitlement: numVal('newTotalEnt'),
+      absence: numVal('newAbsence'), tax: numVal('newTax'), other_tax: numVal('newOtherTax'),
+      tax_10: numVal('newTax10'), deductions: numVal('newDeductions'), other_deductions: numVal('newOtherDeductions'),
+      total_deductions: numVal('newTotalDed'), net_pay: numVal('newNetPay'),
+      status: 'draft'
     };
 
     try {
@@ -640,11 +792,17 @@
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        showToast('✅ معاش با موفقیت ثبت شد');
-        document.getElementById('newSalaryForm').style.display = 'none';
-        document.getElementById('newSalaryEmployee').value = '';
-        loadData(); 
-        showSection('list');
+        const data = await res.json();
+        currentDraftSalaryId = data.id; // ذخیره آی‌دی برای ثبت حاضری
+        showToast('✅ معاش ذخیره شد. حالا می‌توانید حاضری را ثبت کنید.');
+        
+        // تغییر خودکار به تب حاضری
+        document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.inner-tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('inner-tab-attendance').classList.add('active');
+        document.querySelectorAll('.inner-tab-btn')[1].classList.add('active');
+        
+        loadData();
       } else {
         const d = await res.json();
         showToast(d.error || 'خطا در ثبت', true);
@@ -652,6 +810,33 @@
     } catch (e) { showToast('ارتباط برقرار نشد', true); }
   }
   window.saveNewSalary = saveNewSalary;
+
+  async function saveAttendance() {
+    if (!currentDraftSalaryId) { showToast('❌ ابتدا معاش را ذخیره کنید', true); return; }
+    const payload = {
+      salary_id: currentDraftSalaryId,
+      present: numVal('attPresent'), absent: numVal('attAbsent'),
+      vacation: numVal('attVacation'), sick: numVal('attSick'),
+      essential: numVal('attEssential'), maternity: numVal('attMaternity'),
+      service_center: numVal('attServiceCenter'), service_province: numVal('attServiceProvince'),
+      hajj: numVal('attHajj'), holidays: numVal('attHolidays'),
+      other: numVal('attOther'), total_days: numVal('attTotal')
+    };
+    try {
+      const res = await fetch('/api/attendance', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast('✅ راپور حاضری ثبت شد');
+        loadData();
+      } else {
+        const d = await res.json();
+        showToast(d.error || 'خطا در ثبت حاضری', true);
+      }
+    } catch (e) { showToast('ارتباط برقرار نشد', true); }
+  }
+  window.saveAttendance = saveAttendance;
 
   // ═══════════════════════════════════════════════════════════
   // مشاهده جزئیات
@@ -691,7 +876,6 @@
   function exportAllExcel() { 
     showToast('⏳ در حال آماده‌سازی خروجی اکسل...'); 
     setTimeout(() => { 
-      // یک خروجی ساده CSV
       if (!cachedSalaries || cachedSalaries.length === 0) { showToast('❌ معاشی برای خروجی نیست', true); return; }
       let csv = '\uFEFF' + 'نام,تخلص,کد بست,مکتب,سال,ماه,استحقاق,کسرات,قابل پرداخت\n';
       cachedSalaries.forEach(s => {

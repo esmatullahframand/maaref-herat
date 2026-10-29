@@ -196,7 +196,7 @@
   </div>
 </div>
 
-<!-- Modal آمار تفصیلی (با فیلتر مکتب) -->
+<!-- Modal آمار تفصیلی -->
 <div class="modal fade" id="detailedStatsModal" tabindex="-1">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -205,7 +205,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
       </div>
       <div class="modal-body" style="max-height:75vh; overflow-y:auto;">
-        
         <div class="inner-tabs">
           <button class="inner-tab-btn active" onclick="switchInnerTab('students', this)">👥 آمار شاگردان و شعبات</button>
           <button class="inner-tab-btn" onclick="switchInnerTab('employees', this)">👨‍🏫 آمار کارمندان</button>
@@ -230,7 +229,6 @@
           </div>
           <div id="employeesStatsContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
         </div>
-
       </div>
     </div>
   </div>
@@ -429,6 +427,7 @@
         allRecords.forEach(r => { const st = getEmployeeStatus(r.data || {}); if (st.status.includes('متقاعد')) retired++; else if (st.status.includes('فعال')) active++; });
         document.getElementById('sActive').textContent = active; document.getElementById('sRetired').textContent = retired;
       }
+      document.getElementById('sSchools').textContent = allSchoolsList.length;
     } catch (e) {}
   }
 
@@ -460,13 +459,12 @@
   async function approveRecord(id) { if (!confirm('آیا تایید شود؟')) return; try { const res = await fetch('/api/records/' + id + '/approve', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('✅ تایید شد'); loadAllRecords(); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); } }
   async function deleteRecord(id) { if (!confirm('⚠️ مطمئن هستید؟')) return; try { const res = await fetch('/api/records/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAllRecords(); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); } }
   async function setRecordEditPermission(id, allowed) { const label = allowed ? 'اجازه ویرایش' : 'لغو اجازه ویرایش'; if (!confirm(`آیا ${label} برای این کارمند فعال شود؟`)) return; try { const res = await fetch('/api/records/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ editAllowed: !!allowed }) }); const data = await res.json().catch(() => ({})); if (res.ok) { showToast(allowed ? '✅ اجازه ویرایش فعال شد' : '🔒 اجازه ویرایش لغو شد'); await loadAllRecords(); } else showToast('❌ ' + (data.error || 'تغییر اجازه ویرایش ناکام شد'), true); } catch (e) { showToast('❌ ارتباط برقرار نشد', true); } }
+  function viewRecordAdmin(id) { const row = loadedRecordsCache.find(r => r.id === id); if(row) alert('نمایش جزئیات (به زودی)'); }
+  function printRecordAdmin(id) { const row = loadedRecordsCache.find(r => r.id === id); if(!row) return; alert('پرینت رکورد (به زودی)'); }
 
   // ═══════════════════════════════════════════════════════════
-  // خروجی‌ها (کامل)
+  // خروجی‌ها
   // ═══════════════════════════════════════════════════════════
-  function viewRecordAdmin(id) { /* کد کامل */ }
-  function printRecordAdmin(id) { /* کد کامل */ }
-
   function printList() {
     if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی نیست', true); return; }
     let rowsHtml = '';
@@ -503,7 +501,7 @@
       { label: 'ورکشاپ اخذ کرده', get: r => r.data?.workshopStatus }, { label: 'عنوان ورکشاپ', get: r => r.data?.workshopTitle }, { label: 'مدت ورکشاپ', get: r => r.data?.workshopDuration }, { label: 'مجموعه ساعت درسی', get: r => r.data?.totalTeachingHours },
       { label: 'خدمتی رفته', get: r => r.data?.serviceStatus }, { label: 'ولسوالی خدمتی', get: r => r.data?.serviceDistrict }, { label: 'مکتب خدمتی', get: r => r.data?.serviceSchool }, { label: 'تاریخ خدمتی', get: r => r.data?.serviceDate },
       { label: 'وضعیت', get: r => r.status === 'approved' ? 'تایید شده' : 'در انتظار' },
-      { label: 'مکتب', get: r => r.schoolname || user.schoolname || '' },
+      { label: 'مکتب', get: r => r.schoolname || getSchoolNameById(r.userid) || '' },
     ];
     let csvContent = "\uFEFF" + columns.map(c => `"${c.label}"`).join(",") + "\n";
     loadedRecordsCache.forEach((row) => {
@@ -523,21 +521,79 @@
     showToast(`✅ خروجی کامل اکسل دانلود شد (${loadedRecordsCache.length} کارمند)`);
   }
 
+  // ✅ تابع کمکی برای محاسبه نمبر خصوصی (شماره ترتیبی در هر مکتب)
+  function computePrivateNumbers(records) {
+    const bySchool = {};
+    records.forEach(r => {
+      const school = r.schoolname || getSchoolNameById(r.userid) || 'نامشخص';
+      if (!bySchool[school]) bySchool[school] = [];
+      bySchool[school].push(r);
+    });
+
+    const privateMap = {};
+    Object.keys(bySchool).forEach(school => {
+      bySchool[school]
+        .sort((a, b) => a.id - b.id) // ترتیب ثبت در مکتب
+        .forEach((r, idx) => {
+          privateMap[r.id] = idx + 1;  // شماره از ۱ شروع می‌شود
+        });
+    });
+    return privateMap;
+  }
+
+  // ✅ خروجی تشکیل دقیقاً مطابق فرمت تصویر
   function exportTashkeel() {
-    if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
+    if (!loadedRecordsCache || loadedRecordsCache.length === 0) {
+      showToast('رکوردی برای خروجی نیست', true);
+      return;
+    }
+
+    const privateNumbers = computePrivateNumbers(loadedRecordsCache);
+
     const columns = [
-      ['آی‌دی', r => r.id], ['اسم', r => r.data?.firstName], ['تخلص', r => r.data?.lastName], ['ولد', r => r.data?.fatherName], ['ولدیت', r => r.data?.grandfatherName], ['عنوان بست', r => r.data?.jobTitle], ['کُد بست', r => r.data?.jobCode], ['درجه تحصیل', r => r.data?.degree], ['رشته تحصیلی', r => r.data?.major], ['شماره تماس', r => r.data?.phone], ['وضعیت', r => r.status === 'approved' ? 'تایید شده' : 'در انتظار']
+      ['نمبر عمومی',    r => r.id],
+      ['نمبر خصوصی',    r => privateNumbers[r.id] || ''],
+      ['اسم',           r => r.data?.firstName || ''],
+      ['ولد',           r => r.data?.fatherName || ''],
+      ['ولدیت',         r => r.data?.grandfatherName || ''],
+      ['تخلص',          r => r.data?.lastName || ''],
+      ['عنوان وظیفه',   r => r.data?.jobTitle || r.data?.job || ''],
+      ['درجه تحصیل',    r => r.data?.degree || ''],
+      ['رشته تحصیل',    r => r.data?.major || ''],
+      ['رشته تدریس',    r => r.data?.teachingField || ''],
+      ['بست',           r => r.data?.bust || ''],
+      ['قدم',           r => r.data?.grade || ''],
+      ['تاریخ تقرر',    r => r.data?.currentPositionDate || r.data?.firstAppointmentDate || ''],
+      ['تاریخ تولد',    r => r.data?.birthDate || ''],
+      ['نمبر تذکره',    r => r.data?.eTazkira || r.data?.paperTazkira || ''],
+      ['جنسیت',         r => r.data?.gender || ''],
+      ['قومیت',         r => r.data?.ethnicity || ''],
+      ['کود نمبر',      r => r.data?.jobCode || ''],
+      ['محل وظیفه',     r => (r.schoolname || getSchoolNameById(r.userid) || '') + ' ' + (r.district || '')],
+      ['آمریت معارف',   r => r.district || ''],
+      ['ملاحظات',       r => r.data?.notes || '']
     ];
+
     let csvContent = "\uFEFF" + columns.map(c => `"${c[0]}"`).join(",") + "\n";
     loadedRecordsCache.forEach(row => {
-      csvContent += columns.map(c => { let val = c[1](row); if (val === null || val === undefined) val = ''; let str = String(val).replace(/,/g, '،'); return `"${str}"`; }).join(",") + "\n";
+      csvContent += columns.map(c => {
+        let val = c[1](row);
+        if (val === null || val === undefined) val = '';
+        let str = String(val).replace(/,/g, '،').replace(/\n/g, ' ').replace(/\r/g, ' ');
+        return `"${str}"`;
+      }).join(",") + "\n";
     });
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url); link.setAttribute("download", `خروجی_تشکیل_${new Date().getTime()}.csv`);
-    document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
-    showToast('✅ خروجی تشکیل دانلود شد');
+    link.setAttribute("href", url);
+    link.setAttribute("download", `شهرت_پرسونل_تشکیلات_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('✅ خروجی تشکیل مطابق فرم وزارت معارف دانلود شد');
   }
 
   function exportFiltered() {
@@ -545,7 +601,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════
-  // آمار تفصیلی دو بخشی (با فیلتر مکتب)
+  // آمار تفصیلی دو بخشی
   // ═══════════════════════════════════════════════════════════
   function switchInnerTab(tabName, btn) {
     document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
@@ -621,7 +677,7 @@
           </tbody>
         </table>
 
-        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">📋 ${title} - آمار به تفکیک هر صنف (از اول تا دوازدهم)</h6>
+        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">📋 ${title} - آمار به تفکیک هر صنف</h6>
         <table class="table table-bordered table-sm text-center">
           <thead>
             <tr><th rowspan="2">صنف</th><th colspan="3">تعداد داخله</th><th colspan="3">تعداد حاضر</th></tr>
@@ -688,21 +744,217 @@
   window.renderEmployeesStats = renderEmployeesStats;
 
   // ═══════════════════════════════════════════════════════════
-  // مدیریت مکاتب و لیست
+  // مدیریت مکاتب (API ها)
   // ═══════════════════════════════════════════════════════════
-  async function loadSchoolsList() { /* کد کامل */ }
-  async function addUser() { /* کد کامل */ }
-  async function loadSchoolSettings() { /* کد کامل */ }
-  function showSchoolSettings() { /* کد کامل */ }
-  function printSchoolSettings() { /* کد کامل */ }
-  async function showManageSchools() { /* کد کامل */ }
-  async function refreshManageSchools() { /* کد کامل */ }
-  function renderManageSchools(schools) { /* کد کامل */ }
-  function filterManageSchools() { /* کد کامل */ }
-  function openEditSchool(id) { /* کد کامل */ }
-  async function saveSchoolEdit() { /* کد کامل */ }
-  async function deleteSchoolAdmin(id) { /* کد کامل */ }
+  async function loadSchoolsList() {
+    try {
+      const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) {
+        allSchoolsList = await res.json();
+        const schoolFilter = document.getElementById('schoolFilter');
+        const currentVal = schoolFilter.value;
+        schoolFilter.innerHTML = '<option value="">📋 همه</option>';
+        allSchoolsList.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.schoolname; opt.textContent = s.schoolname; schoolFilter.appendChild(opt);
+        });
+        schoolFilter.value = currentVal;
+      }
+    } catch (e) { console.error(e); }
+  }
 
+  async function addUser() {
+    const username = document.getElementById('uUsername').value.trim();
+    const password = document.getElementById('uPassword').value.trim();
+    const schoolname = document.getElementById('uSchoolName').value.trim();
+    const district = document.getElementById('uDistrict').value.trim();
+
+    if (!username || !password || !schoolname || !district) {
+      showToast('لطفاً تمام فیلدها را پر کنید', true); return;
+    }
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ username, password, schoolname, district })
+      });
+      if (res.ok) {
+        showToast('✅ مکتب با موفقیت اضافه شد');
+        document.getElementById('uUsername').value = '';
+        document.getElementById('uPassword').value = '';
+        document.getElementById('uSchoolName').value = '';
+        document.getElementById('uDistrict').value = '';
+        await loadSchoolsList();
+        await loadSchoolSettings();
+        await loadStats();
+      } else { const d = await res.json(); showToast('❌ ' + (d.error || 'خطا در افزودن'), true); }
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.addUser = addUser;
+
+  async function loadSchoolSettings() {
+    try {
+      const res = await fetch('/api/school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) { allSchoolSettings = await res.json(); }
+    } catch (e) {}
+  }
+
+  function showSchoolSettings() {
+    if (!schoolSettingsModal) schoolSettingsModal = new bootstrap.Modal(document.getElementById('schoolSettingsModal'));
+    schoolSettingsModal.show();
+    
+    document.getElementById('modalSchoolCount').textContent = allSchoolSettings.length;
+    const tbody = document.getElementById('schoolSettingsModalBody');
+    tbody.innerHTML = '';
+    
+    allSchoolSettings.forEach((s, idx) => {
+      const getV = (k) => Number(s[k]) || 0;
+      const t13 = getV('branches_f_1_3') + getV('branches_m_1_3') + getV('branches_x_1_3');
+      const t46 = getV('branches_f_4_6') + getV('branches_m_4_6') + getV('branches_x_4_6');
+      const t79 = getV('branches_f_7_9') + getV('branches_m_7_9') + getV('branches_x_7_9');
+      const t1012 = getV('branches_f_10_12') + getV('branches_m_10_12') + getV('branches_x_10_12');
+      
+      const inF = getV('total_in_female'), inM = getV('total_in_male');
+      const prF = getV('total_present_female'), prM = getV('total_present_male');
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td style="text-align:right; font-weight:bold;">${escapeHtml(s.schoolname)}</td>
+        <td>${escapeHtml(s.district)}</td>
+        <td>${getV('branches_f_1_3')}</td><td>${getV('branches_m_1_3')}</td><td>${getV('branches_x_1_3')}</td><td class="highlight">${t13}</td>
+        <td>${getV('branches_f_4_6')}</td><td>${getV('branches_m_4_6')}</td><td>${getV('branches_x_4_6')}</td><td class="highlight">${t46}</td>
+        <td>${getV('branches_f_7_9')}</td><td>${getV('branches_m_7_9')}</td><td>${getV('branches_x_7_9')}</td><td class="highlight">${t79}</td>
+        <td>${getV('branches_f_10_12')}</td><td>${getV('branches_m_10_12')}</td><td>${getV('branches_x_10_12')}</td><td class="highlight">${t1012}</td>
+        <td>${inF}</td><td>${inM}</td><td class="highlight">${inF+inM}</td>
+        <td>${prF}</td><td>${prM}</td><td class="highlight">${prF+prM}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+  window.showSchoolSettings = showSchoolSettings;
+
+  function printSchoolSettings() {
+    const table = document.querySelector('#schoolSettingsModalBody').parentElement.parentElement;
+    const win = window.open('', '_blank');
+    win.document.write(`<html><head><title>پرینت مکاتب</title><style>body{font-family:Tahoma;direction:rtl;} table{width:100%;border-collapse:collapse;font-size:10px;} th,td{border:1px solid #000;padding:4px;text-align:center;} th{background:#eee;}</style></head><body><h3 style="text-align:center;">لیست مکاتب</h3>${table.outerHTML}</body></html>`);
+    win.document.close();
+    win.print();
+  }
+  window.printSchoolSettings = printSchoolSettings;
+
+  async function showManageSchools() {
+    if (!manageSchoolsModal) manageSchoolsModal = new bootstrap.Modal(document.getElementById('manageSchoolsModal'));
+    manageSchoolsModal.show();
+    await refreshManageSchools();
+  }
+  window.showManageSchools = showManageSchools;
+
+  async function refreshManageSchools() {
+    const tbody = document.getElementById('manageSchoolsBody');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">در حال بارگذاری...</td></tr>';
+    try {
+      const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) {
+        manageSchoolsCache = await res.json();
+        renderManageSchools(manageSchoolsCache);
+      }
+    } catch (e) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">خطا در بارگذاری</td></tr>'; }
+  }
+
+  function renderManageSchools(schools) {
+    const tbody = document.getElementById('manageSchoolsBody');
+    tbody.innerHTML = '';
+    document.getElementById('manageSchoolCount').textContent = schools.length;
+    
+    schools.forEach((s, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td style="font-weight:bold;">${escapeHtml(s.schoolname)}</td>
+        <td>${escapeHtml(s.username)}</td>
+        <td>${escapeHtml(s.password || '••••')}</td>
+        <td>${escapeHtml(s.district)}</td>
+        <td>
+          <button class="btn btn-sm btn-warning fw-bold text-white" onclick="openEditSchool(${s.id})">✏️ ویرایش</button>
+          <button class="btn btn-sm btn-danger fw-bold" onclick="deleteSchoolAdmin(${s.id})">🗑️ حذف</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function filterManageSchools() {
+    const q = document.getElementById('manageSchoolSearch').value.trim().toLowerCase();
+    if (!q) { renderManageSchools(manageSchoolsCache); return; }
+    const filtered = manageSchoolsCache.filter(s => 
+      (s.schoolname || '').toLowerCase().includes(q) || 
+      (s.username || '').toLowerCase().includes(q) || 
+      (s.district || '').toLowerCase().includes(q)
+    );
+    renderManageSchools(filtered);
+  }
+  window.filterManageSchools = filterManageSchools;
+
+  function openEditSchool(id) {
+    const s = manageSchoolsCache.find(x => x.id === id);
+    if (!s) return;
+    if (!editSchoolModal) editSchoolModal = new bootstrap.Modal(document.getElementById('editSchoolModal'));
+    
+    document.getElementById('editSchoolId').value = s.id;
+    document.getElementById('editSchoolUsername').value = s.username;
+    document.getElementById('editSchoolPassword').value = '';
+    document.getElementById('editSchoolName').value = s.schoolname;
+    document.getElementById('editSchoolDistrict').value = s.district;
+    
+    editSchoolModal.show();
+  }
+  window.openEditSchool = openEditSchool;
+
+  async function saveSchoolEdit() {
+    const id = document.getElementById('editSchoolId').value;
+    const username = document.getElementById('editSchoolUsername').value.trim();
+    const password = document.getElementById('editSchoolPassword').value.trim();
+    const schoolname = document.getElementById('editSchoolName').value.trim();
+    const district = document.getElementById('editSchoolDistrict').value.trim();
+    
+    if (!username || !schoolname || !district) { showToast('فیلدهای اصلی الزامی هستند', true); return; }
+    
+    const payload = { username, schoolname, district };
+    if (password) payload.password = password;
+    
+    try {
+      const res = await fetch('/api/users/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast('✅ مکتب ویرایش شد');
+        editSchoolModal.hide();
+        await refreshManageSchools();
+        await loadSchoolsList();
+        await loadSchoolSettings();
+      } else { const d = await res.json(); showToast('❌ ' + (d.error || 'خطا'), true); }
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.saveSchoolEdit = saveSchoolEdit;
+
+  async function deleteSchoolAdmin(id) {
+    if (!confirm('⚠️ آیا از حذف این مکتب مطمئن هستید؟ تمام اطلاعات مرتبط ممکن است تحت تأثیر قرار گیرد.')) return;
+    try {
+      const res = await fetch('/api/users/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) {
+        showToast('🗑️ مکتب حذف شد');
+        await refreshManageSchools();
+        await loadSchoolsList();
+        await loadSchoolSettings();
+      } else showToast('خطا در حذف', true);
+    } catch (e) { showToast('ارتباط برقرار نشد', true); }
+  }
+  window.deleteSchoolAdmin = deleteSchoolAdmin;
+
+  // شروع
   (async function init() {
     await loadSchoolsList();
     await loadSchoolSettings();

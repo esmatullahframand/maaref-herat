@@ -213,9 +213,21 @@
         </div>
       </div>
 
-      <!-- ۵. وضعیت بست -->
+      <!-- ۵. آمار کارمندان (خودکار) -->
       <div class="form-section">
-        <h5>۵. وضعیت بست</h5>
+        <h5>۵. آمار کارمندان مکتب (به صورت خودکار از ثبت کارمند)</h5>
+        <div class="grid-4">
+          <div class="form-group"><label>تعداد کل کارمندان</label><input type="text" id="sTotalEmployees" readonly style="background:#eff6ff; color:#1e40af; font-weight:bold; text-align:center; border:1px solid #3b82f6;"></div>
+          <div class="form-group"><label>تعداد آمر / مدیر</label><input type="text" id="sManagerCount" readonly style="background:#f8fafc; text-align:center;"></div>
+          <div class="form-group"><label>تعداد سر معلم</label><input type="text" id="sHeadTeacherCount" readonly style="background:#f8fafc; text-align:center;"></div>
+          <div class="form-group"><label>تعداد معلم</label><input type="text" id="sTeacherCount" readonly style="background:#f8fafc; text-align:center;"></div>
+          <div class="form-group"><label>تعداد کارکن خدماتی</label><input type="text" id="sServiceCount" readonly style="background:#f8fafc; text-align:center;"></div>
+        </div>
+      </div>
+
+      <!-- ۶. وضعیت بست -->
+      <div class="form-section">
+        <h5>۶. وضعیت بست</h5>
         <div class="grid-4">
           <div class="form-group"><label>وضعیت بست *</label><select id="sBudgetStatus" onchange="toggleBudgetFields()" required><option value="عادی">عادی</option><option value="اضافه بست">اضافه بست</option><option value="کمبود بست">کمبود بست</option></select></div>
           <div class="form-group" id="extraBustCountGroup" style="display:none;"><label>تعداد اضافه بست *</label><input type="text" id="sExtraBustCount" placeholder="تعداد"></div>
@@ -266,18 +278,15 @@
     const m13 = numVal('sM13'), m46 = numVal('sM46'), m79 = numVal('sM79'), m1012 = numVal('sM1012');
     const x13 = numVal('sX13'), x46 = numVal('sX46'), x79 = numVal('sX79'), x1012 = numVal('sX1012');
 
-    // مجموع هر مقطع
     setVal('sTotal13', f13 + m13 + x13);
     setVal('sTotal46', f46 + m46 + x46);
     setVal('sTotal79', f79 + m79 + x79);
     setVal('sTotal1012', f1012 + m1012 + x1012);
 
-    // مجموع هر ستون
     setVal('sTotalFemale', f13 + f46 + f79 + f1012);
     setVal('sTotalMale', m13 + m46 + m79 + m1012);
     setVal('sTotalMixed', x13 + x46 + x79 + x1012);
 
-    // مجموع کل
     setVal('sBranchesTotal', f13 + f46 + f79 + f1012 + m13 + m46 + m79 + m1012 + x13 + x46 + x79 + x1012);
   }
   window.calcBranches = calcBranches;
@@ -297,6 +306,34 @@
     setVal('sTotalPresentMale', prM);
   }
   window.calcTotals = calcTotals;
+
+  // بارگذاری آمار کارمندان
+  async function loadEmployeeStats() {
+    try {
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      const records = await res.json();
+      if (!Array.isArray(records)) return;
+
+      let total = records.length;
+      let manager = 0, headTeacher = 0, teacher = 0, service = 0;
+      
+      records.forEach(r => {
+        const info = r.data || {};
+        const job = info.jobTitle || '';
+        if (job === 'آمر' || job === 'مدیر') manager++;
+        else if (job === 'سر معلم') headTeacher++;
+        else if (job.includes('معلم') || job === 'معلم') teacher++;
+        else if (job === 'کارکن خدماتی') service++;
+      });
+
+      setVal('sTotalEmployees', total);
+      setVal('sManagerCount', manager);
+      setVal('sHeadTeacherCount', headTeacher);
+      setVal('sTeacherCount', teacher);
+      setVal('sServiceCount', service);
+
+    } catch (e) { console.error('Error loading employee stats:', e); }
+  }
 
   function toggleBudgetFields() {
     const status = document.getElementById('sBudgetStatus').value;
@@ -365,6 +402,10 @@
         document.getElementById('settingsAgreementCheckbox').checked = false;
         document.getElementById('settingsAgreementBox').classList.remove('checked');
       }
+      
+      // بارگذاری آمار کارمندان
+      await loadEmployeeStats();
+
     } catch (e) { console.error(e); }
   }
 
@@ -378,17 +419,14 @@
       timeType: document.getElementById('sTimeType').value,
       academicMember: document.getElementById('sAcademicMember').value.trim(),
       
-      // شعبات (مجموع هر مقطع)
       branchesF13: numVal('sF13'), branchesF46: numVal('sF46'), branchesF79: numVal('sF79'), branchesF1012: numVal('sF1012'),
       branchesM13: numVal('sM13'), branchesM46: numVal('sM46'), branchesM79: numVal('sM79'), branchesM1012: numVal('sM1012'),
       branchesX13: numVal('sX13'), branchesX46: numVal('sX46'), branchesX79: numVal('sX79'), branchesX1012: numVal('sX1012'),
       branchesTotal: numVal('sBranchesTotal'),
 
-      // آمار کل
       totalInFemale: numVal('sTotalInFemale'), totalInMale: numVal('sTotalInMale'),
       totalPresentFemale: numVal('sTotalPresentFemale'), totalPresentMale: numVal('sTotalPresentMale'),
 
-      // آمار اصناف
       c1_in_f: numVal('c1_in_f'), c1_in_m: numVal('c1_in_m'), c1_pr_f: numVal('c1_pr_f'), c1_pr_m: numVal('c1_pr_m'),
       c2_in_f: numVal('c2_in_f'), c2_in_m: numVal('c2_in_m'), c2_pr_f: numVal('c2_pr_f'), c2_pr_m: numVal('c2_pr_m'),
       c3_in_f: numVal('c3_in_f'), c3_in_m: numVal('c3_in_m'), c3_pr_f: numVal('c3_pr_f'), c3_pr_m: numVal('c3_pr_m'),
@@ -402,7 +440,6 @@
       c11_in_f: numVal('c11_in_f'), c11_in_m: numVal('c11_in_m'), c11_pr_f: numVal('c11_pr_f'), c11_pr_m: numVal('c11_pr_m'),
       c12_in_f: numVal('c12_in_f'), c12_in_m: numVal('c12_in_m'), c12_pr_f: numVal('c12_pr_f'), c12_pr_m: numVal('c12_pr_m'),
 
-      // بست
       budgetStatus: document.getElementById('sBudgetStatus').value,
       extraBustCount: numVal('sExtraBustCount'), extraBustField: document.getElementById('sExtraBustField').value.trim(),
       lackBustCount: numVal('sLackBustCount'), lackBustField: document.getElementById('sLackBustField').value.trim()

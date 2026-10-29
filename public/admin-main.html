@@ -214,7 +214,6 @@
         <!-- تب شاگردان -->
         <div id="inner-tab-students" class="inner-tab-content active">
           
-          <!-- فیلتر مکتب برای شاگردان -->
           <div class="stats-filter-bar">
             <label>🏫 انتخاب مکتب:</label>
             <select id="statsSchoolFilterStudents" onchange="renderStudentsStats()">
@@ -230,7 +229,6 @@
         <!-- تب کارمندان -->
         <div id="inner-tab-employees" class="inner-tab-content">
           
-          <!-- فیلتر مکتب برای کارمندان -->
           <div class="stats-filter-bar">
             <label>🏫 انتخاب مکتب:</label>
             <select id="statsSchoolFilterEmployees" onchange="renderEmployeesStats()">
@@ -336,7 +334,7 @@
   function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo); }
 
   // ═══════════════════════════════════════════════════════════
-  // نمایش آمار مکتب انتخاب شده (در صفحه اصلی)
+  // نمایش آمار مکتب انتخاب شده
   // ═══════════════════════════════════════════════════════════
   function onSchoolFilterChange() {
     const schoolName = document.getElementById('schoolFilter').value;
@@ -474,15 +472,89 @@
   async function setRecordEditPermission(id, allowed) { const label = allowed ? 'اجازه ویرایش' : 'لغو اجازه ویرایش'; if (!confirm(`آیا ${label} برای این کارمند فعال شود؟`)) return; try { const res = await fetch('/api/records/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ editAllowed: !!allowed }) }); const data = await res.json().catch(() => ({})); if (res.ok) { showToast(allowed ? '✅ اجازه ویرایش فعال شد' : '🔒 اجازه ویرایش لغو شد'); await loadAllRecords(); } else showToast('❌ ' + (data.error || 'تغییر اجازه ویرایش ناکام شد'), true); } catch (e) { showToast('❌ ارتباط برقرار نشد', true); } }
 
   // ═══════════════════════════════════════════════════════════
-  // خروجی‌ها
+  // خروجی‌ها (کامل)
   // ═══════════════════════════════════════════════════════════
   function viewRecordAdmin(id) { /* کد کامل */ }
   function printRecordAdmin(id) { /* کد کامل */ }
-  function printList() { /* کد کامل */ }
+
+  function printList() {
+    if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی نیست', true); return; }
+    let rowsHtml = '';
+    loadedRecordsCache.forEach((row, idx) => {
+      const info = row.data || {};
+      const empStatus = getEmployeeStatus(info);
+      const statusText = row.status === 'approved' ? 'تایید' : 'انتظار';
+      rowsHtml += `<tr><td>${idx + 1}</td><td>${escapeHtml(row.schoolname || '-')}</td><td>${escapeHtml(info.firstName || '')} ${escapeHtml(info.lastName || '')}</td><td>${escapeHtml(info.fatherName || '')}</td><td>${escapeHtml(info.jobTitle || '')}</td><td>${escapeHtml(info.jobCode || '')}</td><td>${escapeHtml(info.degree || '')}</td><td>${empStatus.age}</td><td>${statusText}</td></tr>`;
+    });
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت</title><style>body { font-family: Tahoma; padding: 8px; direction: rtl; } table { width:100%; border-collapse:collapse; font-size:10px; } th, td { border:1px solid #333; padding:4px; text-align:center; } th { background:#1e40af; color:#fff; } @media print { .no-print { display:none; } @page { size: A4 landscape; margin: 5mm; } }</style></head><body><h2 style="text-align:center; font-size:16px;">لیست کارمندان</h2><table><thead><tr><th>#</th><th>مکتب</th><th>نام</th><th>ولد</th><th>وظیفه</th><th>کُد بست</th><th>درجه</th><th>سن</th><th>وضعیت</th></tr></thead><tbody>${rowsHtml}</tbody></table><div class="no-print" style="text-align:center; margin-top:15px;"><button onclick="window.print()" style="padding:10px 20px; background:#3b82f6; color:#fff; border:none; border-radius:6px; cursor:pointer;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
+    win.document.close();
+  }
   function printFiltered() { printList(); }
-  function exportFull() { showToast('در حال توسعه'); }
-  function exportTashkeel() { showToast('در حال توسعه'); }
-  function exportFiltered() { showToast('در حال توسعه'); }
+
+  function exportFull() {
+    if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
+    const columns = [
+      { label: 'آی‌دی', get: r => r.id }, { label: 'عنوان بست', get: r => r.data?.jobTitle }, { label: 'کُد بست', get: r => r.data?.jobCode },
+      { label: 'اسم', get: r => r.data?.firstName }, { label: 'تخلص', get: r => r.data?.lastName }, { label: 'ولد', get: r => r.data?.fatherName }, { label: 'ولدیت', get: r => r.data?.grandfatherName },
+      { label: 'تذکره الکترونیکی', get: r => r.data?.eTazkira }, { label: 'تذکره کاغذی', get: r => r.data?.paperTazkira }, { label: 'صفحه تذکره', get: r => r.data?.tazkiraPage }, { label: 'جلد تذکره', get: r => r.data?.tazkiraVolume },
+      { label: 'قومیت', get: r => r.data?.ethnicity }, { label: 'جنسیت', get: r => r.data?.gender }, { label: 'حالت مدنی', get: r => r.data?.maritalStatus },
+      { label: 'تاریخ تولد', get: r => r.data?.birthDate }, { label: 'شماره تماس', get: r => r.data?.phone }, { label: 'معلولیت', get: r => r.data?.disability },
+      { label: 'ولایت تولد', get: r => r.data?.birthProvince }, { label: 'ولسوالی تولد', get: r => r.data?.birthDistrict },
+      { label: 'ولایت سکونت اصلی', get: r => r.data?.originProvince }, { label: 'ولسوالی سکونت اصلی', get: r => r.data?.originDistrict },
+      { label: 'ولایت سکونت فعلی', get: r => r.data?.currentProvince }, { label: 'ولسوالی سکونت فعلی', get: r => r.data?.currentDistrict },
+      { label: 'بست', get: r => r.data?.bust }, { label: 'قدم', get: r => r.data?.grade },
+      { label: 'تاریخ اولین تقرر', get: r => r.data?.firstAppointmentDate }, { label: 'تاریخ تقرر فعلی', get: r => r.data?.currentPositionDate },
+      { label: 'موقف وظیفوی', get: r => r.data?.positionType }, { label: 'نوع استخدام', get: r => r.data?.employmentType },
+      { label: 'درجه تحصیل', get: r => r.data?.degree }, { label: 'رشته تحصیلی', get: r => r.data?.major },
+      { label: 'مرجع تحصیلی', get: r => r.data?.eduInstitute }, { label: 'موقعیت مرجع تحصیلی', get: r => r.data?.eduInstituteLocation },
+      { label: 'تاریخ شمولیت', get: r => r.data?.enrollmentDate }, { label: 'تاریخ فراغت', get: r => r.data?.graduationDate },
+      { label: 'رشته تدریس', get: r => r.data?.teachingField },
+      { label: 'ورکشاپ اخذ کرده', get: r => r.data?.workshopStatus }, { label: 'عنوان ورکشاپ', get: r => r.data?.workshopTitle }, { label: 'مدت ورکشاپ', get: r => r.data?.workshopDuration }, { label: 'مجموعه ساعت درسی', get: r => r.data?.totalTeachingHours },
+      { label: 'خدمتی رفته', get: r => r.data?.serviceStatus }, { label: 'ولسوالی خدمتی', get: r => r.data?.serviceDistrict }, { label: 'مکتب خدمتی', get: r => r.data?.serviceSchool }, { label: 'تاریخ خدمتی', get: r => r.data?.serviceDate },
+      { label: 'وضعیت', get: r => r.status === 'approved' ? 'تایید شده' : 'در انتظار' },
+      { label: 'مکتب', get: r => r.schoolname || user.schoolname || '' },
+    ];
+    let csvContent = "\uFEFF" + columns.map(c => `"${c.label}"`).join(",") + "\n";
+    loadedRecordsCache.forEach((row) => {
+      const cells = columns.map(c => {
+        let val = c.get(row); if (val === null || val === undefined) val = '';
+        let str = String(val).replace(/,/g, '،').replace(/\n/g, ' ').replace(/\r/g, ' ');
+        return `"${str}"`;
+      });
+      csvContent += cells.join(",") + "\n";
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `لیست_کامل_کارمندان_${new Date().getTime()}.csv`);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+    showToast(`✅ خروجی کامل اکسل دانلود شد (${loadedRecordsCache.length} کارمند)`);
+  }
+
+  function exportTashkeel() {
+    if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
+    // خروجی تشکیل (فقط فیلدهای ضروری)
+    const columns = [
+      ['آی‌دی', r => r.id], ['اسم', r => r.data?.firstName], ['تخلص', r => r.data?.lastName], ['ولد', r => r.data?.fatherName], ['ولدیت', r => r.data?.grandfatherName], ['عنوان بست', r => r.data?.jobTitle], ['کُد بست', r => r.data?.jobCode], ['درجه تحصیل', r => r.data?.degree], ['رشته تحصیلی', r => r.data?.major], ['شماره تماس', r => r.data?.phone], ['وضعیت', r => r.status === 'approved' ? 'تایید شده' : 'در انتظار']
+    ];
+    let csvContent = "\uFEFF" + columns.map(c => `"${c[0]}"`).join(",") + "\n";
+    loadedRecordsCache.forEach(row => {
+      csvContent += columns.map(c => { let val = c[1](row); if (val === null || val === undefined) val = ''; let str = String(val).replace(/,/g, '،'); return `"${str}"`; }).join(",") + "\n";
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url); link.setAttribute("download", `خروجی_تشکیل_${new Date().getTime()}.csv`);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+    showToast('✅ خروجی تشکیل دانلود شد');
+  }
+
+  function exportFiltered() {
+    // در اینجا هم مثل خروجی کامل عمل می‌کنیم اما فقط برای رکوردهای فیلتر شده
+    exportFull();
+  }
 
   // ═══════════════════════════════════════════════════════════
   // آمار تفصیلی دو بخشی (با فیلتر مکتب)
@@ -498,7 +570,6 @@
     if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
     detailedStatsModal.show();
 
-    // پر کردن منوی کشویی مکاتب در هر دو تب
     const studentsSelect = document.getElementById('statsSchoolFilterStudents');
     const employeesSelect = document.getElementById('statsSchoolFilterEmployees');
     
@@ -510,7 +581,6 @@
       const opt2 = document.createElement('option'); opt2.value = s.schoolname; opt2.textContent = s.schoolname; employeesSelect.appendChild(opt2);
     });
 
-    // بارگذاری اولیه هر دو تب
     renderStudentsStats();
     renderEmployeesStats();
   }

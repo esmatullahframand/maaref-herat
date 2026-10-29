@@ -4,139 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ثبت کارمند جدید - پنل مکتب</title>
+<link rel="stylesheet" href="common.css">
 <style>
-  /* ====== تنظیمات پایه ====== */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { 
-    font-family: 'Segoe UI', Tahoma, Arial, sans-serif; 
-    background: linear-gradient(135deg, #f0f4f8, #e2e8f0); 
-    min-height: 100vh; 
-    display: flex; 
-    justify-content: center; 
-    align-items: flex-start; 
-    padding: 30px 15px; 
-    color: #1e293b; 
-  }
-
-  .main-container { 
-    width: 100%; 
-    max-width: 1100px; 
-    background: #ffffff; 
-    border-radius: 16px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05); 
-    overflow: hidden; 
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ====== هدر بالا (سبز) ====== */
-  .topbar { 
-    background: #10b981; 
-    color: #fff; 
-    padding: 15px 30px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    flex-wrap: wrap; 
-    gap: 10px; 
-    box-shadow: 0 2px 10px rgba(16,185,129,0.2);
-  }
-  .topbar h3 { margin: 0; font-size: 18px; color: #fff; }
-  .topbar small { color: #e6fffa; }
-  .btn-logout { 
-    background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; 
-    font-weight: bold; cursor: pointer; font-family: inherit; transition: 0.2s;
-  }
-  .btn-logout:hover { background: #dc2626; }
-
-  /* ====== منوی تب‌های اصلی ====== */
-  .main-tabs { 
-    display: flex; 
-    gap: 5px; 
-    background: #f8fafc; 
-    border-bottom: 2px solid #e2e8f0; 
-    padding: 0 15px; 
-    flex-wrap: wrap; 
-  }
-  .main-tab-btn { 
-    padding: 14px 20px; 
-    border: none; 
-    background: transparent; 
-    color: #64748b; 
-    font-weight: 700; 
-    cursor: pointer; 
-    border-radius: 8px 8px 0 0; 
-    font-family: inherit; 
-    font-size: 14px; 
-    text-decoration: none; 
-    display: inline-block; 
-    border-bottom: 3px solid transparent; 
-    transition: all 0.2s; 
-  }
-  .main-tab-btn:hover { background: #f1f5f9; color: #1e40af; }
-  .main-tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
-
-  /* ====== هدر آبی (عنوان صفحه) ====== */
-  .page-header { 
-    background: linear-gradient(135deg, #2563eb, #1e40af); 
-    color: white; 
-    padding: 20px 30px; 
-    font-size: 20px; 
-    font-weight: 700; 
-    text-align: right; 
-    box-shadow: 0 4px 12px rgba(37,99,235,0.3);
-  }
-
-  /* ====== محتوای اصلی ====== */
-  .page-content { padding: 30px; }
-
-  .form-section { background: #fdfdfd; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; border-right: 5px solid #10b981; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-  .form-section h5 { margin-top: 0; color: #10b981; font-size: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
-  
-  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  label { font-size: 13px; font-weight: 700; color: #475569; }
-  input[type="text"], select { padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: #fff; width: 100%; transition: 0.2s; }
-  input:focus, select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  /* استایل‌های مخصوص فرم ثبت کارمند (فقط موارد ضروری) */
   input.valid { border-color: #10b981 !important; background: #f0fdf4; }
   input.invalid { border-color: #ef4444 !important; background: #fff5f5; }
-  
-  .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background: linear-gradient(135deg, #10b981, #059669); font-family: inherit; font-size: 14px; transition: 0.2s; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
-  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); }
-  .btn:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
-  .btn-submit { width: 100%; padding: 16px; font-size: 16px; font-weight: 800; margin-top: 10px; }
-  
   .date-msg { display: block; font-size: 11px; margin-top: 4px; min-height: 16px; font-weight: bold; transition: all 0.3s; }
   .date-msg.pending { color: #f59e0b; }
   .date-msg.valid { color: #10b981; }
   .date-msg.invalid { color: #ef4444; }
-  .field-hint { display: block; font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic; line-height: 1.4; }
-  
+  .field-hint { display: block; font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic; }
   .service-section { background: #fef3c7; border-right: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; }
   .service-section.active { display: block; }
-  
-  .agreement-box { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 10px; padding: 18px 20px; margin: 20px 0; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; transition: all 0.2s; user-select: none; }
-  .agreement-box:hover { background: #fde68a; border-color: #d97706; }
-  .agreement-box.checked { background: #dcfce7; border-color: #10b981; }
-  .agreement-box input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #10b981; margin-top: 3px; flex-shrink: 0; pointer-events: none; }
-  .agreement-text { font-size: 14px; color: #78350f; font-weight: bold; line-height: 1.6; }
-  .agreement-box.checked .agreement-text { color: #065f46; }
-
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 10px; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.3s; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.error { background: #ef4444; }
-
-  @media (max-width: 768px) {
-    .grid-4 { grid-template-columns: 1fr; }
-    .main-tabs { justify-content: center; }
-  }
 </style>
 </head>
 <body>
 
 <div class="main-container">
-  
-  <!-- ۱. نوار بالایی -->
   <div class="topbar">
     <div>
       <h3>پنل اختصاصی مکتب — ثبت کارمند</h3>
@@ -145,7 +29,6 @@
     <button class="btn-logout" onclick="logout()">🚪 خروج</button>
   </div>
 
-  <!-- ۲. منوی تب‌ها -->
   <div class="main-tabs">
     <a href="school-settings.html" class="main-tab-btn">🏫 مدیریت مکتب</a>
     <a href="school-register.html" class="main-tab-btn active">➕ ثبت کارمند جدید</a>
@@ -154,7 +37,6 @@
     <a href="school-salaries.html" class="main-tab-btn">💰 معاشات</a>
   </div>
 
-  <!-- ۳. هدر آبی -->
   <div class="page-header">➕ ثبت کارمند جدید</div>
 
   <div class="page-content">
@@ -300,117 +182,66 @@
         <input type="checkbox" id="agreementCheckbox">
         <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد.</div>
       </div>
-      <button type="submit" id="submitBtn" class="btn btn-submit" disabled>💾 ذخیره و ارسال به معارف</button>
+      <button type="submit" id="submitBtn" class="btn btn-submit-final" disabled>💾 ذخیره و ارسال به معارف</button>
     </form>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
+<script src="common.js"></script>
 <script>
-  (function() {
-    const token = localStorage.getItem('hr_token');
-    const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
-    if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; return; }
-    if (user.role !== 'school') { window.location.href = '/admin-main.html'; return; }
-  })();
-
-  const token = localStorage.getItem('hr_token');
-  const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
+  // ═══════════════════════════════════════════════════════════
+  // توابع اختصاصی فرم ثبت کارمند
+  // ═══════════════════════════════════════════════════════════
   document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
-  function logout() { localStorage.clear(); window.location.href = '/'; }
-  window.logout = logout;
+  function toggleAgreement() { const c = document.getElementById('agreementCheckbox'), b = document.getElementById('agreementBox'), s = document.getElementById('submitBtn'); c.checked = !c.checked; if (c.checked) { b.classList.add('checked'); s.disabled = false; } else { b.classList.remove('checked'); s.disabled = true; } }
+  window.toggleAgreement = toggleAgreement;
 
-  function showToast(msg, isError = false) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : '');
-    clearTimeout(t._timer); t._timer = setTimeout(() => { t.classList.remove('show'); }, 4000);
+  function toggleWorkshopFields() {
+    const status = document.getElementById('workshopStatus').value;
+    document.getElementById('workshopTitleGroup').style.display = status === 'بلی' ? 'flex' : 'none';
+    document.getElementById('workshopDurationGroup').style.display = status === 'بلی' ? 'flex' : 'none';
+  }
+  window.toggleWorkshopFields = toggleWorkshopFields;
+
+  function toggleServiceFields() {
+    const status = document.getElementById('serviceStatus').value;
+    const details = document.getElementById('serviceDetails');
+    if (status === 'بلی') details.classList.add('active'); else details.classList.remove('active');
+  }
+  window.toggleServiceFields = toggleServiceFields;
+
+  const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
+  function isEducationExemptJob(jobTitle) { return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim()); }
+
+  function toggleEducationRequired() {
+    const jobTitle = document.getElementById('jobTitle').value;
+    const eduFields = document.querySelectorAll('.edu-field input');
+    const isExempt = isEducationExemptJob(jobTitle);
+    eduFields.forEach(input => {
+      if (isExempt) { input.removeAttribute('required'); input.classList.remove('invalid'); const msg = input.nextElementSibling; if (msg && msg.classList.contains('date-msg')) { msg.textContent = ''; msg.className = 'date-msg'; } } 
+      else { input.setAttribute('required', 'required'); }
+    });
+  }
+  window.toggleEducationRequired = toggleEducationRequired;
+  setTimeout(() => toggleEducationRequired(), 100);
+
+  function validateEducationFields(jobTitle) {
+    if (isEducationExemptJob(jobTitle)) return { valid: true };
+    const fields = [['degree', 'درجه تحصیل'], ['major', 'رشته تحصیلی'], ['eduInstitute', 'مرجع تحصیلی'], ['eduInstituteLocation', 'موقعیت مرجع تحصیلی'], ['enrollmentDate', 'تاریخ شمولیت'], ['graduationDate', 'تاریخ فراغت']];
+    const missing = fields.filter(([id]) => !document.getElementById(id)?.value.trim());
+    if (missing.length) return { valid: false, error: 'برای این بست، بخش تحصیل الزامی است. تکمیل کنید: ' + missing.map(([, label]) => label).join('، ') };
+    for (const [id, label] of [['enrollmentDate', 'تاریخ شمولیت'], ['graduationDate', 'تاریخ فراغت']]) {
+      const dateResult = validateShamsiDate(document.getElementById(id).value.trim());
+      if (!dateResult.valid) return { valid: false, error: label + ': ' + dateResult.error };
+    }
+    return { valid: true };
   }
 
-  function normalizeDigits(str) {
-    if (!str) return '';
-    const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
-    return String(str).split('').map(ch => {
-      const pi = p.indexOf(ch); if (pi !== -1) return pi;
-      const ai = a.indexOf(ch); if (ai !== -1) return ai;
-      return ch;
-    }).join('');
-  }
-
-  function validateShamsiDate(dateStr) {
-    if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
-    const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
-    const parts = cleaned.split('/').map(p => p.trim());
-    if (parts.length !== 3) return { valid: false, error: 'فرمت: YYYY/MM/DD' };
-    const p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]);
-    if (isNaN(p1) || isNaN(p2) || isNaN(p3)) return { valid: false, error: 'اعداد وارد کنید' };
-    let year, month, day;
-    if (parts[0].length === 4 || (p1 >= 1300 && p1 <= 1450)) { year = p1; month = p2; day = p3; }
-    else if (parts[2].length === 4 || (p3 >= 1300 && p3 <= 1450)) { year = p3; month = p2; day = p1; }
-    else return { valid: false, error: 'سال ۱۳۰۰ تا ۱۴۵۰' };
-    if (year < 1300 || year > 1450) return { valid: false, error: 'سال نامعتبر' };
-    if (month < 1 || month > 12) return { valid: false, error: 'ماه نامعتبر' };
-    let maxDay = 31;
-    if (month >= 7 && month <= 11) maxDay = 30;
-    if (month === 12) maxDay = 29;
-    if (day < 1 || day > maxDay) return { valid: false, error: `روز ۱ تا ${maxDay}` };
-    return { valid: true, formatted: `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}` };
-  }
-
-  function validateJobCode(codeStr) {
-    if (!codeStr) return { valid: false, error: 'کد بست الزامی است' };
-    const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
-    if (!/^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned)) return { valid: false, error: 'فرمت: 27-XX-XX-XXXXX' };
-    return { valid: true, formatted: cleaned };
-  }
-
-  function validateETazkira(codeStr) {
-    if (!codeStr) return { valid: false, error: 'تذکره الکترونیکی الزامی است' };
-    const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
-    if (!/^\d+-\d+-\d+$/.test(cleaned)) return { valid: false, error: 'فرمت: XXXXX-XXXXX-XXXX' };
-    return { valid: true, formatted: cleaned };
-  }
-
-  function validateTazkiraCode(codeStr) {
-    if (!codeStr) return { valid: true, formatted: '' }; 
-    const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
-    if (!/^\d{1,20}$/.test(cleaned)) return { valid: false, error: 'فقط عدد' };
-    return { valid: true, formatted: cleaned };
-  }
-
-  async function checkJobCodeUnique(codeStr, excludeId) {
-    if (!codeStr) return { unique: false };
-    try {
-      let url = '/api/check-jobcode?code=' + encodeURIComponent(codeStr);
-      if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId);
-      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-      if (!res.ok) return { unique: true };
-      const data = await res.json();
-      if (!data.exists) return { unique: true };
-      return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName };
-    } catch (e) { return { unique: true }; }
-  }
-
-  async function checkETazkiraUnique(codeStr, excludeId) {
-    if (!codeStr) return { unique: false };
-    try {
-      let url = '/api/check-etazkira?code=' + encodeURIComponent(codeStr);
-      if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId);
-      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-      if (!res.ok) return { unique: true };
-      const data = await res.json();
-      if (!data.exists) return { unique: true };
-      return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName };
-    } catch (e) { return { unique: true }; }
-  }
-
-  function buildDuplicateMessage(kind, result) {
-    const label = kind === 'jobcode' ? 'کد بست' : (kind === 'etazkira' ? 'تذکره الکترونیکی' : 'تذکره کاغذی');
-    if (result.isSameSchool) return `⚠️ این ${label} قبلاً برای «${result.employeeName || 'نامشخص'}» ثبت شده است.`;
-    return `❌ این ${label} قبلاً در مکتب «${result.schoolname || 'نامشخص'}» ثبت شده است.`;
-  }
-
+  // ═══════════════════════════════════════════════════════════
+  // اعتبارسنجی‌های زنده (Live Validation)
+  // ═══════════════════════════════════════════════════════════
   function attachLiveValidation(inputId, validateFn, msgId) {
     const input = document.getElementById(inputId);
     const msg = msgId ? document.getElementById(msgId) : null;
@@ -492,50 +323,9 @@
   attachUniqueFieldValidation('eTazkira', 'eTazkiraMsg', 'etazkira', null);
   attachUniqueFieldValidation('paperTazkira', 'paperTazkiraMsg', 'tazkira', null);
 
-  function toggleAgreement() { const c = document.getElementById('agreementCheckbox'), b = document.getElementById('agreementBox'), s = document.getElementById('submitBtn'); c.checked = !c.checked; if (c.checked) { b.classList.add('checked'); s.disabled = false; } else { b.classList.remove('checked'); s.disabled = true; } }
-  window.toggleAgreement = toggleAgreement;
-
-  function toggleWorkshopFields() {
-    const status = document.getElementById('workshopStatus').value;
-    document.getElementById('workshopTitleGroup').style.display = status === 'بلی' ? 'flex' : 'none';
-    document.getElementById('workshopDurationGroup').style.display = status === 'بلی' ? 'flex' : 'none';
-  }
-  window.toggleWorkshopFields = toggleWorkshopFields;
-
-  function toggleServiceFields() {
-    const status = document.getElementById('serviceStatus').value;
-    const details = document.getElementById('serviceDetails');
-    if (status === 'بلی') details.classList.add('active'); else details.classList.remove('active');
-  }
-  window.toggleServiceFields = toggleServiceFields;
-
-  const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
-  function isEducationExemptJob(jobTitle) { return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim()); }
-
-  function toggleEducationRequired() {
-    const jobTitle = document.getElementById('jobTitle').value;
-    const eduFields = document.querySelectorAll('.edu-field input');
-    const isExempt = isEducationExemptJob(jobTitle);
-    eduFields.forEach(input => {
-      if (isExempt) { input.removeAttribute('required'); input.classList.remove('invalid'); const msg = input.nextElementSibling; if (msg && msg.classList.contains('date-msg')) { msg.textContent = ''; msg.className = 'date-msg'; } } 
-      else { input.setAttribute('required', 'required'); }
-    });
-  }
-  window.toggleEducationRequired = toggleEducationRequired;
-  setTimeout(() => toggleEducationRequired(), 100);
-
-  function validateEducationFields(jobTitle) {
-    if (isEducationExemptJob(jobTitle)) return { valid: true };
-    const fields = [['degree', 'درجه تحصیل'], ['major', 'رشته تحصیلی'], ['eduInstitute', 'مرجع تحصیلی'], ['eduInstituteLocation', 'موقعیت مرجع تحصیلی'], ['enrollmentDate', 'تاریخ شمولیت'], ['graduationDate', 'تاریخ فراغت']];
-    const missing = fields.filter(([id]) => !document.getElementById(id)?.value.trim());
-    if (missing.length) return { valid: false, error: 'برای این بست، بخش تحصیل الزامی است. تکمیل کنید: ' + missing.map(([, label]) => label).join('، ') };
-    for (const [id, label] of [['enrollmentDate', 'تاریخ شمولیت'], ['graduationDate', 'تاریخ فراغت']]) {
-      const dateResult = validateShamsiDate(document.getElementById(id).value.trim());
-      if (!dateResult.valid) return { valid: false, error: label + ': ' + dateResult.error };
-    }
-    return { valid: true };
-  }
-
+  // ═══════════════════════════════════════════════════════════
+  // ارسال فرم
+  // ═══════════════════════════════════════════════════════════
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!document.getElementById('agreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }

@@ -654,6 +654,18 @@
         totalPrF += Number(s.total_present_female) || 0; totalPrM += Number(s.total_present_male) || 0;
       });
 
+      // جمع‌آوری آمار داخله و حاضر هر صنف از اطلاعات ثبت‌شده در school_settings
+      const classTotals = Array.from({ length: 12 }, (_, i) => {
+        const n = i + 1;
+        return filteredSettings.reduce((total, school) => {
+          total.inF += Number(school[`c${n}_in_f`]) || 0;
+          total.inM += Number(school[`c${n}_in_m`]) || 0;
+          total.prF += Number(school[`c${n}_pr_f`]) || 0;
+          total.prM += Number(school[`c${n}_pr_m`]) || 0;
+          return total;
+        }, { inF: 0, inM: 0, prF: 0, prM: 0 });
+      });
+
       const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
 
       let html = `
@@ -685,7 +697,7 @@
           </thead>
           <tbody>
             ${['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'].map((cls, i) => {
-              const inF = 0, inM = 0, prF = 0, prM = 0;
+              const { inF, inM, prF, prM } = classTotals[i];
               return `<tr><td>${cls}</td><td>${inF}</td><td>${inM}</td><td class="bg-light fw-bold">${inF+inM}</td><td>${prF}</td><td>${prM}</td><td class="bg-light fw-bold">${prF+prM}</td></tr>`;
             }).join('')}
             <tr style="background:#f1f5f9; font-weight:bold;">
@@ -794,9 +806,19 @@
 
   async function loadSchoolSettings() {
     try {
-      const res = await fetch('/api/school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
-      if (res.ok) { allSchoolSettings = await res.json(); }
-    } catch (e) {}
+      // این مسیر مخصوص ادمین است و تمام آمار ثبت‌شده مکاتب را برمی‌گرداند.
+      const res = await fetch('/api/all-school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'دریافت آمار مکاتب ناکام شد');
+      }
+      const data = await res.json();
+      allSchoolSettings = Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error('خطا در دریافت آمار مکاتب:', e);
+      allSchoolSettings = [];
+      showToast('❌ دریافت آمار مکاتب از سرور ناکام شد', true);
+    }
   }
 
   function showSchoolSettings() {

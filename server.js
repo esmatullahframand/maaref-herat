@@ -761,7 +761,7 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
     const body = req.body || {};
     
     // تابع کمکی برای تبدیل امن به عدد (اگر متن بود، 0 برمی‌گرداند)
-    const toNum = (val) => {
+      const toNum = (val) => {
       if (val === null || val === undefined || val === '') return 0;
       const num = Number(val);
       return isNaN(num) ? 0 : num;

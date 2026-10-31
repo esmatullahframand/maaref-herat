@@ -1210,10 +1210,14 @@ app.put('/api/users/:id', authRequired, async (req, res) => {
     const schoolName = req.body.schoolName || req.body.schoolname; // 👈 این خط اضافه شود
     const check = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
     if (check.rows.length === 0) return res.status(404).json({ error: 'کاربر یافت نشد' });
-
     let updateQuery = 'UPDATE users SET username = $1, schoolname = $2, district = $3';
     let params = [username.trim(), schoolName.trim(), (district || '').trim()];
-    // ...
+    
+    if (password && password.trim() !== '') {
+      const hash = bcrypt.hashSync(password, 10);
+      updateQuery += ', password = $' + (params.length + 1);
+      params.push(hash);
+    }
     
     updateQuery += ' WHERE id = $' + (params.length + 1);
     params.push(id);

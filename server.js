@@ -760,13 +760,13 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
     const body = req.body || {};
     
-    // تابع کمکی برای تبدیل امن به عدد (اگر متن بود، 0 برمی‌گرداند)
-      const toNum = (val) => {
+    // تابع ایمن برای تبدیل هر چیزی به عدد
+    const toNum = (val) => {
       if (val === null || val === undefined || val === '') return 0;
       const num = Number(val);
       return isNaN(num) ? 0 : num;
     };
-    console.log("📥 Data received from frontend:", JSON.stringify(body, null, 2));
+
     const academicMember = String(body.academicMember || '').trim();
     if (!academicMember) return res.status(400).json({ error: 'نام عضو علمی الزامی است' });
     const schoolName = req.user.schoolname || '';
@@ -774,17 +774,14 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
     
     const check = await pool.query('SELECT id FROM school_settings WHERE userid = $1', [req.user.id]);
     
-    // لیست تمام ستون‌های جدول school_settings
+    // ستون‌ها به ترتیب دقیق
     const columns = [
-      'schoolname', 'district', 'academic_member',
-      // شعبات
+      'schoolname', 'district', 'academic_member', // 3 ستون اول (متنی)
       'branches_f_1_3', 'branches_f_4_6', 'branches_f_7_9', 'branches_f_10_12',
       'branches_m_1_3', 'branches_m_4_6', 'branches_m_7_9', 'branches_m_10_12',
       'branches_x_1_3', 'branches_x_4_6', 'branches_x_7_9', 'branches_x_10_12',
       'branches_total',
-      // آمار کل
       'total_in_female', 'total_in_male', 'total_present_female', 'total_present_male',
-      // آمار اصناف
       'c1_in_f', 'c1_in_m', 'c1_pr_f', 'c1_pr_m',
       'c2_in_f', 'c2_in_m', 'c2_pr_f', 'c2_pr_m',
       'c3_in_f', 'c3_in_m', 'c3_pr_f', 'c3_pr_m',
@@ -797,21 +794,17 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
       'c10_in_f', 'c10_in_m', 'c10_pr_f', 'c10_pr_m',
       'c11_in_f', 'c11_in_m', 'c11_pr_f', 'c11_pr_m',
       'c12_in_f', 'c12_in_m', 'c12_pr_f', 'c12_pr_m',
-      // بست
-      'budget_status', 'extra_bust_count', 'extra_bust_field', 'lack_bust_count', 'lack_bust_field'
+      'budget_status', 'extra_bust_count', 'extra_bust_field', 'lack_bust_count', 'lack_bust_field' // 5 ستون آخر
     ];
 
-    // مقادیر متناظر از body
+    // مقادیر دقیقاً به همان ترتیب ستون‌ها
     const values = [
       schoolName, district, academicMember,
-      // شعبات
       toNum(body.branchesF13), toNum(body.branchesF46), toNum(body.branchesF79), toNum(body.branchesF1012),
       toNum(body.branchesM13), toNum(body.branchesM46), toNum(body.branchesM79), toNum(body.branchesM1012),
       toNum(body.branchesX13), toNum(body.branchesX46), toNum(body.branchesX79), toNum(body.branchesX1012),
       toNum(body.branchesTotal),
-      // آمار کل
       toNum(body.totalInFemale), toNum(body.totalInMale), toNum(body.totalPresentFemale), toNum(body.totalPresentMale),
-      // آمار اصناف (کلاس‌ها)
       toNum(body.c1_in_f), toNum(body.c1_in_m), toNum(body.c1_pr_f), toNum(body.c1_pr_m),
       toNum(body.c2_in_f), toNum(body.c2_in_m), toNum(body.c2_pr_f), toNum(body.c2_pr_m),
       toNum(body.c3_in_f), toNum(body.c3_in_m), toNum(body.c3_pr_f), toNum(body.c3_pr_m),
@@ -824,17 +817,14 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
       toNum(body.c10_in_f), toNum(body.c10_in_m), toNum(body.c10_pr_f), toNum(body.c10_pr_m),
       toNum(body.c11_in_f), toNum(body.c11_in_m), toNum(body.c11_pr_f), toNum(body.c11_pr_m),
       toNum(body.c12_in_f), toNum(body.c12_in_m), toNum(body.c12_pr_f), toNum(body.c12_pr_m),
-      // بست
       body.budgetStatus || 'عادی', toNum(body.extraBustCount), body.extraBustField || '', toNum(body.lackBustCount), body.lackBustField || ''
     ];
 
     if (check.rows.length > 0) {
-      // به‌روزرسانی
       const setClauses = columns.map((col, i) => `${col} = $${i + 1}`).join(', ');
       const query = `UPDATE school_settings SET ${setClauses}, updatedat = CURRENT_TIMESTAMP WHERE userid = $${columns.length + 1}`;
       await pool.query(query, [...values, req.user.id]);
     } else {
-      // درج
       const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
       const query = `INSERT INTO school_settings (userid, ${columns.join(', ')}) VALUES ($${columns.length + 1}, ${placeholders})`;
       await pool.query(query, [req.user.id, ...values]);

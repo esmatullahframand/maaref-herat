@@ -759,6 +759,14 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
     const body = req.body || {};
+    
+    // تابع کمکی برای تبدیل امن به عدد (اگر متن بود، 0 برمی‌گرداند)
+    const toNum = (val) => {
+      if (val === null || val === undefined || val === '') return 0;
+      const num = Number(val);
+      return isNaN(num) ? 0 : num;
+    };
+
     const academicMember = String(body.academicMember || '').trim();
     if (!academicMember) return res.status(400).json({ error: 'نام عضو علمی الزامی است' });
     const schoolName = req.user.schoolname || '';
@@ -797,27 +805,27 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
     const values = [
       schoolName, district, academicMember,
       // شعبات
-      body.branchesF13 || 0, body.branchesF46 || 0, body.branchesF79 || 0, body.branchesF1012 || 0,
-      body.branchesM13 || 0, body.branchesM46 || 0, body.branchesM79 || 0, body.branchesM1012 || 0,
-      body.branchesX13 || 0, body.branchesX46 || 0, body.branchesX79 || 0, body.branchesX1012 || 0,
-      body.branchesTotal || 0,
+      toNum(body.branchesF13), toNum(body.branchesF46), toNum(body.branchesF79), toNum(body.branchesF1012),
+      toNum(body.branchesM13), toNum(body.branchesM46), toNum(body.branchesM79), toNum(body.branchesM1012),
+      toNum(body.branchesX13), toNum(body.branchesX46), toNum(body.branchesX79), toNum(body.branchesX1012),
+      toNum(body.branchesTotal),
       // آمار کل
-      body.totalInFemale || 0, body.totalInMale || 0, body.totalPresentFemale || 0, body.totalPresentMale || 0,
-      // آمار اصناف
-      body.c1_in_f || 0, body.c1_in_m || 0, body.c1_pr_f || 0, body.c1_pr_m || 0,
-      body.c2_in_f || 0, body.c2_in_m || 0, body.c2_pr_f || 0, body.c2_pr_m || 0,
-      body.c3_in_f || 0, body.c3_in_m || 0, body.c3_pr_f || 0, body.c3_pr_m || 0,
-      body.c4_in_f || 0, body.c4_in_m || 0, body.c4_pr_f || 0, body.c4_pr_m || 0,
-      body.c5_in_f || 0, body.c5_in_m || 0, body.c5_pr_f || 0, body.c5_pr_m || 0,
-      body.c6_in_f || 0, body.c6_in_m || 0, body.c6_pr_f || 0, body.c6_pr_m || 0,
-      body.c7_in_f || 0, body.c7_in_m || 0, body.c7_pr_f || 0, body.c7_pr_m || 0,
-      body.c8_in_f || 0, body.c8_in_m || 0, body.c8_pr_f || 0, body.c8_pr_m || 0,
-      body.c9_in_f || 0, body.c9_in_m || 0, body.c9_pr_f || 0, body.c9_pr_m || 0,
-      body.c10_in_f || 0, body.c10_in_m || 0, body.c10_pr_f || 0, body.c10_pr_m || 0,
-      body.c11_in_f || 0, body.c11_in_m || 0, body.c11_pr_f || 0, body.c11_pr_m || 0,
-      body.c12_in_f || 0, body.c12_in_m || 0, body.c12_pr_f || 0, body.c12_pr_m || 0,
+      toNum(body.totalInFemale), toNum(body.totalInMale), toNum(body.totalPresentFemale), toNum(body.totalPresentMale),
+      // آمار اصناف (کلاس‌ها)
+      toNum(body.c1_in_f), toNum(body.c1_in_m), toNum(body.c1_pr_f), toNum(body.c1_pr_m),
+      toNum(body.c2_in_f), toNum(body.c2_in_m), toNum(body.c2_pr_f), toNum(body.c2_pr_m),
+      toNum(body.c3_in_f), toNum(body.c3_in_m), toNum(body.c3_pr_f), toNum(body.c3_pr_m),
+      toNum(body.c4_in_f), toNum(body.c4_in_m), toNum(body.c4_pr_f), toNum(body.c4_pr_m),
+      toNum(body.c5_in_f), toNum(body.c5_in_m), toNum(body.c5_pr_f), toNum(body.c5_pr_m),
+      toNum(body.c6_in_f), toNum(body.c6_in_m), toNum(body.c6_pr_f), toNum(body.c6_pr_m),
+      toNum(body.c7_in_f), toNum(body.c7_in_m), toNum(body.c7_pr_f), toNum(body.c7_pr_m),
+      toNum(body.c8_in_f), toNum(body.c8_in_m), toNum(body.c8_pr_f), toNum(body.c8_pr_m),
+      toNum(body.c9_in_f), toNum(body.c9_in_m), toNum(body.c9_pr_f), toNum(body.c9_pr_m),
+      toNum(body.c10_in_f), toNum(body.c10_in_m), toNum(body.c10_pr_f), toNum(body.c10_pr_m),
+      toNum(body.c11_in_f), toNum(body.c11_in_m), toNum(body.c11_pr_f), toNum(body.c11_pr_m),
+      toNum(body.c12_in_f), toNum(body.c12_in_m), toNum(body.c12_pr_f), toNum(body.c12_pr_m),
       // بست
-      body.budgetStatus || 'عادی', body.extraBustCount || 0, body.extraBustField || '', body.lackBustCount || 0, body.lackBustField || ''
+      body.budgetStatus || 'عادی', toNum(body.extraBustCount), body.extraBustField || '', toNum(body.lackBustCount), body.lackBustField || ''
     ];
 
     if (check.rows.length > 0) {
@@ -832,20 +840,11 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
       await pool.query(query, [req.user.id, ...values]);
     }
     res.json({ ok: true });
- } catch (err) { 
+  } catch (err) { 
     console.error('POST /api/school-settings error:', err.message);
     res.status(500).json({ error: 'خطا در ذخیره تنظیمات: ' + err.message }); 
   }
 });
-
-app.get('/api/all-school-settings', authRequired, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    const result = await pool.query(`SELECT s.*, u.username, COALESCE(NULLIF(s.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(s.district, ''), u.district) AS district FROM school_settings s LEFT JOIN users u ON u.id = s.userid ORDER BY s.id DESC`);
-    res.json(result.rows);
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
-});
-
 // ═══════════════════════════════════════════════════════════
 // API: ارزیابی‌ها (Evaluations) و مجوز
 // ═══════════════════════════════════════════════════════════

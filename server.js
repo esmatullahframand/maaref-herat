@@ -832,9 +832,9 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
       await pool.query(query, [req.user.id, ...values]);
     }
     res.json({ ok: true });
-  } catch (err) { 
+ } catch (err) { 
     console.error('POST /api/school-settings error:', err.message);
-    res.status(500).json({ error: 'خطا در ذخیره تنظیمات' }); 
+    res.status(500).json({ error: 'خطا در ذخیره تنظیمات: ' + err.message }); 
   }
 });
 

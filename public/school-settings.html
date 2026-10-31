@@ -25,7 +25,7 @@
   .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   label { font-size: 13px; font-weight: 700; color: #475569; }
-  input[type="text"], select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: #fff; width: 100%; transition: 0.2s; }
+  input[type="text"], input[type="number"], select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: #fff; width: 100%; transition: 0.2s; }
   input:focus, select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
   input[readonly] { background: #f1f5f9; color: #475569; cursor: not-allowed; font-weight: bold; border: 1px solid #cbd5e1; }
   .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 10px; }
@@ -79,6 +79,7 @@
         <h5>۱. اطلاعات عمومی مکتب</h5>
         <div class="grid-4">
           <div class="form-group"><label>تایم مکتب *</label><select id="sTimeType" required><option value="یک تایم">یک تایم</option><option value="دو تایم">دو تایم</option><option value="سه تایم">سه تایم</option></select></div>
+          <!-- 👇 این فیلد متنی است و باید type="text" بماند 👇 -->
           <div class="form-group"><label>عضو علمی مکتب (نام و تخلص) *</label><input type="text" id="sAcademicMember" placeholder="نام و تخلص عضو علمی" required></div>
         </div>
       </div>
@@ -89,10 +90,11 @@
           <table>
             <thead><tr><th>مقطع درسی</th><th>تعداد شعبات اناث</th><th>تعداد شعبات ذکور</th><th>تعداد شعبات مختلط</th><th>مجموع مقطع</th></tr></thead>
             <tbody>
-              <tr><td style="font-weight:bold;">اول تا سوم</td><td><input type="text" id="sF13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sM13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sX13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal13" readonly></td></tr>
-              <tr><td style="font-weight:bold;">چهارم تا ششم</td><td><input type="text" id="sF46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sM46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sX46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal46" readonly></td></tr>
-              <tr><td style="font-weight:bold;">هفتم تا نهم</td><td><input type="text" id="sF79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sM79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sX79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal79" readonly></td></tr>
-              <tr><td style="font-weight:bold;">دهم تا دوازدهم</td><td><input type="text" id="sF1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sM1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sX1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal1012" readonly></td></tr>
+              <!-- 👇 همه فیلدهای این بخش type="number" شدند 👇 -->
+              <tr><td style="font-weight:bold;">اول تا سوم</td><td><input type="number" id="sF13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal13" readonly></td></tr>
+              <tr><td style="font-weight:bold;">چهارم تا ششم</td><td><input type="number" id="sF46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal46" readonly></td></tr>
+              <tr><td style="font-weight:bold;">هفتم تا نهم</td><td><input type="number" id="sF79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal79" readonly></td></tr>
+              <tr><td style="font-weight:bold;">دهم تا دوازدهم</td><td><input type="number" id="sF1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal1012" readonly></td></tr>
               <tr class="total-row"><td>مجموع کل</td><td><input type="text" id="sTotalFemale" readonly></td><td><input type="text" id="sTotalMale" readonly></td><td><input type="text" id="sTotalMixed" readonly></td><td><input type="text" id="sBranchesTotal" readonly></td></tr>
             </tbody>
           </table>
@@ -134,9 +136,10 @@
         <h5>۶. وضعیت بست</h5>
         <div class="grid-4">
           <div class="form-group"><label>وضعیت بست *</label><select id="sBudgetStatus" onchange="toggleBudgetFields()" required><option value="عادی">عادی</option><option value="اضافه بست">اضافه بست</option><option value="کمبود بست">کمبود بست</option></select></div>
-          <div class="form-group" id="extraBustCountGroup" style="display:none;"><label>تعداد اضافه بست *</label><input type="text" id="sExtraBustCount" placeholder="تعداد"></div>
+          <!-- 👇 این فیلدها هم type="number" شدند 👇 -->
+          <div class="form-group" id="extraBustCountGroup" style="display:none;"><label>تعداد اضافه بست *</label><input type="number" id="sExtraBustCount" placeholder="تعداد"></div>
           <div class="form-group" id="extraBustFieldGroup" style="display:none;"><label>رشته اضافه بست *</label><input type="text" id="sExtraBustField"></div>
-          <div class="form-group" id="lackBustCountGroup" style="display:none;"><label>تعداد کمبود بست *</label><input type="text" id="sLackBustCount" placeholder="تعداد"></div>
+          <div class="form-group" id="lackBustCountGroup" style="display:none;"><label>تعداد کمبود بست *</label><input type="number" id="sLackBustCount" placeholder="تعداد"></div>
           <div class="form-group" id="lackBustFieldGroup" style="display:none;"><label>رشته کمبود بست *</label><input type="text" id="sLackBustField"></div>
         </div>
       </div>
@@ -166,7 +169,9 @@
   let html = '';
   classNames.forEach((name, i) => {
     const n = i + 1;
-   html += `<tr><td>${name}</td><td><input type="number" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>`;
+    // 👇 فیلدهای آمار اصناف به type="number" تغییر یافتند 👇
+    html += `<tr><td>${name}</td><td><input type="number" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>`;
+  }); // 👈 اینجا بسته شد (قبلاً بسته نشده بود)
   tbody.innerHTML = html;
 
   document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;

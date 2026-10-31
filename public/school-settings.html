@@ -79,7 +79,6 @@
         <h5>۱. اطلاعات عمومی مکتب</h5>
         <div class="grid-4">
           <div class="form-group"><label>تایم مکتب *</label><select id="sTimeType" required><option value="یک تایم">یک تایم</option><option value="دو تایم">دو تایم</option><option value="سه تایم">سه تایم</option></select></div>
-          <!-- 👇 این فیلد متنی است و باید type="text" بماند 👇 -->
           <div class="form-group"><label>عضو علمی مکتب (نام و تخلص) *</label><input type="text" id="sAcademicMember" placeholder="نام و تخلص عضو علمی" required></div>
         </div>
       </div>
@@ -90,7 +89,6 @@
           <table>
             <thead><tr><th>مقطع درسی</th><th>تعداد شعبات اناث</th><th>تعداد شعبات ذکور</th><th>تعداد شعبات مختلط</th><th>مجموع مقطع</th></tr></thead>
             <tbody>
-              <!-- 👇 همه فیلدهای این بخش type="number" شدند 👇 -->
               <tr><td style="font-weight:bold;">اول تا سوم</td><td><input type="number" id="sF13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal13" readonly></td></tr>
               <tr><td style="font-weight:bold;">چهارم تا ششم</td><td><input type="number" id="sF46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal46" readonly></td></tr>
               <tr><td style="font-weight:bold;">هفتم تا نهم</td><td><input type="number" id="sF79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal79" readonly></td></tr>
@@ -136,7 +134,6 @@
         <h5>۶. وضعیت بست</h5>
         <div class="grid-4">
           <div class="form-group"><label>وضعیت بست *</label><select id="sBudgetStatus" onchange="toggleBudgetFields()" required><option value="عادی">عادی</option><option value="اضافه بست">اضافه بست</option><option value="کمبود بست">کمبود بست</option></select></div>
-          <!-- 👇 این فیلدها هم type="number" شدند 👇 -->
           <div class="form-group" id="extraBustCountGroup" style="display:none;"><label>تعداد اضافه بست *</label><input type="number" id="sExtraBustCount" placeholder="تعداد"></div>
           <div class="form-group" id="extraBustFieldGroup" style="display:none;"><label>رشته اضافه بست *</label><input type="text" id="sExtraBustField"></div>
           <div class="form-group" id="lackBustCountGroup" style="display:none;"><label>تعداد کمبود بست *</label><input type="number" id="sLackBustCount" placeholder="تعداد"></div>
@@ -169,9 +166,8 @@
   let html = '';
   classNames.forEach((name, i) => {
     const n = i + 1;
-    // 👇 فیلدهای آمار اصناف به type="number" تغییر یافتند 👇
     html += `<tr><td>${name}</td><td><input type="number" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>`;
-  }); // 👈 اینجا بسته شد (قبلاً بسته نشده بود)
+  });
   tbody.innerHTML = html;
 
   document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
@@ -253,17 +249,24 @@
     e.preventDefault();
     if (!document.getElementById('settingsAgreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
     const btn = document.getElementById('settingsSubmitBtn'); btn.disabled = true; btn.innerText = '⏳ در حال ذخیره...';
+    
+    // 👇 این بخش اصلاح شد 👇
     const body = {
-      timeType: document.getElementById('sTimeType').value, academicMember: document.getElementById('sAcademicMember').value.trim(),
+      timeType: document.getElementById('sTimeType').value, 
+      academicMember: document.getElementById('sAcademicMember').value.trim(),
       branchesF13: numVal('sF13'), branchesF46: numVal('sF46'), branchesF79: numVal('sF79'), branchesF1012: numVal('sF1012'),
       branchesM13: numVal('sM13'), branchesM46: numVal('sM46'), branchesM79: numVal('sM79'), branchesM1012: numVal('sM1012'),
       branchesX13: numVal('sX13'), branchesX46: numVal('sX46'), branchesX79: numVal('sX79'), branchesX1012: numVal('sX1012'),
-      branchesTotal: numVal('sBranchesTotal'), totalInFemale: numVal('sTotalInFemale'), totalInMale: numVal('sTotalInMale'),
+      branchesTotal: numVal('sBranchesTotal'), 
+      totalInFemale: numVal('sTotalInFemale'), totalInMale: numVal('sTotalInMale'),
       totalPresentFemale: numVal('sTotalPresentFemale'), totalPresentMale: numVal('sTotalPresentMale'),
-      budgetStatus: document.getElementById('sBudgetStatus').value, extraBustCount: numVal('sExtraBustCount'), extraBustField: document.getElementById('sExtraBustField').value.trim(),
+      budgetStatus: document.getElementById('sBudgetStatus').value, 
+      extraBustCount: numVal('sExtraBustCount'), extraBustField: document.getElementById('sExtraBustField').value.trim(),
       lackBustCount: numVal('sLackBustCount'), lackBustField: document.getElementById('sLackBustField').value.trim()
     };
     for (let i = 1; i <= 12; i++) { body[`c${i}_in_f`] = numVal(`c${i}_in_f`); body[`c${i}_in_m`] = numVal(`c${i}_in_m`); body[`c${i}_pr_f`] = numVal(`c${i}_pr_f`); body[`c${i}_pr_m`] = numVal(`c${i}_pr_m`); }
+    // 👆 پایان بخش اصلاح شده 👆
+
     if (!body.academicMember) { showToast('❌ نام عضو علمی الزامی است', true); btn.disabled = false; btn.innerText = '💾 ذخیره'; return; }
     try {
       const res = await fetch('/api/school-settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(body) });

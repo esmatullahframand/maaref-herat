@@ -942,7 +942,7 @@
     
     if (!username || !schoolname || !district) { showToast('فیلدهای اصلی الزامی هستند', true); return; }
     
-    const payload = { username, schoolname, district };
+   const payload = { username, schoolName: schoolname, district };
     if (password) payload.password = password;
     
     try {

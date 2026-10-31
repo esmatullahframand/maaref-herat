@@ -166,8 +166,7 @@
   let html = '';
   classNames.forEach((name, i) => {
     const n = i + 1;
-    html += `<tr><td>${name}</td><td><input type="text" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="text" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>`;
-  });
+   html += `<tr><td>${name}</td><td><input type="number" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>`;
   tbody.innerHTML = html;
 
   document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;

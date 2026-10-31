@@ -766,7 +766,7 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
       const num = Number(val);
       return isNaN(num) ? 0 : num;
     };
-
+    console.log("📥 Data received from frontend:", JSON.stringify(body, null, 2));
     const academicMember = String(body.academicMember || '').trim();
     if (!academicMember) return res.status(400).json({ error: 'نام عضو علمی الزامی است' });
     const schoolName = req.user.schoolname || '';

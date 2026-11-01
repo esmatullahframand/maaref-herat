@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 const JWT_SECRET_CONSTANT = 'maaref-secret-key-12345';
 const JWT_ALGORITHM = 'HS256';
+console.log("🚀🚀🚀 VERSION 99 IS RUNNING 🚀🚀🚀");
 
 console.log('═══════════════════════════════════════');
 console.log('🔐 Server V22.0 starting (Ultimate Edition)...');

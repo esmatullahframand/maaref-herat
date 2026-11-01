@@ -759,6 +759,12 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
     const body = req.body || {};
+
+    // 👇 این خط را اضافه کنید 👇
+    console.error("🚨 TEST LOG: Request received at school-settings");
+
+    const toNum = (val) => {
+// ... بقیه کد
     
     // تابع ایمن برای تبدیل هر چیزی به عدد
     const toNum = (val) => {

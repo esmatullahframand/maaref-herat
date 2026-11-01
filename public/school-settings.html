@@ -152,7 +152,7 @@
 
 <div class="toast" id="toast"></div>
 <script>
-  const token = localStorage.getItem('hr_token');
+    const token = localStorage.getItem('hr_token');
   const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
   if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; throw new Error('No token'); }
 
@@ -250,7 +250,6 @@
     if (!document.getElementById('settingsAgreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
     const btn = document.getElementById('settingsSubmitBtn'); btn.disabled = true; btn.innerText = '⏳ در حال ذخیره...';
     
-    // 👇 این بخش اصلاح شد 👇
     const body = {
       timeType: document.getElementById('sTimeType').value, 
       academicMember: document.getElementById('sAcademicMember').value.trim(),
@@ -265,7 +264,6 @@
       lackBustCount: numVal('sLackBustCount'), lackBustField: document.getElementById('sLackBustField').value.trim()
     };
     for (let i = 1; i <= 12; i++) { body[`c${i}_in_f`] = numVal(`c${i}_in_f`); body[`c${i}_in_m`] = numVal(`c${i}_in_m`); body[`c${i}_pr_f`] = numVal(`c${i}_pr_f`); body[`c${i}_pr_m`] = numVal(`c${i}_pr_m`); }
-    // 👆 پایان بخش اصلاح شده 👆
 
     if (!body.academicMember) { showToast('❌ نام عضو علمی الزامی است', true); btn.disabled = false; btn.innerText = '💾 ذخیره'; return; }
     try {

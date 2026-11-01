@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'maaref-secret-key-12345';
+console.log("✅✅✅ VERSION 200 IS RUNNING ✅✅✅");
 
 app.set('trust proxy', 1);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';

@@ -756,6 +756,13 @@
     } catch (e) { console.error('خطا در دریافت لیست مکاتب:', e); }
   }
   window.loadSchoolsList = loadSchoolsList;
+  
+  // شروع
+  (async function init() {
+    await loadSchoolsList();
+    await loadSchoolSettings();
+    await loadAllRecords();
+  })();
 </script>
 </body>
 </html>

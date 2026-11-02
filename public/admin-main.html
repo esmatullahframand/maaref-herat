@@ -45,8 +45,6 @@
   .modal-header-purple .btn-close { filter: invert(1); }
   .modal-header-orange { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
   .modal-header-orange .btn-close { filter: invert(1); }
-  .stats-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 15px; }
-  .stats-card-item h6 { margin: 0 0 12px 0; font-weight: bold; font-size: 14px; border-bottom: 2px solid; padding-bottom: 8px; }
   
   .school-info-card { background: #f8fafc; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: none; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
   .school-info-card.active { display: block; animation: fadeIn 0.3s ease; }
@@ -319,17 +317,26 @@
 
   function logout() { localStorage.clear(); window.location.href = '/'; }
   window.logout = logout;
+  
   function showToast(msg, isError = false) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast' + (isError ? ' error' : ''); t.style.display = 'block'; clearTimeout(t._timer); t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500); }
   window.showToast = showToast;
+  
   function escapeHtml(s) { if (s === null || s === undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
   window.escapeHtml = escapeHtml;
+  
   function normalizeDigits(str) { if (!str) return ''; const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩'; return str.split('').map(ch => { const pi = p.indexOf(ch); if (pi !== -1) return pi; const ai = a.indexOf(ch); if (ai !== -1) return ai; return ch; }).join(''); }
+  
   function parseShamsi(dateStr) { if (!dateStr) return null; const cleaned = normalizeDigits(dateStr).replace(/[.\-]/g, '/').trim(); const parts = cleaned.split('/').map(p => p.trim()); if (parts.length !== 3) return null; const p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]); if (isNaN(p1) || isNaN(p2) || isNaN(p3)) return null; let year, month, day; if (parts[0].length === 4 || (p1 >= 1300 && p1 <= 1450)) { year = p1; month = p2; day = p3; } else if (parts[2].length === 4 || (p3 >= 1300 && p3 <= 1450)) { year = p3; month = p2; day = p1; } else return null; return { year, month, day, numeric: year * 10000 + month * 100 + day }; }
+  
   function calculateAge(birthDateStr) { const p = parseShamsi(birthDateStr); if (!p) return null; const now = new Date(); const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate(); const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334]; let jy = (gy <= 1600) ? 0 : 979; let _gy = gy - ((gy <= 1600) ? 621 : 1600); const gy2 = (gm > 2) ? (_gy + 1) : _gy; let days = (365*_gy) + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) + Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1]; jy += 33 * Math.floor(days/12053); days %= 12053; jy += 4 * Math.floor(days/1461); days %= 1461; if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; } const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30); const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30)); let y = jy - p.year; if (jm < p.month || (jm === p.month && jd < p.day)) y--; return y >= 0 ? y : null; }
+  
   function getEmployeeStatus(record) { const age = calculateAge(record.birthDate); if (age === null) return { age: '—', status: 'نامشخص', cls: 'badge-unknown' }; if (age >= RETIREMENT_AGE) return { age, status: '🎖️ متقاعد', cls: 'badge-retired' }; return { age, status: '✅ فعال', cls: 'badge-active' }; }
+  
   function detectSchoolType(schoolName) { if (!schoolName) return 'نامشخص'; const name = String(schoolName).trim().replace(/\s+/g, ' '); if (name.includes('لیسه') || name.includes('لیسهٔ')) return 'لیسه'; if (name.includes('متوسطه') || name.includes('متوسطۀ')) return 'متوسطه'; if (name.includes('ابتداییه') || name.includes('ابتدائیه')) return 'ابتداییه'; if (name.includes('مدرسه') || name.includes('مکتب') || name.includes('دارالعلوم')) return 'مدرسه'; return 'نامشخص'; }
+  
   function getSchoolNameById(userid) { if (!userid || !allSchoolsList) return null; const s = allSchoolsList.find(x => x.id === userid); return s ? s.schoolname : null; }
   function getDistrictById(userid) { if (!userid || !allSchoolsList) return null; const s = allSchoolsList.find(x => x.id === userid); return s ? s.district : null; }
+  
   let debounceTimer; function debouncedLoad() { clearTimeout(debounceTimer); debounceTimer = setTimeout(loadAllRecords, 400); }
   window.debouncedLoad = debouncedLoad;
 
@@ -352,13 +359,11 @@
   function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo); }
 
   // ═══════════════════════════════════════════════════════════
-  // flattenSettings — نرمال‌سازی کلیدها برای تطبیق snake_case و camelCase
+  // flattenSettings و تابع کمکی n
   // ═══════════════════════════════════════════════════════════
   function flattenSettings(s) {
     if (!s || typeof s !== 'object') return s || {};
     let newS = { ...s };
-    
-    // باز کردن فیلدهای JSON
     const possibleJsonFields = ['branches_data', 'branchesData', 'data'];
     for (const field of possibleJsonFields) {
       const raw = s[field];
@@ -371,8 +376,6 @@
         newS = { ...newS, ...raw };
       }
     }
-    
-    // نرمال‌سازی: هر دو نام‌گذاری را به هم تبدیل کن
     const keyMap = {
       'branchesF13': 'branches_f_1_3', 'branchesM13': 'branches_m_1_3', 'branchesX13': 'branches_x_1_3',
       'branchesF46': 'branches_f_4_6', 'branchesM46': 'branches_m_4_6', 'branchesX46': 'branches_x_4_6',
@@ -381,9 +384,7 @@
       'totalInFemale': 'total_in_female', 'totalInMale': 'total_in_male',
       'totalPresentFemale': 'total_present_female', 'totalPresentMale': 'total_present_male',
       'gradFemale': 'grad_female', 'gradMale': 'grad_male',
-      'budgetStatus': 'budget_status',
-      'extraBustCount': 'extra_bust_count', 'extraBustField': 'extra_bust_field',
-      'lackBustCount': 'lack_bust_count', 'lackBustField': 'lack_bust_field',
+      'budgetStatus': 'budget_status'
     };
     for (const [camel, snake] of Object.entries(keyMap)) {
       if (newS[camel] !== undefined && newS[snake] === undefined) newS[snake] = newS[camel];
@@ -392,6 +393,13 @@
     return newS;
   }
   window.flattenSettings = flattenSettings;
+
+  const getN = (obj, ...keys) => {
+    for (const k of keys) {
+      if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
+    }
+    return 0;
+  };
 
   // ═══════════════════════════════════════════════════════════
   // بارگذاری تنظیمات مکاتب
@@ -407,13 +415,9 @@
         else if (data && data.settings) allSchoolSettings = [data.settings];
         else allSchoolSettings = [];
       } else {
-        console.warn('endpoint /api/school-settings/all پاسخ نداد:', res.status);
         allSchoolSettings = [];
       }
-    } catch (e) {
-      console.error('خطا در دریافت تنظیمات مکاتب:', e);
-      allSchoolSettings = [];
-    }
+    } catch (e) { allSchoolSettings = []; }
   }
   window.loadSchoolSettings = loadSchoolSettings;
 
@@ -426,7 +430,6 @@
     
     if (!schoolName) { card.classList.remove('active'); loadAllRecords(); return; }
     
-    // پیدا کردن تنظیمات مکتب — با schoolname یا userid
     let raw = allSchoolSettings.find(s => s.schoolname === schoolName);
     if (!raw) {
       const schoolObj = allSchoolsList.find(s => s.schoolname === schoolName);
@@ -443,50 +446,40 @@
     document.getElementById('selectedSchoolName').textContent = schoolName;
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    const n = (obj, ...keys) => {
-      for (const k of keys) {
-        if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
-      }
-      return 0;
-    };
     
-    // شعبات
-    const bF13 = n(s, 'branches_f_1_3', 'branchesF13'), bM13 = n(s, 'branches_m_1_3', 'branchesM13'), bX13 = n(s, 'branches_x_1_3', 'branchesX13');
+    const bF13 = getN(s, 'branches_f_1_3', 'branchesF13'), bM13 = getN(s, 'branches_m_1_3', 'branchesM13'), bX13 = getN(s, 'branches_x_1_3', 'branchesX13');
     setTxt('infoBF13', bF13); setTxt('infoBM13', bM13); setTxt('infoBX13', bX13); setTxt('infoBT13', bF13+bM13+bX13);
     
-    const bF46 = n(s, 'branches_f_4_6', 'branchesF46'), bM46 = n(s, 'branches_m_4_6', 'branchesM46'), bX46 = n(s, 'branches_x_4_6', 'branchesX46');
+    const bF46 = getN(s, 'branches_f_4_6', 'branchesF46'), bM46 = getN(s, 'branches_m_4_6', 'branchesM46'), bX46 = getN(s, 'branches_x_4_6', 'branchesX46');
     setTxt('infoBF46', bF46); setTxt('infoBM46', bM46); setTxt('infoBX46', bX46); setTxt('infoBT46', bF46+bM46+bX46);
     
-    const bF79 = n(s, 'branches_f_7_9', 'branchesF79'), bM79 = n(s, 'branches_m_7_9', 'branchesM79'), bX79 = n(s, 'branches_x_7_9', 'branchesX79');
+    const bF79 = getN(s, 'branches_f_7_9', 'branchesF79'), bM79 = getN(s, 'branches_m_7_9', 'branchesM79'), bX79 = getN(s, 'branches_x_7_9', 'branchesX79');
     setTxt('infoBF79', bF79); setTxt('infoBM79', bM79); setTxt('infoBX79', bX79); setTxt('infoBT79', bF79+bM79+bX79);
     
-    const bF1012 = n(s, 'branches_f_10_12', 'branchesF1012'), bM1012 = n(s, 'branches_m_10_12', 'branchesM1012'), bX1012 = n(s, 'branches_x_10_12', 'branchesX1012');
+    const bF1012 = getN(s, 'branches_f_10_12', 'branchesF1012'), bM1012 = getN(s, 'branches_m_10_12', 'branchesM1012'), bX1012 = getN(s, 'branches_x_10_12', 'branchesX1012');
     setTxt('infoBF1012', bF1012); setTxt('infoBM1012', bM1012); setTxt('infoBX1012', bX1012); setTxt('infoBT1012', bF1012+bM1012+bX1012);
     
     const tF = bF13+bF46+bF79+bF1012, tM = bM13+bM46+bM79+bM1012, tX = bX13+bX46+bX79+bX1012;
     setTxt('infoTF', tF); setTxt('infoTM', tM); setTxt('infoTX', tX); setTxt('infoTB', tF+tM+tX);
     
-    // داخله و حاضر
-    const inF = n(s, 'total_in_female', 'totalInFemale'), inM = n(s, 'total_in_male', 'totalInMale');
-    const prF = n(s, 'total_present_female', 'totalPresentFemale'), prM = n(s, 'total_present_male', 'totalPresentMale');
+    const inF = getN(s, 'total_in_female', 'totalInFemale'), inM = getN(s, 'total_in_male', 'totalInMale');
+    const prF = getN(s, 'total_present_female', 'totalPresentFemale'), prM = getN(s, 'total_present_male', 'totalPresentMale');
     setTxt('infoInF', inF); setTxt('infoInM', inM); setTxt('infoInTotal', inF+inM);
     setTxt('infoPrF', prF); setTxt('infoPrM', prM); setTxt('infoPrTotal', prF+prM);
     
-    // اخراجی
     const expelledBody = document.getElementById('infoExpelledBody');
     const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
     let expHtml = '', expTotalF = 0, expTotalM = 0;
     classNames.forEach((cls, i) => {
       const num = i + 1;
-      const ef = n(s, `e${num}_f`), em = n(s, `e${num}_m`);
+      const ef = getN(s, `e${num}_f`), em = getN(s, `e${num}_m`);
       expTotalF += ef; expTotalM += em;
       expHtml += `<tr><td>${cls}</td><td>${ef}</td><td>${em}</td><td class="total-col">${ef+em}</td></tr>`;
     });
     expelledBody.innerHTML = expHtml;
     setTxt('infoExpF', expTotalF); setTxt('infoExpM', expTotalM); setTxt('infoExpTotal', expTotalF+expTotalM);
     
-    // فارغان
-    const gF = n(s, 'grad_female', 'gradFemale'), gM = n(s, 'grad_male', 'gradMale');
+    const gF = getN(s, 'grad_female', 'gradFemale'), gM = getN(s, 'grad_male', 'gradMale');
     setTxt('infoGradF', gF); setTxt('infoGradM', gM); setTxt('infoGradTotal', gF+gM);
     
     card.classList.add('active');
@@ -495,7 +488,7 @@
   window.onSchoolFilterChange = onSchoolFilterChange;
 
   // ═══════════════════════════════════════════════════════════
-  // کارمندان (صفحه اصلی) — فیلتر مکتب و بست اصلاح‌شده
+  // کارمندان — فیلترها
   // ═══════════════════════════════════════════════════════════
   async function loadAllRecords() {
     const f = getActiveFilters();
@@ -509,7 +502,7 @@
       let records = await res.json();
       if (!Array.isArray(records)) records = [];
 
-      // ✅ فیلتر مکتب — با schoolname یا userid
+      // ✅ فیلتر مکتب
       if (f.school) {
         const selectedSchool = allSchoolsList.find(s => s.schoolname === f.school);
         const selectedId = selectedSchool ? selectedSchool.id : null;
@@ -521,15 +514,15 @@
         });
       }
 
-      // ✅ فیلتر وضعیت بست — اصلاح‌شده
+      // ✅ فیلتر وضعیت بست (اصلاح نهایی)
       if (f.budget) {
         const flatSettings = allSchoolSettings.map(flattenSettings);
-        // ساخت نقشه: نام مکتب → وضعیت بست (پیش‌فرض "عادی")
         const budgetMap = {};
         flatSettings.forEach(s => {
           let sName = s.schoolname;
           if (!sName && s.userid) sName = getSchoolNameById(s.userid);
           if (sName) {
+            // اگر فیلد budget_status وجود نداشت، پیش‌فرض 'عادی' قرار می‌دهیم
             budgetMap[sName] = s.budget_status || s.budgetStatus || 'عادی';
           }
         });
@@ -538,13 +531,12 @@
           let sName = row.schoolname;
           if (!sName && row.userid) sName = getSchoolNameById(row.userid);
           if (!sName) return false;
-          // اگر مکتب در نقشه نبود، پیش‌فرض "عادی"
           const status = budgetMap[sName] || 'عادی';
           return status === f.budget;
         });
       }
 
-      // ✅ فیلتر وضعیت تایید
+      // ✅ فیلتر تایید
       if (f.approval === 'pending') {
         records = records.filter(r => r.status !== 'approved');
       } else if (f.approval === 'approved') {
@@ -769,7 +761,7 @@
   window.showDetailedStats = showDetailedStats;
 
   // ═══════════════════════════════════════════════════════════
-  // رندر آمار شاگردان — اصلاح نهایی (با تابع کمکی n)
+  // رندر آمار شاگردان
   // ═══════════════════════════════════════════════════════════
   async function renderStudentsStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterStudents').value;
@@ -777,9 +769,7 @@
     content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
 
     try {
-      if (!allSchoolSettings || allSchoolSettings.length === 0) {
-        await loadSchoolSettings();
-      }
+      if (!allSchoolSettings || allSchoolSettings.length === 0) await loadSchoolSettings();
 
       let filteredSettings = allSchoolSettings.map(flattenSettings);
       if (schoolFilter) {
@@ -796,14 +786,6 @@
         return;
       }
 
-      // تابع کمکی برای خواندن امن با هر دو نام‌گذاری
-      const n = (obj, ...keys) => {
-        for (const k of keys) {
-          if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
-        }
-        return 0;
-      };
-
       let totalBF13=0, totalBM13=0, totalBX13=0;
       let totalBF46=0, totalBM46=0, totalBX46=0;
       let totalBF79=0, totalBM79=0, totalBX79=0;
@@ -811,28 +793,28 @@
       let totalInF=0, totalInM=0, totalPrF=0, totalPrM=0;
 
       filteredSettings.forEach(s => {
-        totalBF13 += n(s, 'branches_f_1_3', 'branchesF13'); totalBM13 += n(s, 'branches_m_1_3', 'branchesM13'); totalBX13 += n(s, 'branches_x_1_3', 'branchesX13');
-        totalBF46 += n(s, 'branches_f_4_6', 'branchesF46'); totalBM46 += n(s, 'branches_m_4_6', 'branchesM46'); totalBX46 += n(s, 'branches_x_4_6', 'branchesX46');
-        totalBF79 += n(s, 'branches_f_7_9', 'branchesF79'); totalBM79 += n(s, 'branches_m_7_9', 'branchesM79'); totalBX79 += n(s, 'branches_x_7_9', 'branchesX79');
-        totalBF1012 += n(s, 'branches_f_10_12', 'branchesF1012'); totalBM1012 += n(s, 'branches_m_10_12', 'branchesM1012'); totalBX1012 += n(s, 'branches_x_10_12', 'branchesX1012');
-        totalInF += n(s, 'total_in_female', 'totalInFemale'); totalInM += n(s, 'total_in_male', 'totalInMale');
-        totalPrF += n(s, 'total_present_female', 'totalPresentFemale'); totalPrM += n(s, 'total_present_male', 'totalPresentMale');
+        totalBF13 += getN(s, 'branches_f_1_3', 'branchesF13'); totalBM13 += getN(s, 'branches_m_1_3', 'branchesM13'); totalBX13 += getN(s, 'branches_x_1_3', 'branchesX13');
+        totalBF46 += getN(s, 'branches_f_4_6', 'branchesF46'); totalBM46 += getN(s, 'branches_m_4_6', 'branchesM46'); totalBX46 += getN(s, 'branches_x_4_6', 'branchesX46');
+        totalBF79 += getN(s, 'branches_f_7_9', 'branchesF79'); totalBM79 += getN(s, 'branches_m_7_9', 'branchesM79'); totalBX79 += getN(s, 'branches_x_7_9', 'branchesX79');
+        totalBF1012 += getN(s, 'branches_f_10_12', 'branchesF1012'); totalBM1012 += getN(s, 'branches_m_10_12', 'branchesM1012'); totalBX1012 += getN(s, 'branches_x_10_12', 'branchesX1012');
+        totalInF += getN(s, 'total_in_female', 'totalInFemale'); totalInM += getN(s, 'total_in_male', 'totalInMale');
+        totalPrF += getN(s, 'total_present_female', 'totalPresentFemale'); totalPrM += getN(s, 'total_present_male', 'totalPresentMale');
       });
 
       const classTotals = Array.from({ length: 12 }, (_, i) => {
         const num = i + 1;
         return filteredSettings.reduce((total, school) => {
-          total.inF += n(school, `c${num}_in_f`); total.inM += n(school, `c${num}_in_m`);
-          total.prF += n(school, `c${num}_pr_f`); total.prM += n(school, `c${num}_pr_m`);
-          total.ef  += n(school, `e${num}_f`);    total.em  += n(school, `e${num}_m`);
+          total.inF += getN(school, `c${num}_in_f`); total.inM += getN(school, `c${num}_in_m`);
+          total.prF += getN(school, `c${num}_pr_f`); total.prM += getN(school, `c${num}_pr_m`);
+          total.ef  += getN(school, `e${num}_f`);    total.em  += getN(school, `e${num}_m`);
           return total;
         }, { inF: 0, inM: 0, prF: 0, prM: 0, ef: 0, em: 0 });
       });
 
       const grandExpF = classTotals.reduce((s, t) => s + t.ef, 0);
       const grandExpM = classTotals.reduce((s, t) => s + t.em, 0);
-      const gradF = filteredSettings.reduce((sum, s) => sum + n(s, 'grad_female', 'gradFemale'), 0);
-      const gradM = filteredSettings.reduce((sum, s) => sum + n(s, 'grad_male', 'gradMale'), 0);
+      const gradF = filteredSettings.reduce((sum, s) => sum + getN(s, 'grad_female', 'gradFemale'), 0);
+      const gradM = filteredSettings.reduce((sum, s) => sum + getN(s, 'grad_male', 'gradMale'), 0);
 
       const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
       const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
@@ -1009,20 +991,14 @@
       tbody.innerHTML = '<tr><td colspan="28" class="text-center p-4 text-muted">هیچ مکتبی ثبت نشده</td></tr>';
       return;
     }
-    const n = (obj, ...keys) => {
-      for (const k of keys) {
-        if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
-      }
-      return 0;
-    };
     let html = '';
     allSchoolSettings.map(flattenSettings).forEach((s, idx) => {
-      const bF13=n(s,'branches_f_1_3','branchesF13'), bM13=n(s,'branches_m_1_3','branchesM13'), bX13=n(s,'branches_x_1_3','branchesX13');
-      const bF46=n(s,'branches_f_4_6','branchesF46'), bM46=n(s,'branches_m_4_6','branchesM46'), bX46=n(s,'branches_x_4_6','branchesX46');
-      const bF79=n(s,'branches_f_7_9','branchesF79'), bM79=n(s,'branches_m_7_9','branchesM79'), bX79=n(s,'branches_x_7_9','branchesX79');
-      const bF1012=n(s,'branches_f_10_12','branchesF1012'), bM1012=n(s,'branches_m_10_12','branchesM1012'), bX1012=n(s,'branches_x_10_12','branchesX1012');
-      const tInF=n(s,'total_in_female','totalInFemale'), tInM=n(s,'total_in_male','totalInMale');
-      const tPrF=n(s,'total_present_female','totalPresentFemale'), tPrM=n(s,'total_present_male','totalPresentMale');
+      const bF13=getN(s,'branches_f_1_3','branchesF13'), bM13=getN(s,'branches_m_1_3','branchesM13'), bX13=getN(s,'branches_x_1_3','branchesX13');
+      const bF46=getN(s,'branches_f_4_6','branchesF46'), bM46=getN(s,'branches_m_4_6','branchesM46'), bX46=getN(s,'branches_x_4_6','branchesX46');
+      const bF79=getN(s,'branches_f_7_9','branchesF79'), bM79=getN(s,'branches_m_7_9','branchesM79'), bX79=getN(s,'branches_x_7_9','branchesX79');
+      const bF1012=getN(s,'branches_f_10_12','branchesF1012'), bM1012=getN(s,'branches_m_10_12','branchesM1012'), bX1012=getN(s,'branches_x_10_12','branchesX1012');
+      const tInF=getN(s,'total_in_female','totalInFemale'), tInM=getN(s,'total_in_male','totalInMale');
+      const tPrF=getN(s,'total_present_female','totalPresentFemale'), tPrM=getN(s,'total_present_male','totalPresentMale');
       html += `<tr>
         <td>${idx+1}</td><td><strong>${escapeHtml(s.schoolname||'-')}</strong></td><td>${escapeHtml(s.district||'-')}</td>
         <td>${bF13}</td><td>${bM13}</td><td>${bX13}</td><td class="highlight">${bF13+bM13+bX13}</td>

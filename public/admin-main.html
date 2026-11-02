@@ -711,8 +711,51 @@
   }
   window.renderStudentsStats = renderStudentsStats;
 
-  // ... (بقیه توابع: renderEmployeesStats, loadSchoolsList, addUser, loadSchoolSettings, showSchoolSettings, printSchoolSettings, showManageSchools, refreshManageSchools, renderManageSchools, filterManageSchools, openEditSchool, saveSchoolEdit, deleteSchoolAdmin, init)
-  // ⚠️ توجه: بقیه کدها (بدون تغییر) را از فایل قبلی خود اینجا قرار دهید.
+   async function loadSchoolsList() {
+    try {
+      const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) {
+        allSchoolsList = await res.json();
+        
+        // 👇 پر کردن منوی کشویی فیلتر مکتب 👇
+        const schoolFilter = document.getElementById('schoolFilter');
+        const currentVal = schoolFilter.value;
+        schoolFilter.innerHTML = '<option value="">📋 همه</option>';
+        allSchoolsList.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.schoolname; 
+          opt.textContent = `🏫 ${s.schoolname}`; // آیکون اضافه شد
+          schoolFilter.appendChild(opt);
+        });
+        schoolFilter.value = currentVal;
+
+        // 👇 پر کردن منوی کشویی آمار تفصیلی 👇
+        const statsSchoolFilterStudents = document.getElementById('statsSchoolFilterStudents');
+        const statsSchoolFilterEmployees = document.getElementById('statsSchoolFilterEmployees');
+        
+        if (statsSchoolFilterStudents) {
+          statsSchoolFilterStudents.innerHTML = '<option value="">📋 همه مکاتب</option>';
+          allSchoolsList.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.schoolname;
+            opt.textContent = `🏫 ${s.schoolname}`;
+            statsSchoolFilterStudents.appendChild(opt);
+          });
+        }
+
+        if (statsSchoolFilterEmployees) {
+          statsSchoolFilterEmployees.innerHTML = '<option value="">📋 همه مکاتب</option>';
+          allSchoolsList.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.schoolname;
+            opt.textContent = `🏫 ${s.schoolname}`;
+            statsSchoolFilterEmployees.appendChild(opt);
+          });
+        }
+      }
+    } catch (e) { console.error('خطا در دریافت لیست مکاتب:', e); }
+  }
+  window.loadSchoolsList = loadSchoolsList;
 </script>
 </body>
 </html>

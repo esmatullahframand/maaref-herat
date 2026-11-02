@@ -352,12 +352,13 @@
   function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo); }
 
   // ═══════════════════════════════════════════════════════════
-  // flattenSettings — خواندن امن branches_data از هر دو فیلد
+  // flattenSettings — نرمال‌سازی کلیدها برای تطبیق snake_case و camelCase
   // ═══════════════════════════════════════════════════════════
   function flattenSettings(s) {
     if (!s || typeof s !== 'object') return s || {};
     let newS = { ...s };
-    // اگر فیلد data هم وجود دارد (برخی APIها در data برمی‌گردانند)
+    
+    // باز کردن فیلدهای JSON
     const possibleJsonFields = ['branches_data', 'branchesData', 'data'];
     for (const field of possibleJsonFields) {
       const raw = s[field];
@@ -369,6 +370,24 @@
       } else if (raw && typeof raw === 'object') {
         newS = { ...newS, ...raw };
       }
+    }
+    
+    // نرمال‌سازی: هر دو نام‌گذاری را به هم تبدیل کن
+    const keyMap = {
+      'branchesF13': 'branches_f_1_3', 'branchesM13': 'branches_m_1_3', 'branchesX13': 'branches_x_1_3',
+      'branchesF46': 'branches_f_4_6', 'branchesM46': 'branches_m_4_6', 'branchesX46': 'branches_x_4_6',
+      'branchesF79': 'branches_f_7_9', 'branchesM79': 'branches_m_7_9', 'branchesX79': 'branches_x_7_9',
+      'branchesF1012': 'branches_f_10_12', 'branchesM1012': 'branches_m_10_12', 'branchesX1012': 'branches_x_10_12',
+      'totalInFemale': 'total_in_female', 'totalInMale': 'total_in_male',
+      'totalPresentFemale': 'total_present_female', 'totalPresentMale': 'total_present_male',
+      'gradFemale': 'grad_female', 'gradMale': 'grad_male',
+      'budgetStatus': 'budget_status',
+      'extraBustCount': 'extra_bust_count', 'extraBustField': 'extra_bust_field',
+      'lackBustCount': 'lack_bust_count', 'lackBustField': 'lack_bust_field',
+    };
+    for (const [camel, snake] of Object.entries(keyMap)) {
+      if (newS[camel] !== undefined && newS[snake] === undefined) newS[snake] = newS[camel];
+      if (newS[snake] !== undefined && newS[camel] === undefined) newS[camel] = newS[snake];
     }
     return newS;
   }
@@ -388,7 +407,6 @@
         else if (data && data.settings) allSchoolSettings = [data.settings];
         else allSchoolSettings = [];
       } else {
-        // fallback: اگر endpoint /all نبود، از /api/school-settings تکی استفاده کن (فقط برای ادمین معنی ندارد)
         console.warn('endpoint /api/school-settings/all پاسخ نداد:', res.status);
         allSchoolSettings = [];
       }
@@ -400,7 +418,7 @@
   window.loadSchoolSettings = loadSchoolSettings;
 
   // ═══════════════════════════════════════════════════════════
-  // نمایش آمار مکتب انتخاب شده (فیلتر مکتب)
+  // نمایش آمار مکتب انتخاب شده
   // ═══════════════════════════════════════════════════════════
   function onSchoolFilterChange() {
     const card = document.getElementById('schoolInfoCard');
@@ -408,7 +426,13 @@
     
     if (!schoolName) { card.classList.remove('active'); loadAllRecords(); return; }
     
-    const raw = allSchoolSettings.find(s => s.schoolname === schoolName);
+    // پیدا کردن تنظیمات مکتب — با schoolname یا userid
+    let raw = allSchoolSettings.find(s => s.schoolname === schoolName);
+    if (!raw) {
+      const schoolObj = allSchoolsList.find(s => s.schoolname === schoolName);
+      if (schoolObj) raw = allSchoolSettings.find(s => s.userid === schoolObj.id);
+    }
+    
     if (!raw) {
       card.classList.remove('active');
       showToast('اطلاعات این مکتب ثبت نشده است', true);
@@ -419,50 +443,42 @@
     document.getElementById('selectedSchoolName').textContent = schoolName;
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const n = (obj, ...keys) => {
+      for (const k of keys) {
+        if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
+      }
+      return 0;
+    };
     
     // شعبات
-    const bF13 = Number(s.branches_f_1_3 || s.branchesF13) || 0;
-    const bM13 = Number(s.branches_m_1_3 || s.branchesM13) || 0;
-    const bX13 = Number(s.branches_x_1_3 || s.branchesX13) || 0;
+    const bF13 = n(s, 'branches_f_1_3', 'branchesF13'), bM13 = n(s, 'branches_m_1_3', 'branchesM13'), bX13 = n(s, 'branches_x_1_3', 'branchesX13');
     setTxt('infoBF13', bF13); setTxt('infoBM13', bM13); setTxt('infoBX13', bX13); setTxt('infoBT13', bF13+bM13+bX13);
     
-    const bF46 = Number(s.branches_f_4_6 || s.branchesF46) || 0;
-    const bM46 = Number(s.branches_m_4_6 || s.branchesM46) || 0;
-    const bX46 = Number(s.branches_x_4_6 || s.branchesX46) || 0;
+    const bF46 = n(s, 'branches_f_4_6', 'branchesF46'), bM46 = n(s, 'branches_m_4_6', 'branchesM46'), bX46 = n(s, 'branches_x_4_6', 'branchesX46');
     setTxt('infoBF46', bF46); setTxt('infoBM46', bM46); setTxt('infoBX46', bX46); setTxt('infoBT46', bF46+bM46+bX46);
     
-    const bF79 = Number(s.branches_f_7_9 || s.branchesF79) || 0;
-    const bM79 = Number(s.branches_m_7_9 || s.branchesM79) || 0;
-    const bX79 = Number(s.branches_x_7_9 || s.branchesX79) || 0;
+    const bF79 = n(s, 'branches_f_7_9', 'branchesF79'), bM79 = n(s, 'branches_m_7_9', 'branchesM79'), bX79 = n(s, 'branches_x_7_9', 'branchesX79');
     setTxt('infoBF79', bF79); setTxt('infoBM79', bM79); setTxt('infoBX79', bX79); setTxt('infoBT79', bF79+bM79+bX79);
     
-    const bF1012 = Number(s.branches_f_10_12 || s.branchesF1012) || 0;
-    const bM1012 = Number(s.branches_m_10_12 || s.branchesM1012) || 0;
-    const bX1012 = Number(s.branches_x_10_12 || s.branchesX1012) || 0;
+    const bF1012 = n(s, 'branches_f_10_12', 'branchesF1012'), bM1012 = n(s, 'branches_m_10_12', 'branchesM1012'), bX1012 = n(s, 'branches_x_10_12', 'branchesX1012');
     setTxt('infoBF1012', bF1012); setTxt('infoBM1012', bM1012); setTxt('infoBX1012', bX1012); setTxt('infoBT1012', bF1012+bM1012+bX1012);
     
-    const tF = bF13+bF46+bF79+bF1012;
-    const tM = bM13+bM46+bM79+bM1012;
-    const tX = bX13+bX46+bX79+bX1012;
+    const tF = bF13+bF46+bF79+bF1012, tM = bM13+bM46+bM79+bM1012, tX = bX13+bX46+bX79+bX1012;
     setTxt('infoTF', tF); setTxt('infoTM', tM); setTxt('infoTX', tX); setTxt('infoTB', tF+tM+tX);
     
     // داخله و حاضر
-    const inF = Number(s.total_in_female || s.totalInFemale) || 0;
-    const inM = Number(s.total_in_male || s.totalInMale) || 0;
-    const prF = Number(s.total_present_female || s.totalPresentFemale) || 0;
-    const prM = Number(s.total_present_male || s.totalPresentMale) || 0;
+    const inF = n(s, 'total_in_female', 'totalInFemale'), inM = n(s, 'total_in_male', 'totalInMale');
+    const prF = n(s, 'total_present_female', 'totalPresentFemale'), prM = n(s, 'total_present_male', 'totalPresentMale');
     setTxt('infoInF', inF); setTxt('infoInM', inM); setTxt('infoInTotal', inF+inM);
     setTxt('infoPrF', prF); setTxt('infoPrM', prM); setTxt('infoPrTotal', prF+prM);
     
     // اخراجی
     const expelledBody = document.getElementById('infoExpelledBody');
     const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
-    let expHtml = '';
-    let expTotalF = 0, expTotalM = 0;
+    let expHtml = '', expTotalF = 0, expTotalM = 0;
     classNames.forEach((cls, i) => {
-      const n = i + 1;
-      const ef = Number(s[`e${n}_f`]) || 0;
-      const em = Number(s[`e${n}_m`]) || 0;
+      const num = i + 1;
+      const ef = n(s, `e${num}_f`), em = n(s, `e${num}_m`);
       expTotalF += ef; expTotalM += em;
       expHtml += `<tr><td>${cls}</td><td>${ef}</td><td>${em}</td><td class="total-col">${ef+em}</td></tr>`;
     });
@@ -470,8 +486,7 @@
     setTxt('infoExpF', expTotalF); setTxt('infoExpM', expTotalM); setTxt('infoExpTotal', expTotalF+expTotalM);
     
     // فارغان
-    const gF = Number(s.grad_female || s.gradFemale) || 0;
-    const gM = Number(s.grad_male || s.gradMale) || 0;
+    const gF = n(s, 'grad_female', 'gradFemale'), gM = n(s, 'grad_male', 'gradMale');
     setTxt('infoGradF', gF); setTxt('infoGradM', gM); setTxt('infoGradTotal', gF+gM);
     
     card.classList.add('active');
@@ -480,7 +495,7 @@
   window.onSchoolFilterChange = onSchoolFilterChange;
 
   // ═══════════════════════════════════════════════════════════
-  // کارمندان (صفحه اصلی) — اصلاح‌شده برای فیلتر مکتب و بست
+  // کارمندان (صفحه اصلی) — فیلتر مکتب و بست اصلاح‌شده
   // ═══════════════════════════════════════════════════════════
   async function loadAllRecords() {
     const f = getActiveFilters();
@@ -488,34 +503,44 @@
     try {
       const params = [];
       if (f.search) params.push('search=' + encodeURIComponent(f.search));
-      // ⚠️ schoolname به API ارسال نمی‌شود؛ در سمت کلاینت فیلتر می‌شود (چون ممکن است API پشتیبانی نکند)
       const url = '/api/records' + (params.length ? '?' + params.join('&') : '');
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
       let records = await res.json();
       if (!Array.isArray(records)) records = [];
 
-      // ✅ فیلتر مکتب (در سمت کلاینت — با schoolname رکورد یا از userid)
+      // ✅ فیلتر مکتب — با schoolname یا userid
       if (f.school) {
+        const selectedSchool = allSchoolsList.find(s => s.schoolname === f.school);
+        const selectedId = selectedSchool ? selectedSchool.id : null;
         records = records.filter(row => {
-          let sName = row.schoolname;
-          if (!sName && row.userid) sName = getSchoolNameById(row.userid);
+          if (row.schoolname === f.school) return true;
+          if (selectedId !== null && row.userid === selectedId) return true;
+          const sName = row.schoolname || getSchoolNameById(row.userid);
           return sName === f.school;
         });
       }
 
-      // ✅ فیلتر وضعیت بست (در سمت کلاینت — از تنظیمات مکتب)
+      // ✅ فیلتر وضعیت بست — اصلاح‌شده
       if (f.budget) {
         const flatSettings = allSchoolSettings.map(flattenSettings);
-        const schoolsWithBudget = flatSettings.filter(s => {
-          const st = s.budget_status || s.budgetStatus || 'عادی';
-          return st === f.budget;
+        // ساخت نقشه: نام مکتب → وضعیت بست (پیش‌فرض "عادی")
+        const budgetMap = {};
+        flatSettings.forEach(s => {
+          let sName = s.schoolname;
+          if (!sName && s.userid) sName = getSchoolNameById(s.userid);
+          if (sName) {
+            budgetMap[sName] = s.budget_status || s.budgetStatus || 'عادی';
+          }
         });
-        const schoolNames = schoolsWithBudget.map(s => s.schoolname);
+        
         records = records.filter(row => {
           let sName = row.schoolname;
           if (!sName && row.userid) sName = getSchoolNameById(row.userid);
-          return sName && schoolNames.includes(sName);
+          if (!sName) return false;
+          // اگر مکتب در نقشه نبود، پیش‌فرض "عادی"
+          const status = budgetMap[sName] || 'عادی';
+          return status === f.budget;
         });
       }
 
@@ -724,10 +749,7 @@
 
   async function showDetailedStats() {
     if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
-    // اطمینان از بارگذاری تنظیمات (اگر قبلاً خالی بوده)
-    if (!allSchoolSettings || allSchoolSettings.length === 0) {
-      await loadSchoolSettings();
-    }
+    if (!allSchoolSettings || allSchoolSettings.length === 0) await loadSchoolSettings();
     detailedStatsModal.show();
 
     const studentsSelect = document.getElementById('statsSchoolFilterStudents');
@@ -747,7 +769,7 @@
   window.showDetailedStats = showDetailedStats;
 
   // ═══════════════════════════════════════════════════════════
-  // رندر آمار شاگردان — اصلاح‌شده (نمایش آمار از تنظیمات)
+  // رندر آمار شاگردان — اصلاح نهایی (با تابع کمکی n)
   // ═══════════════════════════════════════════════════════════
   async function renderStudentsStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterStudents').value;
@@ -755,18 +777,32 @@
     content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
 
     try {
-      // اگر تنظیمات هنوز بارگذاری نشده، بارگذاری کن
       if (!allSchoolSettings || allSchoolSettings.length === 0) {
         await loadSchoolSettings();
       }
 
       let filteredSettings = allSchoolSettings.map(flattenSettings);
-      if (schoolFilter) filteredSettings = filteredSettings.filter(s => s.schoolname === schoolFilter);
+      if (schoolFilter) {
+        filteredSettings = filteredSettings.filter(s => {
+          if (s.schoolname === schoolFilter) return true;
+          const schoolObj = allSchoolsList.find(x => x.schoolname === schoolFilter);
+          if (schoolObj && s.userid === schoolObj.id) return true;
+          return false;
+        });
+      }
 
       if (filteredSettings.length === 0) {
         content.innerHTML = '<div class="text-center p-4 text-warning">⚠️ هیچ اطلاعاتی برای نمایش وجود ندارد. ابتدا مکاتب باید تنظیمات خود را ثبت کنند.</div>';
         return;
       }
+
+      // تابع کمکی برای خواندن امن با هر دو نام‌گذاری
+      const n = (obj, ...keys) => {
+        for (const k of keys) {
+          if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
+        }
+        return 0;
+      };
 
       let totalBF13=0, totalBM13=0, totalBX13=0;
       let totalBF46=0, totalBM46=0, totalBX46=0;
@@ -775,31 +811,28 @@
       let totalInF=0, totalInM=0, totalPrF=0, totalPrM=0;
 
       filteredSettings.forEach(s => {
-        totalBF13 += Number(s.branches_f_1_3 || s.branchesF13) || 0; totalBM13 += Number(s.branches_m_1_3 || s.branchesM13) || 0; totalBX13 += Number(s.branches_x_1_3 || s.branchesX13) || 0;
-        totalBF46 += Number(s.branches_f_4_6 || s.branchesF46) || 0; totalBM46 += Number(s.branches_m_4_6 || s.branchesM46) || 0; totalBX46 += Number(s.branches_x_4_6 || s.branchesX46) || 0;
-        totalBF79 += Number(s.branches_f_7_9 || s.branchesF79) || 0; totalBM79 += Number(s.branches_m_7_9 || s.branchesM79) || 0; totalBX79 += Number(s.branches_x_7_9 || s.branchesX79) || 0;
-        totalBF1012 += Number(s.branches_f_10_12 || s.branchesF1012) || 0; totalBM1012 += Number(s.branches_m_10_12 || s.branchesM1012) || 0; totalBX1012 += Number(s.branches_x_10_12 || s.branchesX1012) || 0;
-        totalInF += Number(s.total_in_female || s.totalInFemale) || 0; totalInM += Number(s.total_in_male || s.totalInMale) || 0;
-        totalPrF += Number(s.total_present_female || s.totalPresentFemale) || 0; totalPrM += Number(s.total_present_male || s.totalPresentMale) || 0;
+        totalBF13 += n(s, 'branches_f_1_3', 'branchesF13'); totalBM13 += n(s, 'branches_m_1_3', 'branchesM13'); totalBX13 += n(s, 'branches_x_1_3', 'branchesX13');
+        totalBF46 += n(s, 'branches_f_4_6', 'branchesF46'); totalBM46 += n(s, 'branches_m_4_6', 'branchesM46'); totalBX46 += n(s, 'branches_x_4_6', 'branchesX46');
+        totalBF79 += n(s, 'branches_f_7_9', 'branchesF79'); totalBM79 += n(s, 'branches_m_7_9', 'branchesM79'); totalBX79 += n(s, 'branches_x_7_9', 'branchesX79');
+        totalBF1012 += n(s, 'branches_f_10_12', 'branchesF1012'); totalBM1012 += n(s, 'branches_m_10_12', 'branchesM1012'); totalBX1012 += n(s, 'branches_x_10_12', 'branchesX1012');
+        totalInF += n(s, 'total_in_female', 'totalInFemale'); totalInM += n(s, 'total_in_male', 'totalInMale');
+        totalPrF += n(s, 'total_present_female', 'totalPresentFemale'); totalPrM += n(s, 'total_present_male', 'totalPresentMale');
       });
 
       const classTotals = Array.from({ length: 12 }, (_, i) => {
-        const n = i + 1;
+        const num = i + 1;
         return filteredSettings.reduce((total, school) => {
-          total.inF += Number(school[`c${n}_in_f`]) || 0;
-          total.inM += Number(school[`c${n}_in_m`]) || 0;
-          total.prF += Number(school[`c${n}_pr_f`]) || 0;
-          total.prM += Number(school[`c${n}_pr_m`]) || 0;
-          total.ef += Number(school[`e${n}_f`]) || 0;
-          total.em += Number(school[`e${n}_m`]) || 0;
+          total.inF += n(school, `c${num}_in_f`); total.inM += n(school, `c${num}_in_m`);
+          total.prF += n(school, `c${num}_pr_f`); total.prM += n(school, `c${num}_pr_m`);
+          total.ef  += n(school, `e${num}_f`);    total.em  += n(school, `e${num}_m`);
           return total;
         }, { inF: 0, inM: 0, prF: 0, prM: 0, ef: 0, em: 0 });
       });
 
       const grandExpF = classTotals.reduce((s, t) => s + t.ef, 0);
       const grandExpM = classTotals.reduce((s, t) => s + t.em, 0);
-      const gradF = filteredSettings.reduce((sum, s) => sum + (Number(s.grad_female || s.gradFemale) || 0), 0);
-      const gradM = filteredSettings.reduce((sum, s) => sum + (Number(s.grad_male || s.gradMale) || 0), 0);
+      const gradF = filteredSettings.reduce((sum, s) => sum + n(s, 'grad_female', 'gradFemale'), 0);
+      const gradM = filteredSettings.reduce((sum, s) => sum + n(s, 'grad_male', 'gradMale'), 0);
 
       const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
       const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
@@ -976,14 +1009,20 @@
       tbody.innerHTML = '<tr><td colspan="28" class="text-center p-4 text-muted">هیچ مکتبی ثبت نشده</td></tr>';
       return;
     }
+    const n = (obj, ...keys) => {
+      for (const k of keys) {
+        if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
+      }
+      return 0;
+    };
     let html = '';
     allSchoolSettings.map(flattenSettings).forEach((s, idx) => {
-      const bF13=Number(s.branches_f_1_3||s.branchesF13)||0, bM13=Number(s.branches_m_1_3||s.branchesM13)||0, bX13=Number(s.branches_x_1_3||s.branchesX13)||0;
-      const bF46=Number(s.branches_f_4_6||s.branchesF46)||0, bM46=Number(s.branches_m_4_6||s.branchesM46)||0, bX46=Number(s.branches_x_4_6||s.branchesX46)||0;
-      const bF79=Number(s.branches_f_7_9||s.branchesF79)||0, bM79=Number(s.branches_m_7_9||s.branchesM79)||0, bX79=Number(s.branches_x_7_9||s.branchesX79)||0;
-      const bF1012=Number(s.branches_f_10_12||s.branchesF1012)||0, bM1012=Number(s.branches_m_10_12||s.branchesM1012)||0, bX1012=Number(s.branches_x_10_12||s.branchesX1012)||0;
-      const tInF=Number(s.total_in_female||s.totalInFemale)||0, tInM=Number(s.total_in_male||s.totalInMale)||0;
-      const tPrF=Number(s.total_present_female||s.totalPresentFemale)||0, tPrM=Number(s.total_present_male||s.totalPresentMale)||0;
+      const bF13=n(s,'branches_f_1_3','branchesF13'), bM13=n(s,'branches_m_1_3','branchesM13'), bX13=n(s,'branches_x_1_3','branchesX13');
+      const bF46=n(s,'branches_f_4_6','branchesF46'), bM46=n(s,'branches_m_4_6','branchesM46'), bX46=n(s,'branches_x_4_6','branchesX46');
+      const bF79=n(s,'branches_f_7_9','branchesF79'), bM79=n(s,'branches_m_7_9','branchesM79'), bX79=n(s,'branches_x_7_9','branchesX79');
+      const bF1012=n(s,'branches_f_10_12','branchesF1012'), bM1012=n(s,'branches_m_10_12','branchesM1012'), bX1012=n(s,'branches_x_10_12','branchesX1012');
+      const tInF=n(s,'total_in_female','totalInFemale'), tInM=n(s,'total_in_male','totalInMale');
+      const tPrF=n(s,'total_present_female','totalPresentFemale'), tPrM=n(s,'total_present_male','totalPresentMale');
       html += `<tr>
         <td>${idx+1}</td><td><strong>${escapeHtml(s.schoolname||'-')}</strong></td><td>${escapeHtml(s.district||'-')}</td>
         <td>${bF13}</td><td>${bM13}</td><td>${bX13}</td><td class="highlight">${bF13+bM13+bX13}</td>

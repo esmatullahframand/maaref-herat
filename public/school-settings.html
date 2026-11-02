@@ -122,18 +122,27 @@
         </div>
       </div>
 
-      <!-- بخش جدید: اخراجی -->
+      <!-- بخش ۵: اخراجی -->
       <div class="form-section">
         <h5>۵. آمار اخراجی (به تفکیک صنف)</h5>
         <div class="table-responsive">
           <table>
             <thead><tr><th rowspan="2">صنف</th><th colspan="3">تعداد اخراجی</th></tr><tr><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
             <tbody id="expelledTableBody"></tbody>
+            <!-- 👇 ردیف مجموع کل اخراجی‌ها 👇 -->
+            <tfoot>
+              <tr class="total-row">
+                <td>مجموع کل</td>
+                <td><input type="text" id="e_total_f" readonly style="font-weight:bold; text-align:center;"></td>
+                <td><input type="text" id="e_total_m" readonly style="font-weight:bold; text-align:center;"></td>
+                <td><input type="text" id="e_grand_total" readonly style="font-weight:bold; text-align:center;"></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
 
-      <!-- بخش جدید: فارغان -->
+      <!-- بخش ۶: فارغان -->
       <div class="form-section">
         <h5>۶. آمار فارغان (صنف دوازدهم)</h5>
         <div class="table-responsive">
@@ -192,7 +201,7 @@
 
   const classNames = ['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'];
   
-  // ساخت جدول داخله و حاضر (با ستون مجموع)
+  // ساخت جدول داخله و حاضر
   const tbody = document.getElementById('classTableBody');
   let html = '';
   classNames.forEach((name, i) => {
@@ -209,15 +218,15 @@
   });
   tbody.innerHTML = html;
 
-  // ساخت جدول اخراجی (با ستون مجموع)
+  // ساخت جدول اخراجی
   const expelledTbody = document.getElementById('expelledTableBody');
   let expelledHtml = '';
   classNames.forEach((name, i) => {
     const n = i + 1;
     expelledHtml += `<tr>
       <td>${name}</td>
-      <td><input type="number" id="e${n}_f" placeholder="تعداد"></td>
-      <td><input type="number" id="e${n}_m" placeholder="تعداد"></td>
+      <td><input type="number" id="e${n}_f" oninput="calcExpelledTotals()" placeholder="تعداد"></td>
+      <td><input type="number" id="e${n}_m" oninput="calcExpelledTotals()" placeholder="تعداد"></td>
       <td><input type="text" id="e${n}_total" readonly style="background:#f8fafc;"></td>
     </tr>`;
   });
@@ -250,7 +259,6 @@
       const cInF = numVal(`c${i}_in_f`), cInM = numVal(`c${i}_in_m`);
       const cPrF = numVal(`c${i}_pr_f`), cPrM = numVal(`c${i}_pr_m`);
       
-      // محاسبه مجموع هر صنف
       setVal(`c${i}_in_total`, cInF + cInM);
       setVal(`c${i}_pr_total`, cPrF + cPrM);
       
@@ -261,13 +269,20 @@
   }
   window.calcTotals = calcTotals;
 
-  // تابع جدید برای محاسبه مجموع اخراجی‌ها
+  // 👇 تابع اصلاح شده برای مجموع اخراجی‌ها (هم هر صنف، هم کل) 👇
   function calcExpelledTotals() {
+    let totalF = 0, totalM = 0;
     for (let i = 1; i <= 12; i++) {
       const ef = numVal(`e${i}_f`);
       const em = numVal(`e${i}_m`);
-      setVal(`e${i}_total`, ef + em);
+      setVal(`e${i}_total`, ef + em); // مجموع هر صنف
+      totalF += ef; // جمع کل اناث
+      totalM += em; // جمع کل ذکور
     }
+    // نمایش مجموع کل در پایین جدول
+    setVal('e_total_f', totalF);
+    setVal('e_total_m', totalM);
+    setVal('e_grand_total', totalF + totalM);
   }
   window.calcExpelledTotals = calcExpelledTotals;
 
@@ -306,7 +321,6 @@
       if (data.exists && data.settings) {
         const s = data.settings;
         
-        // باز کردن branches_data اگر وجود داشت
         let settingsData = { ...s };
         if (s.branches_data) {
           try {
@@ -330,7 +344,6 @@
           setVal(`c${i}_pr_m`, settingsData[`c${i}_pr_m`]); 
         }
         
-        // پر کردن فیلدهای اخراجی و فارغان
         for (let i = 1; i <= 12; i++) {
           setVal(`e${i}_f`, settingsData[`e${i}_f`]);
           setVal(`e${i}_m`, settingsData[`e${i}_m`]);
@@ -338,7 +351,6 @@
         setVal('gradFemale', settingsData.grad_female || settingsData.gradFemale);
         setVal('gradMale', settingsData.grad_male || settingsData.gradMale);
         
-        // محاسبه مجدد مجموع‌ها
         calcBranches(); 
         calcTotals();
         calcExpelledTotals();

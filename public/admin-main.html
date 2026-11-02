@@ -298,7 +298,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // ═══════════════════════════════════════════════════════════
-  // توابع پایه و امنیتی
+  // متغیرها و توابع پایه
   // ═══════════════════════════════════════════════════════════
   const token = localStorage.getItem('hr_token');
   const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
@@ -359,7 +359,7 @@
   function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo); }
 
   // ═══════════════════════════════════════════════════════════
-  // flattenSettings و تابع کمکی n
+  // ابزارهای پردازش داده‌ها
   // ═══════════════════════════════════════════════════════════
   function flattenSettings(s) {
     if (!s || typeof s !== 'object') return s || {};
@@ -402,9 +402,12 @@
   };
 
   // ═══════════════════════════════════════════════════════════
-  // بارگذاری تنظیمات مکاتب
+  // بارگذاری تنظیمات مکاتب (مقاوم)
   // ═══════════════════════════════════════════════════════════
   async function loadSchoolSettings() {
+    allSchoolSettings = [];
+    
+    // تلاش ۱: endpoint کلی
     try {
       const res = await fetch('/api/school-settings/all', { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.ok) {
@@ -413,11 +416,31 @@
         else if (data && Array.isArray(data.settings_list)) allSchoolSettings = data.settings_list;
         else if (data && Array.isArray(data.settingss)) allSchoolSettings = data.settingss;
         else if (data && data.settings) allSchoolSettings = [data.settings];
-        else allSchoolSettings = [];
-      } else {
-        allSchoolSettings = [];
+        
+        if (allSchoolSettings.length > 0) return;
       }
-    } catch (e) { allSchoolSettings = []; }
+    } catch (e) { /* ignore */ }
+
+    // تلاش ۲: اگر endpoint کلی کار نکرد، تک‌تک مکاتب را بگیر
+    if (!allSchoolsList || allSchoolsList.length === 0) return;
+
+    try {
+      const promises = allSchoolsList.map(async (school) => {
+        try {
+          const res = await fetch('/api/school-settings?userid=' + school.id, { 
+            headers: { 'Authorization': 'Bearer ' + token } 
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (data && data.exists && data.settings) {
+            return { ...data.settings, schoolname: school.schoolname, userid: school.id, district: school.district };
+          }
+          return null;
+        } catch (e) { return null; }
+      });
+      const results = await Promise.all(promises);
+      allSchoolSettings = results.filter(Boolean);
+    } catch (e) { /* ignore */ }
   }
   window.loadSchoolSettings = loadSchoolSettings;
 
@@ -488,7 +511,7 @@
   window.onSchoolFilterChange = onSchoolFilterChange;
 
   // ═══════════════════════════════════════════════════════════
-  // کارمندان — فیلترها
+  // کارمندان
   // ═══════════════════════════════════════════════════════════
   async function loadAllRecords() {
     const f = getActiveFilters();
@@ -502,7 +525,6 @@
       let records = await res.json();
       if (!Array.isArray(records)) records = [];
 
-      // ✅ فیلتر مکتب
       if (f.school) {
         const selectedSchool = allSchoolsList.find(s => s.schoolname === f.school);
         const selectedId = selectedSchool ? selectedSchool.id : null;
@@ -514,17 +536,13 @@
         });
       }
 
-      // ✅ فیلتر وضعیت بست (اصلاح نهایی)
       if (f.budget) {
         const flatSettings = allSchoolSettings.map(flattenSettings);
         const budgetMap = {};
         flatSettings.forEach(s => {
           let sName = s.schoolname;
           if (!sName && s.userid) sName = getSchoolNameById(s.userid);
-          if (sName) {
-            // اگر فیلد budget_status وجود نداشت، پیش‌فرض 'عادی' قرار می‌دهیم
-            budgetMap[sName] = s.budget_status || s.budgetStatus || 'عادی';
-          }
+          if (sName) budgetMap[sName] = s.budget_status || s.budgetStatus || 'عادی';
         });
         
         records = records.filter(row => {
@@ -536,7 +554,6 @@
         });
       }
 
-      // ✅ فیلتر تایید
       if (f.approval === 'pending') {
         records = records.filter(r => r.status !== 'approved');
       } else if (f.approval === 'approved') {
@@ -545,7 +562,6 @@
         records = records.filter(r => r.status !== 'approved');
       }
 
-      // فیلترهای دیگر
       if (f.schoolType) records = records.filter(row => { let sName = row.schoolname; if (!sName && row.userid) sName = getSchoolNameById(row.userid); return sName && detectSchoolType(sName) === f.schoolType; });
       if (f.jobTitle) records = records.filter(row => { const info = row.data || {}; return (info.jobTitle || info.job || '') === f.jobTitle; });
       if (f.gender) records = records.filter(row => { const info = row.data || {}; return (info.gender || '') === f.gender; });
@@ -761,7 +777,7 @@
   window.showDetailedStats = showDetailedStats;
 
   // ═══════════════════════════════════════════════════════════
-  // رندر آمار شاگردان
+  // آمار شاگردان
   // ═══════════════════════════════════════════════════════════
   async function renderStudentsStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterStudents').value;
@@ -890,7 +906,7 @@
   window.renderStudentsStats = renderStudentsStats;
 
   // ═══════════════════════════════════════════════════════════
-  // رندر آمار کارمندان
+  // آمار کارمندان
   // ═══════════════════════════════════════════════════════════
   async function renderEmployeesStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterEmployees').value;

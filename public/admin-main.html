@@ -46,16 +46,6 @@
   .modal-header-orange { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
   .modal-header-orange .btn-close { filter: invert(1); }
   
-  .school-info-card { background: #f8fafc; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: none; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
-  .school-info-card.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-  .school-info-card h5 { color: #1e40af; font-weight: 800; margin-bottom: 15px; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-  .info-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; margin-bottom: 15px; background: #fff; border-radius: 8px; overflow: hidden; }
-  .info-table th, .info-table td { border: 1px solid #cbd5e1; padding: 8px; }
-  .info-table th { background: #eff6ff; color: #1e40af; font-weight: 800; }
-  .info-table td { background: #fff; font-weight: bold; }
-  .info-table td.total-col { background: #dcfce7; color: #15803d; }
-  
   .full-school-table th { font-size: 11px; padding: 6px; background: #f1f5f9 !important; }
   .full-school-table td { font-size: 12px; padding: 6px; }
   .full-school-table td.highlight { background: #eff6ff; font-weight: bold; }
@@ -153,57 +143,6 @@
           <input type="text" id="appDateTo" class="form-control" placeholder="تا: 1400/12/30" onchange="loadAllRecords()">
         </div>
       </div>
-    </div>
-
-    <div class="school-info-card" id="schoolInfoCard">
-      <h5><i class="fa-solid fa-school"></i> آمار مکتب انتخاب شده: <span id="selectedSchoolName">—</span></h5>
-      
-      <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">📚 شعبات درسی</h6>
-      <table class="info-table">
-        <thead><tr><th>مقطع</th><th>اناث</th><th>ذکور</th><th>مختلط</th><th>مجموع</th></tr></thead>
-        <tbody>
-          <tr><td>اول تا سوم</td><td id="infoBF13">0</td><td id="infoBM13">0</td><td id="infoBX13">0</td><td id="infoBT13" class="total-col">0</td></tr>
-          <tr><td>چهارم تا ششم</td><td id="infoBF46">0</td><td id="infoBM46">0</td><td id="infoBX46">0</td><td id="infoBT46" class="total-col">0</td></tr>
-          <tr><td>هفتم تا نهم</td><td id="infoBF79">0</td><td id="infoBM79">0</td><td id="infoBX79">0</td><td id="infoBT79" class="total-col">0</td></tr>
-          <tr><td>دهم تا دوازدهم</td><td id="infoBF1012">0</td><td id="infoBM1012">0</td><td id="infoBX1012">0</td><td id="infoBT1012" class="total-col">0</td></tr>
-          <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع کل</td><td id="infoTF">0</td><td id="infoTM">0</td><td id="infoTX">0</td><td id="infoTB" class="total-col" style="font-size:16px;">0</td></tr>
-        </tbody>
-      </table>
-
-      <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">👥 آمار شاگردان (داخله و حاضر)</h6>
-      <table class="info-table">
-        <thead><tr><th>نوع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
-        <tbody>
-          <tr><td>تعداد داخله</td><td id="infoInF">0</td><td id="infoInM">0</td><td id="infoInTotal" class="total-col">0</td></tr>
-          <tr><td>تعداد حاضر</td><td id="infoPrF">0</td><td id="infoPrM">0</td><td id="infoPrTotal" class="total-col">0</td></tr>
-        </tbody>
-      </table>
-
-      <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">📋 آمار اخراجی</h6>
-      <table class="info-table">
-        <thead><tr><th>صنف</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
-        <tbody id="infoExpelledBody">
-          <tr><td colspan="4" class="text-muted">—</td></tr>
-        </tbody>
-        <tfoot>
-          <tr style="background:#eff6ff; font-weight:bold;">
-            <td>مجموع کل</td>
-            <td id="infoExpF">0</td>
-            <td id="infoExpM">0</td>
-            <td id="infoExpTotal" class="total-col">0</td>
-          </tr>
-        </tfoot>
-      </table>
-
-      <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">🎓 آمار فارغان (صنف دوازدهم)</h6>
-      <table class="info-table">
-        <thead><tr><th>نوع</th><th>تعداد</th></tr></thead>
-        <tbody>
-          <tr><td>فارغان اناث</td><td id="infoGradF" class="total-col">0</td></tr>
-          <tr><td>فارغان ذکور</td><td id="infoGradM" class="total-col">0</td></tr>
-          <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع فارغان</td><td id="infoGradTotal" class="total-col">0</td></tr>
-        </tbody>
-      </table>
     </div>
 
     <div id="budgetSchoolsInfo"></div>
@@ -407,86 +346,39 @@
   async function loadSchoolSettings() {
     allSchoolSettings = [];
     try {
-      // ✅ اصلاح آدرس به /api/all-school-settings (طبق سرور)
-      const res = await fetch('/api/all-school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const res = await fetch('/api/all-school-settings', {
+        headers: { 'Authorization': 'Bearer ' + token },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
           allSchoolSettings = data;
-          console.log('✅ تنظیمات همه مکاتب دریافت شد:', allSchoolSettings.length);
+          console.log('✅ تنظیمات با موفقیت دریافت شد:', allSchoolSettings.length);
         }
       } else {
-        console.warn('خطا در دریافت تنظیمات:', res.status);
+        console.error('خطا در دریافت تنظیمات:', res.status);
       }
     } catch (e) {
-      console.error('خطای شبکه در تنظیمات:', e);
+      if (e.name === 'AbortError') {
+        console.error('⏱️ سرور پاسخ نداد (Timeout).');
+      } else {
+        console.error('خطای شبکه:', e);
+      }
     }
   }
   window.loadSchoolSettings = loadSchoolSettings;
 
   // ═══════════════════════════════════════════════════════════
-  // نمایش آمار مکتب انتخاب شده
+  // نمایش آمار مکتب انتخاب شده (فقط برای آمار تفصیلی)
   // ═══════════════════════════════════════════════════════════
   function onSchoolFilterChange() {
-    const card = document.getElementById('schoolInfoCard');
-    const schoolName = document.getElementById('schoolFilter').value;
-    
-    if (!schoolName) { card.classList.remove('active'); loadAllRecords(); return; }
-    
-    let raw = allSchoolSettings.find(s => s.schoolname === schoolName);
-    if (!raw) {
-      const schoolObj = allSchoolsList.find(s => s.schoolname === schoolName);
-      if (schoolObj) raw = allSchoolSettings.find(s => s.userid === schoolObj.id);
-    }
-    
-    if (!raw) {
-      card.classList.remove('active');
-      showToast('اطلاعات این مکتب ثبت نشده است', true);
-      loadAllRecords();
-      return;
-    }
-    const s = flattenSettings(raw);
-    document.getElementById('selectedSchoolName').textContent = schoolName;
-    
-    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    
-    const bF13 = getN(s, 'branches_f_1_3', 'branchesF13'), bM13 = getN(s, 'branches_m_1_3', 'branchesM13'), bX13 = getN(s, 'branches_x_1_3', 'branchesX13');
-    setTxt('infoBF13', bF13); setTxt('infoBM13', bM13); setTxt('infoBX13', bX13); setTxt('infoBT13', bF13+bM13+bX13);
-    
-    const bF46 = getN(s, 'branches_f_4_6', 'branchesF46'), bM46 = getN(s, 'branches_m_4_6', 'branchesM46'), bX46 = getN(s, 'branches_x_4_6', 'branchesX46');
-    setTxt('infoBF46', bF46); setTxt('infoBM46', bM46); setTxt('infoBX46', bX46); setTxt('infoBT46', bF46+bM46+bX46);
-    
-    const bF79 = getN(s, 'branches_f_7_9', 'branchesF79'), bM79 = getN(s, 'branches_m_7_9', 'branchesM79'), bX79 = getN(s, 'branches_x_7_9', 'branchesX79');
-    setTxt('infoBF79', bF79); setTxt('infoBM79', bM79); setTxt('infoBX79', bX79); setTxt('infoBT79', bF79+bM79+bX79);
-    
-    const bF1012 = getN(s, 'branches_f_10_12', 'branchesF1012'), bM1012 = getN(s, 'branches_m_10_12', 'branchesM1012'), bX1012 = getN(s, 'branches_x_10_12', 'branchesX1012');
-    setTxt('infoBF1012', bF1012); setTxt('infoBM1012', bM1012); setTxt('infoBX1012', bX1012); setTxt('infoBT1012', bF1012+bM1012+bX1012);
-    
-    const tF = bF13+bF46+bF79+bF1012, tM = bM13+bM46+bM79+bM1012, tX = bX13+bX46+bX79+bX1012;
-    setTxt('infoTF', tF); setTxt('infoTM', tM); setTxt('infoTX', tX); setTxt('infoTB', tF+tM+tX);
-    
-    const inF = getN(s, 'total_in_female', 'totalInFemale'), inM = getN(s, 'total_in_male', 'totalInMale');
-    const prF = getN(s, 'total_present_female', 'totalPresentFemale'), prM = getN(s, 'total_present_male', 'totalPresentMale');
-    setTxt('infoInF', inF); setTxt('infoInM', inM); setTxt('infoInTotal', inF+inM);
-    setTxt('infoPrF', prF); setTxt('infoPrM', prM); setTxt('infoPrTotal', prF+prM);
-    
-    const expelledBody = document.getElementById('infoExpelledBody');
-    const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
-    let expHtml = '', expTotalF = 0, expTotalM = 0;
-    classNames.forEach((cls, i) => {
-      const num = i + 1;
-      const ef = getN(s, `e${num}_f`), em = getN(s, `e${num}_m`);
-      expTotalF += ef; expTotalM += em;
-      expHtml += `<tr><td>${cls}</td><td>${ef}</td><td>${em}</td><td class="total-col">${ef+em}</td></tr>`;
-    });
-    expelledBody.innerHTML = expHtml;
-    setTxt('infoExpF', expTotalF); setTxt('infoExpM', expTotalM); setTxt('infoExpTotal', expTotalF+expTotalM);
-    
-    const gF = getN(s, 'grad_female', 'gradFemale'), gM = getN(s, 'grad_male', 'gradMale');
-    setTxt('infoGradF', gF); setTxt('infoGradM', gM); setTxt('infoGradTotal', gF+gM);
-    
-    card.classList.add('active');
-    loadAllRecords();
+    loadAllRecords(); // فقط لیست کارمندان را با فیلتر مکتب بارگذاری می‌کند
   }
   window.onSchoolFilterChange = onSchoolFilterChange;
 
@@ -757,7 +649,7 @@
   window.showDetailedStats = showDetailedStats;
 
   // ═══════════════════════════════════════════════════════════
-  // آمار شاگردان
+  // آمار شاگردان (داخل مودال)
   // ═══════════════════════════════════════════════════════════
   async function renderStudentsStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterStudents').value;
@@ -886,7 +778,7 @@
   window.renderStudentsStats = renderStudentsStats;
 
   // ═══════════════════════════════════════════════════════════
-  // آمار کارمندان
+  // آمار کارمندان (داخل مودال)
   // ═══════════════════════════════════════════════════════════
   async function renderEmployeesStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterEmployees').value;

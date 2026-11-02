@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'maaref-secret-key-12345';
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V24.0 starting...');
+console.log('🔐 Server V25.0 starting...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
@@ -37,6 +37,9 @@ const JOBCODE_REGEX = /^27-\d{1,3}-\d{1,3}-\d{3,6}$/;
 const ETAZKIRA_REGEX = /^\d+-\d+-\d+$/;
 const PAPER_TAZKIRA_NUMERIC_REGEX = /^\d{1,20}$/;
 
+// ═══════════════════════════════════════════════════════════
+// ساخت جداول و راه‌اندازی اولیه
+// ═══════════════════════════════════════════════════════════
 async function initDB() {
   try {
     const client = await pool.connect();
@@ -55,11 +58,14 @@ async function initDB() {
   } catch (err) { console.error('⚠️ خطا در اتصال اولیه به دیتابیس:', err.message); }
 }
 initDB();
+
+// ═══════════════════════════════════════════════════════════
+// میدل‌ورها
+// ═══════════════════════════════════════════════════════════
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use((req, res, next) => {
   if (req.url.endsWith('.html') || req.url === '/' || req.url.startsWith('/?')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -68,7 +74,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -101,11 +106,12 @@ function authRequired(req, res, next) {
 }
 
 async function logLoginAttempt(ip, username, success) {
-  try {
-    await pool.query('INSERT INTO login_attempts (ip, username, success) VALUES ($1, $2, $3)', [ip || 'unknown', username || 'unknown', success]);
-  } catch (e) { /* silent */ }
+  try { await pool.query('INSERT INTO login_attempts (ip, username, success) VALUES ($1, $2, $3)', [ip || 'unknown', username || 'unknown', success]); } catch (e) {}
 }
 
+// ═══════════════════════════════════════════════════════════
+// توابع کمکی
+// ═══════════════════════════════════════════════════════════
 function normalizeDigits(str) {
   if (!str) return '';
   const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
@@ -136,36 +142,13 @@ function validateShamsiDateServer(dateStr, fieldName) {
   return null;
 }
 
-function validateTazkiraServer(s) {
-  if (!s) return null;
-  const c = normalizeDigits(s).trim();
-  if (!ETAZKIRA_REGEX.test(c)) return 'فرمت تذکره الکترونیکی اشتباه است';
-  return null;
-}
-
-function validatePaperTazkiraServer(s) {
-  if (!s) return null;
-  const c = normalizeDigits(s).trim().replace(/\s+/g, '');
-  if (!PAPER_TAZKIRA_NUMERIC_REGEX.test(c)) return 'فرمت تذکره کاغذی اشتباه است (فقط عدد)';
-  return null;
-}
-
-function validateJobCodeServer(s) {
-  if (!s) return null;
-  const c = normalizeDigits(s).trim().replace(/\s+/g, '');
-  if (!JOBCODE_REGEX.test(c)) return 'فرمت کُد بست اشتباه است';
-  return null;
-}
-
-function isValidJobCode(s) {
-  if (!s) return false;
-  const c = normalizeDigits(s).trim().replace(/\s+/g, '');
-  return JOBCODE_REGEX.test(c);
-}
-
+function validateTazkiraServer(s) { if (!s) return null; const c = normalizeDigits(s).trim(); if (!ETAZKIRA_REGEX.test(c)) return 'فرمت تذکره الکترونیکی اشتباه است'; return null; }
+function validatePaperTazkiraServer(s) { if (!s) return null; const c = normalizeDigits(s).trim().replace(/\s+/g, ''); if (!PAPER_TAZKIRA_NUMERIC_REGEX.test(c)) return 'فرمت تذکره کاغذی اشتباه است'; return null; }
+function validateJobCodeServer(s) { if (!s) return null; const c = normalizeDigits(s).trim().replace(/\s+/g, ''); if (!JOBCODE_REGEX.test(c)) return 'فرمت کُد بست اشتباه است'; return null; }
+function isValidJobCode(s) { if (!s) return false; const c = normalizeDigits(s).trim().replace(/\s+/g, ''); return JOBCODE_REGEX.test(c); }
 function isNoCodeTitle(t) { return NO_CODE_TITLES.some(x => x === t); }
-function isServiceOrSupport(t) { return SERVICE_TITLES.includes(t); }
 function isEducationExemptJob(t) { return EDUCATION_EXEMPT_JOBS.includes(String(t || '').trim()); }
+
 async function checkJobCodeExact(jobCode, excludeRecordId = null) {
   if (!jobCode) return { exists: false };
   try {
@@ -176,8 +159,7 @@ async function checkJobCodeExact(jobCode, excludeRecordId = null) {
     sql += ' LIMIT 1';
     const result = await pool.query(sql, params);
     if (result.rows.length === 0) return { exists: false };
-    const row = result.rows[0];
-    let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
+    const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
     return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
   } catch (err) { return { exists: false }; }
 }
@@ -192,8 +174,7 @@ async function checkETazkiraExact(eTazkira, excludeRecordId = null) {
     sql += ' LIMIT 1';
     const result = await pool.query(sql, params);
     if (result.rows.length === 0) return { exists: false };
-    const row = result.rows[0];
-    let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
+    const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
     return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
   } catch (err) { return { exists: false }; }
 }
@@ -208,8 +189,7 @@ async function checkPaperTazkiraExact(tazkiraCode, excludeRecordId = null) {
     sql += ' LIMIT 1';
     const result = await pool.query(sql, params);
     if (result.rows.length === 0) return { exists: false };
-    const row = result.rows[0];
-    let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
+    const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
     return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
   } catch (err) { return { exists: false }; }
 }
@@ -220,6 +200,9 @@ function buildDuplicateResponse(kind, dup, currentUserId) {
   return { error: `${label} تکراری است`, code: kind === 'jobcode' ? 'DUPLICATE_JOBCODE' : kind === 'etazkira' ? 'DUPLICATE_ETAZKIRA' : 'DUPLICATE_TAZKIRA', isSameSchool, schoolname: isSameSchool ? null : dup.schoolname, district: isSameSchool ? null : dup.district, employeeName: isSameSchool ? dup.employeeName : null, recordId: dup.recordId };
 }
 
+// ═══════════════════════════════════════════════════════════
+// API: احراز هویت
+// ═══════════════════════════════════════════════════════════
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const clientIp = req.ip || 'unknown';
   try {
@@ -227,8 +210,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     if (!username || !password) return res.status(400).json({ error: 'نام کاربری و رمز عبور الزامی است' });
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       await logLoginAttempt(clientIp, username, true);
-      const payload = { id: 0, username: 'admin', role: 'admin' };
-      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: 0, username: 'admin', role: 'admin' }, JWT_SECRET, { expiresIn: '7d' });
       return res.json({ token, user: { id: 0, username: 'admin', role: 'admin', schoolname: 'ریاست معارف', district: 'مرکز هرات' }, redirect: '/admin-main.html' });
     }
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
@@ -236,11 +218,14 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     const user = result.rows[0];
     if (!bcrypt.compareSync(password, user.password)) { await logLoginAttempt(clientIp, username, false); return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' }); }
     await logLoginAttempt(clientIp, username, true);
-    const payload = { id: user.id, username: user.username, role: user.role };
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, username: user.username, role: user.role, schoolname: user.schoolname || '', district: user.district || '' }, redirect: '/school-settings.html' });
   } catch (e) { res.status(500).json({ error: 'خطای سرور' }); }
 });
+
+// ═══════════════════════════════════════════════════════════
+// API: رکوردها (کارمندان)
+// ═══════════════════════════════════════════════════════════
 app.get('/api/records', authRequired, async (req, res) => {
   try {
     const search = (req.query.search || '').trim();
@@ -494,6 +479,9 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// API: تنظیمات مکتب (با پشتیبانی از اخراجی و فارغان)
+// ═══════════════════════════════════════════════════════════
 app.get('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
@@ -543,8 +531,17 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
       c9_in_f: toNum(body.c9_in_f), c9_in_m: toNum(body.c9_in_m), c9_pr_f: toNum(body.c9_pr_f), c9_pr_m: toNum(body.c9_pr_m),
       c10_in_f: toNum(body.c10_in_f), c10_in_m: toNum(body.c10_in_m), c10_pr_f: toNum(body.c10_pr_f), c10_pr_m: toNum(body.c10_pr_m),
       c11_in_f: toNum(body.c11_in_f), c11_in_m: toNum(body.c11_in_m), c11_pr_f: toNum(body.c11_pr_f), c11_pr_m: toNum(body.c11_pr_m),
-      c12_in_f: toNum(body.c12_in_f), c12_in_m: toNum(body.c12_in_m), c12_pr_f: toNum(body.c12_pr_f), c12_pr_m: toNum(body.c12_pr_m)
+      c12_in_f: toNum(body.c12_in_f), c12_in_m: toNum(body.c12_in_m), c12_pr_f: toNum(body.c12_pr_f), c12_pr_m: toNum(body.c12_pr_m),
+      // 👇 داده‌های اخراجی و فارغان 👇
+      gradFemale: toNum(body.gradFemale),
+      gradMale: toNum(body.gradMale)
     };
+
+    // 👇 داده‌های اخراجی هر صنف 👇
+    for (let i = 1; i <= 12; i++) {
+      branchesData[`e${i}_f`] = toNum(body[`e${i}_f`]);
+      branchesData[`e${i}_m`] = toNum(body[`e${i}_m`]);
+    }
 
     const check = await pool.query('SELECT id FROM school_settings_new WHERE userid = $1', [req.user.id]);
 
@@ -565,11 +562,12 @@ app.post('/api/school-settings', authRequired, async (req, res) => {
     res.status(500).json({ error: 'خطا در ذخیره تنظیمات: ' + err.message }); 
   }
 });
+
+// ═══════════════════════════════════════════════════════════
+// API: ارزیابی‌ها
+// ═══════════════════════════════════════════════════════════
 app.get('/api/evaluation-permission', authRequired, async (req, res) => {
-  try {
-    const result = await pool.query("SELECT value FROM app_settings WHERE key = 'evaluation_allowed'");
-    res.json({ allowed: result.rows.length > 0 && result.rows[0].value === 'true' });
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  try { const result = await pool.query("SELECT value FROM app_settings WHERE key = 'evaluation_allowed'"); res.json({ allowed: result.rows.length > 0 && result.rows[0].value === 'true' }); } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
 app.post('/api/evaluation-permission', authRequired, async (req, res) => {
@@ -608,12 +606,12 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
 });
 
 app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
-  try {
-    await pool.query('DELETE FROM evaluations WHERE id = $1', [req.params.id]);
-    res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  try { await pool.query('DELETE FROM evaluations WHERE id = $1', [req.params.id]); res.json({ ok: true }); } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// API: معاشات و حاضری
+// ═══════════════════════════════════════════════════════════
 app.get('/api/salaries', authRequired, async (req, res) => {
   try {
     const conditions = []; const params = [];
@@ -664,16 +662,12 @@ app.delete('/api/salaries/:id', authRequired, async (req, res) => {
 });
 
 app.get('/api/attendance/:salary_id', authRequired, async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [req.params.salary_id]);
-    res.json(result.rows[0] || null);
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  try { const result = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [req.params.salary_id]); res.json(result.rows[0] || null); } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
 app.post('/api/attendance', authRequired, async (req, res) => {
   try {
-    const b = req.body || {};
-    const salary_id = parseInt(b.salary_id);
+    const b = req.body || {}; const salary_id = parseInt(b.salary_id);
     if (!salary_id) return res.status(400).json({ error: 'salary_id الزامی است' });
     const num = (v) => Number(normalizeDigits(v || 0)) || 0;
     const total_days = num(b.present) + num(b.absent) + num(b.vacation) + num(b.sick) + num(b.essential) + num(b.maternity) + num(b.service_center) + num(b.service_province) + num(b.hajj) + num(b.holidays) + num(b.other);
@@ -694,6 +688,9 @@ app.post('/api/attendance', authRequired, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// API: مدیریت کاربران (مکاتب)
+// ═══════════════════════════════════════════════════════════
 app.get('/api/users', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
@@ -753,6 +750,9 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
+// ═══════════════════════════════════════════════════════════
+// مسیر پیش‌فرض و شروع سرور
+// ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.setHeader('Pragma', 'no-cache');

@@ -402,45 +402,25 @@
   };
 
   // ═══════════════════════════════════════════════════════════
-  // بارگذاری تنظیمات مکاتب (مقاوم)
+  // بارگذاری تنظیمات مکاتب
   // ═══════════════════════════════════════════════════════════
   async function loadSchoolSettings() {
     allSchoolSettings = [];
-    
-    // تلاش ۱: endpoint کلی
     try {
-      const res = await fetch('/api/school-settings/all', { headers: { 'Authorization': 'Bearer ' + token } });
+      // ✅ اصلاح آدرس به /api/all-school-settings (طبق سرور)
+      const res = await fetch('/api/all-school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) allSchoolSettings = data;
-        else if (data && Array.isArray(data.settings_list)) allSchoolSettings = data.settings_list;
-        else if (data && Array.isArray(data.settingss)) allSchoolSettings = data.settingss;
-        else if (data && data.settings) allSchoolSettings = [data.settings];
-        
-        if (allSchoolSettings.length > 0) return;
+        if (Array.isArray(data)) {
+          allSchoolSettings = data;
+          console.log('✅ تنظیمات همه مکاتب دریافت شد:', allSchoolSettings.length);
+        }
+      } else {
+        console.warn('خطا در دریافت تنظیمات:', res.status);
       }
-    } catch (e) { /* ignore */ }
-
-    // تلاش ۲: اگر endpoint کلی کار نکرد، تک‌تک مکاتب را بگیر
-    if (!allSchoolsList || allSchoolsList.length === 0) return;
-
-    try {
-      const promises = allSchoolsList.map(async (school) => {
-        try {
-          const res = await fetch('/api/school-settings?userid=' + school.id, { 
-            headers: { 'Authorization': 'Bearer ' + token } 
-          });
-          if (!res.ok) return null;
-          const data = await res.json();
-          if (data && data.exists && data.settings) {
-            return { ...data.settings, schoolname: school.schoolname, userid: school.id, district: school.district };
-          }
-          return null;
-        } catch (e) { return null; }
-      });
-      const results = await Promise.all(promises);
-      allSchoolSettings = results.filter(Boolean);
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      console.error('خطای شبکه در تنظیمات:', e);
+    }
   }
   window.loadSchoolSettings = loadSchoolSettings;
 

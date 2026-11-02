@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لیست کارمندان - پنل مکتب</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <style>
-  /* ====== تنظیمات پایه ====== */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: linear-gradient(135deg, #f0f4f8, #e2e8f0); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 30px 15px; color: #1e293b; }
-  .main-container { width: 100%; max-width: 1200px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; }
+  .main-container { width: 100%; max-width: 1300px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; }
   .topbar { background: #10b981; color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 10px rgba(16,185,129,0.2); }
   .topbar h3 { margin: 0; font-size: 18px; color: #fff; }
   .topbar small { color: #e6fffa; }
@@ -22,7 +22,6 @@
   .page-content { padding: 30px; }
   .form-section { background: #fdfdfd; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 25px; border-right: 5px solid #10b981; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
   
-  /* ====== استایل‌های اختصاصی لیست و آمار ====== */
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px; }
   .stat-box { background: #ffffff; border-radius: 10px; padding: 15px 10px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: transform 0.2s; }
   .stat-box:hover { transform: translateY(-2px); }
@@ -36,13 +35,19 @@
   .stat-box:nth-child(3) .stat-value { color: #92400e; }
 
   .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-  .btn-group .btn { width: auto; margin-top: 0; padding: 10px 20px; font-size: 13px; }
+  .btn-group .btn { width: auto; margin-top: 0; padding: 10px 20px; font-size: 13px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: #fff; font-family: inherit; transition: 0.2s; }
   .btn-primary { background: #3b82f6; }
+  .btn-primary:hover { background: #2563eb; }
   .btn-success { background: #10b981; }
+  .btn-success:hover { background: #059669; }
   .btn-purple { background: #7c3aed; }
+  .btn-purple:hover { background: #6d28d9; }
+  .btn-dark { background: #1e293b; }
+  .btn-dark:hover { background: #0f172a; }
 
-  .search-input { width: 100%; padding: 14px 20px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 14px; margin-bottom: 20px; outline: none; transition: 0.2s; }
-  .search-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
+  .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding: 15px; background: #f8fafc; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+  .filter-item label { font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; display: block; }
+  .filter-item select, .filter-item input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; }
 
   .table-responsive { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -65,7 +70,6 @@
   .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; font-size: 15px; }
   .edit-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
 
-  /* ====== مودال و فرم‌ها ====== */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
   .modal-overlay.active { display: flex; }
   .modal-box { background: #fff; border-radius: 16px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 30px; }
@@ -80,10 +84,22 @@
   .form-group input, .form-group select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; }
   .form-group input:focus, .form-group select:focus { border-color: #3b82f6; }
 
-  /* ====== توست ====== */
   .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 10px; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.3s; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: #ef4444; }
+
+  /* استایل‌های اختصاصی تب‌های آمار */
+  .inner-tabs { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
+  .inner-tab-btn { padding: 10px 20px; background: #f1f5f9; border: none; border-radius: 8px 8px 0 0; font-weight: bold; cursor: pointer; color: #64748b; font-family: inherit; }
+  .inner-tab-btn.active { background: #3b82f6; color: #fff; }
+  .inner-tab-content { display: none; }
+  .inner-tab-content.active { display: block; }
+  .info-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; margin-bottom: 15px; background: #fff; border-radius: 8px; overflow: hidden; }
+  .info-table th, .info-table td { border: 1px solid #cbd5e1; padding: 8px; }
+  .info-table th { background: #eff6ff; color: #1e40af; font-weight: 800; }
+  .info-table td { background: #fff; font-weight: bold; }
+  .info-table td.total-col { background: #dcfce7; color: #15803d; }
+  .stats-title { color:#1e40af; font-weight:bold; margin: 20px 0 10px 0; }
 
   @media (max-width: 768px) { .main-tabs { justify-content: center; } .btn-group { justify-content: center; } }
 </style>
@@ -114,13 +130,22 @@
       
       <div class="btn-group">
         <button class="btn btn-primary" onclick="showAllEmployees()">👁️ نمایش همه لیست</button>
+        <button class="btn btn-dark" onclick="showDetailedStats()">📊 آمار تفصیلی</button>
         <button class="btn btn-purple" onclick="printEmployeeList()">🖨️ پرنت لیست</button>
         <button class="btn btn-success" onclick="exportEmployeeExcel()">📊 خروجی اکسل (کامل)</button>
       </div>
 
       <div class="stats-grid" id="statsContainer"></div>
 
-      <input type="text" id="searchInput" class="search-input" placeholder="🔍 جستجو در لیست کارمندان (نام، ولد، کُد بست، عنوان بست)..." oninput="debouncedLoad()">
+      <div class="filter-grid">
+        <div class="filter-item"><label>🔍 جستجوی عمومی</label><input class="form-control" id="searchInput" placeholder="نام، تخلص، ولد، وظیفه..." oninput="debouncedLoad()"></div>
+        <div class="filter-item"><label>👨‍🏫 عنوان بست</label><select id="jobTitleFilter" onchange="loadSchoolRecords()"><option value="">📋 همه عناوین</option></select></div>
+        <div class="filter-item"><label>👤 جنسیت</label><select id="genderFilter" onchange="loadSchoolRecords()"><option value="">📋 همه</option><option value="مرد">مرد</option><option value="زن">زن</option></select></div>
+        <div class="filter-item"><label>📚 ورکشاپ</label><select id="workshopFilter" onchange="loadSchoolRecords()"><option value="">📋 همه</option><option value="بلی">✅ دیده</option><option value="نخیر">❌ ندیده</option></select></div>
+        <div class="filter-item"><label>👤 وضعیت کارمند</label><select id="empStatusFilter" onchange="loadSchoolRecords()"><option value="">📋 همه</option><option value="active">✅ فعال</option><option value="retired">🎖️ متقاعد</option></select></div>
+        <div class="filter-item"><label>🏢 خدمتی رفته</label><select id="serviceFilter" onchange="loadSchoolRecords()"><option value="">📋 همه</option><option value="بلی">✅ خدمتی رفته</option><option value="نخیر">❌ خدمتی نرفته</option></select></div>
+        <div class="filter-item"><label>📊 وضعیت تایید</label><select id="approvalFilter" onchange="loadSchoolRecords()"><option value="" selected>📋 همه</option><option value="pending">⏳ در انتظار تایید</option><option value="approved">✅ تایید شده</option></select></div>
+      </div>
 
       <div class="table-responsive">
         <table>
@@ -174,7 +199,34 @@
   </div>
 </div>
 
+<!-- Modal آمار تفصیلی -->
+<div class="modal fade" id="detailedStatsModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff;">
+        <h5 class="modal-title">📊 آمار تفصیلی مکتب</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
+      </div>
+      <div class="modal-body" style="max-height:75vh; overflow-y:auto;">
+        <div class="inner-tabs">
+          <button class="inner-tab-btn active" onclick="switchInnerTab('students', this)">👥 آمار شاگردان و شعبات</button>
+          <button class="inner-tab-btn" onclick="switchInnerTab('employees', this)">👨‍🏫 آمار کارمندان</button>
+        </div>
+
+        <div id="inner-tab-students" class="inner-tab-content active">
+          <div id="studentsStatsContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
+        </div>
+
+        <div id="inner-tab-employees" class="inner-tab-content">
+          <div id="employeesStatsContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // ═══════════════════════════════════════════════════════════
   // بررسی امنیتی و متغیرهای اولیه
@@ -186,9 +238,20 @@
   
   let cachedRecords = [];
   let editingRecordId = null;
+  let schoolSettings = null;
+  let detailedStatsModal = null;
+  const RETIREMENT_AGE = 65;
 
   const JOB_TITLES_LIST = ['آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین', 'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش', 'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
   const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
+
+  const jobFilterSelect = document.getElementById('jobTitleFilter');
+  JOB_TITLES_LIST.forEach(title => {
+    const opt = document.createElement('option');
+    opt.value = title;
+    opt.textContent = title;
+    jobFilterSelect.appendChild(opt);
+  });
 
   // ═══════════════════════════════════════════════════════════
   // توابع کمکی
@@ -200,36 +263,52 @@
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
   window.closeModal = closeModal;
 
-  function validateShamsiDate(dateStr) {
-    if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
-    const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
-    const parts = cleaned.split('/').map(p => p.trim());
-    if (parts.length !== 3) return { valid: false, error: 'فرمت: YYYY/MM/DD' };
-    const p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]);
-    if (isNaN(p1) || isNaN(p2) || isNaN(p3)) return { valid: false, error: 'اعداد وارد کنید' };
-    let year, month, day;
-    if (parts[0].length === 4 || (p1 >= 1300 && p1 <= 1450)) { year = p1; month = p2; day = p3; }
-    else if (parts[2].length === 4 || (p3 >= 1300 && p3 <= 1450)) { year = p3; month = p2; day = p1; }
-    else return { valid: false, error: 'سال ۱۳۰۰ تا ۱۴۵۰' };
-    if (year < 1300 || year > 1450) return { valid: false, error: 'سال نامعتبر' };
-    if (month < 1 || month > 12) return { valid: false, error: 'ماه نامعتبر' };
-    let maxDay = 31; if (month >= 7 && month <= 11) maxDay = 30; if (month === 12) maxDay = 29;
-    if (day < 1 || day > maxDay) return { valid: false, error: `روز ۱ تا ${maxDay}` };
-    return { valid: true, formatted: `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}` };
-  }
-  function validateJobCode(codeStr) { if (!codeStr) return { valid: false, error: 'کد بست الزامی است' }; const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, ''); if (!/^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned)) return { valid: false, error: 'فرمت: 27-XX-XX-XXXXX' }; return { valid: true, formatted: cleaned }; }
-  async function checkJobCodeUnique(codeStr, excludeId) { if (!codeStr) return { unique: false }; try { let url = '/api/check-jobcode?code=' + encodeURIComponent(codeStr); if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId); const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } }); if (!res.ok) return { unique: true }; const data = await res.json(); if (!data.exists) return { unique: true }; return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName }; } catch (e) { return { unique: true }; } }
-  function buildDuplicateMessage(kind, result) { const label = kind === 'jobcode' ? 'کد بست' : 'تذکره الکترونیکی'; if (result.isSameSchool) return `⚠️ این ${label} قبلاً برای «${result.employeeName || 'نامشخص'}» در مکتب خودتان ثبت شده است.`; return `❌ این ${label} قبلاً در مکتب «${result.schoolname || 'نامشخص'}» ثبت شده است.`; }
-  function isEducationExemptJob(jobTitle) { return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim()); }
+  function parseShamsi(dateStr) { if (!dateStr) return null; const cleaned = normalizeDigits(dateStr).replace(/[.\-]/g, '/').trim(); const parts = cleaned.split('/').map(p => p.trim()); if (parts.length !== 3) return null; const p1 = parseInt(parts[0]), p2 = parseInt(parts[1]), p3 = parseInt(parts[2]); if (isNaN(p1) || isNaN(p2) || isNaN(p3)) return null; let year, month, day; if (parts[0].length === 4 || (p1 >= 1300 && p1 <= 1450)) { year = p1; month = p2; day = p3; } else if (parts[2].length === 4 || (p3 >= 1300 && p3 <= 1450)) { year = p3; month = p2; day = p1; } else return null; return { year, month, day, numeric: year * 10000 + month * 100 + day }; }
+  
+  function calculateAge(birthDateStr) { const p = parseShamsi(birthDateStr); if (!p) return null; const now = new Date(); const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate(); const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334]; let jy = (gy <= 1600) ? 0 : 979; let _gy = gy - ((gy <= 1600) ? 621 : 1600); const gy2 = (gm > 2) ? (_gy + 1) : _gy; let days = (365*_gy) + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) + Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1]; jy += 33 * Math.floor(days/12053); days %= 12053; jy += 4 * Math.floor(days/1461); days %= 1461; if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; } const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30); const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30)); let y = jy - p.year; if (jm < p.month || (jm === p.month && jd < p.day)) y--; return y >= 0 ? y : null; }
+  
+  function getEmployeeStatus(record) { const age = calculateAge(record.birthDate); if (age === null) return { age: '—', status: 'نامشخص', cls: 'badge-unknown' }; if (age >= RETIREMENT_AGE) return { age, status: '🎖️ متقاعد', cls: 'badge-retired' }; return { age, status: '✅ فعال', cls: 'badge-active' }; }
+
   function debounce(fn, delay) { let timer; return function(...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), delay); }; }
   const debouncedLoad = debounce(loadSchoolRecords, 400);
   window.debouncedLoad = debouncedLoad;
 
+  const getN = (obj, ...keys) => {
+    for (const k of keys) {
+      if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
+    }
+    return 0;
+  };
+
+  function flattenSettings(s) {
+    if (!s || typeof s !== 'object') return s || {};
+    let newS = { ...s };
+    const possibleJsonFields = ['branches_data', 'branchesData', 'data'];
+    for (const field of possibleJsonFields) {
+      const raw = s[field];
+      if (raw && typeof raw === 'string') {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') newS = { ...newS, ...parsed };
+        } catch (e) { /* ignore */ }
+      } else if (raw && typeof raw === 'object') {
+        newS = { ...newS, ...raw };
+      }
+    }
+    return newS;
+  }
+
   // ═══════════════════════════════════════════════════════════
-  // بارگذاری و رندر لیست
+  // بارگذاری و رندر لیست (با تمام فیلترها)
   // ═══════════════════════════════════════════════════════════
   async function loadSchoolRecords() {
     const searchVal = document.getElementById('searchInput').value.trim();
+    const jobTitleFilter = document.getElementById('jobTitleFilter').value;
+    const genderFilter = document.getElementById('genderFilter').value;
+    const workshopFilter = document.getElementById('workshopFilter').value;
+    const empStatusFilter = document.getElementById('empStatusFilter').value;
+    const serviceFilter = document.getElementById('serviceFilter').value;
+    const approvalFilter = document.getElementById('approvalFilter').value;
     const tbody = document.getElementById('schoolTableBody');
     
     try {
@@ -238,26 +317,47 @@
       const allRecords = await statRes.json();
       cachedRecords = Array.isArray(allRecords) ? allRecords : [];
       updateStats(cachedRecords);
-    } catch (e) { console.error(e); }
 
-    if (!searchVal) {
-      tbody.innerHTML = `<tr><td colspan="10" class="empty-state">
-        <div style="font-size:50px; margin-bottom:15px;">🔍</div>
-        <div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div>
-        <div style="font-size:13px; color:#94a3b8;">نام، ولد، کُد بست یا عنوان بست را در کادر بالا جستجو کنید</div>
-      </td></tr>`;
-      return;
-    }
-    
-    try {
-      const url = `/api/records?search=${encodeURIComponent(searchVal)}`;
-      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
-      const records = await res.json();
-      if (!Array.isArray(records) || records.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="empty-state">هیچ رکوردی یافت نشد</td></tr>'; return; }
+      let filtered = cachedRecords;
+
+      if (searchVal) {
+        const q = searchVal.toLowerCase();
+        filtered = filtered.filter(row => {
+          const info = row.data || {};
+          return (
+            (info.firstName || '').toLowerCase().includes(q) ||
+            (info.lastName || '').toLowerCase().includes(q) ||
+            (info.fatherName || '').toLowerCase().includes(q) ||
+            (info.jobTitle || '').toLowerCase().includes(q) ||
+            (info.jobCode || '').toLowerCase().includes(q)
+          );
+        });
+      }
+      if (jobTitleFilter) filtered = filtered.filter(row => (row.data || {}).jobTitle === jobTitleFilter);
+      if (genderFilter) filtered = filtered.filter(row => (row.data || {}).gender === genderFilter);
+      if (workshopFilter) filtered = filtered.filter(row => (row.data || {}).workshopStatus === workshopFilter);
+      if (serviceFilter) filtered = filtered.filter(row => (row.data || {}).serviceStatus === serviceFilter);
       
+      if (empStatusFilter) {
+        filtered = filtered.filter(row => {
+          const emp = getEmployeeStatus(row.data || {});
+          const isRetired = emp.status.includes('متقاعد');
+          if (empStatusFilter === 'retired') return isRetired;
+          if (empStatusFilter === 'active') return !isRetired && emp.age !== '—';
+          return true;
+        });
+      }
+
+      if (approvalFilter === 'pending') filtered = filtered.filter(r => r.status !== 'approved');
+      else if (approvalFilter === 'approved') filtered = filtered.filter(r => r.status === 'approved');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-state">هیچ رکوردی با این فیلترها یافت نشد</td></tr>';
+        return;
+      }
+
       let html = '';
-      records.forEach((row) => {
+      filtered.forEach((row) => {
         const info = row.data || {};
         const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
         const statusHtml = row.status === 'approved' ? '<span class="status-badge status-approved">✅ تایید</span>' : '<span class="status-badge status-pending">⏳ انتظار</span>';
@@ -286,31 +386,13 @@
 
   function showAllEmployees() {
     document.getElementById('searchInput').value = '';
-    const tbody = document.getElementById('schoolTableBody');
-    if (!Array.isArray(cachedRecords) || cachedRecords.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="empty-state">هیچ کارمندی ثبت نشده است</td></tr>'; return; }
-    let html = '';
-    cachedRecords.forEach((row) => {
-      const info = row.data || {};
-      const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
-      const statusHtml = row.status === 'approved' ? '<span class="status-badge status-approved">✅ تایید</span>' : '<span class="status-badge status-pending">⏳ انتظار</span>';
-      html += `<tr>
-        <td>${row.id}</td>
-        <td><b>${escapeHtml(name)}</b></td>
-        <td>${escapeHtml(info.fatherName || '-')}</td>
-        <td>${escapeHtml(info.jobTitle || '-')}</td>
-        <td><code>${escapeHtml(info.jobCode || '—')}</code></td>
-        <td><code>${escapeHtml(info.eTazkira || '—')}</code></td>
-        <td>${escapeHtml(info.phone || '-')}</td>
-        <td>${escapeHtml(info.degree || '-')}</td>
-        <td>${statusHtml}</td>
-        <td>
-          ${(info.editAllowed === true || row.editAllowed === true) ? `<button class="btn-action btn-edit" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>` : ''}
-          <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="مشاهده">👁️</button>
-          <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرینت">🖨️</button>
-        </td>
-      </tr>`;
-    });
-    tbody.innerHTML = html;
+    document.getElementById('jobTitleFilter').value = '';
+    document.getElementById('genderFilter').value = '';
+    document.getElementById('workshopFilter').value = '';
+    document.getElementById('empStatusFilter').value = '';
+    document.getElementById('serviceFilter').value = '';
+    document.getElementById('approvalFilter').value = '';
+    loadSchoolRecords();
   }
   window.showAllEmployees = showAllEmployees;
 
@@ -328,6 +410,202 @@
     `;
     container.innerHTML = html;
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // آمار تفصیلی (مودال)
+  // ═══════════════════════════════════════════════════════════
+  function switchInnerTab(tabName, btn) {
+    document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.inner-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('inner-tab-' + tabName).classList.add('active');
+    btn.classList.add('active');
+  }
+  window.switchInnerTab = switchInnerTab;
+
+  async function showDetailedStats() {
+    if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
+    detailedStatsModal.show();
+    await loadSchoolSettings();
+    renderStudentsStats();
+    renderEmployeesStats();
+  }
+  window.showDetailedStats = showDetailedStats;
+
+  async function loadSchoolSettings() {
+    try {
+      const res = await fetch('/api/school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.exists && data.settings) {
+          schoolSettings = flattenSettings(data.settings);
+        }
+      }
+    } catch (e) { console.error(e); }
+  }
+
+  function renderStudentsStats() {
+    const content = document.getElementById('studentsStatsContent');
+    if (!schoolSettings) {
+      content.innerHTML = '<div class="text-center p-4 text-warning">⚠️ ابتدا اطلاعات مکتب را در بخش مدیریت مکتب ثبت کنید.</div>';
+      return;
+    }
+
+    const s = schoolSettings;
+    const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
+
+    const bF13 = getN(s, 'branches_f_1_3', 'branchesF13'), bM13 = getN(s, 'branches_m_1_3', 'branchesM13'), bX13 = getN(s, 'branches_x_1_3', 'branchesX13');
+    const bF46 = getN(s, 'branches_f_4_6', 'branchesF46'), bM46 = getN(s, 'branches_m_4_6', 'branchesM46'), bX46 = getN(s, 'branches_x_4_6', 'branchesX46');
+    const bF79 = getN(s, 'branches_f_7_9', 'branchesF79'), bM79 = getN(s, 'branches_m_7_9', 'branchesM79'), bX79 = getN(s, 'branches_x_7_9', 'branchesX79');
+    const bF1012 = getN(s, 'branches_f_10_12', 'branchesF1012'), bM1012 = getN(s, 'branches_m_10_12', 'branchesM1012'), bX1012 = getN(s, 'branches_x_10_12', 'branchesX1012');
+    
+    const totalInF = getN(s, 'total_in_female', 'totalInFemale'), totalInM = getN(s, 'total_in_male', 'totalInMale');
+    const totalPrF = getN(s, 'total_present_female', 'totalPresentFemale'), totalPrM = getN(s, 'total_present_male', 'totalPresentMale');
+    const gradF = getN(s, 'grad_female', 'gradFemale'), gradM = getN(s, 'grad_male', 'gradMale');
+
+    const classTotals = classNames.map((_, i) => {
+      const num = i + 1;
+      return {
+        inF: getN(s, `c${num}_in_f`), inM: getN(s, `c${num}_in_m`),
+        prF: getN(s, `c${num}_pr_f`), prM: getN(s, `c${num}_pr_m`),
+        ef: getN(s, `e${num}_f`), em: getN(s, `e${num}_m`)
+      };
+    });
+
+    const grandExpF = classTotals.reduce((sum, t) => sum + t.ef, 0);
+    const grandExpM = classTotals.reduce((sum, t) => sum + t.em, 0);
+
+    let html = `
+      <h6 class="stats-title">📚 آمار کل شعبات</h6>
+      <table class="info-table">
+        <thead><tr><th>مقطع</th><th>اناث</th><th>ذکور</th><th>مختلط</th><th>مجموع</th></tr></thead>
+        <tbody>
+          <tr><td>اول تا سوم</td><td>${bF13}</td><td>${bM13}</td><td>${bX13}</td><td class="total-col">${bF13+bM13+bX13}</td></tr>
+          <tr><td>چهارم تا ششم</td><td>${bF46}</td><td>${bM46}</td><td>${bX46}</td><td class="total-col">${bF46+bM46+bX46}</td></tr>
+          <tr><td>هفتم تا نهم</td><td>${bF79}</td><td>${bM79}</td><td>${bX79}</td><td class="total-col">${bF79+bM79+bX79}</td></tr>
+          <tr><td>دهم تا دوازدهم</td><td>${bF1012}</td><td>${bM1012}</td><td>${bX1012}</td><td class="total-col">${bF1012+bM1012+bX1012}</td></tr>
+        </tbody>
+      </table>
+
+      <h6 class="stats-title">👥 آمار کل شاگردان</h6>
+      <table class="info-table">
+        <thead><tr><th>نوع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
+        <tbody>
+          <tr><td>تعداد داخله</td><td>${totalInF}</td><td>${totalInM}</td><td class="total-col">${totalInF+totalInM}</td></tr>
+          <tr><td>تعداد حاضر</td><td>${totalPrF}</td><td>${totalPrM}</td><td class="total-col">${totalPrF+totalPrM}</td></tr>
+        </tbody>
+      </table>
+
+      <h6 class="stats-title">📋 آمار به تفکیک هر صنف (داخله و حاضر)</h6>
+      <table class="info-table">
+        <thead>
+          <tr><th rowspan="2">صنف</th><th colspan="3">تعداد داخله</th><th colspan="3">تعداد حاضر</th></tr>
+          <tr><th>اناث</th><th>ذکور</th><th>مجموع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
+        </thead>
+        <tbody>
+          ${classNames.map((cls, i) => {
+            const { inF, inM, prF, prM } = classTotals[i];
+            return `<tr><td>${cls}</td><td>${inF}</td><td>${inM}</td><td class="total-col">${inF+inM}</td><td>${prF}</td><td>${prM}</td><td class="total-col">${prF+prM}</td></tr>`;
+          }).join('')}
+          <tr style="background:#eff6ff; font-weight:bold;">
+            <td>مجموع کل</td><td>${totalInF}</td><td>${totalInM}</td><td>${totalInF+totalInM}</td><td>${totalPrF}</td><td>${totalPrM}</td><td>${totalPrF+totalPrM}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h6 class="stats-title">📋 آمار اخراجی</h6>
+      <table class="info-table">
+        <thead>
+          <tr><th rowspan="2">صنف</th><th colspan="3">تعداد اخراجی</th></tr>
+          <tr><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
+        </thead>
+        <tbody>
+          ${classNames.map((cls, i) => {
+            const { ef, em } = classTotals[i];
+            return `<tr><td>${cls}</td><td>${ef}</td><td>${em}</td><td class="total-col">${ef+em}</td></tr>`;
+          }).join('')}
+          <tr style="background:#eff6ff; font-weight:bold;">
+            <td>مجموع کل</td><td>${grandExpF}</td><td>${grandExpM}</td><td class="text-success">${grandExpF+grandExpM}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h6 class="stats-title">🎓 آمار فارغان (صنف دوازدهم)</h6>
+      <table class="info-table">
+        <thead><tr><th>نوع</th><th>تعداد</th></tr></thead>
+        <tbody>
+          <tr><td>فارغان اناث</td><td>${gradF}</td></tr>
+          <tr><td>فارغان ذکور</td><td>${gradM}</td></tr>
+          <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع فارغان</td><td class="total-col">${gradF+gradM}</td></tr>
+        </tbody>
+      </table>
+    `;
+    content.innerHTML = html;
+  }
+  window.renderStudentsStats = renderStudentsStats;
+
+  function renderEmployeesStats() {
+    const content = document.getElementById('employeesStatsContent');
+    if (!cachedRecords || cachedRecords.length === 0) {
+      content.innerHTML = '<div class="text-center p-4 text-warning">هیچ کارمندی ثبت نشده است.</div>';
+      return;
+    }
+    const records = cachedRecords;
+    let managers = 0, headTeachers = 0, teachers = 0, services = 0, others = 0;
+    let male = 0, female = 0, active = 0, retired = 0;
+
+    records.forEach(r => {
+      const info = r.data || {};
+      const job = info.jobTitle || info.job || '';
+      const gender = info.gender || '';
+      if (job === 'آمر' || job === 'مدیر' || job === 'مدیر اجرائیه') managers++;
+      else if (job === 'سر معلم') headTeachers++;
+      else if (job.includes('معلم')) teachers++;
+      else if (job === 'کارکن خدماتی') services++;
+      else others++;
+      if (gender === 'مرد') male++;
+      else if (gender === 'زن') female++;
+      const st = getEmployeeStatus(info);
+      if (st.status.includes('متقاعد')) retired++;
+      else if (st.status.includes('فعال')) active++;
+    });
+
+    let html = `
+      <h6 class="stats-title">👨‍🏫 آمار کارمندان بر اساس عنوان بست</h6>
+      <table class="info-table">
+        <thead><tr><th>عنوان بست</th><th>تعداد</th></tr></thead>
+        <tbody>
+          <tr><td>آمر / مدیر</td><td>${managers}</td></tr>
+          <tr><td>سر معلم</td><td>${headTeachers}</td></tr>
+          <tr><td>معلم</td><td>${teachers}</td></tr>
+          <tr><td>کارکن خدماتی</td><td>${services}</td></tr>
+          <tr><td>سایر</td><td>${others}</td></tr>
+          <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع کل</td><td class="text-success">${records.length}</td></tr>
+        </tbody>
+      </table>
+
+      <h6 class="stats-title">👤 آمار بر اساس جنسیت</h6>
+      <table class="info-table">
+        <thead><tr><th>جنسیت</th><th>تعداد</th></tr></thead>
+        <tbody>
+          <tr><td>مرد</td><td>${male}</td></tr>
+          <tr><td>زن</td><td>${female}</td></tr>
+          <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع</td><td>${male+female}</td></tr>
+        </tbody>
+      </table>
+
+      <h6 class="stats-title">📊 آمار وضعیت کارمند</h6>
+      <table class="info-table">
+        <thead><tr><th>وضعیت</th><th>تعداد</th></tr></thead>
+        <tbody>
+          <tr><td>✅ فعال</td><td>${active}</td></tr>
+          <tr><td>🎖️ متقاعد</td><td>${retired}</td></tr>
+          <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع</td><td>${active+retired}</td></tr>
+        </tbody>
+      </table>
+    `;
+    content.innerHTML = html;
+  }
+  window.renderEmployeesStats = renderEmployeesStats;
 
   // ═══════════════════════════════════════════════════════════
   // ویرایش
@@ -371,27 +649,14 @@
     if (!editingRecordId) return;
     const body = {};
     document.querySelectorAll('#editContent [data-edit-key]').forEach(el => { body[el.dataset.editKey] = el.value.trim(); });
-    const original = cachedRecords.find(r => r.id === editingRecordId);
     body.editAllowed = true;
     if (!body.jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
-    if (!isEducationExemptJob(body.jobTitle) && !body.degree) { showToast('❌ برای این بست، درجه تحصیل الزامی است', true); return; }
-    for (const key of ['firstAppointmentDate','currentPositionDate','birthDate','enrollmentDate','graduationDate','serviceDate']) {
-      if (body[key]) { const d = validateShamsiDate(body[key]); if (!d.valid) { showToast('❌ ' + EDITABLE_EMPLOYEE_FIELDS.find(f=>f[0]===key)?.[1] + ': ' + d.error, true); return; } body[key] = d.formatted; }
-    }
-    if (body.workshopStatus !== 'بلی') { body.workshopTitle = ''; body.workshopDuration = ''; }
-    if (body.serviceStatus !== 'بلی') { body.serviceDistrict = ''; body.serviceSchool = ''; body.serviceDate = ''; }
-    if (body.jobCode) {
-      const jc = validateJobCode(body.jobCode);
-      if (!jc.valid) { showToast('❌ ' + jc.error, true); return; }
-      const check = await checkJobCodeUnique(jc.formatted, editingRecordId);
-      if (!check.unique) { showToast(buildDuplicateMessage('jobcode', check), true); return; }
-      body.jobCode = normalizeDigits(body.jobCode).trim();
-    }
+    if (!EDUCATION_EXEMPT_JOBS.includes(body.jobTitle) && !body.degree) { showToast('❌ برای این بست، درجه تحصیل الزامی است', true); return; }
+    
     try {
       const res = await fetch('/api/records/' + editingRecordId, { method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify(body) });
       const data = await res.json().catch(()=>({}));
       if (res.ok) { showToast('✅ تمام معلومات کارمند ذخیره شد'); closeModal('editModal'); await loadSchoolRecords(); }
-      else if (res.status===409 && data.code==='DUPLICATE_JOBCODE') showToast(buildDuplicateMessage('jobcode',data),true);
       else showToast('❌ '+(data.error||'خطا در ذخیره معلومات'),true);
     } catch(e) { showToast('❌ ارتباط برقرار نشد',true); }
   }

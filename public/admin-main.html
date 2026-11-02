@@ -147,7 +147,6 @@
       <div class="filter-item"><label>💼 وضعیت بست</label><select id="budgetFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="اضافه بست">➕ اضافه بست</option><option value="کمبود بست">➖ کمبود بست</option><option value="عادی">⚖️ عادی</option></select></div>
       <div class="filter-item"><label>👤 وضعیت کارمند</label><select id="empStatusFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="active">✅ فعال</option><option value="retired">🎖️ متقاعد</option></select></div>
       <div class="filter-item"><label>🏢 خدمتی رفته</label><select id="serviceFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="بلی">✅ خدمتی رفته</option><option value="نخیر">❌ خدمتی نرفته</option></select></div>
-      <!-- 👇 این بخش تغییر یافت: پیش‌فرض روی "همه" است 👇 -->
       <div class="filter-item"><label>📊 وضعیت تایید</label><select id="approvalFilter" onchange="loadAllRecords()"><option value="" selected>📋 همه</option><option value="pending">⏳ در انتظار تایید</option><option value="approved">✅ تایید شده</option></select></div>
       <div class="filter-item" style="grid-column: span 2;">
         <label>📅 تاریخ تقرر (از تاریخ ... تا تاریخ ...)</label>
@@ -179,6 +178,33 @@
         <tbody>
           <tr><td>تعداد داخله</td><td id="infoInF">0</td><td id="infoInM">0</td><td id="infoInTotal" class="total-col">0</td></tr>
           <tr><td>تعداد حاضر</td><td id="infoPrF">0</td><td id="infoPrM">0</td><td id="infoPrTotal" class="total-col">0</td></tr>
+        </tbody>
+      </table>
+
+      <!-- 👇 بخش اخراجی و فارغان در کارت مکتب 👇 -->
+      <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">📋 آمار اخراجی</h6>
+      <table class="info-table">
+        <thead><tr><th>صنف</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
+        <tbody id="infoExpelledBody">
+          <tr><td colspan="4" class="text-muted">—</td></tr>
+        </tbody>
+        <tfoot>
+          <tr style="background:#eff6ff; font-weight:bold;">
+            <td>مجموع کل</td>
+            <td id="infoExpF">0</td>
+            <td id="infoExpM">0</td>
+            <td id="infoExpTotal" class="total-col">0</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">🎓 آمار فارغان (صنف دوازدهم)</h6>
+      <table class="info-table">
+        <thead><tr><th>نوع</th><th>تعداد</th></tr></thead>
+        <tbody>
+          <tr><td>فارغان اناث</td><td id="infoGradF" class="total-col">0</td></tr>
+          <tr><td>فارغان ذکور</td><td id="infoGradM" class="total-col">0</td></tr>
+          <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع فارغان</td><td id="infoGradTotal" class="total-col">0</td></tr>
         </tbody>
       </table>
     </div>
@@ -323,17 +349,123 @@
   function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo); }
 
   // ═══════════════════════════════════════════════════════════
+  // بارگذاری تنظیمات مکاتب (اضافه شد)
+  // ═══════════════════════════════════════════════════════════
+  async function loadSchoolSettings() {
+    try {
+      const res = await fetch('/api/school-settings/all', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) {
+        const data = await res.json();
+        allSchoolSettings = Array.isArray(data) ? data : (data.settings_list || data.settingss || []);
+      }
+    } catch (e) { console.error('خطا در دریافت تنظیمات مکاتب:', e); }
+  }
+  window.loadSchoolSettings = loadSchoolSettings;
+
+  // استخراج فیلدها از branches_data (اگر وجود داشته باشد)
+  function flattenSettings(s) {
+    let newS = { ...s };
+    if (s.branches_data) {
+      try {
+        const parsed = (typeof s.branches_data === 'string') ? JSON.parse(s.branches_data) : s.branches_data;
+        if (parsed && typeof parsed === 'object') newS = { ...newS, ...parsed };
+      } catch (e) { console.error('Error parsing branches_data:', e); }
+    }
+    return newS;
+  }
+  window.flattenSettings = flattenSettings;
+
+  // ═══════════════════════════════════════════════════════════
   // نمایش آمار مکتب انتخاب شده
   // ═══════════════════════════════════════════════════════════
   function onSchoolFilterChange() {
     const card = document.getElementById('schoolInfoCard');
-    card.classList.remove('active');
+    const schoolName = document.getElementById('schoolFilter').value;
+    
+    if (!schoolName) { card.classList.remove('active'); loadAllRecords(); return; }
+    
+    const raw = allSchoolSettings.find(s => s.schoolname === schoolName);
+    if (!raw) {
+      card.classList.remove('active');
+      showToast('اطلاعات این مکتب ثبت نشده است', true);
+      loadAllRecords();
+      return;
+    }
+    const s = flattenSettings(raw);
+    document.getElementById('selectedSchoolName').textContent = schoolName;
+    
+    // شعبات
+    document.getElementById('infoBF13').textContent = s.branches_f_1_3 || s.branchesF13 || 0;
+    document.getElementById('infoBM13').textContent = s.branches_m_1_3 || s.branchesM13 || 0;
+    document.getElementById('infoBX13').textContent = s.branches_x_1_3 || s.branchesX13 || 0;
+    document.getElementById('infoBT13').textContent = (Number(s.branches_f_1_3||s.branchesF13)||0) + (Number(s.branches_m_1_3||s.branchesM13)||0) + (Number(s.branches_x_1_3||s.branchesX13)||0);
+    
+    document.getElementById('infoBF46').textContent = s.branches_f_4_6 || s.branchesF46 || 0;
+    document.getElementById('infoBM46').textContent = s.branches_m_4_6 || s.branchesM46 || 0;
+    document.getElementById('infoBX46').textContent = s.branches_x_4_6 || s.branchesX46 || 0;
+    document.getElementById('infoBT46').textContent = (Number(s.branches_f_4_6||s.branchesF46)||0) + (Number(s.branches_m_4_6||s.branchesM46)||0) + (Number(s.branches_x_4_6||s.branchesX46)||0);
+    
+    document.getElementById('infoBF79').textContent = s.branches_f_7_9 || s.branchesF79 || 0;
+    document.getElementById('infoBM79').textContent = s.branches_m_7_9 || s.branchesM79 || 0;
+    document.getElementById('infoBX79').textContent = s.branches_x_7_9 || s.branchesX79 || 0;
+    document.getElementById('infoBT79').textContent = (Number(s.branches_f_7_9||s.branchesF79)||0) + (Number(s.branches_m_7_9||s.branchesM79)||0) + (Number(s.branches_x_7_9||s.branchesX79)||0);
+    
+    document.getElementById('infoBF1012').textContent = s.branches_f_10_12 || s.branchesF1012 || 0;
+    document.getElementById('infoBM1012').textContent = s.branches_m_10_12 || s.branchesM1012 || 0;
+    document.getElementById('infoBX1012').textContent = s.branches_x_10_12 || s.branchesX1012 || 0;
+    document.getElementById('infoBT1012').textContent = (Number(s.branches_f_10_12||s.branchesF1012)||0) + (Number(s.branches_m_10_12||s.branchesM1012)||0) + (Number(s.branches_x_10_12||s.branchesX1012)||0);
+    
+    const tF = Number(s.branches_f_1_3||s.branchesF13||0)+Number(s.branches_f_4_6||s.branchesF46||0)+Number(s.branches_f_7_9||s.branchesF79||0)+Number(s.branches_f_10_12||s.branchesF1012||0);
+    const tM = Number(s.branches_m_1_3||s.branchesM13||0)+Number(s.branches_m_4_6||s.branchesM46||0)+Number(s.branches_m_7_9||s.branchesM79||0)+Number(s.branches_m_10_12||s.branchesM1012||0);
+    const tX = Number(s.branches_x_1_3||s.branchesX13||0)+Number(s.branches_x_4_6||s.branchesX46||0)+Number(s.branches_x_7_9||s.branchesX79||0)+Number(s.branches_x_10_12||s.branchesX1012||0);
+    document.getElementById('infoTF').textContent = tF;
+    document.getElementById('infoTM').textContent = tM;
+    document.getElementById('infoTX').textContent = tX;
+    document.getElementById('infoTB').textContent = tF + tM + tX;
+    
+    // داخله و حاضر
+    const inF = Number(s.total_in_female || s.totalInFemale) || 0;
+    const inM = Number(s.total_in_male || s.totalInMale) || 0;
+    const prF = Number(s.total_present_female || s.totalPresentFemale) || 0;
+    const prM = Number(s.total_present_male || s.totalPresentMale) || 0;
+    document.getElementById('infoInF').textContent = inF;
+    document.getElementById('infoInM').textContent = inM;
+    document.getElementById('infoInTotal').textContent = inF + inM;
+    document.getElementById('infoPrF').textContent = prF;
+    document.getElementById('infoPrM').textContent = prM;
+    document.getElementById('infoPrTotal').textContent = prF + prM;
+    
+    // اخراجی
+    const expelledBody = document.getElementById('infoExpelledBody');
+    const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
+    let expHtml = '';
+    let expTotalF = 0, expTotalM = 0;
+    classNames.forEach((cls, i) => {
+      const n = i + 1;
+      const ef = Number(s[`e${n}_f`]) || 0;
+      const em = Number(s[`e${n}_m`]) || 0;
+      expTotalF += ef; expTotalM += em;
+      expHtml += `<tr><td>${cls}</td><td>${ef}</td><td>${em}</td><td class="total-col">${ef+em}</td></tr>`;
+    });
+    expelledBody.innerHTML = expHtml;
+    document.getElementById('infoExpF').textContent = expTotalF;
+    document.getElementById('infoExpM').textContent = expTotalM;
+    document.getElementById('infoExpTotal').textContent = expTotalF + expTotalM;
+    
+    // فارغان
+    const gF = Number(s.grad_female || s.gradFemale) || 0;
+    const gM = Number(s.grad_male || s.gradMale) || 0;
+    document.getElementById('infoGradF').textContent = gF;
+    document.getElementById('infoGradM').textContent = gM;
+    document.getElementById('infoGradTotal').textContent = gF + gM;
+    
+    card.classList.add('active');
     loadAllRecords();
   }
   window.onSchoolFilterChange = onSchoolFilterChange;
 
   // ═══════════════════════════════════════════════════════════
-  // کارمندان (صفحه اصلی)
+  // کارمندان (صفحه اصلی) — اصلاح‌شده
   // ═══════════════════════════════════════════════════════════
   async function loadAllRecords() {
     const f = getActiveFilters();
@@ -342,20 +474,22 @@
       const params = [];
       if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
-      
-      // 👇 منطق اصلاح شده برای فیلتر وضعیت تایید 👇
-      let statusToSend = '';
-      if (f.approval === 'pending' || f.approval === 'approved') {
-        statusToSend = f.approval;
-      } else if (f.approval === '' && !hasAnyFilter(f)) {
-        statusToSend = 'pending'; // اگر هیچ فیلتری نبود، پیش‌فرض "در انتظار" باشد
-      }
-      if (statusToSend) params.push('status=' + statusToSend);
-      
+      // ❌ پارامتر status حذف شد؛ فیلتر در سمت کلاینت اعمال می‌شود
       const url = '/api/records' + (params.length ? '?' + params.join('&') : '');
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
       let records = await res.json();
+      if (!Array.isArray(records)) records = [];
+      
+      // ✅ فیلتر وضعیت تایید در سمت کلاینت
+      if (f.approval === 'pending') {
+        records = records.filter(r => r.status !== 'approved');
+      } else if (f.approval === 'approved') {
+        records = records.filter(r => r.status === 'approved');
+      } else if (!hasAnyFilter(f)) {
+        // اگر هیچ فیلتری نبود، پیش‌فرض "در انتظار" باشد
+        records = records.filter(r => r.status !== 'approved');
+      }
       
       if (f.schoolType) records = records.filter(row => { let sName = row.schoolname; if (!sName && row.userid) sName = getSchoolNameById(row.userid); return sName && detectSchoolType(sName) === f.schoolType; });
       if (f.jobTitle) records = records.filter(row => { const info = row.data || {}; return (info.jobTitle || info.job || '') === f.jobTitle; });
@@ -363,7 +497,8 @@
       if (f.workshop) records = records.filter(row => { const info = row.data || {}; return (info.workshopStatus || 'نخیر') === f.workshop; });
       
       if (f.budget) {
-        const schoolsWithBudget = allSchoolSettings.filter(s => s.budget_status === f.budget);
+        const flatSettings = allSchoolSettings.map(flattenSettings);
+        const schoolsWithBudget = flatSettings.filter(s => (s.budget_status || s.budgetStatus) === f.budget);
         const schoolNames = schoolsWithBudget.map(s => s.schoolname);
         records = records.filter(row => { let sName = row.schoolname; if (!sName && row.userid) sName = getSchoolNameById(row.userid); return sName && schoolNames.includes(sName); });
       }
@@ -427,10 +562,15 @@
   // عملیات‌های ردیف
   // ═══════════════════════════════════════════════════════════
   async function approveRecord(id) { if (!confirm('آیا تایید شود؟')) return; try { const res = await fetch('/api/records/' + id + '/approve', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('✅ تایید شد'); loadAllRecords(); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); } }
+  window.approveRecord = approveRecord;
   async function deleteRecord(id) { if (!confirm('⚠️ مطمئن هستید؟')) return; try { const res = await fetch('/api/records/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAllRecords(); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); } }
+  window.deleteRecord = deleteRecord;
   async function setRecordEditPermission(id, allowed) { const label = allowed ? 'اجازه ویرایش' : 'لغو اجازه ویرایش'; if (!confirm(`آیا ${label} برای این کارمند فعال شود؟`)) return; try { const res = await fetch('/api/records/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ editAllowed: !!allowed }) }); const data = await res.json().catch(() => ({})); if (res.ok) { showToast(allowed ? '✅ اجازه ویرایش فعال شد' : '🔒 اجازه ویرایش لغو شد'); await loadAllRecords(); } else showToast('❌ ' + (data.error || 'تغییر اجازه ویرایش ناکام شد'), true); } catch (e) { showToast('❌ ارتباط برقرار نشد', true); } }
+  window.setRecordEditPermission = setRecordEditPermission;
   function viewRecordAdmin(id) { const row = loadedRecordsCache.find(r => r.id === id); if(row) alert('نمایش جزئیات (به زودی)'); }
+  window.viewRecordAdmin = viewRecordAdmin;
   function printRecordAdmin(id) { const row = loadedRecordsCache.find(r => r.id === id); if(!row) return; alert('پرینت رکورد (به زودی)'); }
+  window.printRecordAdmin = printRecordAdmin;
 
   // ═══════════════════════════════════════════════════════════
   // خروجی‌ها
@@ -448,7 +588,9 @@
     win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت</title><style>body { font-family: Tahoma; padding: 8px; direction: rtl; } table { width:100%; border-collapse:collapse; font-size:10px; } th, td { border:1px solid #333; padding:4px; text-align:center; } th { background:#1e40af; color:#fff; } @media print { .no-print { display:none; } @page { size: A4 landscape; margin: 5mm; } }</style></head><body><h2 style="text-align:center; font-size:16px;">لیست کارمندان</h2><table><thead><tr><th>#</th><th>مکتب</th><th>نام</th><th>ولد</th><th>وظیفه</th><th>کُد بست</th><th>درجه</th><th>سن</th><th>وضعیت</th></tr></thead><tbody>${rowsHtml}</tbody></table><div class="no-print" style="text-align:center; margin-top:15px;"><button onclick="window.print()" style="padding:10px 20px; background:#3b82f6; color:#fff; border:none; border-radius:6px; cursor:pointer;">🖨️ پرنت</button></div><script>setTimeout(()=>window.print(), 500);<\/script></body></html>`);
     win.document.close();
   }
+  window.printList = printList;
   function printFiltered() { printList(); }
+  window.printFiltered = printFiltered;
 
   function exportFull() {
     if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
@@ -490,6 +632,7 @@
     document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
     showToast(`✅ خروجی کامل اکسل دانلود شد (${loadedRecordsCache.length} کارمند)`);
   }
+  window.exportFull = exportFull;
 
   function computePrivateNumbers(records) {
     const bySchool = {};
@@ -498,75 +641,48 @@
       if (!bySchool[school]) bySchool[school] = [];
       bySchool[school].push(r);
     });
-
     const privateMap = {};
     Object.keys(bySchool).forEach(school => {
-      bySchool[school]
-        .sort((a, b) => a.id - b.id)
-        .forEach((r, idx) => {
-          privateMap[r.id] = idx + 1;
-        });
+      bySchool[school].sort((a, b) => a.id - b.id).forEach((r, idx) => { privateMap[r.id] = idx + 1; });
     });
     return privateMap;
   }
 
   function exportTashkeel() {
-    if (!loadedRecordsCache || loadedRecordsCache.length === 0) {
-      showToast('رکوردی برای خروجی نیست', true);
-      return;
-    }
-
+    if (!loadedRecordsCache || loadedRecordsCache.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
     const privateNumbers = computePrivateNumbers(loadedRecordsCache);
-
     const columns = [
-      ['نمبر عمومی',    r => r.id],
-      ['نمبر خصوصی',    r => privateNumbers[r.id] || ''],
-      ['اسم',           r => r.data?.firstName || ''],
-      ['ولد',           r => r.data?.fatherName || ''],
-      ['ولدیت',         r => r.data?.grandfatherName || ''],
-      ['تخلص',          r => r.data?.lastName || ''],
-      ['عنوان وظیفه',   r => r.data?.jobTitle || r.data?.job || ''],
-      ['درجه تحصیل',    r => r.data?.degree || ''],
-      ['رشته تحصیل',    r => r.data?.major || ''],
-      ['رشته تدریس',    r => r.data?.teachingField || ''],
-      ['بست',           r => r.data?.bust || ''],
-      ['قدم',           r => r.data?.grade || ''],
-      ['تاریخ تقرر',    r => r.data?.currentPositionDate || r.data?.firstAppointmentDate || ''],
-      ['تاریخ تولد',    r => r.data?.birthDate || ''],
-      ['نمبر تذکره',    r => r.data?.eTazkira || r.data?.paperTazkira || ''],
-      ['جنسیت',         r => r.data?.gender || ''],
-      ['قومیت',         r => r.data?.ethnicity || ''],
-      ['کود نمبر',      r => r.data?.jobCode || ''],
+      ['نمبر عمومی',    r => r.id], ['نمبر خصوصی',    r => privateNumbers[r.id] || ''],
+      ['اسم',           r => r.data?.firstName || ''], ['ولد',           r => r.data?.fatherName || ''],
+      ['ولدیت',         r => r.data?.grandfatherName || ''], ['تخلص',          r => r.data?.lastName || ''],
+      ['عنوان وظیفه',   r => r.data?.jobTitle || r.data?.job || ''], ['درجه تحصیل',    r => r.data?.degree || ''],
+      ['رشته تحصیل',    r => r.data?.major || ''], ['رشته تدریس',    r => r.data?.teachingField || ''],
+      ['بست',           r => r.data?.bust || ''], ['قدم',           r => r.data?.grade || ''],
+      ['تاریخ تقرر',    r => r.data?.currentPositionDate || r.data?.firstAppointmentDate || ''], ['تاریخ تولد',    r => r.data?.birthDate || ''],
+      ['نمبر تذکره',    r => r.data?.eTazkira || r.data?.paperTazkira || ''], ['جنسیت',         r => r.data?.gender || ''],
+      ['قومیت',         r => r.data?.ethnicity || ''], ['کود نمبر',      r => r.data?.jobCode || ''],
       ['محل وظیفه',     r => (r.schoolname || getSchoolNameById(r.userid) || '') + ' ' + (r.district || '')],
-      ['آمریت معارف',   r => r.district || ''],
-      ['ملاحظات',       r => r.data?.notes || '']
+      ['آمریت معارف',   r => r.district || ''], ['ملاحظات',       r => r.data?.notes || '']
     ];
-
     let csvContent = "\uFEFF" + columns.map(c => `"${c[0]}"`).join(",") + "\n";
     loadedRecordsCache.forEach(row => {
       csvContent += columns.map(c => {
-        let val = c[1](row);
-        if (val === null || val === undefined) val = '';
+        let val = c[1](row); if (val === null || val === undefined) val = '';
         let str = String(val).replace(/,/g, '،').replace(/\n/g, ' ').replace(/\r/g, ' ');
         return `"${str}"`;
       }).join(",") + "\n";
     });
-
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", `شهرت_پرسونل_تشکیلات_${new Date().getTime()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showToast('✅ خروجی تشکیل مطابق فرم وزارت معارف دانلود شد');
+    document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+    showToast('✅ خروجی تشکیل دانلود شد');
   }
-
-  function exportFiltered() {
-    exportFull();
-  }
+  window.exportTashkeel = exportTashkeel;
+  function exportFiltered() { exportFull(); }
+  window.exportFiltered = exportFiltered;
 
   function switchInnerTab(tabName, btn) {
     document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
@@ -574,6 +690,7 @@
     document.getElementById('inner-tab-' + tabName).classList.add('active');
     btn.classList.add('active');
   }
+  window.switchInnerTab = switchInnerTab;
 
   async function showDetailedStats() {
     if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
@@ -595,32 +712,23 @@
   }
   window.showDetailedStats = showDetailedStats;
 
+  // ═══════════════════════════════════════════════════════════
+  // رندر آمار شاگردان (اصلاح‌شده — با مجموع اخراجی)
+  // ═══════════════════════════════════════════════════════════
   async function renderStudentsStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterStudents').value;
     const content = document.getElementById('studentsStatsContent');
     content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
 
     try {
-      let filteredSettings = allSchoolSettings;
-      if (schoolFilter) { filteredSettings = allSchoolSettings.filter(s => s.schoolname === schoolFilter); }
+      let filteredSettings = allSchoolSettings.map(flattenSettings);
+      if (schoolFilter) filteredSettings = filteredSettings.filter(s => s.schoolname === schoolFilter);
 
-      // 👇 اضافه کردن این بخش برای خواندن branches_data 👇
-      filteredSettings = filteredSettings.map(s => {
-        let newS = { ...s };
-        if (s.branches_data) {
-          try {
-            const parsed = JSON.parse(s.branches_data);
-            newS = { ...newS, ...parsed };
-          } catch (e) { console.error('Error parsing branches_data:', e); }
-        }
-        return newS;
-      });
-
-      let totalBF13 = 0, totalBM13 = 0, totalBX13 = 0;
-      let totalBF46 = 0, totalBM46 = 0, totalBX46 = 0;
-      let totalBF79 = 0, totalBM79 = 0, totalBX79 = 0;
-      let totalBF1012 = 0, totalBM1012 = 0, totalBX1012 = 0;
-      let totalInF = 0, totalInM = 0, totalPrF = 0, totalPrM = 0;
+      let totalBF13=0, totalBM13=0, totalBX13=0;
+      let totalBF46=0, totalBM46=0, totalBX46=0;
+      let totalBF79=0, totalBM79=0, totalBX79=0;
+      let totalBF1012=0, totalBM1012=0, totalBX1012=0;
+      let totalInF=0, totalInM=0, totalPrF=0, totalPrM=0;
 
       filteredSettings.forEach(s => {
         totalBF13 += Number(s.branches_f_1_3 || s.branchesF13) || 0; totalBM13 += Number(s.branches_m_1_3 || s.branchesM13) || 0; totalBX13 += Number(s.branches_x_1_3 || s.branchesX13) || 0;
@@ -638,11 +746,20 @@
           total.inM += Number(school[`c${n}_in_m`]) || 0;
           total.prF += Number(school[`c${n}_pr_f`]) || 0;
           total.prM += Number(school[`c${n}_pr_m`]) || 0;
+          total.ef += Number(school[`e${n}_f`]) || 0;
+          total.em += Number(school[`e${n}_m`]) || 0;
           return total;
-        }, { inF: 0, inM: 0, prF: 0, prM: 0 });
+        }, { inF: 0, inM: 0, prF: 0, prM: 0, ef: 0, em: 0 });
       });
 
+      // مجموع کل اخراجی
+      const grandExpF = classTotals.reduce((s, t) => s + t.ef, 0);
+      const grandExpM = classTotals.reduce((s, t) => s + t.em, 0);
+      const gradF = filteredSettings.reduce((sum, s) => sum + (Number(s.grad_female || s.gradFemale) || 0), 0);
+      const gradM = filteredSettings.reduce((sum, s) => sum + (Number(s.grad_male || s.gradMale) || 0), 0);
+
       const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
+      const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
 
       let html = `
         <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">📚 ${title} - آمار کل شعبات</h6>
@@ -665,37 +782,37 @@
           </tbody>
         </table>
 
-        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">📋 ${title} - آمار به تفکیک هر صنف</h6>
+        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">📋 ${title} - آمار به تفکیک هر صنف (داخله و حاضر)</h6>
         <table class="table table-bordered table-sm text-center">
           <thead>
             <tr><th rowspan="2">صنف</th><th colspan="3">تعداد داخله</th><th colspan="3">تعداد حاضر</th></tr>
             <tr><th>اناث</th><th>ذکور</th><th>مجموع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
           </thead>
           <tbody>
-            ${['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'].map((cls, i) => {
+            ${classNames.map((cls, i) => {
               const { inF, inM, prF, prM } = classTotals[i];
               return `<tr><td>${cls}</td><td>${inF}</td><td>${inM}</td><td class="bg-light fw-bold">${inF+inM}</td><td>${prF}</td><td>${prM}</td><td class="bg-light fw-bold">${prF+prM}</td></tr>`;
             }).join('')}
-            <tr style="background:#f1f5f9; font-weight:bold;">
-              <td>مجموع</td><td>${totalInF}</td><td>${totalInM}</td><td>${totalInF+totalInM}</td><td>${totalPrF}</td><td>${totalPrM}</td><td>${totalPrF+totalPrM}</td>
+            <tr style="background:#eff6ff; font-weight:bold;">
+              <td>مجموع کل</td><td>${totalInF}</td><td>${totalInM}</td><td>${totalInF+totalInM}</td><td>${totalPrF}</td><td>${totalPrM}</td><td>${totalPrF+totalPrM}</td>
             </tr>
           </tbody>
         </table>
 
-        <!-- 👇 بخش اخراجی و فارغان 👇 -->
-        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">📋 ${title} - آمار اخراجی</h6>
+        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">📋 ${title} - آمار اخراجی (به تفکیک صنف)</h6>
         <table class="table table-bordered table-sm text-center">
           <thead>
-            <tr><th rowspan="2">صنف</th><th colspan="2">تعداد اخراجی</th></tr>
-            <tr><th>اناث</th><th>ذکور</th></tr>
+            <tr><th rowspan="2">صنف</th><th colspan="3">تعداد اخراجی</th></tr>
+            <tr><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
           </thead>
           <tbody>
-            ${['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'].map((cls, i) => {
-              const n = i + 1;
-              const ef = filteredSettings.reduce((sum, s) => sum + (Number(s[`e${n}_f`]) || 0), 0);
-              const em = filteredSettings.reduce((sum, s) => sum + (Number(s[`e${n}_m`]) || 0), 0);
-              return `<tr><td>${cls}</td><td>${ef}</td><td>${em}</td></tr>`;
+            ${classNames.map((cls, i) => {
+              const { ef, em } = classTotals[i];
+              return `<tr><td>${cls}</td><td>${ef}</td><td>${em}</td><td class="bg-light fw-bold">${ef+em}</td></tr>`;
             }).join('')}
+            <tr style="background:#eff6ff; font-weight:bold;">
+              <td>مجموع کل</td><td>${grandExpF}</td><td>${grandExpM}</td><td class="text-success">${grandExpF+grandExpM}</td>
+            </tr>
           </tbody>
         </table>
 
@@ -703,65 +820,268 @@
         <table class="table table-bordered table-sm text-center">
           <thead><tr><th>نوع</th><th>تعداد</th></tr></thead>
           <tbody>
-            <tr><td>تعداد فارغان اناث</td><td>${filteredSettings.reduce((sum, s) => sum + (Number(s.grad_female) || 0), 0)}</td></tr>
-            <tr><td>تعداد فارغان ذکور</td><td>${filteredSettings.reduce((sum, s) => sum + (Number(s.grad_male) || 0), 0)}</td></tr>
-            <tr class="bg-light fw-bold"><td>مجموع فارغان</td><td>${filteredSettings.reduce((sum, s) => sum + (Number(s.grad_female) || 0) + (Number(s.grad_male) || 0), 0)}</td></tr>
+            <tr><td>تعداد فارغان اناث</td><td>${gradF}</td></tr>
+            <tr><td>تعداد فارغان ذکور</td><td>${gradM}</td></tr>
+            <tr class="bg-light fw-bold"><td>مجموع فارغان</td><td>${gradF+gradM}</td></tr>
           </tbody>
         </table>
-        <!-- 👆 پایان بخش اخراجی و فارغان 👆 -->
       `;
       content.innerHTML = html;
-    } catch (e) { content.innerHTML = '<div class="text-center p-4 text-danger">خطا</div>'; }
+    } catch (e) { console.error(e); content.innerHTML = '<div class="text-center p-4 text-danger">خطا در بارگذاری آمار</div>'; }
   }
   window.renderStudentsStats = renderStudentsStats;
 
-   async function loadSchoolsList() {
+  // ═══════════════════════════════════════════════════════════
+  // رندر آمار کارمندان (اضافه شد — قبلاً وجود نداشت)
+  // ═══════════════════════════════════════════════════════════
+  async function renderEmployeesStats() {
+    const schoolFilter = document.getElementById('statsSchoolFilterEmployees').value;
+    const content = document.getElementById('employeesStatsContent');
+    content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
+
+    try {
+      // از loadedRecordsCache استفاده می‌کنیم اما برای اطمینان همه رکوردها را می‌گیریم
+      let records = loadedRecordsCache;
+      if (!records || records.length === 0) {
+        const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (res.ok) records = await res.json();
+        if (!Array.isArray(records)) records = [];
+      }
+
+      if (schoolFilter) {
+        records = records.filter(r => {
+          const sName = r.schoolname || getSchoolNameById(r.userid);
+          return sName === schoolFilter;
+        });
+      }
+
+      let managers = 0, headTeachers = 0, teachers = 0, services = 0, others = 0;
+      let male = 0, female = 0, active = 0, retired = 0;
+
+      records.forEach(r => {
+        const info = r.data || {};
+        const job = info.jobTitle || info.job || '';
+        const gender = info.gender || '';
+        if (job === 'آمر' || job === 'مدیر' || job === 'مدیر اجرائیه') managers++;
+        else if (job === 'سر معلم') headTeachers++;
+        else if (job.includes('معلم')) teachers++;
+        else if (job === 'کارکن خدماتی') services++;
+        else others++;
+        if (gender === 'مرد') male++;
+        else if (gender === 'زن') female++;
+        const st = getEmployeeStatus(info);
+        if (st.status.includes('متقاعد')) retired++;
+        else if (st.status.includes('فعال')) active++;
+      });
+
+      const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
+
+      content.innerHTML = `
+        <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">👨‍🏫 ${title} - آمار کارمندان بر اساس عنوان بست</h6>
+        <table class="table table-bordered table-sm text-center">
+          <thead><tr><th>عنوان بست</th><th>تعداد</th></tr></thead>
+          <tbody>
+            <tr><td>آمر / مدیر</td><td>${managers}</td></tr>
+            <tr><td>سر معلم</td><td>${headTeachers}</td></tr>
+            <tr><td>معلم</td><td>${teachers}</td></tr>
+            <tr><td>کارکن خدماتی</td><td>${services}</td></tr>
+            <tr><td>سایر</td><td>${others}</td></tr>
+            <tr class="bg-light fw-bold"><td>مجموع کل</td><td class="text-success">${records.length}</td></tr>
+          </tbody>
+        </table>
+
+        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">👤 ${title} - آمار بر اساس جنسیت</h6>
+        <table class="table table-bordered table-sm text-center">
+          <thead><tr><th>جنسیت</th><th>تعداد</th></tr></thead>
+          <tbody>
+            <tr><td>مرد</td><td>${male}</td></tr>
+            <tr><td>زن</td><td>${female}</td></tr>
+            <tr class="bg-light fw-bold"><td>مجموع</td><td>${male+female}</td></tr>
+          </tbody>
+        </table>
+
+        <h6 style="color:#1e40af; font-weight:bold; margin-top:20px; margin-bottom:10px;">📊 ${title} - آمار وضعیت کارمند</h6>
+        <table class="table table-bordered table-sm text-center">
+          <thead><tr><th>وضعیت</th><th>تعداد</th></tr></thead>
+          <tbody>
+            <tr><td>✅ فعال</td><td>${active}</td></tr>
+            <tr><td>🎖️ متقاعد</td><td>${retired}</td></tr>
+            <tr class="bg-light fw-bold"><td>مجموع</td><td>${active+retired}</td></tr>
+          </tbody>
+        </table>
+      `;
+    } catch (e) {
+      console.error(e);
+      content.innerHTML = '<div class="text-center p-4 text-danger">خطا در بارگذاری آمار</div>';
+    }
+  }
+  window.renderEmployeesStats = renderEmployeesStats;
+
+  // ═══════════════════════════════════════════════════════════
+  // مدیریت مکاتب (توابع placeholder — در صورت نیاز تکمیل کنید)
+  // ═══════════════════════════════════════════════════════════
+  function showSchoolSettings() {
+    if (!schoolSettingsModal) schoolSettingsModal = new bootstrap.Modal(document.getElementById('schoolSettingsModal'));
+    schoolSettingsModal.show();
+    renderSchoolSettingsModal();
+  }
+  window.showSchoolSettings = showSchoolSettings;
+
+  function renderSchoolSettingsModal() {
+    const tbody = document.getElementById('schoolSettingsModalBody');
+    document.getElementById('modalSchoolCount').textContent = allSchoolSettings.length;
+    if (!allSchoolSettings.length) {
+      tbody.innerHTML = '<tr><td colspan="28" class="text-center p-4 text-muted">هیچ مکتبی ثبت نشده</td></tr>';
+      return;
+    }
+    let html = '';
+    allSchoolSettings.map(flattenSettings).forEach((s, idx) => {
+      html += `<tr>
+        <td>${idx+1}</td><td><strong>${escapeHtml(s.schoolname||'-')}</strong></td><td>${escapeHtml(s.district||'-')}</td>
+        <td>${s.branches_f_1_3||s.branchesF13||0}</td><td>${s.branches_m_1_3||s.branchesM13||0}</td><td>${s.branches_x_1_3||s.branchesX13||0}</td><td class="highlight">${(Number(s.branches_f_1_3||s.branchesF13)||0)+(Number(s.branches_m_1_3||s.branchesM13)||0)+(Number(s.branches_x_1_3||s.branchesX13)||0)}</td>
+        <td>${s.branches_f_4_6||s.branchesF46||0}</td><td>${s.branches_m_4_6||s.branchesM46||0}</td><td>${s.branches_x_4_6||s.branchesX46||0}</td><td class="highlight">${(Number(s.branches_f_4_6||s.branchesF46)||0)+(Number(s.branches_m_4_6||s.branchesM46)||0)+(Number(s.branches_x_4_6||s.branchesX46)||0)}</td>
+        <td>${s.branches_f_7_9||s.branchesF79||0}</td><td>${s.branches_m_7_9||s.branchesM79||0}</td><td>${s.branches_x_7_9||s.branchesX79||0}</td><td class="highlight">${(Number(s.branches_f_7_9||s.branchesF79)||0)+(Number(s.branches_m_7_9||s.branchesM79)||0)+(Number(s.branches_x_7_9||s.branchesX79)||0)}</td>
+        <td>${s.branches_f_10_12||s.branchesF1012||0}</td><td>${s.branches_m_10_12||s.branchesM1012||0}</td><td>${s.branches_x_10_12||s.branchesX1012||0}</td><td class="highlight">${(Number(s.branches_f_10_12||s.branchesF1012)||0)+(Number(s.branches_m_10_12||s.branchesM1012)||0)+(Number(s.branches_x_10_12||s.branchesX1012)||0)}</td>
+        <td>${s.total_in_female||s.totalInFemale||0}</td><td>${s.total_in_male||s.totalInMale||0}</td><td class="highlight">${(Number(s.total_in_female||s.totalInFemale)||0)+(Number(s.total_in_male||s.totalInMale)||0)}</td>
+        <td>${s.total_present_female||s.totalPresentFemale||0}</td><td>${s.total_present_male||s.totalPresentMale||0}</td><td class="highlight">${(Number(s.total_present_female||s.totalPresentFemale)||0)+(Number(s.total_present_male||s.totalPresentMale)||0)}</td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+  window.renderSchoolSettingsModal = renderSchoolSettingsModal;
+
+  function printSchoolSettings() { window.print(); }
+  window.printSchoolSettings = printSchoolSettings;
+
+  function showManageSchools() {
+    if (!manageSchoolsModal) manageSchoolsModal = new bootstrap.Modal(document.getElementById('manageSchoolsModal'));
+    manageSchoolsModal.show();
+    renderManageSchools();
+  }
+  window.showManageSchools = showManageSchools;
+
+  function renderManageSchools() {
+    manageSchoolsCache = allSchoolsList;
+    renderManageSchoolsList(manageSchoolsCache);
+  }
+  function renderManageSchoolsList(list) {
+    const tbody = document.getElementById('manageSchoolsBody');
+    document.getElementById('manageSchoolCount').textContent = list.length;
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">هیچ مکتبی نیست</td></tr>'; return; }
+    let html = '';
+    list.forEach((s, idx) => {
+      html += `<tr>
+        <td>${idx+1}</td>
+        <td><strong>${escapeHtml(s.schoolname||'-')}</strong></td>
+        <td>${escapeHtml(s.username||'-')}</td>
+        <td>***</td>
+        <td>${escapeHtml(s.district||'-')}</td>
+        <td>
+          <button class="btn-action btn-view" onclick="openEditSchool(${s.id})">✏️</button>
+          <button class="btn-action btn-delete-row" onclick="deleteSchool(${s.id})">🗑️</button>
+        </td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+  function filterManageSchools() {
+    const q = document.getElementById('manageSchoolSearch').value.trim().toLowerCase();
+    if (!q) { renderManageSchoolsList(manageSchoolsCache); return; }
+    const filtered = manageSchoolsCache.filter(s => 
+      (s.schoolname||'').toLowerCase().includes(q) ||
+      (s.username||'').toLowerCase().includes(q) ||
+      (s.district||'').toLowerCase().includes(q)
+    );
+    renderManageSchoolsList(filtered);
+  }
+  window.filterManageSchools = filterManageSchools;
+
+  function openEditSchool(id) {
+    const s = allSchoolsList.find(x => x.id === id);
+    if (!s) return;
+    if (!editSchoolModal) editSchoolModal = new bootstrap.Modal(document.getElementById('editSchoolModal'));
+    document.getElementById('editSchoolId').value = s.id;
+    document.getElementById('editSchoolUsername').value = s.username || '';
+    document.getElementById('editSchoolPassword').value = '';
+    document.getElementById('editSchoolName').value = s.schoolname || '';
+    document.getElementById('editSchoolDistrict').value = s.district || '';
+    editSchoolModal.show();
+  }
+  window.openEditSchool = openEditSchool;
+
+  async function saveSchoolEdit() {
+    const id = document.getElementById('editSchoolId').value;
+    const username = document.getElementById('editSchoolUsername').value.trim();
+    const password = document.getElementById('editSchoolPassword').value.trim();
+    const schoolname = document.getElementById('editSchoolName').value.trim();
+    const district = document.getElementById('editSchoolDistrict').value.trim();
+    if (!username || !schoolname) { showToast('نام کاربری و نام مکتب الزامی است', true); return; }
+    const body = { username, schoolname, district };
+    if (password) body.password = password;
+    try {
+      const res = await fetch('/api/users/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(body) });
+      if (res.ok) { showToast('✅ ذخیره شد'); editSchoolModal.hide(); await loadSchoolsList(); renderManageSchools(); }
+      else { const d = await res.json().catch(()=>({})); showToast('❌ ' + (d.error||'خطا'), true); }
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.saveSchoolEdit = saveSchoolEdit;
+
+  async function deleteSchool(id) {
+    if (!confirm('⚠️ آیا این مکتب حذف شود؟ (تمام کارمندان وابسته نیز تحت تأثیر قرار می‌گیرند)')) return;
+    try {
+      const res = await fetch('/api/users/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) { showToast('🗑️ حذف شد'); await loadSchoolsList(); renderManageSchools(); }
+      else showToast('خطا در حذف', true);
+    } catch (e) { showToast('ارتباط برقرار نشد', true); }
+  }
+  window.deleteSchool = deleteSchool;
+
+  async function addUser() {
+    const username = document.getElementById('uUsername').value.trim();
+    const password = document.getElementById('uPassword').value.trim();
+    const schoolname = document.getElementById('uSchoolName').value.trim();
+    const district = document.getElementById('uDistrict').value.trim();
+    if (!username || !password || !schoolname) { showToast('همه فیلدها الزامی است', true); return; }
+    try {
+      const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ username, password, schoolname, district, role: 'school' }) });
+      if (res.ok) {
+        showToast('✅ مکتب اضافه شد');
+        document.getElementById('uUsername').value = '';
+        document.getElementById('uPassword').value = '';
+        document.getElementById('uSchoolName').value = '';
+        document.getElementById('uDistrict').value = '';
+        await loadSchoolsList();
+        await loadStats();
+      } else { const d = await res.json().catch(()=>({})); showToast('❌ ' + (d.error||'خطا'), true); }
+    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+  }
+  window.addUser = addUser;
+
+  // ═══════════════════════════════════════════════════════════
+  // شروع
+  // ═══════════════════════════════════════════════════════════
+  async function loadSchoolsList() {
     try {
       const res = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.ok) {
         allSchoolsList = await res.json();
+        if (!Array.isArray(allSchoolsList)) allSchoolsList = [];
         
-        // 👇 پر کردن منوی کشویی فیلتر مکتب 👇
         const schoolFilter = document.getElementById('schoolFilter');
         const currentVal = schoolFilter.value;
         schoolFilter.innerHTML = '<option value="">📋 همه</option>';
         allSchoolsList.forEach(s => {
           const opt = document.createElement('option');
-          opt.value = s.schoolname; 
-          opt.textContent = `🏫 ${s.schoolname}`; // آیکون اضافه شد
+          opt.value = s.schoolname;
+          opt.textContent = `🏫 ${s.schoolname}`;
           schoolFilter.appendChild(opt);
         });
         schoolFilter.value = currentVal;
-
-        // 👇 پر کردن منوی کشویی آمار تفصیلی 👇
-        const statsSchoolFilterStudents = document.getElementById('statsSchoolFilterStudents');
-        const statsSchoolFilterEmployees = document.getElementById('statsSchoolFilterEmployees');
-        
-        if (statsSchoolFilterStudents) {
-          statsSchoolFilterStudents.innerHTML = '<option value="">📋 همه مکاتب</option>';
-          allSchoolsList.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s.schoolname;
-            opt.textContent = `🏫 ${s.schoolname}`;
-            statsSchoolFilterStudents.appendChild(opt);
-          });
-        }
-
-        if (statsSchoolFilterEmployees) {
-          statsSchoolFilterEmployees.innerHTML = '<option value="">📋 همه مکاتب</option>';
-          allSchoolsList.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s.schoolname;
-            opt.textContent = `🏫 ${s.schoolname}`;
-            statsSchoolFilterEmployees.appendChild(opt);
-          });
-        }
       }
     } catch (e) { console.error('خطا در دریافت لیست مکاتب:', e); }
   }
   window.loadSchoolsList = loadSchoolsList;
 
-  // شروع
   (async function init() {
     await loadSchoolsList();
     await loadSchoolSettings();

@@ -147,6 +147,7 @@
       <div class="filter-item"><label>💼 وضعیت بست</label><select id="budgetFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="اضافه بست">➕ اضافه بست</option><option value="کمبود بست">➖ کمبود بست</option><option value="عادی">⚖️ عادی</option></select></div>
       <div class="filter-item"><label>👤 وضعیت کارمند</label><select id="empStatusFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="active">✅ فعال</option><option value="retired">🎖️ متقاعد</option></select></div>
       <div class="filter-item"><label>🏢 خدمتی رفته</label><select id="serviceFilter" onchange="loadAllRecords()"><option value="">📋 همه</option><option value="بلی">✅ خدمتی رفته</option><option value="نخیر">❌ خدمتی نرفته</option></select></div>
+      <!-- 👇 این بخش تغییر یافت: پیش‌فرض روی "همه" است 👇 -->
       <div class="filter-item"><label>📊 وضعیت تایید</label><select id="approvalFilter" onchange="loadAllRecords()"><option value="" selected>📋 همه</option><option value="pending">⏳ در انتظار تایید</option><option value="approved">✅ تایید شده</option></select></div>
       <div class="filter-item" style="grid-column: span 2;">
         <label>📅 تاریخ تقرر (از تاریخ ... تا تاریخ ...)</label>
@@ -322,14 +323,11 @@
   function hasAnyFilter(f) { return !!(f.search || f.school || f.schoolType || f.jobTitle || f.gender || f.workshop || f.budget || f.empStatus || f.service || f.appDateFrom || f.appDateTo); }
 
   // ═══════════════════════════════════════════════════════════
-  // نمایش آمار مکتب انتخاب شده (حذف شد تا کادر آبی نیاید)
+  // نمایش آمار مکتب انتخاب شده
   // ═══════════════════════════════════════════════════════════
   function onSchoolFilterChange() {
-    // کادر آبی را همیشه مخفی نگه دار
     const card = document.getElementById('schoolInfoCard');
     card.classList.remove('active');
-    
-    // لیست کارمندان را فیلتر کن
     loadAllRecords();
   }
   window.onSchoolFilterChange = onSchoolFilterChange;
@@ -344,10 +342,16 @@
       const params = [];
       if (f.search) params.push('search=' + encodeURIComponent(f.search));
       if (f.school) params.push('schoolname=' + encodeURIComponent(f.school));
+      
+      // 👇 منطق اصلاح شده برای فیلتر وضعیت تایید 👇
       let statusToSend = '';
-      if (f.approval === 'pending' || f.approval === 'approved') statusToSend = f.approval;
-      else if (f.approval === '' && !hasAnyFilter(f)) statusToSend = 'pending';
+      if (f.approval === 'pending' || f.approval === 'approved') {
+        statusToSend = f.approval;
+      } else if (f.approval === '' && !hasAnyFilter(f)) {
+        statusToSend = 'pending'; // اگر هیچ فیلتری نبود، پیش‌فرض "در انتظار" باشد
+      }
       if (statusToSend) params.push('status=' + statusToSend);
+      
       const url = '/api/records' + (params.length ? '?' + params.join('&') : '');
       const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
@@ -756,7 +760,7 @@
     } catch (e) { console.error('خطا در دریافت لیست مکاتب:', e); }
   }
   window.loadSchoolsList = loadSchoolsList;
-  
+
   // شروع
   (async function init() {
     await loadSchoolsList();

@@ -104,8 +104,11 @@
         <div class="grid-4">
           <div class="form-group"><label>تعداد کل داخله اناث</label><input type="text" id="sTotalInFemale" readonly></div>
           <div class="form-group"><label>تعداد کل داخله ذکور</label><input type="text" id="sTotalInMale" readonly></div>
+          <div class="form-group"><label>مجموع داخله</label><input type="text" id="sTotalInCombined" readonly style="background:#dcfce7; color:#15803d; font-weight:bold;"></div>
+          
           <div class="form-group"><label>تعداد کل حاضر اناث</label><input type="text" id="sTotalPresentFemale" readonly></div>
           <div class="form-group"><label>تعداد کل حاضر ذکور</label><input type="text" id="sTotalPresentMale" readonly></div>
+          <div class="form-group"><label>مجموع حاضر</label><input type="text" id="sTotalPresentCombined" readonly style="background:#dcfce7; color:#15803d; font-weight:bold;"></div>
         </div>
       </div>
 
@@ -113,24 +116,24 @@
         <h5>۴. آمار هر صنف (تعداد داخله و حاضر)</h5>
         <div class="table-responsive">
           <table>
-            <thead><tr><th rowspan="2">صنف</th><th colspan="2">تعداد داخله</th><th colspan="2">تعداد حاضر</th></tr><tr><th>اناث</th><th>ذکور</th><th>اناث</th><th>ذکور</th></tr></thead>
+            <thead><tr><th rowspan="2">صنف</th><th colspan="3">تعداد داخله</th><th colspan="3">تعداد حاضر</th></tr><tr><th>اناث</th><th>ذکور</th><th>مجموع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
             <tbody id="classTableBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- 👇 بخش جدید: اخراجی 👇 -->
+      <!-- بخش جدید: اخراجی -->
       <div class="form-section">
         <h5>۵. آمار اخراجی (به تفکیک صنف)</h5>
         <div class="table-responsive">
           <table>
-            <thead><tr><th rowspan="2">صنف</th><th colspan="2">تعداد اخراجی</th></tr><tr><th>اناث</th><th>ذکور</th></tr></thead>
+            <thead><tr><th rowspan="2">صنف</th><th colspan="3">تعداد اخراجی</th></tr><tr><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
             <tbody id="expelledTableBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- 👇 بخش جدید: فارغان 👇 -->
+      <!-- بخش جدید: فارغان -->
       <div class="form-section">
         <h5>۶. آمار فارغان (صنف دوازدهم)</h5>
         <div class="table-responsive">
@@ -189,21 +192,34 @@
 
   const classNames = ['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'];
   
-  // ساخت جدول داخله و حاضر
+  // ساخت جدول داخله و حاضر (با ستون مجموع)
   const tbody = document.getElementById('classTableBody');
   let html = '';
   classNames.forEach((name, i) => {
     const n = i + 1;
-    html += `<tr><td>${name}</td><td><input type="number" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td><td><input type="number" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td></tr>`;
+    html += `<tr>
+      <td>${name}</td>
+      <td><input type="number" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td>
+      <td><input type="number" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td>
+      <td><input type="text" id="c${n}_in_total" readonly style="background:#f8fafc;"></td>
+      <td><input type="number" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td>
+      <td><input type="number" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td>
+      <td><input type="text" id="c${n}_pr_total" readonly style="background:#f8fafc;"></td>
+    </tr>`;
   });
   tbody.innerHTML = html;
 
-  // ساخت جدول اخراجی
+  // ساخت جدول اخراجی (با ستون مجموع)
   const expelledTbody = document.getElementById('expelledTableBody');
   let expelledHtml = '';
   classNames.forEach((name, i) => {
     const n = i + 1;
-    expelledHtml += `<tr><td>${name}</td><td><input type="number" id="e${n}_f" placeholder="تعداد"></td><td><input type="number" id="e${n}_m" placeholder="تعداد"></td></tr>`;
+    expelledHtml += `<tr>
+      <td>${name}</td>
+      <td><input type="number" id="e${n}_f" placeholder="تعداد"></td>
+      <td><input type="number" id="e${n}_m" placeholder="تعداد"></td>
+      <td><input type="text" id="e${n}_total" readonly style="background:#f8fafc;"></td>
+    </tr>`;
   });
   expelledTbody.innerHTML = expelledHtml;
 
@@ -230,10 +246,30 @@
 
   function calcTotals() {
     let inF = 0, inM = 0, prF = 0, prM = 0;
-    for (let i = 1; i <= 12; i++) { inF += numVal(`c${i}_in_f`); inM += numVal(`c${i}_in_m`); prF += numVal(`c${i}_pr_f`); prM += numVal(`c${i}_pr_m`); }
-    setVal('sTotalInFemale', inF); setVal('sTotalInMale', inM); setVal('sTotalPresentFemale', prF); setVal('sTotalPresentMale', prM);
+    for (let i = 1; i <= 12; i++) { 
+      const cInF = numVal(`c${i}_in_f`), cInM = numVal(`c${i}_in_m`);
+      const cPrF = numVal(`c${i}_pr_f`), cPrM = numVal(`c${i}_pr_m`);
+      
+      // محاسبه مجموع هر صنف
+      setVal(`c${i}_in_total`, cInF + cInM);
+      setVal(`c${i}_pr_total`, cPrF + cPrM);
+      
+      inF += cInF; inM += cInM; prF += cPrF; prM += cPrM; 
+    }
+    setVal('sTotalInFemale', inF); setVal('sTotalInMale', inM); setVal('sTotalInCombined', inF + inM);
+    setVal('sTotalPresentFemale', prF); setVal('sTotalPresentMale', prM); setVal('sTotalPresentCombined', prF + prM);
   }
   window.calcTotals = calcTotals;
+
+  // تابع جدید برای محاسبه مجموع اخراجی‌ها
+  function calcExpelledTotals() {
+    for (let i = 1; i <= 12; i++) {
+      const ef = numVal(`e${i}_f`);
+      const em = numVal(`e${i}_m`);
+      setVal(`e${i}_total`, ef + em);
+    }
+  }
+  window.calcExpelledTotals = calcExpelledTotals;
 
   async function loadEmployeeStats() {
     try {
@@ -270,7 +306,7 @@
       if (data.exists && data.settings) {
         const s = data.settings;
         
-        // 👇 باز کردن branches_data اگر وجود داشت 👇
+        // باز کردن branches_data اگر وجود داشت
         let settingsData = { ...s };
         if (s.branches_data) {
           try {
@@ -294,16 +330,20 @@
           setVal(`c${i}_pr_m`, settingsData[`c${i}_pr_m`]); 
         }
         
-        // 👇 پر کردن فیلدهای اخراجی و فارغان 👇
+        // پر کردن فیلدهای اخراجی و فارغان
         for (let i = 1; i <= 12; i++) {
           setVal(`e${i}_f`, settingsData[`e${i}_f`]);
           setVal(`e${i}_m`, settingsData[`e${i}_m`]);
         }
         setVal('gradFemale', settingsData.grad_female || settingsData.gradFemale);
         setVal('gradMale', settingsData.grad_male || settingsData.gradMale);
+        
+        // محاسبه مجدد مجموع‌ها
+        calcBranches(); 
+        calcTotals();
+        calcExpelledTotals();
         calcGradTotal();
 
-        calcBranches(); calcTotals();
         document.getElementById('sBudgetStatus').value = settingsData.budget_status || 'عادی'; toggleBudgetFields();
         setVal('sExtraBustCount', settingsData.extra_bust_count); setVal('sExtraBustField', settingsData.extra_bust_field); setVal('sLackBustCount', settingsData.lack_bust_count); setVal('sLackBustField', settingsData.lack_bust_field);
         document.getElementById('settingsBanner').innerHTML = '✅ اطلاعات مکتب شما ثبت شده است.'; document.getElementById('settingsBanner').style.background = '#dcfce7'; document.getElementById('settingsBanner').style.color = '#15803d';
@@ -333,7 +373,6 @@
       budgetStatus: document.getElementById('sBudgetStatus').value, 
       extraBustCount: numVal('sExtraBustCount'), extraBustField: document.getElementById('sExtraBustField').value.trim(),
       lackBustCount: numVal('sLackBustCount'), lackBustField: document.getElementById('sLackBustField').value.trim(),
-      // 👇 داده‌های اخراجی و فارغان 👇
       gradFemale: numVal('gradFemale'),
       gradMale: numVal('gradMale')
     };
@@ -342,7 +381,6 @@
       body[`c${i}_in_m`] = numVal(`c${i}_in_m`); 
       body[`c${i}_pr_f`] = numVal(`c${i}_pr_f`); 
       body[`c${i}_pr_m`] = numVal(`c${i}_pr_m`); 
-      // 👇 داده‌های اخراجی هر صنف 👇
       body[`e${i}_f`] = numVal(`e${i}_f`);
       body[`e${i}_m`] = numVal(`e${i}_m`);
     }

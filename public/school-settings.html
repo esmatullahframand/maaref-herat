@@ -47,7 +47,37 @@
   .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: #fff; padding: 14px 30px; border-radius: 10px; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.3s; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: #ef4444; }
-  @media (max-width: 768px) { .grid-4 { grid-template-columns: 1fr; } .main-tabs { justify-content: center; } }
+
+  /* حذف دکمه‌های بالا/پایین از فیلدهای عددی */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  /* اصلاحات برای نمایش صحیح جدول‌ها و ورودی‌ها در موبایل */
+  @media (max-width: 768px) {
+    .grid-4 { grid-template-columns: 1fr; }
+    .main-tabs { justify-content: center; }
+    .table-responsive {
+      padding-bottom: 5px;
+    }
+    table {
+      min-width: 600px; /* اجبار به ایجاد اسکرول افقی تا ستون‌ها له نشوند */
+    }
+    th, td {
+      padding: 6px 4px; /* کاهش پدینگ سلول‌ها */
+      font-size: 12px;  /* کوچک کردن فونت جدول */
+    }
+    td input {
+      padding: 6px 2px; /* کاهش شدید پدینگ داخلی ورودی‌ها */
+      font-size: 13px;
+      min-width: 40px;  /* تعیین حداقل عرض برای اینکه فیلدها ناپدید نشوند */
+    }
+  }
 </style>
 </head>
 <body>

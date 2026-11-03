@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ثبت کارمند جدید - پنل مکتب</title>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- اسکریپت EmailJS برای ارسال ایمیل ثبت کارمند -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  // کلید عمومی شما
+  emailjs.init("zwl7hPSbD0TEuG65v"); 
+</script>
+
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: linear-gradient(135deg, #f0f4f8, #e2e8f0); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 30px 15px; color: #1e293b; }
@@ -442,6 +451,30 @@
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         showToast('✅ کارمند ثبت شد');
+        
+        // ═══════════════════════════════════════════════════════════
+        // ارسال ایمیل به ادمین (جیمیل شما) - ثبت کارمند جدید
+        // ═══════════════════════════════════════════════════════════
+        try {
+          const now = new Date();
+          const timeStr = now.toLocaleString('fa-IR');
+          const schoolName = localStorage.getItem('hr_schoolname') || 'نامشخص';
+          
+          await emailjs.send("service_9aqrddc", "template_iizq261", {
+            school_name: schoolName,
+            employee_name: body.firstName + ' ' + (body.lastName || ''), 
+            job_title: body.jobTitle || 'نامشخص',
+            register_time: timeStr
+          });
+          console.log('✅ ایمیل ثبت کارمند ارسال شد');
+          
+          // تاخیر برای ارسال ایمیل قبل از ریست شدن فرم
+          await new Promise(resolve => setTimeout(resolve, 1500)); 
+        } catch (emailError) {
+          console.error('❌ خطا در ارسال ایمیل ثبت کارمند:', emailError);
+          // حتی اگر ایمیل ارسال نشد، فرم ریست شود
+        }
+
         document.getElementById('recordForm').reset();
         document.getElementById('agreementCheckbox').checked = false;
         document.getElementById('agreementBox').classList.remove('checked');

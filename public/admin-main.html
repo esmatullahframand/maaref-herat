@@ -91,6 +91,31 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- کادر هشدار اتمام شش ماه خدمت (کارکنان خدمتی رفته) -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="sixMonthServiceAlert" class="card card-custom" style="display:none; background: #fef3c7; border-right: 5px solid #f59e0b; border-left: 1px solid #fcd34d; border-top: 1px solid #fcd34d; border-bottom: 1px solid #fcd34d;">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+      <h5 class="fw-bold m-0" style="color:#b45309;">
+        ⚠️ هشدار: اتمام شش ماه خدمت
+        <span class="badge bg-danger ms-2" id="sixMonthAlertCount">0</span>
+      </h5>
+      <button class="btn btn-sm btn-outline-warning fw-bold" onclick="document.getElementById('sixMonthServiceAlert').style.display='none'">✖️ بستن</button>
+    </div>
+    <p class="text-muted mb-2" style="font-size:13px;">کارکنان زیر شش ماه از تاریخ خدمتی‌شان گذشته است:</p>
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered text-center mb-0" style="background:#fff;">
+        <thead class="table-warning">
+          <tr>
+            <th>#</th><th>نام کارمند</th><th>مکتب</th><th>عنوان بست</th>
+            <th>تاریخ خدمتی</th><th>مدت گذشته</th><th>ولسوالی خدمتی</th>
+          </tr>
+        </thead>
+        <tbody id="sixMonthAlertBody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="card card-custom">
     <h5 class="text-purple mb-3 fw-bold"><i class="fa-solid fa-school-flag"></i> افزودن مکتب جدید</h5>
     <div class="row g-2 mb-3">
@@ -1034,12 +1059,114 @@
   window.loadSchoolsList = loadSchoolsList;
 
   // ═══════════════════════════════════════════════════════════
+  // بررسی اتمام شش ماه خدمت برای کارکنان خدمتی رفته
+  // ═══════════════════════════════════════════════════════════
+  async function checkSixMonthServiceAlert() {
+    try {
+      // دریافت همه رکوردها (نه فقط فیلتر شده) تا هشدار کامل باشد
+      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) return;
+      const allRecords = await res.json();
+      if (!Array.isArray(allRecords)) return;
+
+      const today = new Date();
+      const alertedList = [];
+
+      allRecords.forEach(row => {
+        const info = row.data || {};
+
+        // فقط کارکنانی که خدمتی رفته‌اند
+        if ((info.serviceStatus || 'نخیر') !== 'بلی') return;
+
+        // ⚠️ نام فیلد تاریخ خدمتی: در کد شما serviceDate است
+        // اگر فیلد شما چیز دیگری است (مثلاً serviceStartDate)، اینجا تغییر دهید
+        const serviceDateStr = info.serviceDate || info.serviceStartDate || '';
+        if (!serviceDateStr) return;
+
+        // محاسبه ماه‌های گذشته از تاریخ خدمتی
+        const monthsPassed = monthsSinceService(serviceDateStr);
+        if (monthsPassed === null) return;
+
+        // شرط: شش ماه یا بیشتر
+        if (monthsPassed >= 6) {
+          const fullName = `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص';
+          alertedList.push({
+            id: row.id,
+            name: fullName,
+            school: row.schoolname || getSchoolNameById(row.userid) || '—',
+            job: info.jobTitle || info.job || '—',
+            serviceDate: serviceDateStr,
+            months: monthsPassed,
+            district: info.serviceDistrict || '—'
+          });
+        }
+      });
+
+      // نمایش یا مخفی کردن کادر هشدار
+      const container = document.getElementById('sixMonthServiceAlert');
+      const tbody = document.getElementById('sixMonthAlertBody');
+      const countBadge = document.getElementById('sixMonthAlertCount');
+
+      if (alertedList.length > 0) {
+        countBadge.textContent = alertedList.length;
+        let html = '';
+        alertedList.forEach((emp, idx) => {
+          html += `<tr>
+            <td>${idx + 1}</td>
+            <td><strong>${escapeHtml(emp.name)}</strong></td>
+            <td>${escapeHtml(emp.school)}</td>
+            <td><span class="badge bg-light text-dark">${escapeHtml(emp.job)}</span></td>
+            <td>${escapeHtml(emp.serviceDate)}</td>
+            <td><span class="badge bg-danger">${emp.months} ماه</span></td>
+            <td>${escapeHtml(emp.district)}</td>
+          </tr>`;
+        });
+        tbody.innerHTML = html;
+        container.style.display = 'block';
+      } else {
+        container.style.display = 'none';
+      }
+    } catch (e) {
+      console.error('خطا در بررسی شش ماه خدمت:', e);
+    }
+  }
+  window.checkSixMonthServiceAlert = checkSixMonthServiceAlert;
+
+  // ─────────────────────────────────────────────────────────────
+  // تابع کمکی: محاسبه تعداد ماه‌های گذشته از تاریخ خدمتی (شمسی)
+  // ─────────────────────────────────────────────────────────────
+  function monthsSinceService(dateStr) {
+    const p = parseShamsi(dateStr);
+    if (!p) return null;
+
+    // تاریخ امروز به شمسی
+    const now = new Date();
+    const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate();
+    const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+    let jy = (gy <= 1600) ? 0 : 979;
+    let _gy = gy - ((gy <= 1600) ? 621 : 1600);
+    const gy2 = (gm > 2) ? (_gy + 1) : _gy;
+    let days = (365*_gy) + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) + Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1];
+    jy += 33 * Math.floor(days/12053); days %= 12053;
+    jy += 4 * Math.floor(days/1461); days %= 1461;
+    if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
+    const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
+    const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30));
+
+    // محاسبه اختلاف ماه
+    let months = (jy - p.year) * 12 + (jm - p.month);
+    if (jd < p.day) months--; // اگر روز امروز کمتر از روز شروع باشد، یک ماه کم می‌کنیم
+    return months < 0 ? 0 : months;
+  }
+
+  // ═══════════════════════════════════════════════════════════
   // شروع
   // ═══════════════════════════════════════════════════════════
   (async function init() {
     await loadSchoolsList();
     await loadSchoolSettings();
     await loadAllRecords();
+    await checkSixMonthServiceAlert();   // 👈 بررسی هشدار شش ماه خدمت
   })();
 </script>
 </body>

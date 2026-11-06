@@ -18,27 +18,29 @@
 
 <style>
   /* ═══════════════════════════════════════════════ */
-  /* تنظیمات پایه */
+  /* تنظیمات پایه و تطبیق‌پذیری کامل */
   /* ═══════════════════════════════════════════════ */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
   body { 
     font-family: 'Vazirmatn', Tahoma, Arial, sans-serif; 
-    /* پس‌زمینه گرادیانت متحرک و شیک */
+    
+    /* پس‌زمینه گرادیانت متحرک */
     background: linear-gradient(-45deg, #0f172a, #1e3a8a, #0d9488, #0f172a);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
     
-    /* ⭐ تکنیک قدرتمند Grid برای وسط‌چین کردن دقیق (افقی و عمودی) */
-    display: grid;
-    place-items: center;
+    /* ⭐ وسط‌چین کردن دقیق و تطبیق با هر صفحه‌ای */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
     
     /* استفاده از dvh برای موبایل تا با باز شدن کیبورد به هم نریزد */
     min-height: 100vh;
     min-height: 100dvh; 
     width: 100%;
-    padding: 20px; 
-    overflow-y: auto; /* در صورت کوچک بودن صفحه، امکان اسکرول بدهد */
+    padding: 15px; 
+    overflow-x: hidden; /* جلوگیری از اسکرول افقی */
     direction: rtl; 
     color: #334155;
   }
@@ -50,7 +52,7 @@
   }
 
   /* ═══════════════════════════════════════════════ */
-  /* کارت اصلی با افکت شیشه‌ای (Glassmorphism) */
+  /* کارت اصلی (با اندازه‌های هوشمند) */
   /* ═══════════════════════════════════════════════ */
   .login-card { 
     background: rgba(255, 255, 255, 0.95); 
@@ -58,15 +60,15 @@
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 24px; 
-    padding: 35px 30px; 
+    
+    /* ⭐ استفاده از clamp برای پدینگ و اندازه فونت ریسپانسیو */
+    padding: clamp(20px, 5vw, 40px) clamp(15px, 4vw, 30px); 
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); 
     width: 100%; 
-    max-width: 440px; 
+    max-width: 440px; /* در دسکتاپ بزرگ‌تر از این نمی‌شود */
     text-align: center; 
     animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    
-    /* جلوگیری از فشرده شدن کارت در صفحه‌های کوچک */
-    flex-shrink: 0; 
+    flex-shrink: 0;
   }
 
   @keyframes slideUp {
@@ -74,10 +76,10 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* هدر و عناوین */
+  /* هدر و عناوین (تطبیق‌پذیر) */
   .login-card h2 { 
     color: #1e3a8a; 
-    font-size: 20px; 
+    font-size: clamp(18px, 4vw, 22px); 
     font-weight: 800; 
     letter-spacing: -0.5px;
     margin-bottom: 4px; 
@@ -85,9 +87,9 @@
   
   .login-card h4 { 
     color: #64748b; 
-    font-size: 13px; 
+    font-size: clamp(12px, 2vw, 14px); 
     font-weight: 400;
-    margin-bottom: 25px; 
+    margin-bottom: 20px; 
   }
 
   /* ═══════════════════════════════════════════════ */
@@ -97,17 +99,17 @@
     background: linear-gradient(135deg, #eff6ff, #f0fdf4);
     border: 1px solid #bfdbfe;
     border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 25px;
+    padding: 15px;
+    margin-bottom: 20px;
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
   }
 
-  .welcome-box h3 { color: #0284c7; font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-  .welcome-box p { color: #334155; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .welcome-box h3 { color: #0284c7; font-size: clamp(13px, 2.5vw, 15px); font-weight: 700; margin-bottom: 6px; }
+  .welcome-box p { color: #334155; font-size: clamp(12px, 2vw, 13px); font-weight: 600; margin-bottom: 8px; }
   .welcome-box span { 
     display: block; 
     color: #475569; 
-    font-size: 11px; 
+    font-size: clamp(10px, 1.5vw, 11px); 
     background: #fff; 
     padding: 6px 10px; 
     border-radius: 8px; 
@@ -120,7 +122,7 @@
   /* ═══════════════════════════════════════════════ */
   .form-group { 
     text-align: right; 
-    margin-bottom: 18px; 
+    margin-bottom: 15px; 
     display: flex; 
     flex-direction: column; 
   }
@@ -129,7 +131,7 @@
     font-size: 13px; 
     font-weight: 600; 
     color: #1e293b; 
-    margin-bottom: 8px; 
+    margin-bottom: 6px; 
     display: flex;
     align-items: center;
     gap: 6px;
@@ -137,11 +139,11 @@
 
   .form-control { 
     width: 100%; 
-    padding: 12px 16px; 
+    padding: 12px 14px; 
     background: #f8fafc;
     border: 2px solid #e2e8f0; 
     border-radius: 12px; 
-    font-size: 14px; 
+    font-size: clamp(13px, 2vw, 14px); 
     outline: none; 
     font-family: 'Vazirmatn', sans-serif; 
     transition: all 0.3s ease;
@@ -157,16 +159,17 @@
   }
 
   /* ═══════════════════════════════════════════════ */
-  /* بخش کد امنیتی */
+  /* بخش کد امنیتی (اصلاح شده برای موبایل) */
   /* ═══════════════════════════════════════════════ */
   .captcha-wrapper { 
     display: flex; 
     align-items: center; 
-    gap: 12px; 
+    gap: 10px; 
     margin-bottom: 10px; 
     background: #f1f5f9;
     padding: 8px;
     border-radius: 12px;
+    width: 100%;
   }
 
   .captcha-canvas { 
@@ -175,9 +178,10 @@
     border-radius: 8px; 
     cursor: pointer; 
     user-select: none; 
-    flex-shrink: 0; 
-    height: 52px; 
+    height: 50px; 
+    flex-grow: 1; /* پر کردن فضای باقی مانده */
     width: 100%;
+    max-width: 100%;
     transition: border-color 0.3s;
   }
 
@@ -188,13 +192,16 @@
     color: #fff; 
     border: none; 
     border-radius: 8px; 
-    width: 52px; 
-    height: 52px; 
+    width: 50px; 
+    height: 50px; 
     font-size: 20px; 
     cursor: pointer; 
     flex-shrink: 0; 
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .captcha-refresh:hover {
@@ -221,7 +228,7 @@
     border-radius: 12px; 
     font-weight: 700; 
     cursor: pointer; 
-    font-size: 15px; 
+    font-size: clamp(14px, 2vw, 16px); 
     width: 100%; 
     background: linear-gradient(135deg, #1e3a8a, #3b82f6); 
     color: white; 
@@ -252,8 +259,8 @@
     border: 1px solid #fecaca; 
     color: #b91c1c; 
     border-radius: 12px; 
-    padding: 12px; 
-    margin-bottom: 20px; 
+    padding: 10px; 
+    margin-bottom: 15px; 
     font-size: 13px; 
     font-weight: 500;
     text-align: right; 
@@ -384,13 +391,12 @@
         if (data.user && data.user.district) localStorage.setItem('hr_district', data.user.district);
         
         // ═══════════════════════════════════════════════════════════
-        // ارسال ایمیل به ادمین (جیمیل شما)
+        // ارسال ایمیل به ادمین
         // ═══════════════════════════════════════════════════════════
         try {
           const now = new Date();
           const timeStr = now.toLocaleString('fa-IR');
 
-          // در اینجا Service ID و Template ID شما قرار داده شده است
           await emailjs.send("service_9aqrddc", "template_d70aci6", {
             school_name: data.user.schoolname || 'نامشخص',
             username: data.user.username || 'نامشخص',
@@ -399,14 +405,11 @@
           });
           console.log('✅ ایمیل ورود با موفقیت ارسال شد');
           
-          // یک تاخیر کوچک تا ایمیل ارسال شود و بعد صفحه عوض شود
           await new Promise(resolve => setTimeout(resolve, 1500)); 
         } catch (emailError) {
           console.error('❌ خطا در ارسال ایمیل:', emailError);
-          // مهم: اگر ایمیل ارسال نشد، جلوی ورود کاربر را نگیر
         }
 
-        // ⭐ هدایت به پنل
         const redirectTo = data.redirect || (data.user && data.user.role === 'admin' ? '/admin-main.html' : '/school-settings.html');
         window.location.href = redirectTo;
       } else {

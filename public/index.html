@@ -18,24 +18,27 @@
 
 <style>
   /* ═══════════════════════════════════════════════ */
-  /* تنظیمات پایه و پس‌زمینه متحرک (شیک) */
+  /* تنظیمات پایه */
   /* ═══════════════════════════════════════════════ */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
   body { 
     font-family: 'Vazirmatn', Tahoma, Arial, sans-serif; 
-    /* پس‌زمینه گرادیانت متحرک */
+    /* پس‌زمینه گرادیانت متحرک و شیک */
     background: linear-gradient(-45deg, #0f172a, #1e3a8a, #0d9488, #0f172a);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
     
-    /* تنظیمات برای قرارگیری دقیق در مرکز (افقی و عمودی) */
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    min-height: 100vh; 
+    /* ⭐ تکنیک قدرتمند Grid برای وسط‌چین کردن دقیق (افقی و عمودی) */
+    display: grid;
+    place-items: center;
+    
+    /* استفاده از dvh برای موبایل تا با باز شدن کیبورد به هم نریزد */
+    min-height: 100vh;
+    min-height: 100dvh; 
     width: 100%;
-    padding: 20px; /* فاصله از لبه‌ها در موبایل */
+    padding: 20px; 
+    overflow-y: auto; /* در صورت کوچک بودن صفحه، امکان اسکرول بدهد */
     direction: rtl; 
     color: #334155;
   }
@@ -59,9 +62,11 @@
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); 
     width: 100%; 
     max-width: 440px; 
-    margin: auto; /* برای تضمین وسط‌چین بودن */
     text-align: center; 
     animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    
+    /* جلوگیری از فشرده شدن کارت در صفحه‌های کوچک */
+    flex-shrink: 0; 
   }
 
   @keyframes slideUp {

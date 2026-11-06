@@ -28,10 +28,14 @@
     background: linear-gradient(-45deg, #0f172a, #1e3a8a, #0d9488, #0f172a);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
+    
+    /* تنظیمات برای قرارگیری دقیق در مرکز (افقی و عمودی) */
     display: flex; 
     align-items: center; 
     justify-content: center; 
     min-height: 100vh; 
+    width: 100%;
+    padding: 20px; /* فاصله از لبه‌ها در موبایل */
     direction: rtl; 
     color: #334155;
   }
@@ -55,6 +59,7 @@
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); 
     width: 100%; 
     max-width: 440px; 
+    margin: auto; /* برای تضمین وسط‌چین بودن */
     text-align: center; 
     animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -266,7 +271,7 @@
 
   <!-- بخش خوش‌آمدگویی و معرفی -->
   <div class="welcome-box">
-    <h3>✨ خوش آمدید ✨</h3>
+    <h3>✨ به دیتابیس آمریت معارف خوش آمدید ✨</h3>
     <p>آمریت معارف رباط سنگی</p>
     <span>
       ترتیب کننده: عصمت الله فرهمند<br>

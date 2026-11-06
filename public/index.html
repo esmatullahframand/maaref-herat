@@ -5,7 +5,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1e3a8a">
-<title>ورود - معارف هرات</title>
+
+<title>ورود | سامانه مدیریت معلومات معارف هرات</title>
 
 <!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -17,7 +18,7 @@ window.addEventListener('load', function () {
 });
 </script>
 
-<!-- فونت -->
+<!-- فونت وزیرمتن -->
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
@@ -55,6 +56,7 @@ body {
   100% { background-position: 0% 50%; }
 }
 
+/* کارت اصلی */
 .login-card {
   background: rgba(255,255,255,.97);
   backdrop-filter: blur(16px);
@@ -75,6 +77,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* عنوان‌ها */
 .login-card h2 {
   color: #1e3a8a;
   font-size: clamp(18px,3vw,26px);
@@ -86,42 +89,62 @@ body {
   color: #64748b;
   font-size: clamp(12px,2vw,16px);
   font-weight: 500;
+  line-height: 1.8;
   margin-bottom: clamp(10px,2vh,22px);
 }
 
+/* بخش معرفی */
 .welcome-box {
   background: linear-gradient(135deg,#eff6ff,#f0fdf4);
   border: 1px solid #bfdbfe;
   border-radius: 14px;
   padding: clamp(9px,2vh,17px);
   margin-bottom: clamp(10px,2vh,20px);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.02);
 }
 
 .welcome-box h3 {
   color: #0284c7;
   font-size: clamp(12px,2vw,17px);
   font-weight: 800;
-  margin-bottom: 5px;
+  margin-bottom: 7px;
+  line-height: 1.8;
 }
 
 .welcome-box p {
   color: #334155;
   font-size: clamp(12px,1.8vw,15px);
   font-weight: 700;
-  margin-bottom: 7px;
+  margin-bottom: 9px;
 }
 
-.welcome-box span {
-  display: block;
+.developer-box {
+  background: #fff;
+  border: 1px dashed #bfdbfe;
+  border-radius: 10px;
+  padding: 9px;
+  line-height: 1.9;
+}
+
+.developer-title {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.developer-name {
+  color: #1e3a8a;
+  font-size: clamp(15px,2.3vw,19px);
+  font-weight: 800;
+}
+
+.developer-job {
   color: #475569;
   font-size: clamp(10px,1.6vw,13px);
-  background: white;
-  padding: 6px 9px;
-  border-radius: 8px;
-  border: 1px dashed #cbd5e1;
-  line-height: 1.7;
+  font-weight: 500;
 }
 
+/* فرم */
 .form-group {
   text-align: right;
   margin-bottom: clamp(9px,1.8vh,17px);
@@ -159,6 +182,7 @@ body {
   color: #94a3b8;
 }
 
+/* کد امنیتی */
 .captcha-wrapper {
   display: flex;
   align-items: center;
@@ -206,6 +230,7 @@ body {
   margin-top: 5px;
 }
 
+/* دکمه ورود */
 .btn {
   padding: clamp(10px,2vh,15px);
   border: none;
@@ -233,6 +258,7 @@ body {
   box-shadow: none;
 }
 
+/* پیام خطا */
 .error-box {
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -307,7 +333,7 @@ body {
   }
 }
 
-/* موبایل بسیار کوچک */
+/* موبایل کوچک */
 @media (max-width:360px) {
   .login-card {
     padding: 12px 10px;
@@ -326,9 +352,9 @@ body {
   }
 }
 
-/* کاهش حرکت برای کاربران دارای تنظیمات دسترس‌پذیری */
+/* کاهش حرکت */
 @media (prefers-reduced-motion:reduce) {
-  *, *::before, *::after {
+  *,*::before,*::after {
     animation-duration: .01ms !important;
     transition-duration: .01ms !important;
   }
@@ -341,15 +367,31 @@ body {
 <div class="login-card">
 
   <h2>ریاست معارف ولایت هرات</h2>
-  <h4>سیستم دیجیتالی جمع‌آوری معلومات کارمندان</h4>
+
+  <h4>سامانه دیجیتالی مدیریت معلومات کارمندان</h4>
 
   <div class="welcome-box">
-    <h3>✨ به دیتابیس آمریت معارف خوش آمدید ✨</h3>
-    <p>آمریت معارف رباط سنگی</p>
-    <span>
-      ترتیب کننده: عصمت الله فرهمند<br>
-      (عضو مسلکی امور مالی و کارمندان)
-    </span>
+
+    <h3>✨ به سامانه مدیریت معلومات خوش آمدید ✨</h3>
+
+    <p>آمریت معارف رباط‌سنگی</p>
+
+    <div class="developer-box">
+
+      <div class="developer-title">
+        طراحی و توسعه سیستم
+      </div>
+
+      <div class="developer-name">
+        عصمت‌الله فرهمند
+      </div>
+
+      <div class="developer-job">
+        عضو مسلکی امور مالی و کارکنان
+      </div>
+
+    </div>
+
   </div>
 
   <div id="errorBox" class="error-box" role="alert"></div>
@@ -358,6 +400,7 @@ body {
 
     <div class="form-group">
       <label for="username">نام کاربری</label>
+
       <input
         type="text"
         id="username"
@@ -371,6 +414,7 @@ body {
 
     <div class="form-group">
       <label for="password">رمز عبور</label>
+
       <input
         type="password"
         id="password"
@@ -383,9 +427,11 @@ body {
     </div>
 
     <div class="form-group">
+
       <label for="captchaAnswer">🔒 کد امنیتی</label>
 
       <div class="captcha-wrapper">
+
         <canvas
           id="captchaCanvas"
           class="captcha-canvas"
@@ -402,6 +448,7 @@ body {
           aria-label="تغییر سوال امنیتی"
           title="تغییر سوال"
         >🔄</button>
+
       </div>
 
       <input
@@ -417,6 +464,7 @@ body {
       <div class="captcha-hint">
         🔍 برای تغییر سوال، روی تصویر یا 🔄 کلیک کنید
       </div>
+
     </div>
 
     <button type="submit" id="submitBtn" class="btn">
@@ -424,6 +472,7 @@ body {
     </button>
 
   </form>
+
 </div>
 
 <script>
@@ -439,7 +488,7 @@ const captchaAnswer = document.getElementById('captchaAnswer');
 let captchaCorrectAnswer = null;
 let loginInProgress = false;
 
-/* نمایش خطا */
+/* نمایش پیام خطا */
 function showError(message) {
   errorBox.textContent = message;
   errorBox.style.display = 'block';
@@ -448,25 +497,32 @@ function showError(message) {
   loginInProgress = false;
 }
 
-/* تولید کد امنیتی */
+/* ساخت کد امنیتی */
 function generateCaptcha() {
+
   const ops = ['+', '-', '×'];
   const op = ops[Math.floor(Math.random() * ops.length)];
 
   let a, b, answer;
 
   if (op === '+') {
+
     a = Math.floor(Math.random() * 20) + 5;
     b = Math.floor(Math.random() * 20) + 5;
     answer = a + b;
+
   } else if (op === '-') {
+
     a = Math.floor(Math.random() * 20) + 15;
     b = Math.floor(Math.random() * 10) + 2;
     answer = a - b;
+
   } else {
+
     a = Math.floor(Math.random() * 8) + 2;
     b = Math.floor(Math.random() * 8) + 2;
     answer = a * b;
+
   }
 
   captchaCorrectAnswer = answer;
@@ -475,41 +531,49 @@ function generateCaptcha() {
   const w = captchaCanvas.width;
   const h = captchaCanvas.height;
 
-  ctx.clearRect(0, 0, w, h);
+  ctx.clearRect(0,0,w,h);
 
-  const gradient = ctx.createLinearGradient(0, 0, w, h);
-  gradient.addColorStop(0, '#f1f5f9');
-  gradient.addColorStop(1, '#e2e8f0');
+  const gradient = ctx.createLinearGradient(0,0,w,h);
+
+  gradient.addColorStop(0,'#f1f5f9');
+  gradient.addColorStop(1,'#e2e8f0');
 
   ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, w, h);
+  ctx.fillRect(0,0,w,h);
 
   /* خطوط مزاحم */
-  for (let i = 0; i < 5; i++) {
+  for (let i=0; i<5; i++) {
+
     ctx.strokeStyle =
       `rgba(${Math.random()*200},${Math.random()*200},${Math.random()*200},0.4)`;
 
-    ctx.lineWidth = 1 + Math.random() * 2;
+    ctx.lineWidth = 1 + Math.random()*2;
+
     ctx.beginPath();
-    ctx.moveTo(Math.random() * w, Math.random() * h);
-    ctx.lineTo(Math.random() * w, Math.random() * h);
+    ctx.moveTo(Math.random()*w,Math.random()*h);
+    ctx.lineTo(Math.random()*w,Math.random()*h);
     ctx.stroke();
+
   }
 
   /* نقاط مزاحم */
-  for (let i = 0; i < 30; i++) {
+  for (let i=0; i<30; i++) {
+
     ctx.fillStyle =
       `rgba(${Math.random()*200},${Math.random()*200},${Math.random()*200},0.5)`;
 
     ctx.beginPath();
+
     ctx.arc(
-      Math.random() * w,
-      Math.random() * h,
-      Math.random() * 2,
+      Math.random()*w,
+      Math.random()*h,
+      Math.random()*2,
       0,
-      2 * Math.PI
+      2*Math.PI
     );
+
     ctx.fill();
+
   }
 
   ctx.font = 'bold 26px Tahoma';
@@ -517,47 +581,55 @@ function generateCaptcha() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.fillText(`${a} ${op} ${b} = ?`, w / 2, h / 2);
+  ctx.fillText(`${a} ${op} ${b} = ?`,w/2,h/2);
 
   ctx.strokeStyle = 'rgba(239,68,68,0.5)';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(10, h - 10);
-  ctx.lineTo(w - 10, 10);
+  ctx.moveTo(10,h-10);
+  ctx.lineTo(w-10,10);
   ctx.stroke();
 
   captchaAnswer.value = '';
+
 }
 
-/* تغییر سوال */
-captchaCanvas.addEventListener('click', generateCaptcha);
-captchaRefresh.addEventListener('click', generateCaptcha);
+/* تغییر سوال امنیتی */
+captchaCanvas.addEventListener('click',generateCaptcha);
+captchaRefresh.addEventListener('click',generateCaptcha);
 
 /* شروع اولیه */
 generateCaptcha();
 
-/* ورود به سیستم */
-loginForm.addEventListener('submit', async function(e) {
+/* ورود */
+loginForm.addEventListener('submit',async function(e) {
+
   e.preventDefault();
 
   if (loginInProgress) return;
 
   errorBox.style.display = 'none';
 
-  const userAnswer = Number(captchaAnswer.value.trim());
+  const answerText = captchaAnswer.value.trim();
+  const userAnswer = Number(answerText);
 
   if (
-    captchaAnswer.value.trim() === '' ||
+    answerText === '' ||
     !Number.isFinite(userAnswer) ||
     userAnswer !== captchaCorrectAnswer
   ) {
+
     showError('❌ کد امنیتی اشتباه است');
     generateCaptcha();
     return;
+
   }
 
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value;
+  const username =
+    document.getElementById('username').value.trim();
+
+  const password =
+    document.getElementById('password').value;
 
   if (!username || !password) {
     showError('نام کاربری و رمز عبور را وارد کنید');
@@ -565,65 +637,79 @@ loginForm.addEventListener('submit', async function(e) {
   }
 
   loginInProgress = true;
+
   submitBtn.disabled = true;
   submitBtn.innerText = 'در حال بررسی...';
 
   try {
 
-    /* فقط اطلاعات ورود قبلی حذف می‌شود */
+    /* پاک‌کردن فقط اطلاعات ورود قبلی */
     localStorage.removeItem('hr_token');
     localStorage.removeItem('hr_user');
     localStorage.removeItem('hr_schoolname');
     localStorage.removeItem('hr_district');
 
     const res = await fetch('/api/auth/login', {
+
       method: 'POST',
+
       headers: {
         'Content-Type': 'application/json'
       },
+
       body: JSON.stringify({
         username,
         password
       })
+
     });
 
     const data = await res.json().catch(() => ({}));
 
     if (res.ok && data.token) {
 
-      localStorage.setItem('hr_token', data.token);
+      /* ذخیره اطلاعات ورود */
+      localStorage.setItem('hr_token',data.token);
+
       localStorage.setItem(
         'hr_user',
         JSON.stringify(data.user || {})
       );
 
       if (data.user && data.user.schoolname) {
+
         localStorage.setItem(
           'hr_schoolname',
           data.user.schoolname
         );
+
       }
 
       if (data.user && data.user.district) {
+
         localStorage.setItem(
           'hr_district',
           data.user.district
         );
+
       }
 
       /* اطلاع‌رسانی ایمیلی */
       try {
 
         if (window.emailjs) {
+
           const now = new Date();
-          const timeStr = now.toLocaleString('fa-IR', {
+
+          const timeStr = now.toLocaleString('fa-IR',{
             timeZone: 'Asia/Kabul'
           });
 
           await Promise.race([
+
             emailjs.send(
-              "service_9aqrddc",
-              "template_d70aci6",
+              'service_9aqrddc',
+              'template_d70aci6',
               {
                 school_name: data.user?.schoolname || 'نامشخص',
                 username: data.user?.username || username,
@@ -631,17 +717,24 @@ loginForm.addEventListener('submit', async function(e) {
                 login_time: timeStr
               }
             ),
-            new Promise((_, reject) =>
+
+            new Promise((_,reject) => {
+
               setTimeout(
                 () => reject(new Error('Email timeout')),
                 5000
-              )
-            )
+              );
+
+            })
+
           ]);
+
         }
 
-      } catch (emailError) {
-        console.error('خطا در ارسال ایمیل:', emailError);
+      } catch(emailError) {
+
+        console.error('خطا در ارسال ایمیل:',emailError);
+
       }
 
       /* انتقال به صفحه مربوطه */
@@ -667,11 +760,12 @@ loginForm.addEventListener('submit', async function(e) {
       );
 
       generateCaptcha();
+
     }
 
-  } catch (err) {
+  } catch(err) {
 
-    console.error('خطای ورود:', err);
+    console.error('خطای ورود:',err);
 
     localStorage.removeItem('hr_token');
     localStorage.removeItem('hr_user');
@@ -679,9 +773,11 @@ loginForm.addEventListener('submit', async function(e) {
     localStorage.removeItem('hr_district');
 
     showError('خطا در ارتباط با سرور؛ لطفاً دوباره تلاش کنید');
+
     generateCaptcha();
 
   }
+
 });
 </script>
 

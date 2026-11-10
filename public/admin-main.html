@@ -68,6 +68,11 @@ body {
   box-shadow: 0 8px 30px rgba(49,46,129,.22);
   position: relative;
   overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .topbar::after {
@@ -84,10 +89,12 @@ body {
 
 .topbar h1,
 .topbar h2,
-.topbar h3 {
+.topbar h3,
+.topbar h5 {
   color: #fff;
   font-weight: 800;
   letter-spacing: -.3px;
+  margin: 0;
 }
 
 /* ====== تب‌های اصلی ====== */
@@ -113,6 +120,7 @@ body {
   color: #475569 !important;
   background: transparent !important;
   transition: all .25s ease !important;
+  text-decoration: none;
 }
 
 .nav-tab-btn:hover {
@@ -191,10 +199,12 @@ body {
 }
 
 .stat-card h2,
-.stat-card h3 {
+.stat-card h3,
+.stat-card .value {
   font-weight: 900;
   color: #1e293b;
   font-variant-numeric: tabular-nums;
+  font-size: 24px;
 }
 
 .stat-card p,
@@ -390,6 +400,81 @@ label {
   color: #155e75;
 }
 
+.badge-approved {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 5px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-block;
+}
+
+.badge-pending {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 5px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-block;
+}
+
+.badge-service-yes {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 5px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-block;
+}
+
+.badge-service-no {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.badge-active {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 5px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-block;
+}
+
+.badge-retired {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 5px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-block;
+}
+
+.badge-unknown {
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 5px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-block;
+}
+
+.badge-search-active {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 5px 11px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+  margin-right: 8px;
+}
+
 /* ====== دکمه‌های عملیاتی جدول ====== */
 
 .btn-action {
@@ -399,12 +484,19 @@ label {
   font-size: 12px;
   font-weight: 700;
   transition: all .2s ease;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-action:hover {
   transform: scale(1.06);
   box-shadow: var(--shadow-sm);
 }
+
+.btn-approve { background: #d1fae5; color: #065f46; }
+.btn-view { background: #dbeafe; color: #1e40af; }
+.btn-print { background: #e0e7ff; color: #3730a3; }
+.btn-delete-row { background: #fee2e2; color: #991b1b; }
 
 /* ====== بنر اطلاع‌رسانی ====== */
 
@@ -416,16 +508,33 @@ label {
   padding: 15px 18px;
   color: #3730a3;
   box-shadow: var(--shadow-sm);
+  margin-bottom: 15px;
+  margin-top: 15px;
 }
 
 /* ====== پیام‌های موقت ====== */
 
 .toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 14px 24px;
   border-radius: 12px;
   box-shadow: var(--shadow-lg);
   border: 1px solid rgba(255,255,255,.3);
   backdrop-filter: blur(12px);
   font-weight: 700;
+  display: none;
+  z-index: 9999;
+  min-width: 280px;
+  text-align: center;
+}
+
+.toast.error {
+  background: #991b1b;
 }
 
 /* ====== شبکه فیلترها ====== */
@@ -438,6 +547,15 @@ label {
   background: #f8faff;
   border: 1px solid #e2e8f0;
   border-radius: 15px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.filter-item label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #475569;
 }
 
 /* ====== مودال‌ها ====== */
@@ -471,9 +589,57 @@ label {
   border-top: 1px solid #e2e8f0;
 }
 
-/* ====== تب‌های داخلی ====== */
+.modal-header-purple {
+  background: linear-gradient(120deg, #4338ca, #6d28d9) !important;
+}
 
+.modal-header-orange {
+  background: linear-gradient(120deg, #b45309, #d97706) !important;
+}
+
+/* ====== ✅ اصلاح تب‌های داخلی (حل مشکل دکمه آمار کارمندان) ====== */
+
+.inner-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 8px;
+  background: rgba(255,255,255,.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.inner-tab-btn {
+  flex: 1 1 auto;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  padding: 10px 18px;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .22s ease;
+  font-family: inherit;
+}
+
+.inner-tab-btn:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.inner-tab-btn.active {
+  color: white;
+  background: linear-gradient(135deg, #4338ca, #6366f1);
+  box-shadow: 0 4px 12px rgba(67,56,202,.25);
+}
+
+/* ⚠️ کلید حل مشکل: display:none */
 .inner-tab-content {
+  display: none;
   animation: fadeUp .3s ease;
 }
 
@@ -500,6 +666,12 @@ label {
   border-radius: 15px;
   padding: 16px;
   box-shadow: var(--shadow-sm);
+  margin-bottom: 15px;
+}
+
+.stats-filter-bar label {
+  display: block;
+  margin-bottom: 6px;
 }
 
 /* ====== اسکرول‌بار ====== */
@@ -529,6 +701,14 @@ button:focus-visible,
 a:focus-visible {
   outline: 3px solid rgba(99,102,241,.35);
   outline-offset: 3px;
+}
+
+/* ====== هایلایت ستون‌های مجموع ====== */
+
+.highlight {
+  background: #eef2ff !important;
+  font-weight: 800;
+  color: #312e81;
 }
 
 /* ====== نمایش موبایل و تبلت ====== */
@@ -569,6 +749,10 @@ a:focus-visible {
 
   .stat-card {
     padding: 16px;
+  }
+
+  .stat-card .value {
+    font-size: 20px;
   }
 
   .nav-tabs-custom {
@@ -681,9 +865,7 @@ a:focus-visible {
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- کادر هشدار اتمام شش ماه خدمت (کارکنان خدمتی رفته) -->
-  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- کادر هشدار اتمام شش ماه خدمت -->
   <div id="sixMonthServiceAlert" class="card card-custom" style="display:none; background: #fef3c7; border-right: 5px solid #f59e0b; border-left: 1px solid #fcd34d; border-top: 1px solid #fcd34d; border-bottom: 1px solid #fcd34d;">
     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
       <h5 class="fw-bold m-0" style="color:#b45309;">
@@ -774,7 +956,7 @@ a:focus-visible {
   </div>
 </div>
 
-<!-- Modal آمار تفصیلی -->
+<!-- ✅ Modal آمار تفصیلی (اصلاح‌شده) -->
 <div class="modal fade" id="detailedStatsModal" tabindex="-1">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -783,6 +965,7 @@ a:focus-visible {
         <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
       </div>
       <div class="modal-body" style="max-height:75vh; overflow-y:auto;">
+        <!-- ✅ wrapper با کلاس inner-tabs -->
         <div class="inner-tabs">
           <button class="inner-tab-btn active" onclick="switchInnerTab('students', this)">👥 آمار شاگردان و شعبات</button>
           <button class="inner-tab-btn" onclick="switchInnerTab('employees', this)">👨‍🏫 آمار کارمندان</button>
@@ -900,6 +1083,24 @@ a:focus-visible {
   let debounceTimer; function debouncedLoad() { clearTimeout(debounceTimer); debounceTimer = setTimeout(loadAllRecords, 400); }
   window.debouncedLoad = debouncedLoad;
 
+  // ═══════════════════════════════════════════════════════════
+  // ✅ تابع جدید: دریافت سال جاری شمسی به‌صورت داینامیک
+  // ═══════════════════════════════════════════════════════════
+  function getCurrentShamsiYear() {
+    const now = new Date();
+    const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate();
+    const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+    let jy = (gy <= 1600) ? 0 : 979;
+    let _gy = gy - ((gy <= 1600) ? 621 : 1600);
+    const gy2 = (gm > 2) ? (_gy + 1) : _gy;
+    let days = (365 * _gy) + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+    jy += 33 * Math.floor(days / 12053); days %= 12053;
+    jy += 4 * Math.floor(days / 1461); days %= 1461;
+    if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+    return jy;
+  }
+  window.getCurrentShamsiYear = getCurrentShamsiYear;
+
   function getActiveFilters() {
     return {
       search: document.getElementById('searchInput').value.trim(),
@@ -995,11 +1196,8 @@ a:focus-visible {
   }
   window.loadSchoolSettings = loadSchoolSettings;
 
-  // ═══════════════════════════════════════════════════════════
-  // نمایش آمار مکتب انتخاب شده (فقط برای آمار تفصیلی)
-  // ═══════════════════════════════════════════════════════════
   function onSchoolFilterChange() {
-    loadAllRecords(); // فقط لیست کارمندان را با فیلتر مکتب بارگذاری می‌کند
+    loadAllRecords();
   }
   window.onSchoolFilterChange = onSchoolFilterChange;
 
@@ -1240,14 +1438,33 @@ a:focus-visible {
   function exportFiltered() { exportFull(); }
   window.exportFiltered = exportFiltered;
 
+  // ═══════════════════════════════════════════════════════════
+  // ✅ اصلاح‌شده: switchInnerTab
+  // ═══════════════════════════════════════════════════════════
   function switchInnerTab(tabName, btn) {
+    // حذف active از همه تب‌ها و دکمه‌ها
     document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.inner-tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('inner-tab-' + tabName).classList.add('active');
-    btn.classList.add('active');
+    
+    // افزودن active به تب انتخاب‌شده
+    const targetTab = document.getElementById('inner-tab-' + tabName);
+    if (targetTab) targetTab.classList.add('active');
+    
+    // علامت‌گذاری دکمه فعال
+    if (btn) btn.classList.add('active');
+    
+    // ✅ بارگذاری داده‌های تب انتخاب‌شده
+    if (tabName === 'employees') {
+      renderEmployeesStats();
+    } else if (tabName === 'students') {
+      renderStudentsStats();
+    }
   }
   window.switchInnerTab = switchInnerTab;
 
+  // ═══════════════════════════════════════════════════════════
+  // ✅ اصلاح‌شده: showDetailedStats (سال داینامیک)
+  // ═══════════════════════════════════════════════════════════
   async function showDetailedStats() {
     if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
     if (!allSchoolSettings || allSchoolSettings.length === 0) await loadSchoolSettings();
@@ -1256,38 +1473,48 @@ a:focus-visible {
     const studentsSelect = document.getElementById('statsSchoolFilterStudents');
     const employeesSelect = document.getElementById('statsSchoolFilterEmployees');
     
+    // حفظ مقادیر قبلی
+    const prevStudentsVal = studentsSelect.value;
+    const prevEmployeesVal = employeesSelect.value;
+
     studentsSelect.innerHTML = '<option value="">📋 همه مکاتب</option>';
     employeesSelect.innerHTML = '<option value="">📋 همه مکاتب</option>';
 
-    // فهرست سال‌های تعلیمی در آمار شاگردان
+    // ✅ سال‌ها به‌صورت داینامیک بر اساس سال جاری شمسی
     const yearSelect = document.getElementById('statsYearFilterStudents');
-    if (yearSelect && !yearSelect.options.length) {
-      const currentYear = 1405;
-      for (let y = currentYear - 5; y <= currentYear + 2; y++) {
-        const option = document.createElement('option');
-        option.value = String(y);
-        option.textContent = String(y);
-        yearSelect.appendChild(option);
-      }
-      yearSelect.value = String(currentYear);
+    const currentYear = getCurrentShamsiYear();
+    const prevYearVal = yearSelect.value;
+    yearSelect.innerHTML = '';
+    for (let y = currentYear - 5; y <= currentYear + 2; y++) {
+      const option = document.createElement('option');
+      option.value = String(y);
+      option.textContent = String(y);
+      yearSelect.appendChild(option);
     }
+    yearSelect.value = prevYearVal && yearSelect.querySelector(`option[value="${prevYearVal}"]`) 
+      ? prevYearVal 
+      : String(currentYear);
     
     allSchoolsList.forEach(s => {
       const opt1 = document.createElement('option'); opt1.value = s.schoolname; opt1.textContent = s.schoolname; studentsSelect.appendChild(opt1);
       const opt2 = document.createElement('option'); opt2.value = s.schoolname; opt2.textContent = s.schoolname; employeesSelect.appendChild(opt2);
     });
 
+    // بازگرداندن مقادیر قبلی
+    studentsSelect.value = prevStudentsVal;
+    employeesSelect.value = prevEmployeesVal;
+
     renderStudentsStats();
-    renderEmployeesStats();
+    // تب کارمندان در ابتدا بارگذاری نمی‌شود، فقط هنگام کلیک
   }
   window.showDetailedStats = showDetailedStats;
 
   // ═══════════════════════════════════════════════════════════
-  // آمار شاگردان (داخل مودال)
+  // آمار شاگردان
   // ═══════════════════════════════════════════════════════════
   async function renderStudentsStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterStudents').value;
-    const selectedYear = Number(document.getElementById('statsYearFilterStudents').value || 1405);
+    const selectedYear = Number(document.getElementById('statsYearFilterStudents').value || getCurrentShamsiYear());
     const content = document.getElementById('studentsStatsContent');
     content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
 
@@ -1295,7 +1522,6 @@ a:focus-visible {
       if (!allSchoolSettings || allSchoolSettings.length === 0) await loadSchoolSettings();
 
       let filteredSettings = allSchoolSettings.map(flattenSettings);
-      // هر راپور تنها از معلومات همان سال تعلیمی ساخته می‌شود.
       filteredSettings = filteredSettings.filter(s => {
         const rawYear = s.schoolYear ?? s.school_year ?? s.academic_year ?? s.academicYear ?? s.year;
         return rawYear !== undefined && rawYear !== null && Number(rawYear) === selectedYear;
@@ -1420,7 +1646,7 @@ a:focus-visible {
   window.renderStudentsStats = renderStudentsStats;
 
   // ═══════════════════════════════════════════════════════════
-  // آمار کارمندان (داخل مودال)
+  // ✅ اصلاح‌شده: renderEmployeesStats (همیشه از API)
   // ═══════════════════════════════════════════════════════════
   async function renderEmployeesStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterEmployees').value;
@@ -1428,37 +1654,51 @@ a:focus-visible {
     content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
 
     try {
-      let records = loadedRecordsCache;
-      if (!records || records.length === 0) {
-        const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
-        if (res.ok) records = await res.json();
-        if (!Array.isArray(records)) records = [];
+      // ✅ همیشه از API بخوان تا مستقل از فیلترهای صفحه اصلی باشد
+      const res = await fetch('/api/records', { 
+        headers: { 'Authorization': 'Bearer ' + token } 
+      });
+      
+      if (!res.ok) {
+        content.innerHTML = '<div class="text-center p-4 text-danger">❌ خطا در دریافت اطلاعات از سرور</div>';
+        return;
       }
+      
+      let records = await res.json();
+      if (!Array.isArray(records)) records = [];
 
+      // فیلتر مکتب
       if (schoolFilter) {
+        const schoolObj = allSchoolsList.find(x => x.schoolname === schoolFilter);
         records = records.filter(r => {
           const sName = r.schoolname || getSchoolNameById(r.userid);
-          return sName === schoolFilter;
+          if (sName === schoolFilter) return true;
+          if (schoolObj && r.userid === schoolObj.id) return true;
+          return false;
         });
       }
 
       let managers = 0, headTeachers = 0, teachers = 0, services = 0, others = 0;
-      let male = 0, female = 0, active = 0, retired = 0;
+      let male = 0, female = 0, active = 0, retired = 0, unknown = 0;
 
       records.forEach(r => {
         const info = r.data || {};
         const job = info.jobTitle || info.job || '';
         const gender = info.gender || '';
+        
         if (job === 'آمر' || job === 'مدیر' || job === 'مدیر اجرائیه') managers++;
         else if (job === 'سر معلم') headTeachers++;
         else if (job.includes('معلم')) teachers++;
         else if (job === 'کارکن خدماتی') services++;
         else others++;
+        
         if (gender === 'مرد') male++;
         else if (gender === 'زن') female++;
+        
         const st = getEmployeeStatus(info);
         if (st.status.includes('متقاعد')) retired++;
         else if (st.status.includes('فعال')) active++;
+        else unknown++;
       });
 
       const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
@@ -1468,9 +1708,9 @@ a:focus-visible {
         <table class="table table-bordered table-sm text-center">
           <thead><tr><th>عنوان بست</th><th>تعداد</th></tr></thead>
           <tbody>
-            <tr><td>آمر / مدیر</td><td>${managers}</td></tr>
+            <tr><td>آمر / مدیر / مدیر اجرائیه</td><td>${managers}</td></tr>
             <tr><td>سر معلم</td><td>${headTeachers}</td></tr>
-            <tr><td>معلم</td><td>${teachers}</td></tr>
+            <tr><td>معلم (شامل تمام انواع)</td><td>${teachers}</td></tr>
             <tr><td>کارکن خدماتی</td><td>${services}</td></tr>
             <tr><td>سایر</td><td>${others}</td></tr>
             <tr class="bg-light fw-bold"><td>مجموع کل</td><td class="text-success">${records.length}</td></tr>
@@ -1483,7 +1723,7 @@ a:focus-visible {
           <tbody>
             <tr><td>مرد</td><td>${male}</td></tr>
             <tr><td>زن</td><td>${female}</td></tr>
-            <tr class="bg-light fw-bold"><td>مجموع</td><td>${male+female}</td></tr>
+            <tr class="bg-light fw-bold"><td>مجموع</td><td>${male + female}</td></tr>
           </tbody>
         </table>
 
@@ -1493,13 +1733,14 @@ a:focus-visible {
           <tbody>
             <tr><td>✅ فعال</td><td>${active}</td></tr>
             <tr><td>🎖️ متقاعد</td><td>${retired}</td></tr>
-            <tr class="bg-light fw-bold"><td>مجموع</td><td>${active+retired}</td></tr>
+            ${unknown > 0 ? `<tr><td>❓ نامشخص</td><td>${unknown}</td></tr>` : ''}
+            <tr class="bg-light fw-bold"><td>مجموع</td><td>${active + retired + unknown}</td></tr>
           </tbody>
         </table>
       `;
     } catch (e) {
       console.error(e);
-      content.innerHTML = '<div class="text-center p-4 text-danger">خطا در بارگذاری آمار</div>';
+      content.innerHTML = '<div class="text-center p-4 text-danger">❌ خطا در بارگذاری آمار کارمندان</div>';
     }
   }
   window.renderEmployeesStats = renderEmployeesStats;
@@ -1680,31 +1921,20 @@ a:focus-visible {
   // ═══════════════════════════════════════════════════════════
   async function checkSixMonthServiceAlert() {
     try {
-      // دریافت همه رکوردها (نه فقط فیلتر شده) تا هشدار کامل باشد
       const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
       if (!res.ok) return;
       const allRecords = await res.json();
       if (!Array.isArray(allRecords)) return;
 
-      const today = new Date();
       const alertedList = [];
 
       allRecords.forEach(row => {
         const info = row.data || {};
-
-        // فقط کارکنانی که خدمتی رفته‌اند
         if ((info.serviceStatus || 'نخیر') !== 'بلی') return;
-
-        // ⚠️ نام فیلد تاریخ خدمتی: در کد شما serviceDate است
-        // اگر فیلد شما چیز دیگری است (مثلاً serviceStartDate)، اینجا تغییر دهید
         const serviceDateStr = info.serviceDate || info.serviceStartDate || '';
         if (!serviceDateStr) return;
-
-        // محاسبه ماه‌های گذشته از تاریخ خدمتی
         const monthsPassed = monthsSinceService(serviceDateStr);
         if (monthsPassed === null) return;
-
-        // شرط: شش ماه یا بیشتر
         if (monthsPassed >= 6) {
           const fullName = `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص';
           alertedList.push({
@@ -1719,7 +1949,6 @@ a:focus-visible {
         }
       });
 
-      // نمایش یا مخفی کردن کادر هشدار
       const container = document.getElementById('sixMonthServiceAlert');
       const tbody = document.getElementById('sixMonthAlertBody');
       const countBadge = document.getElementById('sixMonthAlertCount');
@@ -1749,14 +1978,10 @@ a:focus-visible {
   }
   window.checkSixMonthServiceAlert = checkSixMonthServiceAlert;
 
-  // ─────────────────────────────────────────────────────────────
-  // تابع کمکی: محاسبه تعداد ماه‌های گذشته از تاریخ خدمتی (شمسی)
-  // ─────────────────────────────────────────────────────────────
   function monthsSinceService(dateStr) {
     const p = parseShamsi(dateStr);
     if (!p) return null;
 
-    // تاریخ امروز به شمسی
     const now = new Date();
     const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate();
     const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
@@ -1770,9 +1995,8 @@ a:focus-visible {
     const jm = (days < 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
     const jd = 1 + ((days < 186) ? (days%31) : ((days-186)%30));
 
-    // محاسبه اختلاف ماه
     let months = (jy - p.year) * 12 + (jm - p.month);
-    if (jd < p.day) months--; // اگر روز امروز کمتر از روز شروع باشد، یک ماه کم می‌کنیم
+    if (jd < p.day) months--;
     return months < 0 ? 0 : months;
   }
 
@@ -1783,7 +2007,7 @@ a:focus-visible {
     await loadSchoolsList();
     await loadSchoolSettings();
     await loadAllRecords();
-    await checkSixMonthServiceAlert();   // 👈 بررسی هشدار شش ماه خدمت
+    await checkSixMonthServiceAlert();
   })();
 </script>
 </body>

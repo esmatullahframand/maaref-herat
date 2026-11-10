@@ -635,6 +635,16 @@ input[type="number"] {
 
     <form id="settingsForm">
       <div class="form-section">
+        <h5>انتخاب سال تعلیمی</h5>
+        <div class="grid-4">
+          <div class="form-group">
+            <label for="schoolYear">سال تعلیمی *</label>
+            <select id="schoolYear" required></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
         <h5>۱. اطلاعات عمومی مکتب</h5>
         <div class="grid-4">
           <div class="form-group"><label>تایم مکتب *</label><select id="sTimeType" required><option value="یک تایم">یک تایم</option><option value="دو تایم">دو تایم</option><option value="سه تایم">سه تایم</option></select></div>
@@ -801,6 +811,20 @@ input[type="number"] {
 
   document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
+  // سال تعلیمی؛ داده‌های هر سال جداگانه بارگذاری و ذخیره می‌شود.
+  const schoolYearSelect = document.getElementById('schoolYear');
+  const currentShamsiYear = new Date().toLocaleDateString('en-US-u-ca-persian', { year: 'numeric' });
+  const parsedYear = Number(currentShamsiYear);
+  const fallbackYear = 1405;
+  const baseYear = Number.isFinite(parsedYear) ? parsedYear : fallbackYear;
+  for (let year = baseYear - 3; year <= baseYear + 2; year++) {
+    const option = document.createElement('option');
+    option.value = String(year);
+    option.textContent = String(year);
+    schoolYearSelect.appendChild(option);
+  }
+  schoolYearSelect.value = String(baseYear);
+
   function calcBranches() {
     const f13 = numVal('sF13'), f46 = numVal('sF46'), f79 = numVal('sF79'), f1012 = numVal('sF1012');
     const m13 = numVal('sM13'), m46 = numVal('sM46'), m79 = numVal('sM79'), m1012 = numVal('sM1012');
@@ -874,7 +898,8 @@ input[type="number"] {
 
   async function loadSchoolSettings() {
     try {
-      const res = await fetch('/api/school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
+      const selectedYear = encodeURIComponent(schoolYearSelect.value);
+      const res = await fetch(`/api/school-settings?year=${selectedYear}`, { headers: { 'Authorization': 'Bearer ' + token } });
       if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
       const data = await res.json();
       if (data.exists && data.settings) {
@@ -933,6 +958,7 @@ input[type="number"] {
     const btn = document.getElementById('settingsSubmitBtn'); btn.disabled = true; btn.innerText = '⏳ در حال ذخیره...';
     
     const body = {
+      schoolYear: Number(schoolYearSelect.value),
       timeType: document.getElementById('sTimeType').value, 
       academicMember: document.getElementById('sAcademicMember').value.trim(),
       branchesF13: numVal('sF13'), branchesF46: numVal('sF46'), branchesF79: numVal('sF79'), branchesF1012: numVal('sF1012'),
@@ -964,6 +990,11 @@ input[type="number"] {
       else { showToast('❌ ' + (data.error || 'خطا'), true); }
     } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
     finally { btn.disabled = false; if(document.getElementById('settingsSubmitBtn').innerText.includes('ذخیره')) btn.innerText = '💾 ذخیره اطلاعات مکتب'; }
+  });
+
+  schoolYearSelect.addEventListener('change', () => {
+    // هنگام تغییر سال، فورم و آمار همان سال از سرور دریافت می‌شود.
+    loadSchoolSettings();
   });
 
   loadSchoolSettings();

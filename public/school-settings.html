@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تنظیمات مکتب - پنل مکتب</title>
 <style>
-
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
 
 :root {
@@ -19,11 +18,7 @@
   --shadow: 0 8px 28px rgba(20,43,75,.07);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; }
 
@@ -77,16 +72,8 @@ button,input,select { font-family: inherit; }
   background: linear-gradient(90deg,#20c997,#60a5fa,transparent);
 }
 
-.topbar h3 {
-  font-size: 19px;
-  font-weight: 800;
-  color: #fff;
-}
-
-.topbar small {
-  color: #d7e7f8;
-  font-size: 12px;
-}
+.topbar h3 { font-size: 19px; font-weight: 800; color: #fff; }
+.topbar small { color: #d7e7f8; font-size: 12px; }
 
 .btn-logout {
   background: rgba(255,255,255,.12);
@@ -131,16 +118,8 @@ button,input,select { font-family: inherit; }
   white-space: nowrap;
 }
 
-.main-tab-btn:hover {
-  background: #f1f6fc;
-  color: var(--primary);
-}
-
-.main-tab-btn.active {
-  color: var(--blue);
-  border-bottom-color: var(--blue);
-  background: #eff6ff;
-}
+.main-tab-btn:hover { background: #f1f6fc; color: var(--primary); }
+.main-tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: #eff6ff; }
 
 .page-header {
   background: linear-gradient(110deg,#edf5ff,#f7faff);
@@ -164,10 +143,7 @@ button,input,select { font-family: inherit; }
   border-radius: 5px 0 0 5px;
 }
 
-.page-content {
-  padding: 28px;
-  background: #fbfcfe;
-}
+.page-content { padding: 28px; background: #fbfcfe; }
 
 .info-banner {
   background: #fff8e8;
@@ -182,6 +158,13 @@ button,input,select { font-family: inherit; }
   line-height: 1.9;
 }
 
+.info-banner.success {
+  background: #dcfce7;
+  border-color: #86efac;
+  border-right-color: #16a34a;
+  color: #15803d;
+}
+
 .form-section {
   background: #fff;
   padding: 24px;
@@ -193,9 +176,7 @@ button,input,select { font-family: inherit; }
   transition: box-shadow .2s;
 }
 
-.form-section:hover {
-  box-shadow: 0 10px 32px rgba(20,43,75,.09);
-}
+.form-section:hover { box-shadow: 0 10px 32px rgba(20,43,75,.09); }
 
 .form-section h5 {
   color: var(--primary);
@@ -225,18 +206,9 @@ button,input,select { font-family: inherit; }
   gap: 19px 16px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-}
+.form-group { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 
-label {
-  font-size: 12px;
-  font-weight: 800;
-  color: #40536b;
-}
+label { font-size: 12px; font-weight: 800; color: #40536b; }
 
 input[type="text"],
 input[type="number"],
@@ -253,11 +225,7 @@ select {
   transition: border-color .2s,box-shadow .2s;
 }
 
-input::placeholder {
-  color: #a4afbd;
-  font-size: 12px;
-}
-
+input::placeholder { color: #a4afbd; font-size: 12px; }
 input:hover,select:hover { border-color: #9aacc2; }
 
 input:focus,select:focus {
@@ -283,18 +251,9 @@ input[readonly] {
   scrollbar-color: #aebdd0 #f1f5f9;
 }
 
-.table-responsive::-webkit-scrollbar {
-  height: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-  background: #aebdd0;
-  border-radius: 10px;
-}
+.table-responsive::-webkit-scrollbar { height: 8px; }
+.table-responsive::-webkit-scrollbar-track { background: #f1f5f9; }
+.table-responsive::-webkit-scrollbar-thumb { background: #aebdd0; border-radius: 10px; }
 
 table {
   width: 100%;
@@ -318,17 +277,10 @@ th {
   font-size: 12px;
 }
 
-tbody tr:nth-child(even) td {
-  background: #f9fbfe;
-}
+tbody tr:nth-child(even) td { background: #f9fbfe; }
+tbody tr:hover td { background: #f0f6ff; }
 
-tbody tr:hover td {
-  background: #f0f6ff;
-}
-
-td {
-  color: #40536b;
-}
+td { color: #40536b; }
 
 td input {
   width: 100%;
@@ -378,10 +330,7 @@ td input:focus {
   margin-top: 10px;
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(15,159,120,.28);
-}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,159,120,.28); }
 
 .btn:disabled {
   background: #aab5c2;
@@ -405,15 +354,8 @@ td input:focus {
   user-select: none;
 }
 
-.agreement-box:hover {
-  background: #fff4d6;
-  border-color: #e3b84e;
-}
-
-.agreement-box.checked {
-  background: #edfaf4;
-  border-color: #48b88d;
-}
+.agreement-box:hover { background: #fff4d6; border-color: #e3b84e; }
+.agreement-box.checked { background: #edfaf4; border-color: #48b88d; }
 
 .agreement-box input[type="checkbox"] {
   width: 21px;
@@ -425,16 +367,8 @@ td input:focus {
   pointer-events: none;
 }
 
-.agreement-text {
-  font-size: 13px;
-  color: #78551b;
-  font-weight: 700;
-  line-height: 1.9;
-}
-
-.agreement-box.checked .agreement-text {
-  color: #087653;
-}
+.agreement-text { font-size: 13px; color: #78551b; font-weight: 700; line-height: 1.9; }
+.agreement-box.checked .agreement-text { color: #087653; }
 
 .toast {
   position: fixed;
@@ -455,149 +389,54 @@ td input:focus {
   text-align: center;
 }
 
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.error { background: #dc3545; }
 
 input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-}
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
 
 @media (max-width:1100px) {
-  .grid-4 {
-    grid-template-columns: repeat(3,minmax(0,1fr));
-  }
+  .grid-4 { grid-template-columns: repeat(3,minmax(0,1fr)); }
 }
 
 @media (max-width:800px) {
   body { padding: 12px; }
-
   .main-container { border-radius: 15px; }
-
   .topbar { padding: 17px 19px; }
-
   .main-tabs {
     overflow-x: auto;
     flex-wrap: nowrap;
     justify-content: flex-start;
     padding: 8px 10px 0;
   }
-
-  .main-tab-btn {
-    flex-shrink: 0;
-    padding: 11px 13px;
-    font-size: 12px;
-  }
-
-  .page-header {
-    padding: 18px 22px;
-    font-size: 18px;
-  }
-
+  .main-tab-btn { flex-shrink: 0; padding: 11px 13px; font-size: 12px; }
+  .page-header { padding: 18px 22px; font-size: 18px; }
   .page-content { padding: 17px; }
-
-  .form-section {
-    padding: 18px;
-    margin-bottom: 16px;
-  }
-
-  .grid-4 {
-    grid-template-columns: repeat(2,minmax(0,1fr));
-    gap: 15px 12px;
-  }
-
+  .form-section { padding: 18px; margin-bottom: 16px; }
+  .grid-4 { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 15px 12px; }
   table { min-width: 650px; }
-
-  th,td {
-    padding: 8px 6px;
-    font-size: 11px;
-  }
-
-  td input {
-    min-width: 55px;
-    padding: 6px 3px;
-    font-size: 12px;
-  }
+  th,td { padding: 8px 6px; font-size: 11px; }
+  td input { min-width: 55px; padding: 6px 3px; font-size: 12px; }
 }
 
 @media (max-width:520px) {
-  body {
-    padding: 0;
-    background: #f5f7fb;
-  }
-
-  .main-container {
-    border-radius: 0;
-    border: none;
-    min-height: 100vh;
-  }
-
+  body { padding: 0; background: #f5f7fb; }
+  .main-container { border-radius: 0; border: none; min-height: 100vh; }
   .topbar { padding: 15px; }
-
   .topbar h3 { font-size: 15px; }
-
-  .btn-logout {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  .page-header {
-    font-size: 16px;
-    padding: 16px 19px;
-  }
-
+  .btn-logout { padding: 8px 12px; font-size: 12px; }
+  .page-header { font-size: 16px; padding: 16px 19px; }
   .page-content { padding: 12px; }
-
-  .form-section {
-    padding: 15px 12px;
-    border-radius: 11px;
-  }
-
-  .form-section h5 {
-    font-size: 13px;
-    margin-bottom: 15px;
-  }
-
-  .grid-4 {
-    grid-template-columns: minmax(0,1fr);
-    gap: 13px;
-  }
-
-  input[type="text"],
-  input[type="number"],
-  select {
-    min-height: 45px;
-    font-size: 14px;
-  }
-
-  .info-banner {
-    padding: 13px;
-    font-size: 12px;
-  }
-
+  .form-section { padding: 15px 12px; border-radius: 11px; }
+  .form-section h5 { font-size: 13px; margin-bottom: 15px; }
+  .grid-4 { grid-template-columns: minmax(0,1fr); gap: 13px; }
+  input[type="text"], input[type="number"], select { min-height: 45px; font-size: 14px; }
+  .info-banner { padding: 13px; font-size: 12px; }
   .agreement-box { padding: 14px; }
-
   .agreement-text { font-size: 12px; }
-
-  .btn {
-    padding: 15px 10px;
-    font-size: 13px;
-  }
-
-  .toast {
-    bottom: 15px;
-    width: calc(100% - 24px);
-    padding: 12px;
-  }
+  .btn { padding: 15px 10px; font-size: 13px; }
+  .toast { bottom: 15px; width: calc(100% - 24px); padding: 12px; }
 }
 
 @media (prefers-reduced-motion:reduce) {
@@ -606,7 +445,6 @@ input[type="number"] {
     transition-duration: .01ms !important;
   }
 }
-
 </style>
 </head>
 <body>
@@ -631,9 +469,12 @@ input[type="number"] {
   <div class="page-header">🏫 مدیریت مکتب</div>
 
   <div class="page-content">
-    <div class="info-banner" id="settingsBanner">⚠️ <strong>توجه:</strong> تا زمانیکه اطلاعات مکتب را ثبت نکنید، نمی‌توانید کارمند جدید ثبت کنید.</div>
+    <div class="info-banner" id="settingsBanner">
+      ⚠️ <strong>توجه:</strong> تا زمانیکه اطلاعات مکتب را ثبت نکنید، نمی‌توانید کارمند جدید ثبت کنید.
+    </div>
 
-    <form id="settingsForm">
+    <form id="settingsForm" novalidate>
+      <!-- سال تعلیمی -->
       <div class="form-section">
         <h5>انتخاب سال تعلیمی</h5>
         <div class="grid-4">
@@ -644,59 +485,124 @@ input[type="number"] {
         </div>
       </div>
 
+      <!-- اطلاعات عمومی -->
       <div class="form-section">
         <h5>۱. اطلاعات عمومی مکتب</h5>
         <div class="grid-4">
-          <div class="form-group"><label>تایم مکتب *</label><select id="sTimeType" required><option value="یک تایم">یک تایم</option><option value="دو تایم">دو تایم</option><option value="سه تایم">سه تایم</option></select></div>
-          <div class="form-group"><label>عضو علمی مکتب (نام و تخلص) *</label><input type="text" id="sAcademicMember" placeholder="نام و تخلص عضو علمی" required></div>
+          <div class="form-group">
+            <label for="sTimeType">تایم مکتب *</label>
+            <select id="sTimeType" required>
+              <option value="یک تایم">یک تایم</option>
+              <option value="دو تایم">دو تایم</option>
+              <option value="سه تایم">سه تایم</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sAcademicMember">عضو علمی مکتب (نام و تخلص) *</label>
+            <input type="text" id="sAcademicMember" placeholder="نام و تخلص عضو علمی" required>
+          </div>
         </div>
       </div>
 
+      <!-- شعبات درسی -->
       <div class="form-section">
         <h5>۲. شعبات درسی (تعداد در هر مقطع)</h5>
         <div class="table-responsive">
           <table>
-            <thead><tr><th>مقطع درسی</th><th>تعداد شعبات اناث</th><th>تعداد شعبات ذکور</th><th>تعداد شعبات مختلط</th><th>مجموع مقطع</th></tr></thead>
+            <thead>
+              <tr>
+                <th>مقطع درسی</th>
+                <th>تعداد شعبات اناث</th>
+                <th>تعداد شعبات ذکور</th>
+                <th>تعداد شعبات مختلط</th>
+                <th>مجموع مقطع</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td style="font-weight:bold;">اول تا سوم</td><td><input type="number" id="sF13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX13" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal13" readonly></td></tr>
-              <tr><td style="font-weight:bold;">چهارم تا ششم</td><td><input type="number" id="sF46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX46" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal46" readonly></td></tr>
-              <tr><td style="font-weight:bold;">هفتم تا نهم</td><td><input type="number" id="sF79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX79" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal79" readonly></td></tr>
-              <tr><td style="font-weight:bold;">دهم تا دوازدهم</td><td><input type="number" id="sF1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sM1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="number" id="sX1012" oninput="calcBranches()" placeholder="تعداد"></td><td><input type="text" id="sTotal1012" readonly></td></tr>
-              <tr class="total-row"><td>مجموع کل</td><td><input type="text" id="sTotalBranchFemale" readonly></td><td><input type="text" id="sTotalBranchMale" readonly></td><td><input type="text" id="sTotalMixed" readonly></td><td><input type="text" id="sBranchesTotal" readonly></td></tr>
+              <tr>
+                <td style="font-weight:bold;">اول تا سوم</td>
+                <td><input type="number" min="0" id="sF13" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="number" min="0" id="sM13" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="number" min="0" id="sX13" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sTotal13" readonly></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold;">چهارم تا ششم</td>
+                <td><input type="number" min="0" id="sF46" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="number" min="0" id="sM46" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="number" min="0" id="sX46" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sTotal46" readonly></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold;">هفتم تا نهم</td>
+                <td><input type="number" min="0" id="sF79" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="number" min="0" id="sM79" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="number" min="0" id="sX79" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sTotal79" readonly></td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold;">دهم تا دوازدهم</td>
+                <td><input type="number" min="0" id="sF1012" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="number" min="0" id="sM1012" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="number" min="0" id="sX1012" oninput="calcBranches()" placeholder="تعداد"></td>
+                <td><input type="text" id="sTotal1012" readonly></td>
+              </tr>
+              <tr class="total-row">
+                <td>مجموع کل</td>
+                <td><input type="text" id="sTotalBranchFemale" readonly></td>
+                <td><input type="text" id="sTotalBranchMale" readonly></td>
+                <td><input type="text" id="sTotalMixed" readonly></td>
+                <td><input type="text" id="sBranchesTotal" readonly></td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
+      <!-- آمار داخله و حاضر -->
       <div class="form-section">
         <h5>۳. آمار داخله و حاضر (مجموع)</h5>
         <div class="grid-4">
           <div class="form-group"><label>تعداد کل داخله اناث</label><input type="text" id="sTotalInFemale" readonly></div>
           <div class="form-group"><label>تعداد کل داخله ذکور</label><input type="text" id="sTotalInMale" readonly></div>
           <div class="form-group"><label>مجموع داخله</label><input type="text" id="sTotalInCombined" readonly style="background:#dcfce7; color:#15803d; font-weight:bold;"></div>
-          
+
           <div class="form-group"><label>تعداد کل حاضر اناث</label><input type="text" id="sTotalPresentFemale" readonly></div>
           <div class="form-group"><label>تعداد کل حاضر ذکور</label><input type="text" id="sTotalPresentMale" readonly></div>
           <div class="form-group"><label>مجموع حاضر</label><input type="text" id="sTotalPresentCombined" readonly style="background:#dcfce7; color:#15803d; font-weight:bold;"></div>
         </div>
       </div>
 
+      <!-- آمار هر صنف -->
       <div class="form-section">
         <h5>۴. آمار هر صنف (تعداد داخله و حاضر)</h5>
         <div class="table-responsive">
           <table>
-            <thead><tr><th rowspan="2">صنف</th><th colspan="3">تعداد داخله</th><th colspan="3">تعداد حاضر</th></tr><tr><th>اناث</th><th>ذکور</th><th>مجموع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
+            <thead>
+              <tr>
+                <th rowspan="2">صنف</th>
+                <th colspan="3">تعداد داخله</th>
+                <th colspan="3">تعداد حاضر</th>
+              </tr>
+              <tr>
+                <th>اناث</th><th>ذکور</th><th>مجموع</th>
+                <th>اناث</th><th>ذکور</th><th>مجموع</th>
+              </tr>
+            </thead>
             <tbody id="classTableBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- بخش ۵: اخراجی -->
+      <!-- اخراجی -->
       <div class="form-section">
         <h5>۵. آمار اخراجی (به تفکیک صنف)</h5>
         <div class="table-responsive">
           <table>
-            <thead><tr><th rowspan="2">صنف</th><th colspan="3">تعداد اخراجی</th></tr><tr><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
+            <thead>
+              <tr><th rowspan="2">صنف</th><th colspan="3">تعداد اخراجی</th></tr>
+              <tr><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
+            </thead>
             <tbody id="expelledTableBody"></tbody>
             <tfoot>
               <tr class="total-row">
@@ -710,21 +616,31 @@ input[type="number"] {
         </div>
       </div>
 
-      <!-- بخش ۶: فارغان -->
+      <!-- فارغان -->
       <div class="form-section">
         <h5>۶. آمار فارغان (صنف دوازدهم)</h5>
         <div class="table-responsive">
           <table>
             <thead><tr><th>نوع</th><th>تعداد</th></tr></thead>
             <tbody>
-              <tr><td>تعداد فارغان اناث</td><td><input type="number" id="gradFemale" placeholder="تعداد" oninput="calcGradTotal()"></td></tr>
-              <tr><td>تعداد فارغان ذکور</td><td><input type="number" id="gradMale" placeholder="تعداد" oninput="calcGradTotal()"></td></tr>
-              <tr class="total-row"><td>مجموع فارغان</td><td><input type="text" id="gradTotal" readonly></td></tr>
+              <tr>
+                <td>تعداد فارغان اناث</td>
+                <td><input type="number" min="0" id="gradFemale" placeholder="تعداد" oninput="calcGradTotal()"></td>
+              </tr>
+              <tr>
+                <td>تعداد فارغان ذکور</td>
+                <td><input type="number" min="0" id="gradMale" placeholder="تعداد" oninput="calcGradTotal()"></td>
+              </tr>
+              <tr class="total-row">
+                <td>مجموع فارغان</td>
+                <td><input type="text" id="gradTotal" readonly></td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
+      <!-- آمار کارمندان -->
       <div class="form-section">
         <h5>۷. آمار کارمندان مکتب (خودکار)</h5>
         <div class="grid-4">
@@ -736,375 +652,543 @@ input[type="number"] {
         </div>
       </div>
 
+      <!-- وضعیت بست -->
       <div class="form-section">
         <h5>۸. وضعیت بست</h5>
         <div class="grid-4">
-          <div class="form-group"><label>وضعیت بست *</label><select id="sBudgetStatus" onchange="toggleBudgetFields()" required><option value="عادی">عادی</option><option value="اضافه بست">اضافه بست</option><option value="کمبود بست">کمبود بست</option></select></div>
-          <div class="form-group" id="extraBustCountGroup" style="display:none;"><label>تعداد اضافه بست *</label><input type="number" id="sExtraBustCount" placeholder="تعداد"></div>
-          <div class="form-group" id="extraBustFieldGroup" style="display:none;"><label>رشته اضافه بست *</label><input type="text" id="sExtraBustField"></div>
-          <div class="form-group" id="lackBustCountGroup" style="display:none;"><label>تعداد کمبود بست *</label><input type="number" id="sLackBustCount" placeholder="تعداد"></div>
-          <div class="form-group" id="lackBustFieldGroup" style="display:none;"><label>رشته کمبود بست *</label><input type="text" id="sLackBustField"></div>
+          <div class="form-group">
+            <label for="sBudgetStatus">وضعیت بست *</label>
+            <select id="sBudgetStatus" onchange="toggleBudgetFields()" required>
+              <option value="عادی">عادی</option>
+              <option value="اضافه بست">اضافه بست</option>
+              <option value="کمبود بست">کمبود بست</option>
+            </select>
+          </div>
+          <div class="form-group" id="extraBustCountGroup" style="display:none;">
+            <label for="sExtraBustCount">تعداد اضافه بست *</label>
+            <input type="number" min="0" id="sExtraBustCount" placeholder="تعداد">
+          </div>
+          <div class="form-group" id="extraBustFieldGroup" style="display:none;">
+            <label for="sExtraBustField">رشته اضافه بست *</label>
+            <input type="text" id="sExtraBustField">
+          </div>
+          <div class="form-group" id="lackBustCountGroup" style="display:none;">
+            <label for="sLackBustCount">تعداد کمبود بست *</label>
+            <input type="number" min="0" id="sLackBustCount" placeholder="تعداد">
+          </div>
+          <div class="form-group" id="lackBustFieldGroup" style="display:none;">
+            <label for="sLackBustField">رشته کمبود بست *</label>
+            <input type="text" id="sLackBustField">
+          </div>
         </div>
       </div>
 
+      <!-- موافقت -->
       <div class="agreement-box" id="settingsAgreementBox" onclick="toggleSettingsAgreement()">
-        <input type="checkbox" id="settingsAgreementCheckbox">
-        <div class="agreement-text">✅ <strong>تعهد و موافقت:</strong><br>تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد.</div>
+        <input type="checkbox" id="settingsAgreementCheckbox" tabindex="-1">
+        <div class="agreement-text">
+          ✅ <strong>تعهد و موافقت:</strong><br>
+          تمام معلومات ثبت شده در این فورم، صحیح و درست می‌باشد.
+        </div>
       </div>
+
       <button type="submit" id="settingsSubmitBtn" class="btn" disabled>💾 ذخیره اطلاعات مکتب</button>
     </form>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
 <script>
-  const token = localStorage.getItem('hr_token');
-  const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
-  if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; throw new Error('No token'); }
+/* ═══════════════════════════════════════════════════════════
+   ۱. احراز هویت و ابزارهای کمکی
+   ═══════════════════════════════════════════════════════════ */
+const token = localStorage.getItem('hr_token');
+const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
 
-  function showToast(msg, isError = false) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : ''); clearTimeout(t._timer); t._timer = setTimeout(() => { t.classList.remove('show'); }, 4000); }
-  function numVal(id) { const el = document.getElementById(id); return el ? Number(el.value) || 0 : 0; }
-  function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = (val === 0 || val === '0') ? '0' : (val || ''); }
-  function logout() { localStorage.clear(); window.location.href = '/'; }
+if (!token || token === 'undefined' || token === 'null') {
+  localStorage.clear();
+  window.location.href = '/';
+  throw new Error('No token');
+}
 
-  const classNames = ['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'];
-  
-  // ساخت جدول داخله و حاضر
-  const tbody = document.getElementById('classTableBody');
+const $ = (id) => document.getElementById(id);
+
+function showToast(msg, isError = false) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function numVal(id) {
+  const el = $(id);
+  if (!el) return 0;
+  const n = Number(el.value);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function setVal(id, val) {
+  const el = $(id);
+  if (!el) return;
+  if (val === 0 || val === '0') { el.value = '0'; return; }
+  const n = Number(val);
+  el.value = Number.isFinite(n) && n !== 0 ? String(n) : (val ?? '');
+}
+
+function clearVal(id) {
+  const el = $(id);
+  if (el) el.value = '';
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '/';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ۲. سال تعلیمی شمسی
+   ═══════════════════════════════════════════════════════════ */
+function getCurrentShamsiYear() {
+  const now = new Date();
+  const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate();
+  const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+  let jy = (gy <= 1600) ? 0 : 979;
+  const _gy = gy - ((gy <= 1600) ? 621 : 1600);
+  const gy2 = (gm > 2) ? (_gy + 1) : _gy;
+  let days = (365 * _gy) + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+  jy += 33 * Math.floor(days / 12053); days %= 12053;
+  jy += 4 * Math.floor(days / 1461); days %= 1461;
+  if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+  return jy;
+}
+
+const schoolYearSelect = $('schoolYear');
+const baseYear = getCurrentShamsiYear();
+for (let year = baseYear - 3; year <= baseYear + 2; year++) {
+  const opt = document.createElement('option');
+  opt.value = String(year);
+  opt.textContent = String(year);
+  schoolYearSelect.appendChild(opt);
+}
+schoolYearSelect.value = String(baseYear);
+
+/* ═══════════════════════════════════════════════════════════
+   ۳. ساخت جداول پویا
+   ═══════════════════════════════════════════════════════════ */
+const classNames = ['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم',
+                    'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'];
+
+function buildClassTable() {
   let html = '';
   classNames.forEach((name, i) => {
     const n = i + 1;
     html += `<tr>
       <td>${name}</td>
-      <td><input type="number" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td>
-      <td><input type="number" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td>
+      <td><input type="number" min="0" id="c${n}_in_f" oninput="calcTotals()" placeholder="تعداد"></td>
+      <td><input type="number" min="0" id="c${n}_in_m" oninput="calcTotals()" placeholder="تعداد"></td>
       <td><input type="text" id="c${n}_in_total" readonly style="background:#f8fafc;"></td>
-      <td><input type="number" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td>
-      <td><input type="number" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td>
+      <td><input type="number" min="0" id="c${n}_pr_f" oninput="calcTotals()" placeholder="تعداد"></td>
+      <td><input type="number" min="0" id="c${n}_pr_m" oninput="calcTotals()" placeholder="تعداد"></td>
       <td><input type="text" id="c${n}_pr_total" readonly style="background:#f8fafc;"></td>
     </tr>`;
   });
-  tbody.innerHTML = html;
+  $('classTableBody').innerHTML = html;
+}
 
-  // ساخت جدول اخراجی
-  const expelledTbody = document.getElementById('expelledTableBody');
-  let expelledHtml = '';
+function buildExpelledTable() {
+  let html = '';
   classNames.forEach((name, i) => {
     const n = i + 1;
-    expelledHtml += `<tr>
+    html += `<tr>
       <td>${name}</td>
-      <td><input type="number" id="e${n}_f" oninput="calcExpelledTotals()" placeholder="تعداد"></td>
-      <td><input type="number" id="e${n}_m" oninput="calcExpelledTotals()" placeholder="تعداد"></td>
+      <td><input type="number" min="0" id="e${n}_f" oninput="calcExpelledTotals()" placeholder="تعداد"></td>
+      <td><input type="number" min="0" id="e${n}_m" oninput="calcExpelledTotals()" placeholder="تعداد"></td>
       <td><input type="text" id="e${n}_total" readonly style="background:#f8fafc;"></td>
     </tr>`;
   });
-  expelledTbody.innerHTML = expelledHtml;
+  $('expelledTableBody').innerHTML = html;
+}
 
-  // محاسبه مجموع فارغان
-  function calcGradTotal() {
-    const f = numVal('gradFemale');
-    const m = numVal('gradMale');
-    setVal('gradTotal', f + m);
+/* ═══════════════════════════════════════════════════════════
+   ۴. محاسبات
+   ═══════════════════════════════════════════════════════════ */
+function calcBranches() {
+  const f13 = numVal('sF13'), f46 = numVal('sF46'), f79 = numVal('sF79'), f1012 = numVal('sF1012');
+  const m13 = numVal('sM13'), m46 = numVal('sM46'), m79 = numVal('sM79'), m1012 = numVal('sM1012');
+  const x13 = numVal('sX13'), x46 = numVal('sX46'), x79 = numVal('sX79'), x1012 = numVal('sX1012');
+
+  setVal('sTotal13', f13 + m13 + x13);
+  setVal('sTotal46', f46 + m46 + x46);
+  setVal('sTotal79', f79 + m79 + x79);
+  setVal('sTotal1012', f1012 + m1012 + x1012);
+
+  const totalF = f13 + f46 + f79 + f1012;
+  const totalM = m13 + m46 + m79 + m1012;
+  const totalX = x13 + x46 + x79 + x1012;
+
+  setVal('sTotalBranchFemale', totalF);
+  setVal('sTotalBranchMale', totalM);
+  setVal('sTotalMixed', totalX);
+  setVal('sBranchesTotal', totalF + totalM + totalX);
+}
+
+function calcTotals() {
+  let inF = 0, inM = 0, prF = 0, prM = 0;
+  for (let i = 1; i <= 12; i++) {
+    const cInF = numVal(`c${i}_in_f`), cInM = numVal(`c${i}_in_m`);
+    const cPrF = numVal(`c${i}_pr_f`), cPrM = numVal(`c${i}_pr_m`);
+    setVal(`c${i}_in_total`, cInF + cInM);
+    setVal(`c${i}_pr_total`, cPrF + cPrM);
+    inF += cInF; inM += cInM; prF += cPrF; prM += cPrM;
   }
-  window.calcGradTotal = calcGradTotal;
+  setVal('sTotalInFemale', inF);
+  setVal('sTotalInMale', inM);
+  setVal('sTotalInCombined', inF + inM);
+  setVal('sTotalPresentFemale', prF);
+  setVal('sTotalPresentMale', prM);
+  setVal('sTotalPresentCombined', prF + prM);
+}
 
-  document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
-
-  // ═══════════════════════════════════════════════════════════
-  // ✅ سال تعلیمی داینامیک (با تابع دقیق شمسی)
-  // ═══════════════════════════════════════════════════════════
-  function getCurrentShamsiYear() {
-    const now = new Date();
-    const gy = now.getFullYear(), gm = now.getMonth() + 1, gd = now.getDate();
-    const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
-    let jy = (gy <= 1600) ? 0 : 979;
-    let _gy = gy - ((gy <= 1600) ? 621 : 1600);
-    const gy2 = (gm > 2) ? (_gy + 1) : _gy;
-    let days = (365 * _gy) + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
-    jy += 33 * Math.floor(days / 12053); days %= 12053;
-    jy += 4 * Math.floor(days / 1461); days %= 1461;
-    if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
-    return jy;
+function calcExpelledTotals() {
+  let totalF = 0, totalM = 0;
+  for (let i = 1; i <= 12; i++) {
+    const ef = numVal(`e${i}_f`), em = numVal(`e${i}_m`);
+    setVal(`e${i}_total`, ef + em);
+    totalF += ef; totalM += em;
   }
-  window.getCurrentShamsiYear = getCurrentShamsiYear;
+  setVal('e_total_f', totalF);
+  setVal('e_total_m', totalM);
+  setVal('e_grand_total', totalF + totalM);
+}
 
-  const schoolYearSelect = document.getElementById('schoolYear');
-  const baseYear = getCurrentShamsiYear();
-  for (let year = baseYear - 3; year <= baseYear + 2; year++) {
-    const option = document.createElement('option');
-    option.value = String(year);
-    option.textContent = String(year);
-    schoolYearSelect.appendChild(option);
+function calcGradTotal() {
+  setVal('gradTotal', numVal('gradFemale') + numVal('gradMale'));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ۵. وضعیت بست
+   ═══════════════════════════════════════════════════════════ */
+function toggleBudgetFields() {
+  const status = $('sBudgetStatus').value;
+  const groups = ['extraBustCountGroup', 'extraBustFieldGroup', 'lackBustCountGroup', 'lackBustFieldGroup'];
+  groups.forEach(id => $(id).style.display = 'none');
+
+  if (status === 'اضافه بست') {
+    $('extraBustCountGroup').style.display = 'flex';
+    $('extraBustFieldGroup').style.display = 'flex';
+  } else if (status === 'کمبود بست') {
+    $('lackBustCountGroup').style.display = 'flex';
+    $('lackBustFieldGroup').style.display = 'flex';
   }
-  schoolYearSelect.value = String(baseYear);
+}
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ محاسبه مجموع شعبات (بدون تداخل با آمار داخله)
-  // ═══════════════════════════════════════════════════════════
-  function calcBranches() {
-    const f13 = numVal('sF13'), f46 = numVal('sF46'), f79 = numVal('sF79'), f1012 = numVal('sF1012');
-    const m13 = numVal('sM13'), m46 = numVal('sM46'), m79 = numVal('sM79'), m1012 = numVal('sM1012');
-    const x13 = numVal('sX13'), x46 = numVal('sX46'), x79 = numVal('sX79'), x1012 = numVal('sX1012');
-    
-    setVal('sTotal13', f13 + m13 + x13);
-    setVal('sTotal46', f46 + m46 + x46);
-    setVal('sTotal79', f79 + m79 + x79);
-    setVal('sTotal1012', f1012 + m1012 + x1012);
-    
-    // ✅ استفاده از IDهای اختصاصی برای شعبات (بدون تداخل با آمار داخله)
-    setVal('sTotalBranchFemale', f13 + f46 + f79 + f1012);
-    setVal('sTotalBranchMale', m13 + m46 + m79 + m1012);
-    setVal('sTotalMixed', x13 + x46 + x79 + x1012);
-    setVal('sBranchesTotal', f13 + f46 + f79 + f1012 + m13 + m46 + m79 + m1012 + x13 + x46 + x79 + x1012);
+/* ═══════════════════════════════════════════════════════════
+   ۶. موافقت‌نامه
+   ═══════════════════════════════════════════════════════════ */
+function toggleSettingsAgreement() {
+  const c = $('settingsAgreementCheckbox');
+  const b = $('settingsAgreementBox');
+  const s = $('settingsSubmitBtn');
+  c.checked = !c.checked;
+  b.classList.toggle('checked', c.checked);
+  s.disabled = !c.checked;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ۷. آمار کارمندان
+   ═══════════════════════════════════════════════════════════ */
+async function loadEmployeeStats() {
+  try {
+    const res = await fetch('/api/records', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return;
+    const records = await res.json();
+    if (!Array.isArray(records)) return;
+
+    const schoolName = user.schoolname || '';
+    const myRecords = records.filter(r => {
+      if (schoolName && r.schoolname === schoolName) return true;
+      if (user.id != null && r.userid === user.id) return true;
+      return false;
+    });
+
+    let manager = 0, headTeacher = 0, teacher = 0, service = 0;
+    myRecords.forEach(r => {
+      const job = (r.data || {}).jobTitle || '';
+      if (job === 'آمر' || job === 'مدیر' || job === 'مدیر اجرائیه') manager++;
+      else if (job === 'سر معلم') headTeacher++;
+      else if (job.includes('معلم')) teacher++;
+      else if (job === 'کارکن خدماتی') service++;
+    });
+
+    setVal('sTotalEmployees', myRecords.length);
+    setVal('sManagerCount', manager);
+    setVal('sHeadTeacherCount', headTeacher);
+    setVal('sTeacherCount', teacher);
+    setVal('sServiceCount', service);
+  } catch (e) {
+    console.error('loadEmployeeStats:', e);
   }
-  window.calcBranches = calcBranches;
+}
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ محاسبه مجموع داخله/حاضر هر صنف و کل
-  // ═══════════════════════════════════════════════════════════
-  function calcTotals() {
-    let inF = 0, inM = 0, prF = 0, prM = 0;
-    for (let i = 1; i <= 12; i++) { 
-      const cInF = numVal(`c${i}_in_f`), cInM = numVal(`c${i}_in_m`);
-      const cPrF = numVal(`c${i}_pr_f`), cPrM = numVal(`c${i}_pr_m`);
-      
-      setVal(`c${i}_in_total`, cInF + cInM);
-      setVal(`c${i}_pr_total`, cPrF + cPrM);
-      
-      inF += cInF; inM += cInM; prF += cPrF; prM += cPrM; 
+/* ═══════════════════════════════════════════════════════════
+   ۸. ریست کامل فرم (برای حالت جدید)
+   ═══════════════════════════════════════════════════════════ */
+function resetSettingsForm() {
+  $('sTimeType').value = 'یک تایم';
+  $('sAcademicMember').value = '';
+  $('sBudgetStatus').value = 'عادی';
+
+  const clearIds = [
+    'sF13', 'sM13', 'sX13', 'sF46', 'sM46', 'sX46',
+    'sF79', 'sM79', 'sX79', 'sF1012', 'sM1012', 'sX1012',
+    'sExtraBustCount', 'sExtraBustField', 'sLackBustCount', 'sLackBustField',
+    'gradFemale', 'gradMale'
+  ];
+  clearIds.forEach(clearVal);
+
+  for (let i = 1; i <= 12; i++) {
+    ['in_f', 'in_m', 'pr_f', 'pr_m'].forEach(k => clearVal(`c${i}_${k}`));
+    ['f', 'm'].forEach(k => clearVal(`e${i}_${k}`));
+  }
+
+  toggleBudgetFields();
+  calcBranches();
+  calcTotals();
+  calcExpelledTotals();
+  calcGradTotal();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ۹. بارگذاری تنظیمات
+   ═══════════════════════════════════════════════════════════ */
+let isExistingSettings = false;
+
+async function loadSchoolSettings() {
+  try {
+    const selectedYear = encodeURIComponent(schoolYearSelect.value);
+    const res = await fetch(`/api/school-settings?year=${selectedYear}`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      localStorage.clear();
+      window.location.href = '/';
+      return;
     }
-    setVal('sTotalInFemale', inF); 
-    setVal('sTotalInMale', inM); 
-    setVal('sTotalInCombined', inF + inM);
-    setVal('sTotalPresentFemale', prF); 
-    setVal('sTotalPresentMale', prM); 
-    setVal('sTotalPresentCombined', prF + prM);
-  }
-  window.calcTotals = calcTotals;
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ محاسبه مجموع اخراجی (هر صنف + کل)
-  // ═══════════════════════════════════════════════════════════
-  function calcExpelledTotals() {
-    let totalF = 0, totalM = 0;
-    for (let i = 1; i <= 12; i++) {
-      const ef = numVal(`e${i}_f`);
-      const em = numVal(`e${i}_m`);
-      setVal(`e${i}_total`, ef + em);
-      totalF += ef;
-      totalM += em;
-    }
-    setVal('e_total_f', totalF);
-    setVal('e_total_m', totalM);
-    setVal('e_grand_total', totalF + totalM);
-  }
-  window.calcExpelledTotals = calcExpelledTotals;
+    const data = await res.json();
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ آمار کارمندان (فقط همان مکتب)
-  // ═══════════════════════════════════════════════════════════
-  async function loadEmployeeStats() {
-    try {
-      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
-      const records = await res.json();
-      if (!Array.isArray(records)) return;
-      
-      // فیلتر فقط کارمندان همین مکتب
-      const schoolName = user.schoolname || '';
-      const myRecords = records.filter(r => {
-        const sName = r.schoolname || '';
-        if (sName === schoolName) return true;
-        if (r.userid === user.id) return true;
-        return false;
-      });
-      
-      let manager = 0, headTeacher = 0, teacher = 0, service = 0;
-      myRecords.forEach(r => { 
-        const job = (r.data || {}).jobTitle || ''; 
-        if (job === 'آمر' || job === 'مدیر' || job === 'مدیر اجرائیه') manager++; 
-        else if (job === 'سر معلم') headTeacher++; 
-        else if (job.includes('معلم')) teacher++; 
-        else if (job === 'کارکن خدماتی') service++; 
-      });
-      
-      setVal('sTotalEmployees', myRecords.length); 
-      setVal('sManagerCount', manager); 
-      setVal('sHeadTeacherCount', headTeacher); 
-      setVal('sTeacherCount', teacher); 
-      setVal('sServiceCount', service);
-    } catch (e) { console.error(e); }
-  }
-  window.loadEmployeeStats = loadEmployeeStats;
+    if (data.exists && data.settings) {
+      isExistingSettings = true;
+      const s = data.settings;
 
-  function toggleBudgetFields() {
-    const status = document.getElementById('sBudgetStatus').value;
-    const ec = document.getElementById('extraBustCountGroup'), ef = document.getElementById('extraBustFieldGroup');
-    const lc = document.getElementById('lackBustCountGroup'), lf = document.getElementById('lackBustFieldGroup');
-    ec.style.display = 'none'; ef.style.display = 'none'; lc.style.display = 'none'; lf.style.display = 'none';
-    if (status === 'اضافه بست') { ec.style.display = 'flex'; ef.style.display = 'flex'; }
-    else if (status === 'کمبود بست') { lc.style.display = 'flex'; lf.style.display = 'flex'; }
-  }
-  window.toggleBudgetFields = toggleBudgetFields;
-
-  function toggleSettingsAgreement() {
-    const c = document.getElementById('settingsAgreementCheckbox'), b = document.getElementById('settingsAgreementBox'), s = document.getElementById('settingsSubmitBtn');
-    c.checked = !c.checked; if (c.checked) { b.classList.add('checked'); s.disabled = false; } else { b.classList.remove('checked'); s.disabled = true; }
-  }
-  window.toggleSettingsAgreement = toggleSettingsAgreement;
-
-  // ═══════════════════════════════════════════════════════════
-  // ✅ بارگذاری تنظیمات (اصلاح‌شده)
-  // ═══════════════════════════════════════════════════════════
-  async function loadSchoolSettings() {
-    try {
-      const selectedYear = encodeURIComponent(schoolYearSelect.value);
-      const res = await fetch(`/api/school-settings?year=${selectedYear}`, { headers: { 'Authorization': 'Bearer ' + token } });
-      if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
-      const data = await res.json();
-      if (data.exists && data.settings) {
-        const s = data.settings;
-        
-        let settingsData = { ...s };
-        if (s.branches_data) {
-          try {
-            const parsed = JSON.parse(s.branches_data);
-            settingsData = { ...settingsData, ...parsed };
-          } catch (e) { console.error('Error parsing branches_data:', e); }
+      let settingsData = { ...s };
+      if (s.branches_data) {
+        try {
+          const parsed = JSON.parse(s.branches_data);
+          settingsData = { ...settingsData, ...parsed };
+        } catch (e) {
+          console.error('branches_data parse:', e);
         }
-
-        document.getElementById('sTimeType').value = settingsData.time_type || 'یک تایم';
-        document.getElementById('sAcademicMember').value = settingsData.academic_member || '';
-        setVal('sF13', settingsData.branches_f_1_3 || settingsData.branchesF13); 
-        setVal('sM13', settingsData.branches_m_1_3 || settingsData.branchesM13); 
-        setVal('sX13', settingsData.branches_x_1_3 || settingsData.branchesX13);
-        setVal('sF46', settingsData.branches_f_4_6 || settingsData.branchesF46); 
-        setVal('sM46', settingsData.branches_m_4_6 || settingsData.branchesM46); 
-        setVal('sX46', settingsData.branches_x_4_6 || settingsData.branchesX46);
-        setVal('sF79', settingsData.branches_f_7_9 || settingsData.branchesF79); 
-        setVal('sM79', settingsData.branches_m_7_9 || settingsData.branchesM79); 
-        setVal('sX79', settingsData.branches_x_7_9 || settingsData.branchesX79);
-        setVal('sF1012', settingsData.branches_f_10_12 || settingsData.branchesF1012); 
-        setVal('sM1012', settingsData.branches_m_10_12 || settingsData.branchesM1012); 
-        setVal('sX1012', settingsData.branches_x_10_12 || settingsData.branchesX1012);
-        
-        // ✅ فقط فیلدهای آمار داخله/حاضر (بدون تداخل با شعبات)
-        setVal('sTotalInFemale', settingsData.total_in_female || settingsData.totalInFemale); 
-        setVal('sTotalInMale', settingsData.total_in_male || settingsData.totalInMale); 
-        setVal('sTotalPresentFemale', settingsData.total_present_female || settingsData.totalPresentFemale); 
-        setVal('sTotalPresentMale', settingsData.total_present_male || settingsData.totalPresentMale);
-        
-        for (let i = 1; i <= 12; i++) { 
-          setVal(`c${i}_in_f`, settingsData[`c${i}_in_f`]); 
-          setVal(`c${i}_in_m`, settingsData[`c${i}_in_m`]); 
-          setVal(`c${i}_pr_f`, settingsData[`c${i}_pr_f`]); 
-          setVal(`c${i}_pr_m`, settingsData[`c${i}_pr_m`]); 
-        }
-        
-        for (let i = 1; i <= 12; i++) {
-          setVal(`e${i}_f`, settingsData[`e${i}_f`]);
-          setVal(`e${i}_m`, settingsData[`e${i}_m`]);
-        }
-        setVal('gradFemale', settingsData.grad_female || settingsData.gradFemale);
-        setVal('gradMale', settingsData.grad_male || settingsData.gradMale);
-        
-        // ✅ ترتیب صحیح: اول شعبات، بعد داخله، بعد اخراجی، بعد فارغان
-        calcBranches(); 
-        calcTotals();
-        calcExpelledTotals();
-        calcGradTotal();
-
-        document.getElementById('sBudgetStatus').value = settingsData.budget_status || 'عادی'; 
-        toggleBudgetFields();
-        setVal('sExtraBustCount', settingsData.extra_bust_count); 
-        setVal('sExtraBustField', settingsData.extra_bust_field); 
-        setVal('sLackBustCount', settingsData.lack_bust_count); 
-        setVal('sLackBustField', settingsData.lack_bust_field);
-        document.getElementById('settingsBanner').innerHTML = '✅ اطلاعات مکتب شما ثبت شده است.'; 
-        document.getElementById('settingsBanner').style.background = '#dcfce7'; 
-        document.getElementById('settingsBanner').style.color = '#15803d';
-        document.getElementById('settingsSubmitBtn').innerText = '💾 به‌روزرسانی'; 
-        document.getElementById('settingsSubmitBtn').disabled = false;
-        document.getElementById('settingsAgreementCheckbox').checked = true; 
-        document.getElementById('settingsAgreementBox').classList.add('checked');
-      } else {
-        // ✅ حالت جدید: صفر کردن فیلدها
-        document.getElementById('settingsSubmitBtn').disabled = true; 
-        document.getElementById('settingsAgreementCheckbox').checked = false; 
-        document.getElementById('settingsAgreementBox').classList.remove('checked');
-        document.getElementById('settingsBanner').innerHTML = '⚠️ <strong>توجه:</strong> تا زمانیکه اطلاعات مکتب را ثبت نکنید، نمی‌توانید کارمند جدید ثبت کنید.';
-        document.getElementById('settingsBanner').style.background = '#fff8e8';
-        document.getElementById('settingsBanner').style.color = '#78551b';
-        document.getElementById('settingsSubmitBtn').innerText = '💾 ذخیره اطلاعات مکتب';
       }
-      await loadEmployeeStats();
-    } catch (e) { console.error(e); }
-  }
-  window.loadSchoolSettings = loadSchoolSettings;
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ ذخیره تنظیمات
-  // ═══════════════════════════════════════════════════════════
-  document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!document.getElementById('settingsAgreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
-    const btn = document.getElementById('settingsSubmitBtn'); 
-    btn.disabled = true; 
-    btn.innerText = '⏳ در حال ذخیره...';
-    
-    const body = {
-      schoolYear: Number(schoolYearSelect.value),
-      timeType: document.getElementById('sTimeType').value, 
-      academicMember: document.getElementById('sAcademicMember').value.trim(),
-      branchesF13: numVal('sF13'), branchesF46: numVal('sF46'), branchesF79: numVal('sF79'), branchesF1012: numVal('sF1012'),
-      branchesM13: numVal('sM13'), branchesM46: numVal('sM46'), branchesM79: numVal('sM79'), branchesM1012: numVal('sM1012'),
-      branchesX13: numVal('sX13'), branchesX46: numVal('sX46'), branchesX79: numVal('sX79'), branchesX1012: numVal('sX1012'),
-      branchesTotal: numVal('sBranchesTotal'), 
-      totalInFemale: numVal('sTotalInFemale'), totalInMale: numVal('sTotalInMale'),
-      totalPresentFemale: numVal('sTotalPresentFemale'), totalPresentMale: numVal('sTotalPresentMale'),
-      budgetStatus: document.getElementById('sBudgetStatus').value, 
-      extraBustCount: numVal('sExtraBustCount'), extraBustField: document.getElementById('sExtraBustField').value.trim(),
-      lackBustCount: numVal('sLackBustCount'), lackBustField: document.getElementById('sLackBustField').value.trim(),
-      gradFemale: numVal('gradFemale'),
-      gradMale: numVal('gradMale')
-    };
-    for (let i = 1; i <= 12; i++) { 
-      body[`c${i}_in_f`] = numVal(`c${i}_in_f`); 
-      body[`c${i}_in_m`] = numVal(`c${i}_in_m`); 
-      body[`c${i}_pr_f`] = numVal(`c${i}_pr_f`); 
-      body[`c${i}_pr_m`] = numVal(`c${i}_pr_m`); 
-      body[`e${i}_f`] = numVal(`e${i}_f`);
-      body[`e${i}_m`] = numVal(`e${i}_m`);
-    }
+      $('sTimeType').value = settingsData.time_type || 'یک تایم';
+      $('sAcademicMember').value = settingsData.academic_member || '';
 
-    if (!body.academicMember) { 
-      showToast('❌ نام عضو علمی الزامی است', true); 
-      btn.disabled = false; 
-      btn.innerText = '💾 ذخیره'; 
-      return; 
-    }
-    try {
-      const res = await fetch('/api/school-settings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(body) });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) { 
-        showToast('✅ ذخیره شد'); 
-        document.getElementById('settingsAgreementCheckbox').checked = false; 
-        document.getElementById('settingsAgreementBox').classList.remove('checked'); 
-        loadSchoolSettings(); 
+      setVal('sF13', settingsData.branches_f_1_3 ?? settingsData.branchesF13);
+      setVal('sM13', settingsData.branches_m_1_3 ?? settingsData.branchesM13);
+      setVal('sX13', settingsData.branches_x_1_3 ?? settingsData.branchesX13);
+      setVal('sF46', settingsData.branches_f_4_6 ?? settingsData.branchesF46);
+      setVal('sM46', settingsData.branches_m_4_6 ?? settingsData.branchesM46);
+      setVal('sX46', settingsData.branches_x_4_6 ?? settingsData.branchesX46);
+      setVal('sF79', settingsData.branches_f_7_9 ?? settingsData.branchesF79);
+      setVal('sM79', settingsData.branches_m_7_9 ?? settingsData.branchesM79);
+      setVal('sX79', settingsData.branches_x_7_9 ?? settingsData.branchesX79);
+      setVal('sF1012', settingsData.branches_f_10_12 ?? settingsData.branchesF1012);
+      setVal('sM1012', settingsData.branches_m_10_12 ?? settingsData.branchesM1012);
+      setVal('sX1012', settingsData.branches_x_10_12 ?? settingsData.branchesX1012);
+
+      setVal('sTotalInFemale', settingsData.total_in_female ?? settingsData.totalInFemale);
+      setVal('sTotalInMale', settingsData.total_in_male ?? settingsData.totalInMale);
+      setVal('sTotalPresentFemale', settingsData.total_present_female ?? settingsData.totalPresentFemale);
+      setVal('sTotalPresentMale', settingsData.total_present_male ?? settingsData.totalPresentMale);
+
+      for (let i = 1; i <= 12; i++) {
+        setVal(`c${i}_in_f`, settingsData[`c${i}_in_f`]);
+        setVal(`c${i}_in_m`, settingsData[`c${i}_in_m`]);
+        setVal(`c${i}_pr_f`, settingsData[`c${i}_pr_f`]);
+        setVal(`c${i}_pr_m`, settingsData[`c${i}_pr_m`]);
+        setVal(`e${i}_f`, settingsData[`e${i}_f`]);
+        setVal(`e${i}_m`, settingsData[`e${i}_m`]);
       }
-      else { showToast('❌ ' + (data.error || 'خطا'), true); }
-    } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
-    finally { 
-      btn.disabled = false; 
-      if (document.getElementById('settingsSubmitBtn').innerText.includes('ذخیره')) 
-        btn.innerText = '💾 ذخیره اطلاعات مکتب'; 
-    }
-  });
 
-  schoolYearSelect.addEventListener('change', () => {
-    loadSchoolSettings();
-  });
+      setVal('gradFemale', settingsData.grad_female ?? settingsData.gradFemale);
+      setVal('gradMale', settingsData.grad_male ?? settingsData.gradMale);
+
+      $('sBudgetStatus').value = settingsData.budget_status || 'عادی';
+      toggleBudgetFields();
+      setVal('sExtraBustCount', settingsData.extra_bust_count);
+      setVal('sExtraBustField', settingsData.extra_bust_field);
+      setVal('sLackBustCount', settingsData.lack_bust_count);
+      setVal('sLackBustField', settingsData.lack_bust_field);
+
+      const banner = $('settingsBanner');
+      banner.innerHTML = '✅ اطلاعات مکتب شما ثبت شده است.';
+      banner.classList.add('success');
+
+      $('settingsSubmitBtn').innerText = '💾 به‌روزرسانی';
+      $('settingsSubmitBtn').disabled = false;
+      $('settingsAgreementCheckbox').checked = true;
+      $('settingsAgreementBox').classList.add('checked');
+    } else {
+      isExistingSettings = false;
+      resetSettingsForm();
+
+      const banner = $('settingsBanner');
+      banner.innerHTML = '⚠️ <strong>توجه:</strong> تا زمانیکه اطلاعات مکتب را ثبت نکنید، نمی‌توانید کارمند جدید ثبت کنید.';
+      banner.classList.remove('success');
+
+      $('settingsSubmitBtn').innerText = '💾 ذخیره اطلاعات مکتب';
+      $('settingsSubmitBtn').disabled = true;
+      $('settingsAgreementCheckbox').checked = false;
+      $('settingsAgreementBox').classList.remove('checked');
+    }
+
+    await loadEmployeeStats();
+  } catch (e) {
+    console.error('loadSchoolSettings:', e);
+    showToast('❌ خطا در بارگذاری تنظیمات', true);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ۱۰. ساخت payload و ذخیره
+   ═══════════════════════════════════════════════════════════ */
+function buildPayload() {
+  calcBranches();
+  calcTotals();
+  calcExpelledTotals();
+  calcGradTotal();
+
+  const body = {
+    schoolYear: Number(schoolYearSelect.value),
+    timeType: $('sTimeType').value,
+    academicMember: $('sAcademicMember').value.trim(),
+
+    branchesF13: numVal('sF13'), branchesF46: numVal('sF46'),
+    branchesF79: numVal('sF79'), branchesF1012: numVal('sF1012'),
+    branchesM13: numVal('sM13'), branchesM46: numVal('sM46'),
+    branchesM79: numVal('sM79'), branchesM1012: numVal('sM1012'),
+    branchesX13: numVal('sX13'), branchesX46: numVal('sX46'),
+    branchesX79: numVal('sX79'), branchesX1012: numVal('sX1012'),
+    branchesTotal: numVal('sBranchesTotal'),
+    branchesFemaleTotal: numVal('sTotalBranchFemale'),
+    branchesMaleTotal: numVal('sTotalBranchMale'),
+    branchesMixedTotal: numVal('sTotalMixed'),
+
+    totalInFemale: numVal('sTotalInFemale'),
+    totalInMale: numVal('sTotalInMale'),
+    totalPresentFemale: numVal('sTotalPresentFemale'),
+    totalPresentMale: numVal('sTotalPresentMale'),
+
+    budgetStatus: $('sBudgetStatus').value,
+    extraBustCount: numVal('sExtraBustCount'),
+    extraBustField: $('sExtraBustField').value.trim(),
+    lackBustCount: numVal('sLackBustCount'),
+    lackBustField: $('sLackBustField').value.trim(),
+
+    gradFemale: numVal('gradFemale'),
+    gradMale: numVal('gradMale')
+  };
+
+  for (let i = 1; i <= 12; i++) {
+    body[`c${i}_in_f`] = numVal(`c${i}_in_f`);
+    body[`c${i}_in_m`] = numVal(`c${i}_in_m`);
+    body[`c${i}_pr_f`] = numVal(`c${i}_pr_f`);
+    body[`c${i}_pr_m`] = numVal(`c${i}_pr_m`);
+    body[`e${i}_f`] = numVal(`e${i}_f`);
+    body[`e${i}_m`] = numVal(`e${i}_m`);
+  }
+
+  return body;
+}
+
+async function submitSettings(e) {
+  e.preventDefault();
+
+  if (!$('settingsAgreementCheckbox').checked) {
+    showToast('❌ تیک موافقت را بزنید', true);
+    return;
+  }
+
+  const body = buildPayload();
+
+  if (!body.academicMember) {
+    showToast('❌ نام عضو علمی الزامی است', true);
+    return;
+  }
+
+  const btn = $('settingsSubmitBtn');
+  const originalText = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = '⏳ در حال ذخیره...';
+
+  try {
+    const res = await fetch('/api/school-settings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      showToast('✅ ذخیره شد');
+      await loadSchoolSettings();
+    } else {
+      showToast('❌ ' + (data.error || 'خطا در ذخیره'), true);
+      btn.innerText = originalText;
+    }
+  } catch (err) {
+    showToast('❌ ارتباط برقرار نشد', true);
+    btn.innerText = originalText;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ۱۱. راه‌اندازی اولیه
+   ═══════════════════════════════════════════════════════════ */
+function init() {
+  buildClassTable();
+  buildExpelledTable();
+
+  $('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
+
+  $('settingsForm').addEventListener('submit', submitSettings);
+  schoolYearSelect.addEventListener('change', loadSchoolSettings);
 
   loadSchoolSettings();
+}
+
+// expose برای رویدادهای inline
+window.calcBranches = calcBranches;
+window.calcTotals = calcTotals;
+window.calcExpelledTotals = calcExpelledTotals;
+window.calcGradTotal = calcGradTotal;
+window.toggleBudgetFields = toggleBudgetFields;
+window.toggleSettingsAgreement = toggleSettingsAgreement;
+window.logout = logout;
+
+init();
 </script>
 </body>
 </html>

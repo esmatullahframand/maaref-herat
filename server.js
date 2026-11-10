@@ -8,14 +8,20 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = 'maaref-secret-key-12345';
+
+// ═══════════════════════════════════════════════════════════
+// 🔐 امنیت: JWT_SECRET از env (با fallback برای سازگاری موقت)
+// ═══════════════════════════════════════════════════════════
+const JWT_SECRET = process.env.JWT_SECRET || 'maaref-secret-key-12345-CHANGE-ME';
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️ هشدار: JWT_SECRET از env تنظیم نشده — از مقدار پیش‌فرض استفاده می‌شود. برای production حتماً تنظیم کنید.');
+}
 
 console.log('═══════════════════════════════════════');
-console.log('🔐 Server V25.0 starting...');
+console.log('🔐 Server V26.0 starting (سالانه‌سازی)...');
 console.log('═══════════════════════════════════════');
 
 app.set('trust proxy', 1);
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -25,8 +31,8 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000
 });
 
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 const JOB_TITLES = ['آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین', 'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش', 'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
 const NO_CODE_TITLES = [];
@@ -37,8 +43,18 @@ const JOBCODE_REGEX = /^27-\d{1,3}-\d{1,3}-\d{3,6}$/;
 const ETAZKIRA_REGEX = /^\d+-\d+-\d+$/;
 const PAPER_TAZKIRA_NUMERIC_REGEX = /^\d{1,20}$/;
 
+// بازه معتبر سال تعلیمی
+const MIN_YEAR = 1300;
+const MAX_YEAR = 1500;
+const DEFAULT_YEAR = 1405;
+
+function isValidYear(y) {
+  const n = Number(y);
+  return Number.isInteger(n) && n >= MIN_YEAR && n <= MAX_YEAR;
+}
+
 // ═══════════════════════════════════════════════════════════
-// ساخت جداول و راه‌اندازی اولیه
+// ساخت جداول و راه‌اندازی اولیه + Migration سالانه‌سازی
 // ═══════════════════════════════════════════════════════════
 async function initDB() {
   try {
@@ -47,13 +63,66 @@ async function initDB() {
       await client.query(`CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT NOT NULL, schoolname TEXT, district TEXT, createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
       await client.query(`CREATE TABLE IF NOT EXISTS records (id SERIAL PRIMARY KEY, userid INTEGER, schoolname TEXT, district TEXT, data TEXT, status TEXT DEFAULT 'pending', createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
       await client.query(`CREATE TABLE IF NOT EXISTS login_attempts (id SERIAL PRIMARY KEY, ip TEXT NOT NULL, username TEXT, success BOOLEAN DEFAULT FALSE, createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
-      await client.query(`CREATE TABLE IF NOT EXISTS school_settings_new (id SERIAL PRIMARY KEY, userid INTEGER UNIQUE NOT NULL, schoolname TEXT, district TEXT, time_type TEXT DEFAULT 'یک تایم', academic_member TEXT, budget_status TEXT DEFAULT 'عادی', extra_bust_count INTEGER DEFAULT 0, extra_bust_field TEXT, lack_bust_count INTEGER DEFAULT 0, lack_bust_field TEXT, branches_data TEXT, createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
+
+      // ✅ جدول تنظیمات مکتب با school_year (برای نصب تازه)
+      await client.query(`CREATE TABLE IF NOT EXISTS school_settings_new (
+        id SERIAL PRIMARY KEY,
+        userid INTEGER NOT NULL,
+        school_year INTEGER NOT NULL DEFAULT ${DEFAULT_YEAR},
+        schoolname TEXT,
+        district TEXT,
+        time_type TEXT DEFAULT 'یک تایم',
+        academic_member TEXT,
+        budget_status TEXT DEFAULT 'عادی',
+        extra_bust_count INTEGER DEFAULT 0,
+        extra_bust_field TEXT,
+        lack_bust_count INTEGER DEFAULT 0,
+        lack_bust_field TEXT,
+        branches_data TEXT,
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );`);
+
+      // ✅ Migration: اگر جدول قدیمی بدون school_year بود
+      await client.query(`
+        DO $$
+        BEGIN
+          -- افزودن ستون school_year اگر وجود نداشته باشد
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'school_settings_new' AND column_name = 'school_year'
+          ) THEN
+            ALTER TABLE school_settings_new ADD COLUMN school_year INTEGER NOT NULL DEFAULT ${DEFAULT_YEAR};
+            RAISE NOTICE '✅ ستون school_year اضافه شد';
+          END IF;
+
+          -- حذف UNIQUE قدیمی روی userid تنها
+          IF EXISTS (
+            SELECT 1 FROM pg_constraint
+            WHERE conname = 'school_settings_new_userid_key'
+          ) THEN
+            ALTER TABLE school_settings_new DROP CONSTRAINT school_settings_new_userid_key;
+            RAISE NOTICE '✅ UNIQUE قدیمی (userid) حذف شد';
+          END IF;
+
+          -- افزودن UNIQUE جدید روی (userid, school_year)
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint
+            WHERE conname = 'school_settings_new_userid_year_key'
+          ) THEN
+            ALTER TABLE school_settings_new
+              ADD CONSTRAINT school_settings_new_userid_year_key UNIQUE (userid, school_year);
+            RAISE NOTICE '✅ UNIQUE جدید (userid, school_year) اضافه شد';
+          END IF;
+        END $$;
+      `);
+
       await client.query(`CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
       await client.query(`INSERT INTO app_settings (key, value) VALUES ('evaluation_allowed', 'false') ON CONFLICT (key) DO NOTHING;`);
       await client.query(`CREATE TABLE IF NOT EXISTS evaluations (id SERIAL PRIMARY KEY, record_id INTEGER NOT NULL, userid INTEGER NOT NULL, schoolname TEXT, district TEXT, first_name TEXT, last_name TEXT, father_name TEXT, grandfather_name TEXT, job_code TEXT, employment_type TEXT, birth_year TEXT, service_duration TEXT, degree TEXT, gender TEXT, job_title TEXT, appointment_date TEXT, eval_date_prev TEXT, bust TEXT, grade TEXT, eval_date TEXT NOT NULL, eval_score INTEGER NOT NULL, eval_result TEXT NOT NULL, remarks TEXT DEFAULT '', createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
       await client.query(`CREATE TABLE IF NOT EXISTS salaries (id SERIAL PRIMARY KEY, record_id INTEGER NOT NULL, userid INTEGER NOT NULL, schoolname TEXT, district TEXT, year TEXT NOT NULL, month TEXT NOT NULL, bank_number TEXT, appointment_letter TEXT, base_salary REAL DEFAULT 0, other_base REAL DEFAULT 0, professional REAL DEFAULT 0, other_professional REAL DEFAULT 0, food REAL DEFAULT 0, other_food REAL DEFAULT 0, allowance REAL DEFAULT 0, other_allowance REAL DEFAULT 0, other_increase REAL DEFAULT 0, total_entitlement REAL DEFAULT 0, absence REAL DEFAULT 0, tax REAL DEFAULT 0, other_tax REAL DEFAULT 0, tax_10 REAL DEFAULT 0, deductions REAL DEFAULT 0, other_deductions REAL DEFAULT 0, total_deductions REAL DEFAULT 0, net_pay REAL DEFAULT 0, status TEXT DEFAULT 'draft', createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(record_id, year, month));`);
       await client.query(`CREATE TABLE IF NOT EXISTS attendance (id SERIAL PRIMARY KEY, salary_id INTEGER NOT NULL UNIQUE, present REAL DEFAULT 0, absent REAL DEFAULT 0, vacation REAL DEFAULT 0, sick REAL DEFAULT 0, essential REAL DEFAULT 0, maternity REAL DEFAULT 0, service_center REAL DEFAULT 0, service_province REAL DEFAULT 0, hajj REAL DEFAULT 0, holidays REAL DEFAULT 0, other REAL DEFAULT 0, total_days REAL DEFAULT 0, createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updatedat TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
-      console.log('✅ جداول دیتابیس آماده شدند.');
+      console.log('✅ جداول دیتابیس آماده شدند (با پشتیبانی سالانه).');
     } finally { client.release(); }
   } catch (err) { console.error('⚠️ خطا در اتصال اولیه به دیتابیس:', err.message); }
 }
@@ -151,47 +220,41 @@ function isEducationExemptJob(t) { return EDUCATION_EXEMPT_JOBS.includes(String(
 
 async function checkJobCodeExact(jobCode, excludeRecordId = null) {
   if (!jobCode) return { exists: false };
-  try {
-    const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
-    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'jobCode') = $1`;
-    const params = [normalizedCode];
-    if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
-    sql += ' LIMIT 1';
-    const result = await pool.query(sql, params);
-    if (result.rows.length === 0) return { exists: false };
-    const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
-    return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
-  } catch (err) { return { exists: false }; }
+  const normalizedCode = normalizeDigits(jobCode).trim().replace(/\s+/g, '');
+  let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'jobCode') = $1`;
+  const params = [normalizedCode];
+  if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
+  sql += ' LIMIT 1';
+  const result = await pool.query(sql, params);
+  if (result.rows.length === 0) return { exists: false };
+  const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
+  return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
 }
 
 async function checkETazkiraExact(eTazkira, excludeRecordId = null) {
   if (!eTazkira) return { exists: false };
-  try {
-    const cleaned = normalizeDigits(eTazkira).trim().replace(/\s+/g, '');
-    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'eTazkira') = $1`;
-    const params = [cleaned];
-    if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
-    sql += ' LIMIT 1';
-    const result = await pool.query(sql, params);
-    if (result.rows.length === 0) return { exists: false };
-    const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
-    return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
-  } catch (err) { return { exists: false }; }
+  const cleaned = normalizeDigits(eTazkira).trim().replace(/\s+/g, '');
+  let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'eTazkira') = $1`;
+  const params = [cleaned];
+  if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
+  sql += ' LIMIT 1';
+  const result = await pool.query(sql, params);
+  if (result.rows.length === 0) return { exists: false };
+  const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
+  return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
 }
 
 async function checkPaperTazkiraExact(tazkiraCode, excludeRecordId = null) {
   if (!tazkiraCode) return { exists: false };
-  try {
-    const cleaned = normalizeDigits(tazkiraCode).trim().replace(/\s+/g, '');
-    let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'paperTazkira') = $1`;
-    const params = [cleaned];
-    if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
-    sql += ' LIMIT 1';
-    const result = await pool.query(sql, params);
-    if (result.rows.length === 0) return { exists: false };
-    const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
-    return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
-  } catch (err) { return { exists: false }; }
+  const cleaned = normalizeDigits(tazkiraCode).trim().replace(/\s+/g, '');
+  let sql = `SELECT r.id, r.userid, r.data, COALESCE(NULLIF(r.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(r.district, ''), u.district) AS district FROM records r LEFT JOIN users u ON u.id = r.userid WHERE (CAST(r.data AS JSON)->>'paperTazkira') = $1`;
+  const params = [cleaned];
+  if (excludeRecordId) { params.push(excludeRecordId); sql += ` AND r.id <> $${params.length}`; }
+  sql += ' LIMIT 1';
+  const result = await pool.query(sql, params);
+  if (result.rows.length === 0) return { exists: false };
+  const row = result.rows[0]; let info = {}; try { info = JSON.parse(row.data || '{}'); } catch (e) {}
+  return { exists: true, recordId: row.id, userid: row.userid, schoolname: row.schoolname || 'نامشخص', district: row.district || '', employeeName: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص' };
 }
 
 function buildDuplicateResponse(kind, dup, currentUserId) {
@@ -376,7 +439,9 @@ app.post('/api/records', authRequired, async (req, res) => {
     const body = req.body || {};
     const schoolName = body.schoolName || req.user.schoolname || '';
     const district = body.district || req.user.district || '';
-    const settingsCheck = await pool.query('SELECT id FROM school_settings_new WHERE userid = $1', [req.user.id]);
+
+    // ✅ چک: کاربر حداقل یک تنظیمات (هر سالی) داشته باشد
+    const settingsCheck = await pool.query('SELECT id FROM school_settings_new WHERE userid = $1 LIMIT 1', [req.user.id]);
     if (settingsCheck.rows.length === 0) return res.status(400).json({ error: '❌ لطفاً ابتدا اطلاعات مکتب خود را ثبت کنید' });
 
     const jobCode = String(body.jobCode || '').trim();
@@ -480,86 +545,226 @@ app.delete('/api/records/:id', authRequired, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// API: تنظیمات مکتب (با پشتیبانی از اخراجی و فارغان)
+// API: تنظیمات مکتب — سالانه‌سازی کامل
 // ═══════════════════════════════════════════════════════════
+
+// دریافت تنظیمات یک سال (پیش‌فرض ۱۴۰۵)
 app.get('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
-    const result = await pool.query('SELECT * FROM school_settings_new WHERE userid = $1', [req.user.id]);
-    if (result.rows.length === 0) return res.json({ exists: false, settings: null });
+
+    const year = req.query.year ? Number(req.query.year) : DEFAULT_YEAR;
+    if (!isValidYear(year)) return res.status(400).json({ error: 'سال تعلیمی نامعتبر است' });
+
+    const result = await pool.query(
+      'SELECT * FROM school_settings_new WHERE userid = $1 AND school_year = $2',
+      [req.user.id, year]
+    );
+
+    if (result.rows.length === 0) return res.json({ exists: false, settings: null, schoolYear: year });
+
     const row = result.rows[0];
     let branchesData = {};
-    try { branchesData = JSON.parse(row.branches_data || '{}'); } catch (e) {}
-    const settings = { ...row, ...branchesData };
-    res.json({ exists: true, settings });
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+    try { branchesData = JSON.parse(row.branches_data || '{}'); } catch (e) {
+      console.warn(`branches_data نامعتبر برای user ${req.user.id}، سال ${year}`);
+    }
+
+    const { userid, ...safeRow } = row;
+    const settings = { ...safeRow, ...branchesData, schoolYear: row.school_year };
+    res.json({ exists: true, settings, schoolYear: year });
+  } catch (err) {
+    console.error('GET /api/school-settings:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت تنظیمات' });
+  }
 });
 
+// لیست سال‌های ثبت‌شده برای مکتب
+app.get('/api/school-settings/years', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
+    const result = await pool.query(
+      `SELECT school_year, updatedat FROM school_settings_new WHERE userid = $1 ORDER BY school_year DESC`,
+      [req.user.id]
+    );
+    res.json(result.rows.map(r => ({ year: r.school_year, updatedAt: r.updatedat })));
+  } catch (err) {
+    console.error('GET /api/school-settings/years:', err.message);
+    res.status(500).json({ error: 'خطا' });
+  }
+});
+
+// دریافت همه تنظیمات مکاتب (ادمین) — با فیلتر سال اختیاری
 app.get('/api/all-school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین دسترسی دارد' });
-    const result = await pool.query(`SELECT s.*, u.username, COALESCE(NULLIF(s.schoolname, ''), u.schoolname) AS schoolname, COALESCE(NULLIF(s.district, ''), u.district) AS district FROM school_settings_new s LEFT JOIN users u ON u.id = s.userid ORDER BY s.id DESC`);
+
+    const year = req.query.year ? Number(req.query.year) : null;
+    if (req.query.year && !isValidYear(year)) return res.status(400).json({ error: 'سال تعلیمی نامعتبر است' });
+
+    const params = year ? [year] : [];
+    const where = year ? 'WHERE s.school_year = $1' : '';
+
+    const result = await pool.query(`
+      SELECT s.*,
+        s.school_year AS "schoolYear",
+        u.username,
+        COALESCE(NULLIF(s.schoolname, ''), u.schoolname) AS schoolname,
+        COALESCE(NULLIF(s.district, ''), u.district) AS district
+      FROM school_settings_new s
+      LEFT JOIN users u ON u.id = s.userid
+      ${where}
+      ORDER BY s.school_year DESC, s.id DESC
+    `, params);
+
     res.json(result.rows);
-  } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  } catch (err) {
+    console.error('GET /api/all-school-settings:', err.message);
+    res.status(500).json({ error: 'خطا در دریافت آمار مکاتب' });
+  }
 });
 
+// ثبت/به‌روزرسانی تنظیمات (Upsert با school_year)
 app.post('/api/school-settings', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
+
     const body = req.body || {};
+    const year = Number(body.schoolYear || body.school_year || DEFAULT_YEAR);
+    if (!isValidYear(year)) return res.status(400).json({ error: 'سال تعلیمی نامعتبر است' });
+
     const toNum = (val) => { if (val === null || val === undefined || val === '') return 0; const num = Number(val); return isNaN(num) ? 0 : num; };
 
     const academicMember = String(body.academicMember || '').trim();
     if (!academicMember) return res.status(400).json({ error: 'نام عضو علمی الزامی است' });
+
     const schoolName = req.user.schoolname || '';
     const district = req.user.district || '';
 
+    // ساخت branchesData با حفظ تمام فیلدهای قبلی
     const branchesData = {
       branchesF13: toNum(body.branchesF13), branchesF46: toNum(body.branchesF46), branchesF79: toNum(body.branchesF79), branchesF1012: toNum(body.branchesF1012),
       branchesM13: toNum(body.branchesM13), branchesM46: toNum(body.branchesM46), branchesM79: toNum(body.branchesM79), branchesM1012: toNum(body.branchesM1012),
       branchesX13: toNum(body.branchesX13), branchesX46: toNum(body.branchesX46), branchesX79: toNum(body.branchesX79), branchesX1012: toNum(body.branchesX1012),
-      branchesTotal: toNum(body.branchesTotal), totalInFemale: toNum(body.totalInFemale), totalInMale: toNum(body.totalInMale),
+      branchesTotal: toNum(body.branchesTotal),
+      totalInFemale: toNum(body.totalInFemale), totalInMale: toNum(body.totalInMale),
       totalPresentFemale: toNum(body.totalPresentFemale), totalPresentMale: toNum(body.totalPresentMale),
-      c1_in_f: toNum(body.c1_in_f), c1_in_m: toNum(body.c1_in_m), c1_pr_f: toNum(body.c1_pr_f), c1_pr_m: toNum(body.c1_pr_m),
-      c2_in_f: toNum(body.c2_in_f), c2_in_m: toNum(body.c2_in_m), c2_pr_f: toNum(body.c2_pr_f), c2_pr_m: toNum(body.c2_pr_m),
-      c3_in_f: toNum(body.c3_in_f), c3_in_m: toNum(body.c3_in_m), c3_pr_f: toNum(body.c3_pr_f), c3_pr_m: toNum(body.c3_pr_m),
-      c4_in_f: toNum(body.c4_in_f), c4_in_m: toNum(body.c4_in_m), c4_pr_f: toNum(body.c4_pr_f), c4_pr_m: toNum(body.c4_pr_m),
-      c5_in_f: toNum(body.c5_in_f), c5_in_m: toNum(body.c5_in_m), c5_pr_f: toNum(body.c5_pr_f), c5_pr_m: toNum(body.c5_pr_m),
-      c6_in_f: toNum(body.c6_in_f), c6_in_m: toNum(body.c6_in_m), c6_pr_f: toNum(body.c6_pr_f), c6_pr_m: toNum(body.c6_pr_m),
-      c7_in_f: toNum(body.c7_in_f), c7_in_m: toNum(body.c7_in_m), c7_pr_f: toNum(body.c7_pr_f), c7_pr_m: toNum(body.c7_pr_m),
-      c8_in_f: toNum(body.c8_in_f), c8_in_m: toNum(body.c8_in_m), c8_pr_f: toNum(body.c8_pr_f), c8_pr_m: toNum(body.c8_pr_m),
-      c9_in_f: toNum(body.c9_in_f), c9_in_m: toNum(body.c9_in_m), c9_pr_f: toNum(body.c9_pr_f), c9_pr_m: toNum(body.c9_pr_m),
-      c10_in_f: toNum(body.c10_in_f), c10_in_m: toNum(body.c10_in_m), c10_pr_f: toNum(body.c10_pr_f), c10_pr_m: toNum(body.c10_pr_m),
-      c11_in_f: toNum(body.c11_in_f), c11_in_m: toNum(body.c11_in_m), c11_pr_f: toNum(body.c11_pr_f), c11_pr_m: toNum(body.c11_pr_m),
-      c12_in_f: toNum(body.c12_in_f), c12_in_m: toNum(body.c12_in_m), c12_pr_f: toNum(body.c12_pr_f), c12_pr_m: toNum(body.c12_pr_m),
-      // 👇 داده‌های اخراجی و فارغان 👇
-      gradFemale: toNum(body.gradFemale),
-      gradMale: toNum(body.gradMale)
+      gradFemale: toNum(body.gradFemale), gradMale: toNum(body.gradMale)
     };
 
-    // 👇 داده‌های اخراجی هر صنف 👇
+    // آمار c1..c12 و اخراجی e1..e12
     for (let i = 1; i <= 12; i++) {
+      for (const k of ['in_f', 'in_m', 'pr_f', 'pr_m']) {
+        branchesData[`c${i}_${k}`] = toNum(body[`c${i}_${k}`]);
+      }
       branchesData[`e${i}_f`] = toNum(body[`e${i}_f`]);
       branchesData[`e${i}_m`] = toNum(body[`e${i}_m`]);
     }
 
-    const check = await pool.query('SELECT id FROM school_settings_new WHERE userid = $1', [req.user.id]);
+    const result = await pool.query(`
+      INSERT INTO school_settings_new (
+        userid, school_year, schoolname, district,
+        time_type, academic_member, budget_status,
+        extra_bust_count, extra_bust_field,
+        lack_bust_count, lack_bust_field, branches_data
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      ON CONFLICT (userid, school_year) DO UPDATE SET
+        schoolname = EXCLUDED.schoolname,
+        district = EXCLUDED.district,
+        time_type = EXCLUDED.time_type,
+        academic_member = EXCLUDED.academic_member,
+        budget_status = EXCLUDED.budget_status,
+        extra_bust_count = EXCLUDED.extra_bust_count,
+        extra_bust_field = EXCLUDED.extra_bust_field,
+        lack_bust_count = EXCLUDED.lack_bust_count,
+        lack_bust_field = EXCLUDED.lack_bust_field,
+        branches_data = EXCLUDED.branches_data,
+        updatedat = CURRENT_TIMESTAMP
+      RETURNING id
+    `, [
+      req.user.id, year, schoolName, district,
+      body.timeType || 'یک تایم', academicMember,
+      body.budgetStatus || 'عادی',
+      toNum(body.extraBustCount), body.extraBustField || '',
+      toNum(body.lackBustCount), body.lackBustField || '',
+      JSON.stringify(branchesData)
+    ]);
 
-    if (check.rows.length > 0) {
-      await pool.query(
-        `UPDATE school_settings_new SET schoolname=$1, district=$2, time_type=$3, academic_member=$4, budget_status=$5, extra_bust_count=$6, extra_bust_field=$7, lack_bust_count=$8, lack_bust_field=$9, branches_data=$10, updatedat=CURRENT_TIMESTAMP WHERE userid=$11`,
-        [schoolName, district, body.timeType || 'یک تایم', academicMember, body.budgetStatus || 'عادی', toNum(body.extraBustCount), body.extraBustField || '', toNum(body.lackBustCount), body.lackBustField || '', JSON.stringify(branchesData), req.user.id]
-      );
-    } else {
-      await pool.query(
-        `INSERT INTO school_settings_new (userid, schoolname, district, time_type, academic_member, budget_status, extra_bust_count, extra_bust_field, lack_bust_count, lack_bust_field, branches_data) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-        [req.user.id, schoolName, district, body.timeType || 'یک تایم', academicMember, body.budgetStatus || 'عادی', toNum(body.extraBustCount), body.extraBustField || '', toNum(body.lackBustCount), body.lackBustField || '', JSON.stringify(branchesData)]
-      );
-    }
-    res.json({ ok: true });
-  } catch (err) { 
-    console.error('POST /api/school-settings error:', err.message);
-    res.status(500).json({ error: 'خطا در ذخیره تنظیمات: ' + err.message }); 
+    res.json({ ok: true, schoolYear: year, id: result.rows[0].id });
+  } catch (err) {
+    console.error('POST /api/school-settings:', err.message);
+    res.status(500).json({ error: 'خطا در ذخیره تنظیمات: ' + err.message });
+  }
+});
+
+// حذف تنظیمات یک سال
+app.delete('/api/school-settings/:year', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
+
+    const year = Number(req.params.year);
+    if (!isValidYear(year)) return res.status(400).json({ error: 'سال تعلیمی نامعتبر است' });
+
+    const result = await pool.query(
+      'DELETE FROM school_settings_new WHERE userid = $1 AND school_year = $2 RETURNING id',
+      [req.user.id, year]
+    );
+    if (result.rowCount === 0) return res.status(404).json({ error: 'برای این سال اطلاعاتی یافت نشد' });
+
+    res.json({ ok: true, deletedYear: year });
+  } catch (err) {
+    console.error('DELETE /api/school-settings:', err.message);
+    res.status(500).json({ error: 'خطا در حذف' });
+  }
+});
+
+// کپی تنظیمات از یک سال به سال دیگر
+app.post('/api/school-settings/copy', authRequired, async (req, res) => {
+  try {
+    if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب دسترسی دارد' });
+
+    const fromYear = Number(req.body.fromYear);
+    const toYear = Number(req.body.toYear);
+
+    if (!isValidYear(fromYear) || !isValidYear(toYear))
+      return res.status(400).json({ error: 'سال تعلیمی نامعتبر است' });
+    if (fromYear === toYear)
+      return res.status(400).json({ error: 'سال مبدأ و مقصد یکسان است' });
+
+    const src = await pool.query(
+      'SELECT * FROM school_settings_new WHERE userid = $1 AND school_year = $2',
+      [req.user.id, fromYear]
+    );
+    if (src.rows.length === 0) return res.status(404).json({ error: 'اطلاعات سال مبدأ یافت نشد' });
+
+    const s = src.rows[0];
+    await pool.query(`
+      INSERT INTO school_settings_new (
+        userid, school_year, schoolname, district,
+        time_type, academic_member, budget_status,
+        extra_bust_count, extra_bust_field,
+        lack_bust_count, lack_bust_field, branches_data
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      ON CONFLICT (userid, school_year) DO UPDATE SET
+        schoolname = EXCLUDED.schoolname, district = EXCLUDED.district,
+        time_type = EXCLUDED.time_type, academic_member = EXCLUDED.academic_member,
+        budget_status = EXCLUDED.budget_status,
+        extra_bust_count = EXCLUDED.extra_bust_count,
+        extra_bust_field = EXCLUDED.extra_bust_field,
+        lack_bust_count = EXCLUDED.lack_bust_count,
+        lack_bust_field = EXCLUDED.lack_bust_field,
+        branches_data = EXCLUDED.branches_data,
+        updatedat = CURRENT_TIMESTAMP
+    `, [
+      req.user.id, toYear, s.schoolname, s.district,
+      s.time_type, s.academic_member, s.budget_status,
+      s.extra_bust_count, s.extra_bust_field,
+      s.lack_bust_count, s.lack_bust_field, s.branches_data
+    ]);
+
+    res.json({ ok: true, fromYear, toYear });
+  } catch (err) {
+    console.error('POST /api/school-settings/copy:', err.message);
+    res.status(500).json({ error: 'خطا در کپی' });
   }
 });
 
@@ -596,6 +801,11 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
     if (!(permResult.rows.length > 0 && permResult.rows[0].value === 'true')) return res.status(403).json({ error: '❌ هنوز از طرف آمریت اجازه داده نشده است' });
     const body = req.body || {};
     if (!body.record_id || !body.eval_date || !body.eval_score || !body.eval_result) return res.status(400).json({ error: 'فیلدهای الزامی' });
+
+    // ✅ چک مالکیت: رکورد باید متعلق به همین مکتب باشد
+    const recCheck = await pool.query('SELECT id FROM records WHERE id = $1 AND userid = $2', [body.record_id, req.user.id]);
+    if (recCheck.rows.length === 0) return res.status(403).json({ error: 'این کارمند متعلق به مکتب شما نیست' });
+
     await pool.query(
       `INSERT INTO evaluations (record_id, userid, schoolname, district, first_name, last_name, father_name, grandfather_name, job_code, employment_type, birth_year, service_duration, degree, gender, job_title, appointment_date, eval_date_prev, bust, grade, eval_date, eval_score, eval_result, remarks) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
@@ -606,7 +816,14 @@ app.post('/api/evaluations', authRequired, async (req, res) => {
 });
 
 app.delete('/api/evaluations/:id', authRequired, async (req, res) => {
-  try { await pool.query('DELETE FROM evaluations WHERE id = $1', [req.params.id]); res.json({ ok: true }); } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  try {
+    // ✅ چک مالکیت
+    const conditions = ['id = $1']; const params = [req.params.id];
+    if (req.user.role === 'school') { conditions.push('userid = $2'); params.push(req.user.id); }
+    const result = await pool.query(`DELETE FROM evaluations WHERE ${conditions.join(' AND ')}`, params);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'یافت نشد یا دسترسی ندارید' });
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -626,10 +843,14 @@ app.get('/api/salaries', authRequired, async (req, res) => {
 
 app.get('/api/salaries/:id', authRequired, async (req, res) => {
   try {
+    // ✅ چک مالکیت
+    const conditions = ['s.id = $1']; const params = [req.params.id];
+    if (req.user.role === 'school') { conditions.push('s.userid = $2'); params.push(req.user.id); }
+
     const result = await pool.query(
       `SELECT s.*, (CAST(r.data AS JSON)->>'firstName') AS first_name, (CAST(r.data AS JSON)->>'lastName') AS last_name, (CAST(r.data AS JSON)->>'fatherName') AS father_name, (CAST(r.data AS JSON)->>'jobCode') AS job_code, (CAST(r.data AS JSON)->>'jobTitle') AS job_title 
-       FROM salaries s LEFT JOIN records r ON r.id = s.record_id WHERE s.id = $1`, [req.params.id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'یافت نشد' });
+       FROM salaries s LEFT JOIN records r ON r.id = s.record_id WHERE ${conditions.join(' AND ')}`, params);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'یافت نشد یا دسترسی ندارید' });
     const salary = result.rows[0];
     const attResult = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [req.params.id]);
     salary.attendance = attResult.rows[0] || {};
@@ -641,6 +862,11 @@ app.post('/api/salaries', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'school') return res.status(403).json({ error: 'فقط مکتب' });
     const b = req.body || {};
+
+    // ✅ چک مالکیت: record_id باید متعلق به همین مکتب باشد
+    const recCheck = await pool.query('SELECT id FROM records WHERE id = $1 AND userid = $2', [b.record_id, req.user.id]);
+    if (recCheck.rows.length === 0) return res.status(403).json({ error: 'این کارمند متعلق به مکتب شما نیست' });
+
     const num = (v) => Number(normalizeDigits(v || 0)) || 0;
     const totalEnt = num(b.total_entitlement), totalDed = num(b.total_deductions), net = num(b.net_pay) || (totalEnt - totalDed);
     const result = await pool.query(
@@ -662,13 +888,29 @@ app.delete('/api/salaries/:id', authRequired, async (req, res) => {
 });
 
 app.get('/api/attendance/:salary_id', authRequired, async (req, res) => {
-  try { const result = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [req.params.salary_id]); res.json(result.rows[0] || null); } catch (err) { res.status(500).json({ error: 'خطا' }); }
+  try {
+    // ✅ چک مالکیت
+    const salaryId = parseInt(req.params.salary_id);
+    if (req.user.role === 'school') {
+      const check = await pool.query('SELECT id FROM salaries WHERE id = $1 AND userid = $2', [salaryId, req.user.id]);
+      if (check.rows.length === 0) return res.status(404).json({ error: 'یافت نشد یا دسترسی ندارید' });
+    }
+    const result = await pool.query('SELECT * FROM attendance WHERE salary_id = $1', [salaryId]);
+    res.json(result.rows[0] || null);
+  } catch (err) { res.status(500).json({ error: 'خطا' }); }
 });
 
 app.post('/api/attendance', authRequired, async (req, res) => {
   try {
     const b = req.body || {}; const salary_id = parseInt(b.salary_id);
     if (!salary_id) return res.status(400).json({ error: 'salary_id الزامی است' });
+
+    // ✅ چک مالکیت: salary باید متعلق به همین مکتب باشد
+    if (req.user.role === 'school') {
+      const check = await pool.query('SELECT id FROM salaries WHERE id = $1 AND userid = $2', [salary_id, req.user.id]);
+      if (check.rows.length === 0) return res.status(403).json({ error: 'این حقوق متعلق به مکتب شما نیست' });
+    }
+
     const num = (v) => Number(normalizeDigits(v || 0)) || 0;
     const total_days = num(b.present) + num(b.absent) + num(b.vacation) + num(b.sick) + num(b.essential) + num(b.maternity) + num(b.service_center) + num(b.service_province) + num(b.hajj) + num(b.holidays) + num(b.other);
     const existing = await pool.query('SELECT id FROM attendance WHERE salary_id = $1', [salary_id]);
@@ -743,6 +985,7 @@ app.put('/api/users/:id', authRequired, async (req, res) => {
 app.delete('/api/users/:id', authRequired, async (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'فقط ادمین' });
+    // ✅ با migration جدید، این کوئری همه سال‌ها را پاک می‌کند
     await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
     await pool.query('DELETE FROM records WHERE userid = $1', [req.params.id]);
     await pool.query('DELETE FROM school_settings_new WHERE userid = $1', [req.params.id]);
@@ -754,6 +997,9 @@ app.delete('/api/users/:id', authRequired, async (req, res) => {
 // مسیر پیش‌فرض و شروع سرور
 // ═══════════════════════════════════════════════════════════
 app.get('*', (req, res) => {
+  // ✅ اصلاح: API ناموجود، JSON 404 برگرداند نه index.html
+  if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found' });
+
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');

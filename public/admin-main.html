@@ -789,11 +789,17 @@ a:focus-visible {
         </div>
 
         <div id="inner-tab-students" class="inner-tab-content active">
-          <div class="stats-filter-bar">
-            <label>🏫 انتخاب مکتب:</label>
-            <select id="statsSchoolFilterStudents" onchange="renderStudentsStats()">
-              <option value="">📋 همه مکاتب</option>
-            </select>
+          <div class="stats-filter-bar d-flex flex-wrap align-items-center gap-3">
+            <div style="min-width:190px; flex:1;">
+              <label for="statsYearFilterStudents">📅 انتخاب سال تعلیمی:</label>
+              <select id="statsYearFilterStudents" onchange="renderStudentsStats()"></select>
+            </div>
+            <div style="min-width:190px; flex:1;">
+              <label for="statsSchoolFilterStudents">🏫 انتخاب مکتب:</label>
+              <select id="statsSchoolFilterStudents" onchange="renderStudentsStats()">
+                <option value="">📋 همه مکاتب</option>
+              </select>
+            </div>
           </div>
           <div id="studentsStatsContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
         </div>
@@ -1252,6 +1258,19 @@ a:focus-visible {
     
     studentsSelect.innerHTML = '<option value="">📋 همه مکاتب</option>';
     employeesSelect.innerHTML = '<option value="">📋 همه مکاتب</option>';
+
+    // فهرست سال‌های تعلیمی در آمار شاگردان
+    const yearSelect = document.getElementById('statsYearFilterStudents');
+    if (yearSelect && !yearSelect.options.length) {
+      const currentYear = 1405;
+      for (let y = currentYear - 5; y <= currentYear + 2; y++) {
+        const option = document.createElement('option');
+        option.value = String(y);
+        option.textContent = String(y);
+        yearSelect.appendChild(option);
+      }
+      yearSelect.value = String(currentYear);
+    }
     
     allSchoolsList.forEach(s => {
       const opt1 = document.createElement('option'); opt1.value = s.schoolname; opt1.textContent = s.schoolname; studentsSelect.appendChild(opt1);
@@ -1268,6 +1287,7 @@ a:focus-visible {
   // ═══════════════════════════════════════════════════════════
   async function renderStudentsStats() {
     const schoolFilter = document.getElementById('statsSchoolFilterStudents').value;
+    const selectedYear = Number(document.getElementById('statsYearFilterStudents').value || 1405);
     const content = document.getElementById('studentsStatsContent');
     content.innerHTML = '<div class="text-center p-4 text-muted">در حال بارگذاری...</div>';
 
@@ -1275,6 +1295,11 @@ a:focus-visible {
       if (!allSchoolSettings || allSchoolSettings.length === 0) await loadSchoolSettings();
 
       let filteredSettings = allSchoolSettings.map(flattenSettings);
+      // هر راپور تنها از معلومات همان سال تعلیمی ساخته می‌شود.
+      filteredSettings = filteredSettings.filter(s => {
+        const rawYear = s.schoolYear ?? s.school_year ?? s.academic_year ?? s.academicYear ?? s.year;
+        return rawYear !== undefined && rawYear !== null && Number(rawYear) === selectedYear;
+      });
       if (schoolFilter) {
         filteredSettings = filteredSettings.filter(s => {
           if (s.schoolname === schoolFilter) return true;
@@ -1320,9 +1345,11 @@ a:focus-visible {
       const gradM = filteredSettings.reduce((sum, s) => sum + getN(s, 'grad_male', 'gradMale'), 0);
 
       const title = schoolFilter ? `آمار مکتب: ${escapeHtml(schoolFilter)}` : 'آمار تمامی مکاتب';
+      const yearTitle = `سال تعلیمی ${selectedYear}`;
       const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
 
       let html = `
+        <div class="alert alert-primary py-2 fw-bold">📅 ${yearTitle}</div>
         <h6 style="color:#1e40af; font-weight:bold; margin-bottom:10px;">📚 ${title} - آمار کل شعبات</h6>
         <table class="table table-bordered table-sm text-center">
           <thead><tr><th>مقطع</th><th>اناث</th><th>ذکور</th><th>مختلط</th><th>مجموع</th></tr></thead>

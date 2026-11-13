@@ -91,11 +91,6 @@ async function tooManyFailures(ip) {
   );
   return r.rows[0].c >= 10;
 }
-function codeToNumber(code) {
-  if (!code) return 0;
-  const m = String(code).match(/(\d+)\s*$/);
-  return m ? Number(m[1]) : 0;
-}
 
 // ============================================================
 // HEALTH
@@ -186,7 +181,7 @@ app.get('/api/users', authRequired, adminOnly, asyncRoute(async (_req, res) => {
             madaris_first_code, madaris_last_code
        FROM users ORDER BY id`
   );
-  res.json(r.rows); // ← تغییر: آرایه مستقیم (صفحه ادمین انتظار آرایه دارد)
+  res.json(r.rows);
 }));
 
 app.post('/api/users', authRequired, adminOnly, asyncRoute(async (req, res) => {
@@ -199,7 +194,6 @@ app.post('/api/users', authRequired, adminOnly, asyncRoute(async (req, res) => {
   const exists = await q('SELECT 1 FROM users WHERE username=$1', [String(b.username).trim()]);
   if (exists.rows.length) return res.status(409).json({ error: 'نام کاربری تکراری است' });
 
-  // پشتیبانی از هر دو نام‌گذاری camelCase و snake_case
   const schoolFirstCode = b.school_first_code ?? b.schoolFirstCode ?? null;
   const schoolLastCode  = b.school_last_code  ?? b.schoolLastCode  ?? null;
   const madarisFirstCode = b.madaris_first_code ?? b.madarisFirstCode ?? null;
@@ -273,10 +267,9 @@ app.delete('/api/users/:id', authRequired, adminOnly, asyncRoute(async (req, res
 }));
 
 // ============================================================
-// ALL SCHOOL SETTINGS (برای صفحه ادمین)
+// ALL SCHOOL SETTINGS
 // ============================================================
 app.get('/api/all-school-settings', authRequired, adminOnly, asyncRoute(async (_req, res) => {
-  // اطلاعات مکاتب + تنظیمات (اگر ستون‌های اضافی در school_settings داری، اینجا اضافه کن)
   try {
     const r = await q(
       `SELECT u.id, u.schoolname, u.district,
@@ -290,7 +283,6 @@ app.get('/api/all-school-settings', authRequired, adminOnly, asyncRoute(async (_
     );
     res.json(r.rows);
   } catch (e) {
-    // اگر جدول school_settings ستون‌های مورد انتظار را ندارد، فقط users را برگردان
     const r = await q(
       `SELECT id, schoolname, district,
               school_first_code, school_last_code,
@@ -302,7 +294,7 @@ app.get('/api/all-school-settings', authRequired, adminOnly, asyncRoute(async (_
 }));
 
 // ============================================================
-// APP SETTINGS (key/value)
+// APP SETTINGS
 // ============================================================
 app.get('/api/app-settings', asyncRoute(async (_req, res) => {
   const r = await q('SELECT key, value, updatedat FROM app_settings ORDER BY key');
@@ -373,7 +365,6 @@ app.put('/api/school-settings/:id', authRequired, asyncRoute(async (req, res) =>
 // ============================================================
 // RECORDS
 // ============================================================
-// تغییر: پاسخ آرایه مستقیم (صفحه ادمین انتظار آرایه دارد)
 app.get('/api/records', authRequired, asyncRoute(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
   const r = await q(
@@ -416,7 +407,6 @@ app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
     return res.status(403).json({ error: 'دسترسی ندارید' });
 
   const b = req.body || {};
-  // پشتیبانی از editAllowed و editallowed
   const editAllowed = b.editAllowed !== undefined ? b.editAllowed : b.editallowed;
   const r = await q(
     `UPDATE records SET
@@ -449,7 +439,7 @@ app.delete('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
 }));
 
 // ============================================================
-// APPROVE RECORD (جدید — برای دکمه تایید)
+// APPROVE RECORD
 // ============================================================
 app.post('/api/records/:id/approve', authRequired, adminOnly, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
@@ -812,6 +802,54 @@ app.post('/api/tashkeel/import', authRequired, adminOnly, asyncRoute(async (req,
     }
     await client.query('COMMIT');
     res.json({ success: true, inserted });
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+}));
+
+// ============================================================
+// SEED TASHKEEL — یک‌بار برای پر کردن tashkeel از tashkeel-data.js
+// ============================================================
+app.post('/api/tashkeel/seed', authRequired, adminOnly, asyncRoute(async (req, res) => {
+  let buildTashkeelRecords;
+  try {
+    ({ buildTashkeelRecords } = require('./tashkeel-data'));
+  } catch (e) {
+    return res.status(500).json({
+      error: 'فایل tashkeel-data.js در سرور پیدا نشد',
+      detail: e.message
+    });
+  }
+  if (typeof buildTashkeelRecords !== 'function') {
+    return res.status(500).json({ error: 'buildTashkeelRecords در tashkeel-data.js نیست' });
+  }
+
+  const records = buildTashkeelRecords();
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    let inserted = 0;
+    let skipped = 0;
+    for (const r of records) {
+      const exists = await client.query('SELECT 1 FROM tashkeel WHERE code=$1', [r.code]);
+      if (exists.rows.length) { skipped++; continue; }
+      await client.query(
+        `INSERT INTO tashkeel (userid, pub, priv, title, place, code, section, amariat)
+         VALUES (NULL,$1,$2,$3,$4,$5,$6,$7)`,
+        [
+          r.pub === null || r.pub === undefined ? null : String(r.pub),
+          r.priv === null || r.priv === undefined ? null : String(r.priv),
+          String(r.title), String(r.place), String(r.code),
+          r.section || 'amariat', r.amariat || null
+        ]
+      );
+      inserted++;
+    }
+    await client.query('COMMIT');
+    res.json({ success: true, inserted, skipped, total_in_file: records.length });
   } catch (e) {
     await client.query('ROLLBACK');
     throw e;

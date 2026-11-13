@@ -10,9 +10,7 @@
 
 /* =====================================================
    PREMIUM ADMIN PANEL — PURPLE ROYAL EDITION
-   طراحی مدرن و حرفه‌ای پنل مدیریت
    ===================================================== */
-
 :root {
   --primary: #6d28d9;
   --primary-dark: #4c1d95;
@@ -31,9 +29,7 @@
   --shadow-hover: 0 12px 30px rgba(76,29,149,.12);
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   font-family: Tahoma, Arial, sans-serif;
@@ -46,8 +42,7 @@ body {
   line-height: 1.7;
 }
 
-/* ===== نوار بالایی ===== */
-
+/* ===== Topbar ===== */
 .topbar {
   background: linear-gradient(125deg, #312e81 0%, #5b21b6 55%, #7c3aed 100%);
   color: #fff;
@@ -61,7 +56,6 @@ body {
   position: relative;
   overflow: hidden;
 }
-
 .topbar::before {
   content: "";
   position: absolute;
@@ -72,16 +66,9 @@ body {
   border: 1px solid rgba(255,255,255,.15);
   border-radius: 50%;
 }
+.topbar h5 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: .2px; }
 
-.topbar h5 {
-  margin: 0;
-  font-size: 19px;
-  font-weight: 800;
-  letter-spacing: .2px;
-}
-
-/* ===== تب‌های اصلی ===== */
-
+/* ===== Nav Tabs ===== */
 .nav-tabs-custom {
   display: flex;
   gap: 7px;
@@ -91,7 +78,6 @@ body {
   flex-wrap: wrap;
   box-shadow: var(--shadow);
 }
-
 .nav-tab-btn {
   padding: 14px 23px;
   border: none;
@@ -107,21 +93,10 @@ body {
   text-decoration: none;
   display: inline-block;
 }
+.nav-tab-btn:hover { color: var(--primary); background: #faf5ff; }
+.nav-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: #f5f0ff; font-weight: 800; }
 
-.nav-tab-btn:hover {
-  color: var(--primary);
-  background: #faf5ff;
-}
-
-.nav-tab-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
-  background: #f5f0ff;
-  font-weight: 800;
-}
-
-/* ===== کارت‌های اصلی ===== */
-
+/* ===== Cards ===== */
 .card-custom {
   background: rgba(255,255,255,.97);
   border: 1px solid #e9e5f5;
@@ -131,20 +106,10 @@ body {
   margin-bottom: 25px;
   transition: box-shadow .25s ease, border-color .25s ease;
 }
+.card-custom:hover { box-shadow: var(--shadow-hover); border-color: #ddd6fe; }
+.card-custom h4, .card-custom h5 { color: #312e81; font-weight: 800; }
 
-.card-custom:hover {
-  box-shadow: var(--shadow-hover);
-  border-color: #ddd6fe;
-}
-
-.card-custom h4,
-.card-custom h5 {
-  color: #312e81;
-  font-weight: 800;
-}
-
-/* ===== کارت‌های آماری ===== */
-
+/* ===== Stat cards ===== */
 .stat-card {
   background: linear-gradient(145deg, #ffffff, #f5f3ff);
   border: 1px solid #ddd6fe;
@@ -156,7 +121,6 @@ body {
   box-shadow: 0 4px 14px rgba(76,29,149,.05);
   transition: transform .25s ease, box-shadow .25s ease;
 }
-
 .stat-card::before {
   content: "";
   position: absolute;
@@ -166,12 +130,7 @@ body {
   height: 100%;
   background: linear-gradient(180deg, #7c3aed, #a78bfa);
 }
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-hover);
-}
-
+.stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
 .stat-card .value {
   font-size: 27px;
   font-weight: 900;
@@ -180,32 +139,15 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* ===== رنگ‌ها ===== */
+/* ===== Text / Buttons ===== */
+.text-purple { color: #7c3aed !important; }
+.btn-purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: white; border: none; box-shadow: 0 4px 12px rgba(124,58,237,.2); }
+.btn-purple:hover { background: linear-gradient(135deg, #6d28d9, #4c1d95); color: white; transform: translateY(-2px); box-shadow: 0 7px 18px rgba(124,58,237,.28); }
+.btn-teal { background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff; border: none; }
+.btn-teal:hover { background: linear-gradient(135deg, #115e59, #0d9488); color: #fff; transform: translateY(-2px); }
 
-.text-purple {
-  color: #7c3aed !important;
-}
-
-.btn-purple {
-  background: linear-gradient(135deg, #7c3aed, #5b21b6);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 12px rgba(124,58,237,.2);
-}
-
-.btn-purple:hover {
-  background: linear-gradient(135deg, #6d28d9, #4c1d95);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 7px 18px rgba(124,58,237,.28);
-}
-
-/* ===== فرم‌ها ===== */
-
-.form-control,
-.form-select,
-select,
-textarea {
+/* ===== Forms ===== */
+.form-control, .form-select, select, textarea {
   font-size: 14px;
   border: 1px solid #d8d5e8 !important;
   border-radius: 10px !important;
@@ -214,32 +156,16 @@ textarea {
   color: #1e1b4b !important;
   transition: all .2s ease;
 }
-
-.form-control:hover,
-.form-select:hover,
-select:hover,
-textarea:hover {
-  border-color: #a78bfa !important;
-}
-
-.form-control:focus,
-.form-select:focus,
-select:focus,
-textarea:focus {
+.form-control:hover, .form-select:hover, select:hover, textarea:hover { border-color: #a78bfa !important; }
+.form-control:focus, .form-select:focus, select:focus, textarea:focus {
   border-color: #8b5cf6 !important;
   box-shadow: 0 0 0 4px rgba(139,92,246,.12) !important;
   background: #fff !important;
   outline: none;
 }
+label { color: #475569; font-weight: 700; margin-bottom: 7px; }
 
-label {
-  color: #475569;
-  font-weight: 700;
-  margin-bottom: 7px;
-}
-
-/* ===== جدول ===== */
-
+/* ===== Table ===== */
 .table {
   font-size: 14px;
   background: white;
@@ -249,7 +175,6 @@ label {
   border-radius: 12px;
   overflow: hidden;
 }
-
 .table-responsive {
   border-radius: 13px;
   border: 1px solid #e9e5f5;
@@ -257,9 +182,7 @@ label {
   overflow-x: auto;
   background: white;
 }
-
-.table thead th,
-th {
+.table thead th, th {
   background: linear-gradient(135deg, #f3e8ff, #ede9fe) !important;
   color: #4c1d95;
   font-weight: 800;
@@ -268,44 +191,20 @@ th {
   white-space: nowrap;
   border-bottom: 2px solid #ddd6fe;
 }
-
 .table tbody td {
   padding: 12px;
   text-align: center;
   vertical-align: middle;
   border-bottom: 1px solid #f0edf7;
 }
+.table tbody tr:nth-child(even) { background: #fcfbff; }
+.table tbody tr:hover { background: #f5f0ff; }
 
-.table tbody tr:nth-child(even) {
-  background: #fcfbff;
-}
+/* ===== Badges ===== */
+.badge-pending { background: #fef3c7; color: #92400e; padding: 6px 11px; border-radius: 30px; font-size: 12px; font-weight: bold; }
+.badge-approved { background: #d1fae5; color: #065f46; padding: 6px 11px; border-radius: 30px; font-size: 12px; font-weight: bold; }
 
-.table tbody tr:hover {
-  background: #f5f0ff;
-}
-
-/* ===== وضعیت‌ها ===== */
-
-.badge-pending {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 6px 11px;
-  border-radius: 30px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.badge-approved {
-  background: #d1fae5;
-  color: #065f46;
-  padding: 6px 11px;
-  border-radius: 30px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-/* ===== دکمه‌های جدول ===== */
-
+/* ===== Action buttons ===== */
 .btn-action {
   padding: 6px 11px;
   font-size: 12px;
@@ -316,25 +215,11 @@ th {
   margin: 2px;
   transition: all .2s ease;
 }
+.btn-action:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 4px 10px rgba(15,23,42,.13); }
+.btn-delete-row { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
+.btn-view { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
 
-.btn-action:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-  box-shadow: 0 4px 10px rgba(15,23,42,.13);
-}
-
-.btn-delete-row {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
-  color: #fff;
-}
-
-.btn-view {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: #fff;
-}
-
-/* ===== پیام‌های سیستم ===== */
-
+/* ===== Toast ===== */
 .toast {
   position: fixed;
   bottom: 30px;
@@ -351,13 +236,9 @@ th {
   text-align: center;
   box-shadow: 0 10px 30px rgba(5,150,105,.25);
 }
+.toast.error { background: linear-gradient(135deg, #dc2626, #ef4444); }
 
-.toast.error {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-}
-
-/* ===== فیلترها ===== */
-
+/* ===== Filter grid ===== */
 .filter-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -368,7 +249,6 @@ th {
   margin-bottom: 18px;
   border: 1px solid #e9d5ff;
 }
-
 .filter-item label {
   font-size: 12px;
   font-weight: bold;
@@ -376,9 +256,7 @@ th {
   margin-bottom: 6px;
   display: block;
 }
-
-.filter-item select,
-.filter-item input {
+.filter-item select, .filter-item input {
   width: 100%;
   padding: 10px;
   border: 1px solid #d8d5e8;
@@ -388,36 +266,14 @@ th {
   background: white;
 }
 
-/* ===== مودال ===== */
+/* ===== Modal ===== */
+.modal-content { border: none; border-radius: 17px; overflow: hidden; box-shadow: 0 25px 70px rgba(30,27,75,.2); }
+.modal-header-purple { background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; padding: 17px 22px; }
+.modal-header-purple .btn-close { filter: invert(1); }
+.modal-body { padding: 23px; }
+.modal-footer { background: #faf5ff; border-top: 1px solid #ede9fe; }
 
-.modal-content {
-  border: none;
-  border-radius: 17px;
-  overflow: hidden;
-  box-shadow: 0 25px 70px rgba(30,27,75,.2);
-}
-
-.modal-header-purple {
-  background: linear-gradient(135deg, #7c3aed, #4c1d95);
-  color: #fff;
-  padding: 17px 22px;
-}
-
-.modal-header-purple .btn-close {
-  filter: invert(1);
-}
-
-.modal-body {
-  padding: 23px;
-}
-
-.modal-footer {
-  background: #faf5ff;
-  border-top: 1px solid #ede9fe;
-}
-
-/* ===== مجوز ارزیابی ===== */
-
+/* ===== Permission box ===== */
 .eval-permission-box {
   background: #fff;
   border-radius: 14px;
@@ -432,38 +288,14 @@ th {
   box-shadow: var(--shadow);
   transition: all .2s ease;
 }
+.eval-permission-box.allowed { border-color: #10b981; background: linear-gradient(120deg, #f0fdf4, #fff); }
+.eval-permission-box.denied { border-color: #ef4444; background: linear-gradient(120deg, #fef2f2, #fff); }
+.eval-permission-status { font-size: 16px; font-weight: bold; }
+.eval-permission-status.allowed { color: #15803d; }
+.eval-permission-status.denied { color: #b91c1c; }
 
-.eval-permission-box.allowed {
-  border-color: #10b981;
-  background: linear-gradient(120deg, #f0fdf4, #fff);
-}
-
-.eval-permission-box.denied {
-  border-color: #ef4444;
-  background: linear-gradient(120deg, #fef2f2, #fff);
-}
-
-.eval-permission-status {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.eval-permission-status.allowed {
-  color: #15803d;
-}
-
-.eval-permission-status.denied {
-  color: #b91c1c;
-}
-
-/* ===== دکمه‌های تغییر وضعیت ===== */
-
-.switch-btn-group {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
+/* ===== Switch buttons ===== */
+.switch-btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
 .switch-btn {
   padding: 10px 25px;
   border: 2px solid #cbd5e1;
@@ -475,57 +307,16 @@ th {
   font-size: 14px;
   transition: all .2s ease;
 }
+.switch-btn:hover { background: #f5f3ff; border-color: #a78bfa; }
+.switch-btn.active-yes { background: linear-gradient(135deg, #059669, #10b981); color: #fff; border-color: #10b981; box-shadow: 0 4px 12px rgba(16,185,129,.2); }
+.switch-btn.active-no { background: linear-gradient(135deg, #dc2626, #ef4444); color: #fff; border-color: #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,.2); }
 
-.switch-btn:hover {
-  background: #f5f3ff;
-  border-color: #a78bfa;
-}
+/* ===== Result badges ===== */
+.result-badge-excellent { background: #dcfce7; color: #15803d; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: bold; }
+.result-badge-good { background: #dbeafe; color: #1e40af; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: bold; }
+.result-badge-weak { background: #fee2e2; color: #b91c1c; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: bold; }
 
-.switch-btn.active-yes {
-  background: linear-gradient(135deg, #059669, #10b981);
-  color: #fff;
-  border-color: #10b981;
-  box-shadow: 0 4px 12px rgba(16,185,129,.2);
-}
-
-.switch-btn.active-no {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  color: #fff;
-  border-color: #ef4444;
-  box-shadow: 0 4px 12px rgba(239,68,68,.2);
-}
-
-/* ===== نتایج ارزیابی ===== */
-
-.result-badge-excellent {
-  background: #dcfce7;
-  color: #15803d;
-  padding: 5px 12px;
-  border-radius: 30px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.result-badge-good {
-  background: #dbeafe;
-  color: #1e40af;
-  padding: 5px 12px;
-  border-radius: 30px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.result-badge-weak {
-  background: #fee2e2;
-  color: #b91c1c;
-  padding: 5px 12px;
-  border-radius: 30px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-/* ===== سوئیچ ===== */
-
+/* ===== Toggle switch ===== */
 .toggle-switch {
   display: inline-flex;
   align-items: center;
@@ -540,171 +331,54 @@ th {
   font-size: 13px;
   transition: all .2s ease;
 }
+.toggle-switch:hover { background: #ede9fe; }
+.toggle-switch input { width: 18px; height: 18px; cursor: pointer; accent-color: #7c3aed; }
 
-.toggle-switch:hover {
-  background: #ede9fe;
-}
+/* ===== Hidden table ===== */
+.eval-table-hidden { display: none !important; }
 
-.toggle-switch input {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #7c3aed;
-}
-
-/* ===== مخفی‌سازی جدول ارزیابی ===== */
-
-.eval-table-hidden {
-  display: none !important;
-}
-
-/* ===== انیمیشن ملایم ===== */
-
+/* ===== Animations ===== */
 @keyframes premiumFade {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+.card-custom, .stat-card { animation: premiumFade .35s ease both; }
 
-.card-custom,
-.stat-card {
-  animation: premiumFade .35s ease both;
-}
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
 
-/* ===== اسکرول‌بار ===== */
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c4b5fd;
-  border-radius: 20px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #7c3aed;
-}
-
-/* ===== واکنش‌گرایی ===== */
-
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .topbar {
-    padding: 15px;
-  }
-
-  .nav-tabs-custom {
-    padding: 7px;
-    gap: 4px;
-  }
-
-  .nav-tab-btn {
-    padding: 11px 13px;
-    font-size: 12px;
-  }
-
-  .card-custom {
-    padding: 16px;
-    border-radius: 13px;
-  }
-
-  .stat-card {
-    padding: 15px;
-  }
-
-  .stat-card .value {
-    font-size: 22px;
-  }
-
-  .filter-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  }
-
-  .eval-permission-box {
-    padding: 15px;
-  }
+  .topbar { padding: 15px; }
+  .nav-tabs-custom { padding: 7px; gap: 4px; }
+  .nav-tab-btn { padding: 11px 13px; font-size: 12px; }
+  .card-custom { padding: 16px; border-radius: 13px; }
+  .stat-card { padding: 15px; }
+  .stat-card .value { font-size: 22px; }
+  .filter-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .eval-permission-box { padding: 15px; }
 }
-
 @media (max-width: 480px) {
-  body {
-    font-size: 13px;
-  }
-
-  .topbar h5 {
-    font-size: 16px;
-  }
-
-  .nav-tab-btn {
-    padding: 9px 10px;
-    font-size: 11px;
-  }
-
-  .filter-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .table {
-    font-size: 12px;
-  }
-
-  .table th,
-  .table td {
-    padding: 8px 6px;
-  }
-
-  .switch-btn {
-    padding: 9px 15px;
-    font-size: 12px;
-  }
+  body { font-size: 13px; }
+  .topbar h5 { font-size: 16px; }
+  .nav-tab-btn { padding: 9px 10px; font-size: 11px; }
+  .filter-grid { grid-template-columns: 1fr; }
+  .table { font-size: 12px; }
+  .table th, .table td { padding: 8px 6px; }
+  .switch-btn { padding: 9px 15px; font-size: 12px; }
 }
 
-/* ===== چاپ رسمی ===== */
-
+/* ===== Print ===== */
 @media print {
-  body {
-    background: #fff !important;
-    color: #000 !important;
-  }
-
-  .topbar {
-    background: #fff !important;
-    color: #000 !important;
-    box-shadow: none !important;
-  }
-
-  .nav-tabs-custom,
-  button,
-  .btn,
-  .filter-grid,
-  .no-print {
-    display: none !important;
-  }
-
-  .card-custom,
-  .stat-card {
-    box-shadow: none !important;
-    border: 1px solid #ccc !important;
-    break-inside: avoid;
-  }
-
-  .table th {
-    background: #eee !important;
-    color: #000 !important;
-  }
+  body { background: #fff !important; color: #000 !important; }
+  .topbar { background: #fff !important; color: #000 !important; box-shadow: none !important; }
+  .nav-tabs-custom, button, .btn, .filter-grid, .no-print { display: none !important; }
+  .card-custom, .stat-card { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+  .table th { background: #eee !important; color: #000 !important; }
 }
-
-/* ===== پایان ===== */
-
 </style>
 </head>
 <body>
@@ -717,14 +391,17 @@ th {
   <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
 </div>
 
+<!-- ==================== نوار تب‌ها ==================== -->
 <div class="nav-tabs-custom" id="adminTabs">
   <a href="admin-main.html" class="nav-tab-btn">🏠 صفحه اصلی</a>
   <a href="admin-evaluation.html" class="nav-tab-btn active">⭐ ارزیابی</a>
   <a href="admin-salaries.html" class="nav-tab-btn">💰 معاشات</a>
+  <a href="admin-tashkeel.html" class="nav-tab-btn">📋 مدیریت تشکیل</a>
 </div>
 
 <div class="container-fluid px-4 py-3" id="tab-evaluation">
 
+  <!-- ===== مجوز ارزیابی ===== -->
   <div class="eval-permission-box denied" id="evalPermissionBox">
     <div>
       <div style="font-size:13px; color:#64748b; margin-bottom:5px;">🔑 اجازه ارزیابی به مکاتب:</div>
@@ -736,6 +413,7 @@ th {
     </div>
   </div>
 
+  <!-- ===== آمار ارزیابی ===== -->
   <div class="card-custom">
     <h5 class="text-purple mb-3 fw-bold">📊 آمار ارزیابی‌ها</h5>
     <div class="row g-3">
@@ -746,10 +424,12 @@ th {
     </div>
   </div>
 
+  <!-- ===== لیست ارزیابی‌ها ===== -->
   <div class="card-custom">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <h5 class="text-purple m-0 fw-bold">📋 لیست ارزیابی‌ها</h5>
       <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-teal fw-bold btn-sm px-3" onclick="openTashkeelPanel()">📋 مدیریت تشکیل</button>
         <button class="btn btn-dark fw-bold btn-sm px-3" id="toggleEvalListBtn" onclick="toggleEvalList()">👁️ نمایش لیست</button>
         <button class="btn btn-purple fw-bold btn-sm px-3" onclick="printEvalAdmin()">🖨️ پرنت توحیدی</button>
         <button class="btn btn-success fw-bold btn-sm px-3" onclick="exportEvalAdminExcel()">📊 اکسل توحیدی</button>
@@ -812,10 +492,19 @@ th {
   function logout() { localStorage.clear(); window.location.href = '/'; }
   window.logout = logout;
 
+  // ✅ دکمه جدید: باز کردن پنل تشکیل
+  function openTashkeelPanel() {
+    window.location.href = 'admin-tashkeel.html';
+  }
+  window.openTashkeelPanel = openTashkeelPanel;
+
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
-    t.textContent = msg; t.className = 'toast' + (isError ? ' error' : ''); t.style.display = 'block';
-    clearTimeout(t._timer); t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+    t.textContent = msg;
+    t.className = 'toast' + (isError ? ' error' : '');
+    t.style.display = 'block';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
   }
 
   function escapeHtml(s) {
@@ -826,7 +515,11 @@ th {
   function normalizeDigits(str) {
     if (!str) return '';
     const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
-    return str.split('').map(ch => { const pi = p.indexOf(ch); if (pi !== -1) return pi; const ai = a.indexOf(ch); if (ai !== -1) return ai; return ch; }).join('');
+    return str.split('').map(ch => {
+      const pi = p.indexOf(ch); if (pi !== -1) return pi;
+      const ai = a.indexOf(ch); if (ai !== -1) return ai;
+      return ch;
+    }).join('');
   }
 
   function detectSchoolType(schoolName) {
@@ -842,20 +535,51 @@ th {
   // ═══════════════════════════════════════════════════════════
   // مجوز ارزیابی
   // ═══════════════════════════════════════════════════════════
-  async function loadEvaluationPermission() { 
-    try { const res = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } }); const data = await res.json(); evalAllowed = !!data.allowed; updatePermissionUI(); } catch (e) { console.error(e); } 
+  async function loadEvaluationPermission() {
+    try {
+      const res = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      evalAllowed = !!data.allowed;
+      updatePermissionUI();
+    } catch (e) { console.error(e); }
   }
   window.loadEvaluationPermission = loadEvaluationPermission;
 
   function updatePermissionUI() {
-    const box = document.getElementById('evalPermissionBox'), status = document.getElementById('evalPermissionStatus'), btnYes = document.getElementById('btnAllowYes'), btnNo = document.getElementById('btnAllowNo');
-    btnYes.classList.remove('active-yes', 'active-no'); btnNo.classList.remove('active-yes', 'active-no'); box.classList.remove('allowed', 'denied'); status.classList.remove('allowed', 'denied');
-    if (evalAllowed) { box.classList.add('allowed'); status.classList.add('allowed'); status.textContent = '✅ فعال'; btnYes.classList.add('active-yes'); }
-    else { box.classList.add('denied'); status.classList.add('denied'); status.textContent = '❌ غیرفعال'; btnNo.classList.add('active-no'); }
+    const box = document.getElementById('evalPermissionBox'),
+          status = document.getElementById('evalPermissionStatus'),
+          btnYes = document.getElementById('btnAllowYes'),
+          btnNo = document.getElementById('btnAllowNo');
+    btnYes.classList.remove('active-yes', 'active-no');
+    btnNo.classList.remove('active-yes', 'active-no');
+    box.classList.remove('allowed', 'denied');
+    status.classList.remove('allowed', 'denied');
+    if (evalAllowed) {
+      box.classList.add('allowed');
+      status.classList.add('allowed');
+      status.textContent = '✅ فعال';
+      btnYes.classList.add('active-yes');
+    } else {
+      box.classList.add('denied');
+      status.classList.add('denied');
+      status.textContent = '❌ غیرفعال';
+      btnNo.classList.add('active-no');
+    }
   }
 
   async function setEvaluationPermission(allowed) {
-    try { const res = await fetch('/api/evaluation-permission', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ allowed }) }); if (res.ok) { evalAllowed = allowed; updatePermissionUI(); showToast(allowed ? '✅ فعال شد' : '❌ غیرفعال شد'); } else showToast('خطا', true); } catch (e) { showToast('ارتباط برقرار نشد', true); }
+    try {
+      const res = await fetch('/api/evaluation-permission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ allowed })
+      });
+      if (res.ok) {
+        evalAllowed = allowed;
+        updatePermissionUI();
+        showToast(allowed ? '✅ فعال شد' : '❌ غیرفعال شد');
+      } else showToast('خطا', true);
+    } catch (e) { showToast('ارتباط برقرار نشد', true); }
   }
   window.setEvaluationPermission = setEvaluationPermission;
 
@@ -887,7 +611,9 @@ th {
       cachedEvaluations = Array.isArray(evals) ? evals : [];
       populateEvalSchoolDropdown();
       applyEvalFilters();
-    } catch (err) { tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger p-4">خطا</td></tr>'; }
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger p-4">خطا</td></tr>';
+    }
   }
   window.loadAdminEvaluations = loadAdminEvaluations;
 
@@ -897,7 +623,13 @@ th {
     const currentVal = select.value;
     select.innerHTML = '<option value="">📋 همه مکاتب</option>';
     const uniqueSchools = [...new Set(cachedEvaluations.map(e => e.schoolname).filter(Boolean))].sort();
-    uniqueSchools.forEach(school => { const opt = document.createElement('option'); opt.value = school; opt.textContent = `🏫 ${school}`; if (school === currentVal) opt.selected = true; select.appendChild(opt); });
+    uniqueSchools.forEach(school => {
+      const opt = document.createElement('option');
+      opt.value = school;
+      opt.textContent = `🏫 ${school}`;
+      if (school === currentVal) opt.selected = true;
+      select.appendChild(opt);
+    });
   }
 
   function applyEvalFilters() {
@@ -905,11 +637,17 @@ th {
     const searchInput = (document.getElementById('evalSearchInput').value || '').trim().toLowerCase();
     const schoolTypeFilter = document.getElementById('evalSchoolTypeFilter').value;
     const schoolNameFilter = document.getElementById('evalSchoolNameFilter').value;
-    
+
     filteredEvaluations = cachedEvaluations.filter(e => {
       if (schoolNameFilter && e.schoolname !== schoolNameFilter) return false;
-      if (schoolTypeFilter) { const type = detectSchoolType(e.schoolname); if (schoolTypeFilter === 'مکاتب') { if (type !== 'لیسه' && type !== 'متوسطه' && type !== 'ابتداییه') return false; } else if (schoolTypeFilter === 'مدارس') { if (type !== 'مدرسه' && type !== 'نامشخص') return false; } }
-      
+      if (schoolTypeFilter) {
+        const type = detectSchoolType(e.schoolname);
+        if (schoolTypeFilter === 'مکاتب') {
+          if (type !== 'لیسه' && type !== 'متوسطه' && type !== 'ابتداییه') return false;
+        } else if (schoolTypeFilter === 'مدارس') {
+          if (type !== 'مدرسه' && type !== 'نامشخص') return false;
+        }
+      }
       if (searchInput) {
         const fn = (e.first_name || '').toLowerCase();
         const fa = (e.father_name || '').toLowerCase();
@@ -922,226 +660,269 @@ th {
     });
 
     let excellent = 0, good = 0, weak = 0;
-    filteredEvaluations.forEach(e => { if (e.eval_result === 'عالی') excellent++; else if (e.eval_result === 'خوب') good++; else if (e.eval_result === 'ضعیف') weak++; });
+    filteredEvaluations.forEach(e => {
+      if (e.eval_result === 'عالی') excellent++;
+      else if (e.eval_result === 'خوب') good++;
+      else if (e.eval_result === 'ضعیف') weak++;
+    });
     document.getElementById('evalStatTotal').textContent = filteredEvaluations.length;
     document.getElementById('evalStatExcellent').textContent = excellent;
     document.getElementById('evalStatGood').textContent = good;
     document.getElementById('evalStatWeak').textContent = weak;
-    
-    if (filteredEvaluations.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4 text-muted">یافت نشد</td></tr>'; return; }
-    
+
+    if (filteredEvaluations.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4 text-muted">یافت نشد</td></tr>';
+      return;
+    }
+
     let html = '';
     filteredEvaluations.forEach((e, idx) => {
       let resultBadge = '—';
       if (e.eval_result === 'عالی') resultBadge = '<span class="result-badge-excellent">🌟 عالی</span>';
       else if (e.eval_result === 'خوب') resultBadge = '<span class="result-badge-good">✅ خوب</span>';
       else if (e.eval_result === 'ضعیف') resultBadge = '<span class="result-badge-weak">⚠️ ضعیف</span>';
-      html += `<tr><td>${idx + 1}</td><td><b>${escapeHtml(e.first_name || '-')}</b></td><td>${escapeHtml(e.father_name || '-')}</td><td>${escapeHtml(e.job_title || '-')}</td><td><code>${escapeHtml(e.job_code || '—')}</code></td><td>${escapeHtml(e.schoolname || '-')}</td><td>${escapeHtml(e.eval_date || '-')}</td><td><strong>${e.eval_score}</strong></td><td>${resultBadge}</td><td><button class="btn-action btn-delete-row" onclick="deleteEvalAdmin(${e.id})">🗑️</button></td></tr>`;
+      html += `<tr>
+        <td>${idx + 1}</td>
+        <td><b>${escapeHtml(e.first_name || '-')}</b></td>
+        <td>${escapeHtml(e.father_name || '-')}</td>
+        <td>${escapeHtml(e.job_title || '-')}</td>
+        <td><code>${escapeHtml(e.job_code || '—')}</code></td>
+        <td>${escapeHtml(e.schoolname || '-')}</td>
+        <td>${escapeHtml(e.eval_date || '-')}</td>
+        <td><strong>${e.eval_score}</strong></td>
+        <td>${resultBadge}</td>
+        <td><button class="btn-action btn-delete-row" onclick="deleteEvalAdmin(${e.id})">🗑️</button></td>
+      </tr>`;
     });
     tbody.innerHTML = html;
   }
   window.applyEvalFilters = applyEvalFilters;
 
-  async function deleteEvalAdmin(id) { if (!confirm('⚠️ حذف شود؟')) return; try { const res = await fetch('/api/evaluations/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); if (res.ok) { showToast('🗑️ حذف شد'); loadAdminEvaluations(); } else showToast('خطا', true); } catch (e) { showToast('خطا', true); } }
+  async function deleteEvalAdmin(id) {
+    if (!confirm('⚠️ حذف شود؟')) return;
+    try {
+      const res = await fetch('/api/evaluations/' + id, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.ok) { showToast('🗑️ حذف شد'); loadAdminEvaluations(); }
+      else showToast('خطا', true);
+    } catch (e) { showToast('خطا', true); }
+  }
   window.deleteEvalAdmin = deleteEvalAdmin;
 
   // ═══════════════════════════════════════════════════════════
-  // پرینت و اکسل توحیدی (اصلاح شده)
+  // پرینت و اکسل توحیدی
   // ═══════════════════════════════════════════════════════════
   async function getUnifiedEvaluationData() {
-      const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
-      if (!res.ok) throw new Error('دریافت معلومات کارمندان ناکام شد');
-      const records = await res.json();
-      const recordsMap = {};
-      if (Array.isArray(records)) records.forEach(r => { recordsMap[String(r.id)] = r.data || {}; });
-      const evaluations = [...(cachedEvaluations || [])].sort((a, b) => String(a.first_name || '').localeCompare(String(b.first_name || ''), 'fa'));
-      return { evaluations, recordsMap };
+    const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) throw new Error('دریافت معلومات کارمندان ناکام شد');
+    const records = await res.json();
+    const recordsMap = {};
+    if (Array.isArray(records)) records.forEach(r => { recordsMap[String(r.id)] = r.data || {}; });
+    const evaluations = [...(cachedEvaluations || [])].sort((a, b) => String(a.first_name || '').localeCompare(String(b.first_name || ''), 'fa'));
+    return { evaluations, recordsMap };
   }
 
   function unifiedEvaluationRows(evaluations, recordsMap) {
-      const esc = value => escapeHtml(value === null || value === undefined ? '' : String(value));
-      const pick = (a, b, fallback='') => a !== undefined && a !== null && a !== '' ? a : (b !== undefined && b !== null && b !== '' ? b : fallback);
-      const dateParts = value => {
-        const raw = value === null || value === undefined ? '' : normalizeDigits(String(value).trim());
-        if (!raw) return ['', '', ''];
-        const m = raw.match(/(\d{1,4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,4})/);
-        if (!m) return ['', '', raw];
-        if (m[1].length >= 3) return [m[3], m[2], m[1]];
-        return [m[1], m[2], m[3]];
-      };
-      return evaluations.map((ev, index) => {
-        const rec = recordsMap[String(ev.record_id)] || {};
-        const first = pick(ev.first_name, rec.firstName);
-        const father = pick(ev.father_name, rec.fatherName);
-        const grandfather = pick(ev.grandfather_name, rec.grandfatherName);
-        const birth = pick(ev.birth_date, rec.birthDate);
-        const appointment = pick(ev.appointment_date, rec.currentPositionDate || rec.firstAppointmentDate);
-        const previousEval = pick(ev.eval_date_prev, ev.previous_eval_date, rec.previousEvalDate);
-        const evalDate = pick(ev.eval_date, '');
-        const appointmentParts = dateParts(appointment);
-        const previousParts = dateParts(previousEval);
-        const evalParts = dateParts(evalDate);
-        const result = String(ev.eval_result || '').trim();
-        const values = [
-          pick(ev.private_number, ev.record_id, index + 1),
-          first, father, grandfather,
-          pick(ev.job_code, rec.jobCode),
-          pick(ev.appointment_type, rec.employmentType || rec.appointmentType || rec.typeOfAppointment),
-          ...dateParts(birth),
-          pick(ev.service_duration, rec.serviceDuration || rec.durationOfService),
-          pick(ev.degree, rec.degree),
-          pick(ev.gender, rec.gender),
-          pick(ev.job_title, rec.jobTitle),
-          pick(ev.district, rec.originDistrict || currentUser.district),
-          pick(ev.workplace, ev.schoolname || currentUser.schoolname),
-          ...appointmentParts,
-          ...previousParts,
-          pick(ev.bust, rec.bust), pick(ev.grade, rec.grade),
-          ...evalParts,
-          pick(ev.eval_score, ''),
-          result === 'عالی' ? '✓' : '',
-          result === 'خوب' ? '✓' : '',
-          result === 'ضعیف' ? '✓' : '',
-          pick(ev.remarks, ev.notes || ev.observations)
-        ];
-        return values.map(esc);
-      });
+    const esc = value => escapeHtml(value === null || value === undefined ? '' : String(value));
+    const pick = (a, b, fallback='') => a !== undefined && a !== null && a !== '' ? a : (b !== undefined && b !== null && b !== '' ? b : fallback);
+    const dateParts = value => {
+      const raw = value === null || value === undefined ? '' : normalizeDigits(String(value).trim());
+      if (!raw) return ['', '', ''];
+      const m = raw.match(/(\d{1,4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,4})/);
+      if (!m) return ['', '', raw];
+      if (m[1].length >= 3) return [m[3], m[2], m[1]];
+      return [m[1], m[2], m[3]];
+    };
+    return evaluations.map((ev, index) => {
+      const rec = recordsMap[String(ev.record_id)] || {};
+      const first = pick(ev.first_name, rec.firstName);
+      const father = pick(ev.father_name, rec.fatherName);
+      const grandfather = pick(ev.grandfather_name, rec.grandfatherName);
+      const birth = pick(ev.birth_date, rec.birthDate);
+      const appointment = pick(ev.appointment_date, rec.currentPositionDate || rec.firstAppointmentDate);
+      const previousEval = pick(ev.eval_date_prev, ev.previous_eval_date, rec.previousEvalDate);
+      const evalDate = pick(ev.eval_date, '');
+      const appointmentParts = dateParts(appointment);
+      const previousParts = dateParts(previousEval);
+      const evalParts = dateParts(evalDate);
+      const result = String(ev.eval_result || '').trim();
+      const values = [
+        pick(ev.private_number, ev.record_id, index + 1),
+        first, father, grandfather,
+        pick(ev.job_code, rec.jobCode),
+        pick(ev.appointment_type, rec.employmentType || rec.appointmentType || rec.typeOfAppointment),
+        ...dateParts(birth),
+        pick(ev.service_duration, rec.serviceDuration || rec.durationOfService),
+        pick(ev.degree, rec.degree),
+        pick(ev.gender, rec.gender),
+        pick(ev.job_title, rec.jobTitle),
+        pick(ev.district, rec.originDistrict || currentUser.district),
+        pick(ev.workplace, ev.schoolname || currentUser.schoolname),
+        ...appointmentParts,
+        ...previousParts,
+        pick(ev.bust, rec.bust), pick(ev.grade, rec.grade),
+        ...evalParts,
+        pick(ev.eval_score, ''),
+        result === 'عالی' ? '✓' : '',
+        result === 'خوب' ? '✓' : '',
+        result === 'ضعیف' ? '✓' : '',
+        pick(ev.remarks, ev.notes || ev.observations)
+      ];
+      return values.map(esc);
+    });
   }
 
   function unifiedEvaluationTableHead() {
-      return `
-      <thead>
-        <tr>
-          <th rowspan="3">شماره</th>
-          <th colspan="3">شهرت</th>
-          <th colspan="11">مشخصات وظیفوی</th>
-          <th colspan="3">تاریخ تقرر / تاریخ معادلت / تاریخ فراغت</th>
-          <th colspan="3">تاریخ ارزیابی قبلی</th>
-          <th colspan="2">بست و قدم موجود</th>
-          <th colspan="3">تاریخ ارزیابی</th>
-          <th rowspan="3">نمره ارزیابی</th>
-          <th colspan="3">نتیجه ارزیابی</th>
-          <th rowspan="3">ملاحظات</th>
-        </tr>
-        <tr>
-          <th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th>
-          <th rowspan="2">کود تشکیل</th><th rowspan="2">نوع تقرری</th>
-          <th colspan="3">تاریخ تولد</th><th rowspan="2">مدت خدمت</th>
-          <th rowspan="2">درجه تحصیل</th><th rowspan="2">جنسیت</th><th rowspan="2">وظیفه</th>
-          <th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره مربوطه</th>
-          <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
-          <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
-          <th rowspan="2">بست</th><th rowspan="2">قدم</th>
-          <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
-          <th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th>
-        </tr>
-        <tr><th>روز</th><th>ماه</th><th>سال</th></tr>
-      </thead>`;
+    return `
+    <thead>
+      <tr>
+        <th rowspan="3">شماره</th>
+        <th colspan="3">شهرت</th>
+        <th colspan="11">مشخصات وظیفوی</th>
+        <th colspan="3">تاریخ تقرر / تاریخ معادلت / تاریخ فراغت</th>
+        <th colspan="3">تاریخ ارزیابی قبلی</th>
+        <th colspan="2">بست و قدم موجود</th>
+        <th colspan="3">تاریخ ارزیابی</th>
+        <th rowspan="3">نمره ارزیابی</th>
+        <th colspan="3">نتیجه ارزیابی</th>
+        <th rowspan="3">ملاحظات</th>
+      </tr>
+      <tr>
+        <th rowspan="2">اسم</th><th rowspan="2">ولد</th><th rowspan="2">ولدیت</th>
+        <th rowspan="2">کود تشکیل</th><th rowspan="2">نوع تقرری</th>
+        <th colspan="3">تاریخ تولد</th><th rowspan="2">مدت خدمت</th>
+        <th rowspan="2">درجه تحصیل</th><th rowspan="2">جنسیت</th><th rowspan="2">وظیفه</th>
+        <th rowspan="2">ناحیه / ولسوالی</th><th rowspan="2">نام مکتب / اداره مربوطه</th>
+        <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+        <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+        <th rowspan="2">بست</th><th rowspan="2">قدم</th>
+        <th rowspan="2">روز</th><th rowspan="2">ماه</th><th rowspan="2">سال</th>
+        <th rowspan="2">عالی</th><th rowspan="2">خوب</th><th rowspan="2">ضعیف</th>
+      </tr>
+      <tr><th>روز</th><th>ماه</th><th>سال</th></tr>
+    </thead>`;
   }
 
   function unifiedEvaluationTableBody(rows) {
-      return '<tbody>' + rows.map(row =>
-        '<tr>' + row.map((cell, i) => `<td${i >= 1 && i <= 3 ? ' class="name-cell"' : ''}>${cell || ''}</td>`).join('') + '</tr>'
-      ).join('') + '</tbody>';
+    return '<tbody>' + rows.map(row =>
+      '<tr>' + row.map((cell, i) => `<td${i >= 1 && i <= 3 ? ' class="name-cell"' : ''}>${cell || ''}</td>`).join('') + '</tr>'
+    ).join('') + '</tbody>';
   }
 
   function unifiedEvaluationDocumentStyles() {
-      return `
-      <style>
-        html,body{margin:0;padding:0;font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#000}
-        .official-head{display:grid;grid-template-columns:1fr 3fr 1fr;align-items:center;text-align:center;margin-bottom:5px}
-        .official-head h2{font-size:17px;margin:2px}.official-head h3{font-size:14px;margin:2px}
-        .official-head p{font-size:10px;margin:2px}
-        .table-title{text-align:center;font-weight:bold;font-size:12px;padding:5px;border:1px solid #000;margin:5px 0}
-        table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6.5px;direction:rtl}
-        th,td{border:1px solid #000;text-align:center;vertical-align:middle;padding:2px 1px;overflow-wrap:anywhere;line-height:1.15}
-        th{background:#e8e8e8;font-weight:bold}
-        td.name-cell{text-align:right}
-        .signature{display:flex;justify-content:space-between;margin-top:12px;font-size:10px}
-        @page{size:A3 landscape;margin:7mm}
-        @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-      </style>`;
+    return `
+    <style>
+      html,body{margin:0;padding:0;font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#000}
+      .official-head{display:grid;grid-template-columns:1fr 3fr 1fr;align-items:center;text-align:center;margin-bottom:5px}
+      .official-head h2{font-size:17px;margin:2px}.official-head h3{font-size:14px;margin:2px}
+      .official-head p{font-size:10px;margin:2px}
+      .table-title{text-align:center;font-weight:bold;font-size:12px;padding:5px;border:1px solid #000;margin:5px 0}
+      table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6.5px;direction:rtl}
+      th,td{border:1px solid #000;text-align:center;vertical-align:middle;padding:2px 1px;overflow-wrap:anywhere;line-height:1.15}
+      th{background:#e8e8e8;font-weight:bold}
+      td.name-cell{text-align:right}
+      .signature{display:flex;justify-content:space-between;margin-top:12px;font-size:10px}
+      @page{size:A3 landscape;margin:7mm}
+      @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+    </style>`;
   }
 
   async function printEvalAdmin() {
-      if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true); return; }
-      try {
-          const { recordsMap } = await getUnifiedEvaluationData(); // ⭐ اصلاح شد
-          const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
-          const html = `
-            <div class="official-head">
-              <div class="head-side"><h2>وزارت معارف</h2></div>
-              <div><p>معینیت مالی و اداری</p><p>ریاست عمومی امور کارکنان</p><p>ریاست استخدام</p><p>آمریت ارزیابی اجراآت</p><p>مدیریت عمومی ارزیابی اجراآت معلمین و استادان</p></div>
-              <div class="head-side"><h2>د پوهنې وزارت</h2></div>
-            </div>
-            <div class="table-title">جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ریاست معارف ولایت هرات</div>
-            <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
-            <div class="signature"><span>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</span><span>مهر و امضا: ____________________</span></div>`;
-          printHtmlDocument(unifiedEvaluationDocumentStyles() + html, 'جدول توحیدی ارزیابی معلمین', 'A3 landscape');
-      } catch (e) { console.error(e); showToast('❌ خطا در تولید جدول پرینت', true); }
+    if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true); return; }
+    try {
+      const { recordsMap } = await getUnifiedEvaluationData();
+      const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
+      const html = `
+        <div class="official-head">
+          <div class="head-side"><h2>وزارت معارف</h2></div>
+          <div><p>معینیت مالی و اداری</p><p>ریاست عمومی امور کارکنان</p><p>ریاست استخدام</p><p>آمریت ارزیابی اجراآت</p><p>مدیریت عمومی ارزیابی اجراآت معلمین و استادان</p></div>
+          <div class="head-side"><h2>د پوهنې وزارت</h2></div>
+        </div>
+        <div class="table-title">جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ریاست معارف ولایت هرات</div>
+        <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
+        <div class="signature"><span>تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</span><span>مهر و امضا: ____________________</span></div>`;
+      printHtmlDocument(unifiedEvaluationDocumentStyles() + html, 'جدول توحیدی ارزیابی معلمین', 'A3 landscape');
+    } catch (e) {
+      console.error(e);
+      showToast('❌ خطا در تولید جدول پرینت', true);
+    }
   }
   window.printEvalAdmin = printEvalAdmin;
 
   async function exportEvalAdminExcel() {
-      if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای خروجی اکسل وجود ندارد.', true); return; }
-      try {
-          const { recordsMap } = await getUnifiedEvaluationData(); // ⭐ اصلاح شد
-          const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
-          const html = `<!DOCTYPE html>
-          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40" lang="fa" dir="rtl">
-          <head><meta charset="UTF-8">
-          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
-          <x:Name>جدول توحیدی ارزیابی</x:Name><x:WorksheetOptions>
-          <x:DisplayRightToLeft/><x:PageSetup><x:Layout x:Orientation="Landscape"/>
-          </x:PageSetup><x:FitToPage/><x:Print><x:FitWidth>1</x:FitWidth><x:FitHeight>0</x:FitHeight></x:Print>
-          </x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-          <style>
-          @page { size: A3 landscape; margin: 0.25in; }
-          body { font-family: Tahoma, Arial, sans-serif; direction: rtl; color:#000; }
-          table { border-collapse:collapse; width:100%; direction:rtl; table-layout:fixed; }
-          th,td { border:1px solid #000; padding:3px 2px; text-align:center; vertical-align:middle; font-family:Tahoma,Arial,sans-serif; font-size:9pt; white-space:normal; }
-          th { background:#e8e8e8; font-weight:bold; }
-          .official-title { font-weight:bold; text-align:center; font-size:12pt; padding:5px; }
-          </style></head><body>
-          <table style="border:0;width:100%;margin-bottom:8px">
-            <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">معینیت مالی و اداری</td></tr>
-            <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">ریاست عمومی امور کارکنان</td></tr>
-            <tr><td colspan="3" style="border:0;text-align:center">ریاست استخدام — آمریت ارزیابی اجراآت</td></tr>
-            <tr><td colspan="3" class="official-title" style="border:1px solid #000">جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ریاست معارف ولایت هرات</td></tr>
-          </table>
-          <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
-          <table style="border:0;margin-top:10px"><tr>
-            <td style="border:0;text-align:right">تاریخ چاپ: ${escapeHtml(new Date().toLocaleDateString('fa-IR'))}</td>
-            <td style="border:0;text-align:left">مهر و امضا: ____________________</td>
-          </tr></table>
-          </body></html>`;
-          const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'جدول_توحیدی_ارزیابی_معلمین_' + Date.now() + '.xls';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          setTimeout(() => URL.revokeObjectURL(url), 1500);
-          showToast('✅ خروجی اکسل جدول توحیدی آماده شد.');
-      } catch (e) { console.error(e); showToast('❌ خطا در تولید خروجی اکسل', true); }
+    if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای خروجی اکسل وجود ندارد.', true); return; }
+    try {
+      const { recordsMap } = await getUnifiedEvaluationData();
+      const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
+      const html = `<!DOCTYPE html>
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40" lang="fa" dir="rtl">
+      <head><meta charset="UTF-8">
+      <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+      <x:Name>جدول توحیدی ارزیابی</x:Name><x:WorksheetOptions>
+      <x:DisplayRightToLeft/><x:PageSetup><x:Layout x:Orientation="Landscape"/>
+      </x:PageSetup><x:FitToPage/><x:Print><x:FitWidth>1</x:FitWidth><x:FitHeight>0</x:FitHeight></x:Print>
+      </x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+      <style>
+      @page { size: A3 landscape; margin: 0.25in; }
+      body { font-family: Tahoma, Arial, sans-serif; direction: rtl; color:#000; }
+      table { border-collapse:collapse; width:100%; direction:rtl; table-layout:fixed; }
+      th,td { border:1px solid #000; padding:3px 2px; text-align:center; vertical-align:middle; font-family:Tahoma,Arial,sans-serif; font-size:9pt; white-space:normal; }
+      th { background:#e8e8e8; font-weight:bold; }
+      .official-title { font-weight:bold; text-align:center; font-size:12pt; padding:5px; }
+      </style></head><body>
+      <table style="border:0;width:100%;margin-bottom:8px">
+        <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">معینیت مالی و اداری</td></tr>
+        <tr><td colspan="3" style="border:0;text-align:center;font-weight:bold;font-size:11pt">ریاست عمومی امور کارکنان</td></tr>
+        <tr><td colspan="3" style="border:0;text-align:center">ریاست استخدام — آمریت ارزیابی اجراآت</td></tr>
+        <tr><td colspan="3" class="official-title" style="border:1px solid #000">جدول توحیدی ارزیابی اجراآت سالانه معلمین و مدرسین معارف — ریاست معارف ولایت هرات</td></tr>
+      </table>
+      <table>${unifiedEvaluationTableHead()}${unifiedEvaluationTableBody(rows)}</table>
+      <table style="border:0;margin-top:10px"><tr>
+        <td style="border:0;text-align:right">تاریخ چاپ: ${escapeHtml(new Date().toLocaleDateString('fa-IR'))}</td>
+        <td style="border:0;text-align:left">مهر و امضا: ____________________</td>
+      </tr></table>
+      </body></html>`;
+      const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'جدول_توحیدی_ارزیابی_معلمین_' + Date.now() + '.xls';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      showToast('✅ خروجی اکسل جدول توحیدی آماده شد.');
+    } catch (e) {
+      console.error(e);
+      showToast('❌ خطا در تولید خروجی اکسل', true);
+    }
   }
   window.exportEvalAdminExcel = exportEvalAdminExcel;
 
   function printHtmlDocument(html, title, pageSize = 'A4 landscape') {
     const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = 'none';
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
     document.body.appendChild(iframe);
     const doc = iframe.contentWindow.document;
     doc.open();
     doc.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>body{font-family:Tahoma,Arial,sans-serif;direction:rtl;padding:15px;color:#111}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #333;padding:7px;text-align:center}th{background:#eee} @media print{@page{size:${pageSize};margin:1cm}}</style></head><body>${html}</body></html>`);
     doc.close();
-    setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1200); }, 400);
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1200);
+    }, 400);
   }
   window.printHtmlDocument = printHtmlDocument;
 
+  // ═══════════════════════════════════════════════════════════
   // شروع
+  // ═══════════════════════════════════════════════════════════
   (async function init() {
     await loadEvaluationPermission();
     await loadAdminEvaluations();

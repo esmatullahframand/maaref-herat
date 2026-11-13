@@ -4,19 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ثبت کارمند جدید - پنل مکتب</title>
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- اسکریپت EmailJS برای ارسال ایمیل ثبت کارمند -->
-<!-- ═══════════════════════════════════════════════════════════ -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-  // کلید عمومی شما
-  emailjs.init("zwl7hPSbD0TEuG65v"); 
+  emailjs.init("zwl7hPSbD0TEuG65v");
 </script>
-
 <style>
-  
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
-
 :root {
   --primary: #173b68;
   --primary-dark: #102b4d;
@@ -30,537 +23,177 @@
   --radius: 14px;
   --shadow: 0 8px 28px rgba(20, 43, 75, .07);
 }
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 body {
   font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Arial, sans-serif;
-  background:
-    radial-gradient(circle at 10% 5%, rgba(37,99,235,.08), transparent 28%),
-    linear-gradient(135deg, #f5f8fc, #edf2f8);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 28px 18px;
-  color: var(--text);
-  line-height: 1.7;
+  background: radial-gradient(circle at 10% 5%, rgba(37,99,235,.08), transparent 28%), linear-gradient(135deg, #f5f8fc, #edf2f8);
+  min-height: 100vh; display: flex; justify-content: center; align-items: flex-start;
+  padding: 28px 18px; color: var(--text); line-height: 1.7;
 }
-
-button, input, select {
-  font-family: inherit;
-}
-
+button, input, select { font-family: inherit; }
 .main-container {
-  width: 100%;
-  max-width: 1450px;
-  background: var(--surface);
-  border: 1px solid rgba(226,232,240,.9);
-  border-radius: 20px;
-  box-shadow: 0 18px 55px rgba(15, 35, 65, .10);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  width: 100%; max-width: 1450px; background: var(--surface);
+  border: 1px solid rgba(226,232,240,.9); border-radius: 20px;
+  box-shadow: 0 18px 55px rgba(15, 35, 65, .10); overflow: hidden;
+  display: flex; flex-direction: column;
 }
-
 .topbar {
   background: linear-gradient(115deg, #102b4d, #1b4777 65%, #245b91);
-  color: #fff;
-  padding: 20px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  position: relative;
+  color: #fff; padding: 20px 30px; display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 14px; position: relative;
 }
-
 .topbar::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 100%;
-  height: 3px;
+  content: ""; position: absolute; bottom: 0; right: 0; width: 100%; height: 3px;
   background: linear-gradient(90deg, #20c997, #60a5fa, transparent);
 }
-
-.topbar h3 {
-  font-size: 19px;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 3px;
-}
-
-.topbar small {
-  color: #d7e7f8;
-  font-size: 12px;
-}
-
+.topbar h3 { font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 3px; }
+.topbar small { color: #d7e7f8; font-size: 12px; }
 .btn-logout {
-  background: rgba(255,255,255,.12);
-  color: white;
-  border: 1px solid rgba(255,255,255,.25);
-  padding: 9px 19px;
-  border-radius: 9px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 13px;
-  transition: .2s;
+  background: rgba(255,255,255,.12); color: white; border: 1px solid rgba(255,255,255,.25);
+  padding: 9px 19px; border-radius: 9px; font-weight: 700; cursor: pointer; font-size: 13px; transition: .2s;
 }
-
-.btn-logout:hover {
-  background: #dc3545;
-  border-color: #dc3545;
-  transform: translateY(-1px);
-}
-
+.btn-logout:hover { background: #dc3545; border-color: #dc3545; transform: translateY(-1px); }
 .main-tabs {
-  display: flex;
-  gap: 5px;
-  background: #fff;
-  border-bottom: 1px solid var(--border);
-  padding: 10px 18px 0;
-  flex-wrap: wrap;
+  display: flex; gap: 5px; background: #fff; border-bottom: 1px solid var(--border);
+  padding: 10px 18px 0; flex-wrap: wrap;
 }
-
 .main-tab-btn {
-  padding: 12px 17px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 9px 9px 0 0;
-  font-size: 13px;
-  text-decoration: none;
-  display: inline-block;
-  border-bottom: 3px solid transparent;
-  transition: .2s;
-  white-space: nowrap;
+  padding: 12px 17px; border: none; background: transparent; color: #64748b;
+  font-weight: 700; cursor: pointer; border-radius: 9px 9px 0 0; font-size: 13px;
+  text-decoration: none; display: inline-block; border-bottom: 3px solid transparent;
+  transition: .2s; white-space: nowrap;
 }
-
-.main-tab-btn:hover {
-  background: #f1f6fc;
-  color: var(--primary);
-}
-
-.main-tab-btn.active {
-  color: var(--blue);
-  border-bottom-color: var(--blue);
-  background: #eff6ff;
-}
-
+.main-tab-btn:hover { background: #f1f6fc; color: var(--primary); }
+.main-tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: #eff6ff; }
 .page-header {
-  background: linear-gradient(110deg, #edf5ff, #f7faff);
-  color: var(--primary);
-  padding: 22px 30px;
-  font-size: 21px;
-  font-weight: 900;
-  text-align: right;
-  border-bottom: 1px solid #e5edf7;
-  position: relative;
+  background: linear-gradient(110deg, #edf5ff, #f7faff); color: var(--primary);
+  padding: 22px 30px; font-size: 21px; font-weight: 900; text-align: right;
+  border-bottom: 1px solid #e5edf7; position: relative;
 }
-
 .page-header::before {
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 18px;
-  bottom: 18px;
-  width: 5px;
-  background: var(--green);
-  border-radius: 5px 0 0 5px;
+  content: ""; position: absolute; right: 0; top: 18px; bottom: 18px;
+  width: 5px; background: var(--green); border-radius: 5px 0 0 5px;
 }
-
-.page-content {
-  padding: 28px;
-  background: #fbfcfe;
-}
-
+.page-content { padding: 28px; background: #fbfcfe; }
 .form-section {
-  background: #fff;
-  padding: 24px;
-  border: 1px solid #e5eaf1;
-  border-radius: var(--radius);
-  margin-bottom: 22px;
-  border-right: 4px solid var(--green);
-  box-shadow: var(--shadow);
-  transition: box-shadow .2s, border-color .2s;
+  background: #fff; padding: 24px; border: 1px solid #e5eaf1;
+  border-radius: var(--radius); margin-bottom: 22px; border-right: 4px solid var(--green);
+  box-shadow: var(--shadow); transition: box-shadow .2s, border-color .2s;
 }
-
-.form-section:hover {
-  box-shadow: 0 10px 32px rgba(20,43,75,.09);
-}
-
+.form-section:hover { box-shadow: 0 10px 32px rgba(20,43,75,.09); }
 .form-section h5 {
-  color: var(--primary);
-  font-size: 15px;
-  font-weight: 800;
-  padding: 0 0 13px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  color: var(--primary); font-size: 15px; font-weight: 800; padding: 0 0 13px;
+  margin-bottom: 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
 }
-
 .form-section h5::before {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: var(--green);
-  border-radius: 50%;
-  box-shadow: 0 0 0 4px rgba(15,159,120,.12);
+  content: ""; display: inline-block; width: 8px; height: 8px;
+  background: var(--green); border-radius: 50%; box-shadow: 0 0 0 4px rgba(15,159,120,.12);
 }
-
 .grid-4 {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 19px 16px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 19px 16px;
 }
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-}
-
-label {
-  font-size: 12px;
-  font-weight: 800;
-  color: #40536b;
-}
-
-input[type="text"],
-select {
-  min-height: 43px;
-  padding: 10px 12px;
-  border: 1px solid #d6deea;
-  border-radius: 9px;
-  font-size: 13px;
-  color: #24364b;
-  outline: none;
-  background: #fff;
-  width: 100%;
+.form-group { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+label { font-size: 12px; font-weight: 800; color: #40536b; }
+input[type="text"], select {
+  min-height: 43px; padding: 10px 12px; border: 1px solid #d6deea; border-radius: 9px;
+  font-size: 13px; color: #24364b; outline: none; background: #fff; width: 100%;
   transition: border-color .2s, box-shadow .2s, background .2s;
 }
-
-input::placeholder {
-  color: #a4afbd;
-  font-size: 12px;
-}
-
-input:hover, select:hover {
-  border-color: #9aacc2;
-}
-
+input::placeholder { color: #a4afbd; font-size: 12px; }
+input:hover, select:hover { border-color: #9aacc2; }
 input:focus, select:focus {
-  border-color: #4385e8;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.12);
-  background: #fff;
+  border-color: #4385e8; box-shadow: 0 0 0 3px rgba(59,130,246,.12); background: #fff;
 }
-
-input.valid {
-  border-color: #10a779 !important;
-  background: #f2fcf8;
-}
-
-input.invalid {
-  border-color: #e34b56 !important;
-  background: #fff7f7;
-}
-
+input.valid { border-color: #10a779 !important; background: #f2fcf8; }
+input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
 .date-msg {
-  display: block;
-  font-size: 10px;
-  margin-top: 2px;
-  min-height: 16px;
-  font-weight: 700;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
+  display: block; font-size: 10px; margin-top: 2px; min-height: 16px;
+  font-weight: 700; line-height: 1.6; overflow-wrap: anywhere;
 }
-
 .date-msg.pending { color: #b7791f; }
 .date-msg.valid { color: #0b966c; }
 .date-msg.invalid { color: #dc3545; }
-
-.field-hint {
-  display: block;
-  font-size: 10px;
-  color: #7b899a;
-  margin-top: 2px;
-}
-
+.field-hint { display: block; font-size: 10px; color: #7b899a; margin-top: 2px; }
 .service-section {
-  background: #fffaf0;
-  border: 1px solid #f3d99c;
-  border-right: 4px solid #e6a23c;
-  padding: 18px;
-  border-radius: 11px;
-  margin-top: 15px;
-  display: none;
+  background: #fffaf0; border: 1px solid #f3d99c; border-right: 4px solid #e6a23c;
+  padding: 18px; border-radius: 11px; margin-top: 15px; display: none;
 }
-
-.service-section.active {
-  display: block;
-}
-
+.service-section.active { display: block; }
 .agreement-box {
-  background: #fff9e9;
-  border: 1px solid #f0d48d;
-  border-radius: 12px;
-  padding: 19px 21px;
-  margin: 22px 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  cursor: pointer;
-  transition: .2s;
-  user-select: none;
+  background: #fff9e9; border: 1px solid #f0d48d; border-radius: 12px;
+  padding: 19px 21px; margin: 22px 0; display: flex; align-items: flex-start;
+  gap: 13px; cursor: pointer; transition: .2s; user-select: none;
 }
-
-.agreement-box:hover {
-  background: #fff4d6;
-  border-color: #e3b84e;
-}
-
-.agreement-box.checked {
-  background: #edfaf4;
-  border-color: #48b88d;
-}
-
+.agreement-box:hover { background: #fff4d6; border-color: #e3b84e; }
+.agreement-box.checked { background: #edfaf4; border-color: #48b88d; }
 .agreement-box input[type="checkbox"] {
-  width: 21px;
-  height: 21px;
-  cursor: pointer;
-  accent-color: var(--green);
-  margin-top: 3px;
-  flex-shrink: 0;
-  pointer-events: none;
+  width: 21px; height: 21px; cursor: pointer; accent-color: var(--green);
+  margin-top: 3px; flex-shrink: 0; pointer-events: none;
 }
-
-.agreement-text {
-  font-size: 13px;
-  color: #78551b;
-  font-weight: 700;
-  line-height: 1.9;
-}
-
-.agreement-box.checked .agreement-text {
-  color: #087653;
-}
-
+.agreement-text { font-size: 13px; color: #78551b; font-weight: 700; line-height: 1.9; }
+.agreement-box.checked .agreement-text { color: #087653; }
 .btn {
-  padding: 13px 22px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 800;
-  cursor: pointer;
-  color: white;
-  background: linear-gradient(120deg, #0fa77b, #087f60);
-  font-size: 14px;
-  transition: .2s;
-  box-shadow: 0 5px 15px rgba(15,159,120,.2);
-  width: 100%;
-  margin-top: 10px;
+  padding: 13px 22px; border: none; border-radius: 10px; font-weight: 800;
+  cursor: pointer; color: white; background: linear-gradient(120deg, #0fa77b, #087f60);
+  font-size: 14px; transition: .2s; box-shadow: 0 5px 15px rgba(15,159,120,.2);
+  width: 100%; margin-top: 10px;
 }
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(15,159,120,.28);
-}
-
-.btn:disabled {
-  background: #aab5c2;
-  cursor: not-allowed;
-  opacity: .7;
-  transform: none;
-  box-shadow: none;
-}
-
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,159,120,.28); }
+.btn:disabled { background: #aab5c2; cursor: not-allowed; opacity: .7; transform: none; box-shadow: none; }
 .btn-submit-final {
-  padding: 16px;
-  background: linear-gradient(120deg, #2563eb, #1749ad);
-  font-size: 15px;
-  box-shadow: 0 5px 18px rgba(37,99,235,.22);
+  padding: 16px; background: linear-gradient(120deg, #2563eb, #1749ad);
+  font-size: 15px; box-shadow: 0 5px 18px rgba(37,99,235,.22);
 }
-
-.btn-submit-final:hover {
-  box-shadow: 0 8px 22px rgba(37,99,235,.32);
-}
-
+.btn-submit-final:hover { box-shadow: 0 8px 22px rgba(37,99,235,.32); }
 .toast {
-  position: fixed;
-  bottom: 25px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: #0e9870;
-  color: #fff;
-  padding: 13px 24px;
-  border-radius: 11px;
-  font-weight: 700;
-  font-size: 13px;
-  z-index: 9999;
-  opacity: 0;
-  transition: all .3s;
-  box-shadow: 0 8px 25px rgba(0,0,0,.18);
-  max-width: calc(100% - 30px);
-  text-align: center;
+  position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: #0e9870; color: #fff; padding: 13px 24px; border-radius: 11px;
+  font-weight: 700; font-size: 13px; z-index: 9999; opacity: 0; transition: all .3s;
+  box-shadow: 0 8px 25px rgba(0,0,0,.18); max-width: calc(100% - 30px); text-align: center;
 }
-
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: #dc3545; }
+.range-info {
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 15px; font-size: 12px; color: #1e40af;
+  line-height: 1.8;
 }
-
-.toast.error {
-  background: #dc3545;
-}
-
-@media (max-width: 1100px) {
-  .grid-4 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
+.range-info strong { color: #1e3a8a; }
+.range-info .rng { display: inline-block; background: #dbeafe; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-family: monospace; direction: ltr; }
+@media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 800px) {
-  body {
-    padding: 12px;
-  }
-
-  .main-container {
-    border-radius: 15px;
-  }
-
-  .topbar {
-    padding: 17px 19px;
-  }
-
-  .main-tabs {
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    padding: 8px 10px 0;
-  }
-
-  .main-tab-btn {
-    flex-shrink: 0;
-    padding: 11px 13px;
-    font-size: 12px;
-  }
-
-  .page-header {
-    padding: 18px 22px;
-    font-size: 18px;
-  }
-
-  .page-content {
-    padding: 17px;
-  }
-
-  .form-section {
-    padding: 18px;
-    margin-bottom: 16px;
-  }
-
-  .grid-4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px 12px;
-  }
+  body { padding: 12px; }
+  .main-container { border-radius: 15px; }
+  .topbar { padding: 17px 19px; }
+  .main-tabs { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 8px 10px 0; }
+  .main-tab-btn { flex-shrink: 0; padding: 11px 13px; font-size: 12px; }
+  .page-header { padding: 18px 22px; font-size: 18px; }
+  .page-content { padding: 17px; }
+  .form-section { padding: 18px; margin-bottom: 16px; }
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px 12px; }
 }
-
 @media (max-width: 520px) {
-  body {
-    padding: 0;
-    background: #f5f7fb;
-  }
-
-  .main-container {
-    border-radius: 0;
-    border: none;
-    min-height: 100vh;
-  }
-
-  .topbar {
-    padding: 15px;
-  }
-
-  .topbar h3 {
-    font-size: 15px;
-  }
-
-  .btn-logout {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  .page-header {
-    font-size: 16px;
-    padding: 16px 19px;
-  }
-
-  .page-content {
-    padding: 12px;
-  }
-
-  .form-section {
-    padding: 15px 12px;
-    border-radius: 11px;
-  }
-
-  .form-section h5 {
-    font-size: 13px;
-    margin-bottom: 15px;
-  }
-
-  .grid-4 {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 13px;
-  }
-
-  input[type="text"], select {
-    min-height: 45px;
-    font-size: 14px;
-  }
-
-  .agreement-box {
-    padding: 14px;
-  }
-
-  .agreement-text {
-    font-size: 12px;
-  }
-
-  .btn-submit-final {
-    padding: 15px 10px;
-    font-size: 13px;
-  }
-
-  .toast {
-    bottom: 15px;
-    width: calc(100% - 24px);
-    padding: 12px;
-  }
+  body { padding: 0; background: #f5f7fb; }
+  .main-container { border-radius: 0; border: none; min-height: 100vh; }
+  .topbar { padding: 15px; }
+  .topbar h3 { font-size: 15px; }
+  .btn-logout { padding: 8px 12px; font-size: 12px; }
+  .page-header { font-size: 16px; padding: 16px 19px; }
+  .page-content { padding: 12px; }
+  .form-section { padding: 15px 12px; border-radius: 11px; }
+  .form-section h5 { font-size: 13px; margin-bottom: 15px; }
+  .grid-4 { grid-template-columns: minmax(0, 1fr); gap: 13px; }
+  input[type="text"], select { min-height: 45px; font-size: 14px; }
+  .agreement-box { padding: 14px; }
+  .agreement-text { font-size: 12px; }
+  .btn-submit-final { padding: 15px 10px; font-size: 13px; }
+  .toast { bottom: 15px; width: calc(100% - 24px); padding: 12px; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    scroll-behavior: auto !important;
-    transition-duration: .01ms !important;
-  }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
-
 </style>
 </head>
 <body>
@@ -585,13 +218,15 @@ input.invalid {
   <div class="page-header">➕ ثبت کارمند جدید</div>
 
   <div class="page-content">
+    <div id="rangeInfoBox" class="range-info"></div>
+
     <form id="recordForm">
       <div class="form-section">
         <h5>۱. هویت و اسناد تذکره</h5>
         <div class="grid-4">
           <div class="form-group">
             <label>عنوان بست *</label>
-            <select id="jobTitle" required onchange="toggleEducationRequired()">
+            <select id="jobTitle" required onchange="toggleEducationRequired(); onJobTitleChange();">
               <option value="">— انتخاب کنید —</option>
               <option value="آمر">آمر</option>
               <option value="مدیر">مدیر</option>
@@ -609,6 +244,7 @@ input.invalid {
               <option value="عضو مسلکی شوراها">عضو مسلکی شوراها</option>
               <option value="کارکن خدماتی">کارکن خدماتی</option>
               <option value="معتمد جنسی (تحویلدار)">معتمد جنسی (تحویلدار)</option>
+              <option value="مهتمم">مهتمم</option>
               <option value="سایر">سایر</option>
             </select>
           </div>
@@ -616,7 +252,7 @@ input.invalid {
             <label>کُد بست *</label>
             <input type="text" id="jobCode" placeholder="27-32-02-13056">
             <small id="jobCodeMsg" class="date-msg pending">⏳ منتظر...</small>
-            <small class="field-hint">🔒 کد بست باید یکتا باشد.</small>
+            <small class="field-hint" id="jobCodeHint">🔒 کد بست باید یکتا و در بازه مجاز مکتب باشد.</small>
           </div>
           <div class="form-group"><label>اسم *</label><input type="text" id="firstName" required></div>
           <div class="form-group"><label>تخلص</label><input type="text" id="lastName"></div>
@@ -734,11 +370,154 @@ input.invalid {
   if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; throw new Error('No token'); }
   document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // مقادیر بازه مجاز مکتب
+  // ═══════════════════════════════════════════════════════════════════════
+  const SCHOOL_RANGE = {
+    first: Number(user.school_first_code) || null,
+    last: Number(user.school_last_code) || null
+  };
+  const MADARIS_RANGE = {
+    first: Number(user.madaris_first_code) || null,
+    last: Number(user.madaris_last_code) || null
+  };
+
+  // نمایش بازه در بالای فرم
+  (function showRangeInfo() {
+    const box = document.getElementById('rangeInfoBox');
+    const parts = [];
+    if (SCHOOL_RANGE.first && SCHOOL_RANGE.last) {
+      parts.push(`<strong>🏫 بازه مکاتب:</strong> <span class="rng">${SCHOOL_RANGE.first} – ${SCHOOL_RANGE.last}</span>`);
+    }
+    if (MADARIS_RANGE.first && MADARIS_RANGE.last) {
+      parts.push(`<strong>🏛️ بازه مدارس:</strong> <span class="rng">${MADARIS_RANGE.first} – ${MADARIS_RANGE.last}</span>`);
+    }
+    if (parts.length) {
+      box.innerHTML = '🔒 کد بست باید در یکی از بازه‌های مجاز زیر باشد:<br>' + parts.join('<br>');
+    } else {
+      box.innerHTML = '⚠️ بازه کد بست برای این مکتب تعریف نشده است. با مدیر تماس بگیرید.';
+      box.style.background = '#fef3c7';
+      box.style.borderColor = '#fcd34d';
+      box.style.color = '#92400e';
+    }
+  })();
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // State
+  // ═══════════════════════════════════════════════════════════════════════
+  let schoolTashkeel = [];
+  let managerCodes = {};
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Helpers
+  // ═══════════════════════════════════════════════════════════════════════
   function showToast(msg, isError = false) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : ''); clearTimeout(t._timer); t._timer = setTimeout(() => { t.classList.remove('show'); }, 4000); }
   function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function normalizeDigits(str) { if (!str) return ''; const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩'; return String(str).split('').map(ch => { const pi = p.indexOf(ch); if (pi !== -1) return pi; const ai = a.indexOf(ch); if (ai !== -1) return ai; return ch; }).join(''); }
   function logout() { localStorage.clear(); window.location.href = '/'; }
 
+  function extractCodeNumber(codeStr) {
+    if (!codeStr) return null;
+    const m = String(codeStr).match(/(\d+)\s*$/);
+    return m ? Number(m[1]) : null;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // اعتبارسنجی بازه
+  // ═══════════════════════════════════════════════════════════════════════
+  function isInRange(num, first, last) {
+    if (first === null || last === null || isNaN(first) || isNaN(last)) return false;
+    return num >= first && num <= last;
+  }
+
+  function isInAnyAllowedRange(codeNum) {
+    return isInRange(codeNum, SCHOOL_RANGE.first, SCHOOL_RANGE.last)
+        || isInRange(codeNum, MADARIS_RANGE.first, MADARIS_RANGE.last);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // بارگذاری tashkeel این مکتب
+  // ═══════════════════════════════════════════════════════════════════════
+  async function loadSchoolTashkeel() {
+    try {
+      const r = await fetch('/api/tashkeel', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!r.ok) return;
+      const data = await r.json();
+      const all = Array.isArray(data) ? data : (data.tashkeel || []);
+      schoolTashkeel = all.filter(t => t.place === user.schoolname);
+
+      // ساخت نگاشت کد مدیر
+      managerCodes = {};
+      const managerTitles = ['آمر', 'مدیر', 'مدیر عمومی', 'مهتمم'];
+      schoolTashkeel.forEach(t => {
+        const title = (t.title || '').trim();
+        managerTitles.forEach(mt => {
+          if (title.includes(mt) && !managerCodes[mt]) {
+            managerCodes[mt] = t.code;
+          }
+        });
+      });
+      console.log('tashkeel این مکتب:', schoolTashkeel.length, 'ردیف');
+      console.log('کدهای مدیر:', managerCodes);
+    } catch (e) { console.error(e); }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // چک کد مدیر
+  // ═══════════════════════════════════════════════════════════════════════
+  function isManagerTitle(title) {
+    const managerTitles = ['آمر', 'مدیر', 'مدیر عمومی', 'مهتمم', 'مدیر اجرائیه'];
+    return managerTitles.some(mt => String(title || '').includes(mt));
+  }
+
+  function findManagerCodeForTitle(title) {
+    // اولویت: آمر > مدیر عمومی > مدیر > مدیر اجرائیه > مهتمم
+    const priority = ['آمر', 'مدیر عمومی', 'مدیر', 'مدیر اجرائیه', 'مهتمم'];
+    for (const mt of priority) {
+      if (String(title || '').includes(mt) && managerCodes[mt]) {
+        return managerCodes[mt];
+      }
+    }
+    // اگر پیدا نشد، اولین رکورد با عنوان مشابه
+    const found = schoolTashkeel.find(t => String(t.title || '').includes(title));
+    return found ? found.code : null;
+  }
+
+  function onJobTitleChange() {
+    const title = document.getElementById('jobTitle').value;
+    const jobCodeInput = document.getElementById('jobCode');
+    const hint = document.getElementById('jobCodeHint');
+    const msg = document.getElementById('jobCodeMsg');
+
+    if (isManagerTitle(title)) {
+      const expectedCode = findManagerCodeForTitle(title);
+      if (expectedCode) {
+        jobCodeInput.value = expectedCode;
+        jobCodeInput.classList.add('valid');
+        jobCodeInput.classList.remove('invalid');
+        hint.textContent = `🔒 کد بست برای عنوان «${title}» باید ${expectedCode} باشد (از tashkeel).`;
+        msg.textContent = '✅ کد مدیر به‌صورت خودکار تنظیم شد';
+        msg.className = 'date-msg valid';
+      } else {
+        hint.textContent = `⚠️ کد مدیر برای عنوان «${title}» در tashkeel یافت نشد. با مدیر تماس بگیرید.`;
+        msg.textContent = '';
+        msg.className = 'date-msg';
+      }
+    } else {
+      hint.textContent = '🔒 کد بست باید یکتا و در بازه مجاز مکتب باشد.';
+      if (jobCodeInput.value === '') {
+        msg.textContent = '⏳ منتظر...';
+        msg.className = 'date-msg pending';
+      }
+    }
+  }
+  window.onJobTitleChange = onJobTitleChange;
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // اعتبارسنجی تاریخ
+  // ═══════════════════════════════════════════════════════════════════════
   function validateShamsiDate(dateStr) {
     if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
     const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
@@ -756,7 +535,27 @@ input.invalid {
     if (day < 1 || day > maxDay) return { valid: false, error: `روز ۱ تا ${maxDay}` };
     return { valid: true, formatted: `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}` };
   }
-  function validateJobCode(codeStr) { if (!codeStr) return { valid: false, error: 'کد بست الزامی است' }; const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, ''); if (!/^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned)) return { valid: false, error: 'فرمت: 27-XX-XX-XXXXX' }; return { valid: true, formatted: cleaned }; }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // اعتبارسنجی کد بست (با بازه مکتب)
+  // ═══════════════════════════════════════════════════════════════════════
+  function validateJobCode(codeStr) {
+    if (!codeStr) return { valid: false, error: 'کد بست الزامی است' };
+    const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
+    if (!/^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned)) {
+      return { valid: false, error: 'فرمت: 27-XX-XX-XXXXX' };
+    }
+    const codeNum = extractCodeNumber(cleaned);
+    if (codeNum === null) return { valid: false, error: 'کد نامعتبر' };
+    if (!isInAnyAllowedRange(codeNum)) {
+      const rngs = [];
+      if (SCHOOL_RANGE.first) rngs.push(`مکاتب ${SCHOOL_RANGE.first}–${SCHOOL_RANGE.last}`);
+      if (MADARIS_RANGE.first) rngs.push(`مدارس ${MADARIS_RANGE.first}–${MADARIS_RANGE.last}`);
+      return { valid: false, error: 'کد خارج از بازه مجاز. مجاز: ' + (rngs.join(' | ') || 'تعریف نشده') };
+    }
+    return { valid: true, formatted: cleaned };
+  }
+
   function validateETazkira(codeStr) { if (!codeStr) return { valid: false, error: 'تذکره الکترونیکی الزامی است' }; const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, ''); if (!/^\d+-\d+-\d+$/.test(cleaned)) return { valid: false, error: 'فرمت: XXXXX-XXXXX-XXXX' }; return { valid: true, formatted: cleaned }; }
   function validateTazkiraCode(codeStr) { if (!codeStr) return { valid: true, formatted: '' }; const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, ''); if (!/^\d{1,20}$/.test(cleaned)) return { valid: false, error: 'فقط عدد' }; return { valid: true, formatted: cleaned }; }
 
@@ -943,9 +742,30 @@ input.invalid {
     };
 
     if (!body.jobTitle || !body.firstName || !body.fatherName || !body.grandfatherName) { showToast('❌ فیلدهای الزامی را پر کنید', true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
+
+    // ✅ اعتبارسنجی کد بست (فرمت + بازه مکتب)
+    if (body.jobCode) {
+      const jc = validateJobCode(body.jobCode);
+      if (!jc.valid) { showToast('❌ ' + jc.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
+      body.jobCode = jc.formatted;
+    }
+
+    // ✅ چک کد مدیر
+    if (isManagerTitle(body.jobTitle)) {
+      const expectedCode = findManagerCodeForTitle(body.jobTitle);
+      if (expectedCode && body.jobCode !== expectedCode) {
+        showToast(`❌ برای عنوان «${body.jobTitle}»، کد بست باید ${expectedCode} باشد (از tashkeel)`, true);
+        btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return;
+      }
+      if (!expectedCode) {
+        showToast(`⚠️ کد مدیر برای عنوان «${body.jobTitle}» در tashkeel یافت نشد. با مدیر تماس بگیرید.`, true);
+        btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return;
+      }
+    }
+
     const educationCheck = validateEducationFields(body.jobTitle);
     if (!educationCheck.valid) { showToast('❌ ' + educationCheck.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
-    if (body.jobCode) { const jc = validateJobCode(body.jobCode); if (!jc.valid) { showToast('❌ ' + jc.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; } const jcCheck = await checkJobCodeUnique(jc.formatted); if (!jcCheck.unique) { showToast(buildDuplicateMessage('jobcode', jcCheck), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; } }
+    if (body.jobCode) { const jcCheck = await checkJobCodeUnique(body.jobCode); if (!jcCheck.unique) { showToast(buildDuplicateMessage('jobcode', jcCheck), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; } }
     if (body.eTazkira) { const et = validateETazkira(body.eTazkira); if (!et.valid) { showToast('❌ ' + et.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; } const etCheck = await checkETazkiraUnique(et.formatted); if (!etCheck.unique) { showToast(buildDuplicateMessage('etazkira', etCheck), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; } }
 
     try {
@@ -953,15 +773,10 @@ input.invalid {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         showToast('✅ کارمند ثبت شد');
-        
-        // ═══════════════════════════════════════════════════════════
-        // ارسال ایمیل به ادمین (جیمیل شما) - ثبت کارمند جدید
-        // ═══════════════════════════════════════════════════════════
         try {
           const now = new Date();
           const timeStr = now.toLocaleString('fa-IR');
-          const schoolName = localStorage.getItem('hr_schoolname') || 'نامشخص';
-          
+          const schoolName = localStorage.getItem('hr_schoolname') || user.schoolname || 'نامشخص';
           await emailjs.send("service_9aqrddc", "template_iizq261", {
             school_name: schoolName,
             employee_name: body.firstName + ' ' + (body.lastName || ''), 
@@ -969,12 +784,9 @@ input.invalid {
             register_time: timeStr
           });
           console.log('✅ ایمیل ثبت کارمند ارسال شد');
-          
-          // تاخیر برای ارسال ایمیل قبل از ریست شدن فرم
           await new Promise(resolve => setTimeout(resolve, 1500)); 
         } catch (emailError) {
           console.error('❌ خطا در ارسال ایمیل ثبت کارمند:', emailError);
-          // حتی اگر ایمیل ارسال نشد، فرم ریست شود
         }
 
         document.getElementById('recordForm').reset();
@@ -990,6 +802,9 @@ input.invalid {
     } catch (err) { showToast('❌ ارتباط برقرار نشد', true); } 
     finally { btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; }
   });
+
+  // بارگذاری tashkeel در شروع
+  loadSchoolTashkeel();
 </script>
 </body>
 </html>

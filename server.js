@@ -42,6 +42,7 @@ app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json({ limit: '8mb' }));
 app.use(express.urlencoded({ extended: true, limit: '8mb' }));
+app.use(express.static('public'));
 
 const asyncRoute = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -284,8 +285,6 @@ app.put('/api/app-settings/:key', authRequired, adminOnly, asyncRoute(async (req
 
 // ============================================================
 // SCHOOL SETTINGS
-// (فقط ستون‌های شناخته‌شده: id, userid, schoolname)
-// اگر ستون دیگری داری، در آرایه SCHOOL_FIELDS اضافه کن.
 // ============================================================
 const SCHOOL_FIELDS = ['schoolname'];
 

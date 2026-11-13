@@ -9,11 +9,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
-const multer = require('multer');
-const XLSX = require('xlsx');
-const fs = require('fs');
 const { Pool } = require('pg');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'hr-secret-key-change-me';
@@ -923,4 +919,3 @@ initializeDatabase()
     console.error('❌ سرور به‌دلیل آماده‌نشدن دیتابیس اجرا نشد:', err);
     process.exit(1);
   });
-'''

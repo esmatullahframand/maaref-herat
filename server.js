@@ -273,7 +273,7 @@ function requireAdmin(req, res, next) {
 // ------------------------------------------------------------
 // Login
 // ------------------------------------------------------------
-app.post('/api/login', asyncRoute(async (req, res) => {
+app.post(['/api/login', '/api/auth/login'], asyncRoute(async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
     return res.status(400).json({ error: 'نام کاربری و رمز الزامی است' });

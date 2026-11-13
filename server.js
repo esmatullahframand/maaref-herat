@@ -3,7 +3,6 @@
 // LOGIN — ورود مدیر و کاربران مکاتب
 // ============================================================
 
-app.post(['/api/login', '/api/auth/login'], asyncRoute(async (req, res) => {
   const { username, password } = req.body || {};
 
   if (!username || !password) {

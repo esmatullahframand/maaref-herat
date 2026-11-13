@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل ادمین — مدیریت تشکیل</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<style>
+/* =====================================================
+   ADMIN TASHKEEL — PREMIUM PURPLE EDITION
+   ===================================================== */
+:root {
+  --primary: #6d28d9;
+  --primary-dark: #4c1d95;
+  --primary-light: #f3e8ff;
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --text: #334155;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --surface: #ffffff;
+  --bg: #f5f6fc;
+  --shadow: 0 5px 20px rgba(30,27,75,.06);
+  --shadow-hover: 0 12px 30px rgba(76,29,149,.12);
+}
+*{box-sizing:border-box}
+body{
+  font-family:'Vazirmatn',Tahoma,sans-serif;
+  background:radial-gradient(circle at 95% 5%,#ede9fe 0,transparent 28%),linear-gradient(135deg,#f8fafc,#f1f5f9);
+  margin:0;direction:rtl;color:var(--text);line-height:1.7;min-height:100vh;
+}
+
+/* ===== Topbar ===== */
+.topbar{
+  background:linear-gradient(125deg,#312e81 0%,#5b21b6 55%,#7c3aed 100%);
+  color:#fff;padding:19px 28px;display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:12px;
+  box-shadow:0 8px 25px rgba(76,29,149,.22);
+  position:relative;overflow:hidden;
+}
+.topbar::before{
+  content:"";position:absolute;width:220px;height:220px;
+  left:-70px;top:-130px;border:1px solid rgba(255,255,255,.15);border-radius:50%;
+}
+.topbar h5{margin:0;font-size:19px;font-weight:800;letter-spacing:.2px}
+.topbar small{font-size:12px;color:#ddd6fe}
+
+/* ===== Nav Tabs ===== */
+.nav-tabs-custom{
+  display:flex;gap:7px;background:rgba(255,255,255,.94);
+  border-bottom:1px solid #e9e5f5;padding:8px 18px 0;
+  flex-wrap:wrap;box-shadow:var(--shadow);
+}
+.nav-tab-btn{
+  padding:14px 23px;border:none;background:transparent;font-weight:bold;
+  color:#64748b;cursor:pointer;font-family:inherit;font-size:14px;
+  border-bottom:3px solid transparent;border-radius:10px 10px 0 0;
+  transition:all .25s ease;text-decoration:none;display:inline-block;
+}
+.nav-tab-btn:hover{color:var(--primary);background:#faf5ff}
+.nav-tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);background:#f5f0ff;font-weight:800}
+
+/* ===== Cards ===== */
+.card-custom{
+  background:rgba(255,255,255,.97);border:1px solid #e9e5f5;border-radius:17px;
+  padding:25px;box-shadow:var(--shadow);margin-bottom:25px;
+  transition:box-shadow .25s ease,border-color .25s ease;
+}
+.card-custom:hover{box-shadow:var(--shadow-hover);border-color:#ddd6fe}
+.card-custom h4,.card-custom h5{color:#312e81;font-weight:800}
+
+/* ===== Stat cards ===== */
+.stat-card{
+  background:linear-gradient(145deg,#ffffff,#f5f3ff);border:1px solid #ddd6fe;
+  border-radius:16px;padding:20px;text-align:center;position:relative;
+  overflow:hidden;box-shadow:0 4px 14px rgba(76,29,149,.05);
+  transition:transform .25s ease,box-shadow .25s ease;
+}
+.stat-card::before{content:"";position:absolute;right:0;top:0;width:4px;height:100%;background:linear-gradient(180deg,#7c3aed,#a78bfa)}
+.stat-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-hover)}
+.stat-card .value{font-size:27px;font-weight:900;color:#5b21b6;margin-top:7px;font-variant-numeric:tabular-nums}
+.stat-card .label{font-size:12px;color:var(--muted);font-weight:600}
+
+/* ===== Buttons ===== */
+.btn-purple{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;box-shadow:0 4px 12px rgba(124,58,237,.2)}
+.btn-purple:hover{background:linear-gradient(135deg,#6d28d9,#4c1d95);color:#fff;transform:translateY(-2px);box-shadow:0 7px 18px rgba(124,58,237,.28)}
+
+/* ===== Forms ===== */
+.form-control,.form-select,select,textarea{
+  font-size:14px;border:1px solid #d8d5e8!important;border-radius:10px!important;
+  padding:10px 13px!important;background:#fcfbff!important;color:#1e1b4b!important;
+  transition:all .2s ease;
+}
+.form-control:hover,.form-select:hover{border-color:#a78bfa!important}
+.form-control:focus,.form-select:focus{border-color:#8b5cf6!important;box-shadow:0 0 0 4px rgba(139,92,246,.12)!important;background:#fff!important;outline:none}
+label{color:#475569;font-weight:700;margin-bottom:7px}
+
+/* ===== Tables ===== */
+.table-responsive{
+  border-radius:13px;border:1px solid #e9e5f5;box-shadow:var(--shadow);
+  overflow-x:auto;background:white;max-height:68vh;
+}
+.table{font-size:13px;background:#fff;border-collapse:separate;border-spacing:0;width:100%;margin:0}
+.table thead th{
+  background:linear-gradient(135deg,#f3e8ff,#ede9fe)!important;color:#4c1d95;
+  font-weight:800;padding:12px 10px;text-align:center;white-space:nowrap;
+  border-bottom:2px solid #ddd6fe;position:sticky;top:0;z-index:2;
+}
+.table tbody td{padding:10px;text-align:center;vertical-align:middle;border-bottom:1px solid #f0edf7;color:#334155}
+.table tbody tr:nth-child(even){background:#fcfbff}
+.table tbody tr:hover{background:#f5f0ff}
+.school-row td{background:#e0e7ff!important;font-weight:800;color:#312e81;font-size:13px;text-align:right!important;padding:10px}
+.code-cell{font-family:monospace;font-weight:700;color:#6d28d9;direction:ltr;text-align:center;font-size:12px}
+.empty-cell{color:var(--danger);background:#fef2f2;border-radius:6px;padding:1px 6px;font-weight:700;font-size:11px;display:inline-block}
+
+/* ===== Badges ===== */
+.badge{font-size:11px;font-weight:700;padding:5px 10px;border-radius:20px}
+.badge-section-amariat{background:#c7d2fe;color:#312e81}
+.badge-section-madaris{background:#fef3c7;color:#92400e}
+
+/* ===== Action buttons ===== */
+.btn-action{
+  padding:5px 9px;font-size:11px;font-weight:700;border-radius:6px;
+  border:none;cursor:pointer;margin:1px;transition:all .2s;
+}
+.btn-action:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(15,23,42,.13)}
+.btn-view{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff}
+.btn-delete-row{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
+.btn-edit{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#059669,#10b981);color:#fff;
+  padding:14px 30px;border-radius:12px;font-weight:bold;z-index:9999;
+  display:none;max-width:90%;text-align:center;
+  box-shadow:0 10px 30px rgba(5,150,105,.25);
+}
+.toast.error{background:linear-gradient(135deg,#dc2626,#ef4444)}
+
+/* ===== Filter grid ===== */
+.filter-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;padding:18px;background:linear-gradient(135deg,#faf5ff,#f8fafc);
+  border-radius:14px;margin-bottom:18px;border:1px solid #e9d5ff;
+}
+.filter-item label{font-size:12px;font-weight:bold;color:#5b21b6;margin-bottom:6px;display:block}
+.filter-item select,.filter-item input{
+  width:100%;padding:10px;border:1px solid #d8d5e8;border-radius:9px;
+  font-size:13px;font-family:inherit;background:#fff;
+}
+
+/* ===== Manage Panel ===== */
+.manage-panel{
+  background:linear-gradient(135deg,#f5f3ff,#faf5ff);
+  border:2px solid #ddd6fe;border-radius:16px;padding:20px;margin-bottom:20px;
+}
+.form-block{background:#fff;border:1px solid #e9e5f5;border-radius:12px;padding:16px;margin-top:10px}
+.form-block h6{color:#4c1d95;font-weight:800;margin-bottom:14px}
+
+/* ===== Responsive ===== */
+@media(max-width:768px){
+  .topbar{padding:15px}
+  .nav-tabs-custom{padding:7px;gap:4px}
+  .nav-tab-btn{padding:11px 13px;font-size:12px}
+  .card-custom{padding:16px;border-radius:13px}
+  .stat-card{padding:15px}
+  .stat-card .value{font-size:22px}
+  .filter-grid{grid-template-columns:1fr;padding:12px}
+}
+@media(max-width:480px){
+  body{font-size:13px}
+  .topbar h5{font-size:16px}
+  .nav-tab-btn{padding:9px 10px;font-size:11px}
+  .table{font-size:12px}
+  .table th,.table td{padding:8px 6px}
+}
+
+/* ===== Print ===== */
+@media print{
+  body{background:#fff!important;color:#000!important}
+  .topbar{background:#fff!important;color:#000!important;box-shadow:none!important}
+  .topbar h5,.topbar small{color:#000!important}
+  .nav-tabs-custom,button,.btn,.filter-grid,.no-print,.manage-panel{display:none!important}
+  .card-custom,.stat-card{box-shadow:none!important;border:1px solid #ccc!important;break-inside:avoid}
+  .table thead th{background:#eee!important;color:#000!important}
+  .table-responsive{max-height:none!important;overflow:visible!important}
+}
+
+/* ===== Animation ===== */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card-custom,.stat-card{animation:fadeIn .35s ease both}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h5>🎛️ پنل ادمین — مدیریت تشکیل</h5>
+    <small>مدیریت تشکیلات مکاتب و مدارس معارف — آمریت کشک رباط سنگی</small>
+  </div>
+  <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="nav-tabs-custom">
+  <a href="admin-main.html" class="nav-tab-btn">🏠 صفحه اصلی</a>
+  <a href="admin-evaluation.html" class="nav-tab-btn">⭐ ارزیابی</a>
+  <a href="admin-salaries.html" class="nav-tab-btn">💰 معاشات</a>
+  <a href="admin-tashkeel.html" class="nav-tab-btn active">📋 مدیریت تشکیل</a>
+</div>
+
+<div class="container-fluid px-4 py-3">
+
+  <!-- Stats -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-2"><div class="stat-card"><div class="label">📋 کل رکوردها</div><div class="value" id="statTotal">۰</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card"><div class="label">🏫 مکاتب</div><div class="value" id="statAmariat">۰</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card"><div class="label">🏛️ مدارس</div><div class="value" id="statMadaris">۰</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card"><div class="label">👨‍🏫 معلمان</div><div class="value" id="statTeachers">۰</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card"><div class="label">📍 محل‌ها</div><div class="value" id="statPlaces">۰</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card"><div class="label">👁️ نمایش فعلی</div><div class="value" id="statVisible">۰</div></div></div>
+  </div>
+
+  <!-- Section tabs -->
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <button class="btn btn-purple fw-bold active" data-tab="all" onclick="setTab('all',this)">
+      همه <span class="badge bg-light text-dark" id="cntAll">۰</span>
+    </button>
+    <button class="btn btn-outline-secondary fw-bold" data-tab="amariat" onclick="setTab('amariat',this)">
+      🏫 مکاتب <span class="badge bg-light text-dark" id="cntAmariat">۰</span>
+    </button>
+    <button class="btn btn-outline-secondary fw-bold" data-tab="madaris" onclick="setTab('madaris',this)">
+      🏛️ مدارس <span class="badge bg-light text-dark" id="cntMadaris">۰</span>
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-grid">
+    <div class="filter-item">
+      <label>🔍 جستجو</label>
+      <input type="text" id="searchInput" placeholder="کد، عنوان، محل، شماره..." oninput="render()">
+    </div>
+    <div class="filter-item">
+      <label>📍 محل وظیفه</label>
+      <select id="placeFilter" onchange="render()"><option value="">همه محل‌ها</option></select>
+    </div>
+    <div class="filter-item">
+      <label>👨‍🏫 نوع وظیفه</label>
+      <select id="titleFilter" onchange="render()">
+        <option value="">همه عناوین</option>
+        <option value="معلم">معلم</option>
+        <option value="آمر">آمر</option>
+        <option value="مدیر">مدیر</option>
+        <option value="کارکن خدماتی">کارکن خدماتی</option>
+        <option value="مهتمم">مهتمم</option>
+        <option value="عضو علمی">عضو علمی</option>
+        <option value="عضو مسلکی">عضو مسلکی</option>
+        <option value="معتمد">معتمد</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Manage Panel -->
+  <div class="manage-panel" id="managePanel" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h5 class="m-0 fw-bold" style="color:#4c1d95">⚙️ پنل مدیریت تشکیل</h5>
+      <button class="btn btn-sm btn-outline-secondary fw-bold" onclick="document.getElementById('managePanel').style.display='none'">بستن ✕</button>
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col-md-4"><button class="btn btn-outline-primary w-100 fw-bold" onclick="openForm('transfer')">🔄 انتقال بین محل‌ها</button></div>
+      <div class="col-md-4"><button class="btn btn-outline-success w-100 fw-bold" onclick="openForm('add')">➕ افزودن رکورد</button></div>
+      <div class="col-md-4"><button class="btn btn-outline-danger w-100 fw-bold" onclick="openForm('delete')">🗑️ حذف کد</button></div>
+    </div>
+
+    <!-- Transfer form -->
+    <div id="form-transfer" class="form-block" style="display:none">
+      <h6>🔄 انتقال بین محل‌ها</h6>
+      <div class="row g-2">
+        <div class="col-md-12">
+          <label class="small fw-bold">کد بست *</label>
+          <input type="text" id="transCode" class="form-control" placeholder="27-32-02-12563" oninput="lookupTitle('trans')">
+        </div>
+        <div class="col-md-12">
+          <label class="small fw-bold">عنوان (خودکار)</label>
+          <input type="text" id="transTitle" class="form-control" readonly placeholder="خودکار">
+        </div>
+        <div class="col-md-12">
+          <label class="small fw-bold">محل جدید *</label>
+          <input type="text" id="transPlace" class="form-control" placeholder="نام مکتب/محل جدید">
+        </div>
+      </div>
+      <button class="btn btn-success mt-2 fw-bold" onclick="doTransfer()">ثبت انتقال</button>
+    </div>
+
+    <!-- Add form -->
+    <div id="form-add" class="form-block" style="display:none">
+      <h6>➕ افزودن رکورد جدید</h6>
+      <div class="row g-2">
+        <div class="col-md-4"><label class="small fw-bold">شماره عمومی</label><input id="addPub" class="form-control"></div>
+        <div class="col-md-4"><label class="small fw-bold">شماره خصوصی</label><input id="addPriv" class="form-control"></div>
+        <div class="col-md-4">
+          <label class="small fw-bold">بخش *</label>
+          <select id="addSection" class="form-control">
+            <option value="amariat">🏫 مکاتب</option>
+            <option value="madaris">🏛️ مدارس</option>
+          </select>
+        </div>
+        <div class="col-md-12"><label class="small fw-bold">عنوان وظیفه *</label><input id="addTitle" class="form-control" placeholder="مثلاً: معلم"></div>
+        <div class="col-md-6"><label class="small fw-bold">محل وظیفه *</label><input id="addPlace" class="form-control" placeholder="مثلاً: لیسه مختلط تورغندی"></div>
+        <div class="col-md-6"><label class="small fw-bold">کد بست *</label><input id="addCode" class="form-control" placeholder="27-32-02-XXXXX"></div>
+      </div>
+      <button class="btn btn-success mt-2 fw-bold" onclick="doAdd()">ثبت رکورد</button>
+    </div>
+
+    <!-- Delete form -->
+    <div id="form-delete" class="form-block" style="display:none">
+      <h6>🗑️ حذف کد</h6>
+      <div class="row g-2">
+        <div class="col-md-12"><label class="small fw-bold">کد بست *</label><input id="delCode" class="form-control" placeholder="27-32-02-XXXXX"></div>
+      </div>
+      <button class="btn btn-danger mt-2 fw-bold" onclick="doDelete()">حذف</button>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="d-flex gap-2 flex-wrap mb-3 no-print">
+    <button class="btn btn-purple fw-bold px-3" onclick="document.getElementById('managePanel').style.display='block'">⚙️ مدیریت تشکیل</button>
+    <button class="btn btn-primary fw-bold px-3" onclick="window.print()">🖨️ پرینت</button>
+    <button class="btn btn-success fw-bold px-3" onclick="exportCSV()">📊 خروجی CSV</button>
+    <button class="btn btn-secondary fw-bold px-3" onclick="resetFilters()">👁️ نمایش همه</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th><th>شماره عمومی</th><th>شماره خصوصی</th><th>عنوان وظیفه</th>
+          <th>محل وظیفه</th><th>کد بست</th><th>بخش</th><th class="no-print">عملیات</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// احراز هویت
+// ═══════════════════════════════════════════════════════════
+const token = localStorage.getItem('hr_token');
+const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
+if (!token || token === 'undefined' || token === 'null') {
+  localStorage.clear(); window.location.href = '/'; throw new Error('No token');
+}
+if (currentUser.role !== 'admin') {
+  window.location.href = '/school-settings.html'; throw new Error('Not admin');
+}
+
+// ═══════════════════════════════════════════════════════════
+// State
+// ═══════════════════════════════════════════════════════════
+let records = [];
+let activeTab = 'all';
+let titleMap = {};
+
+// ═══════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════
+function logout() { localStorage.clear(); window.location.href = '/'; }
+window.logout = logout;
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+}
+window.showToast = showToast;
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function normalizeCode(input) {
+  const str = String(input || '').trim();
+  if (!str) return null;
+  const m = str.match(/^27-\d+-\d+-(\d+)$/);
+  if (m) return '27-32-02-' + m[1];
+  const num = parseInt(str, 10);
+  if (isNaN(num)) return null;
+  return '27-32-02-' + num;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Load data
+// ═══════════════════════════════════════════════════════════
+async function loadData() {
+  try {
+    const res = await fetch('/api/tashkeel', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.status === 401 || res.status === 403) {
+      localStorage.clear(); window.location.href = '/'; return;
+    }
+    const data = await res.json();
+    records = Array.isArray(data) ? data : [];
+
+    // Build title map
+    titleMap = {};
+    records.forEach(r => { if (r.code) titleMap[r.code] = r.title || ''; });
+
+    populatePlaces();
+    render();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('tableBody').innerHTML =
+      '<tr><td colspan="8" class="text-center p-4 text-danger">❌ خطا در بارگذاری</td></tr>';
+    showToast('خطا در بارگذاری داده‌ها', true);
+  }
+}
+window.loadData = loadData;
+
+function populatePlaces() {
+  const sel = document.getElementById('placeFilter');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">همه محل‌ها</option>';
+  const places = [...new Set(records.map(r => r.place).filter(Boolean))].sort();
+  places.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p; o.textContent = p;
+    if (p === currentVal) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// Tabs
+// ═══════════════════════════════════════════════════════════
+function setTab(tab, btn) {
+  activeTab = tab;
+  document.querySelectorAll('[data-tab]').forEach(b => {
+    b.classList.remove('btn-purple', 'active');
+    b.classList.add('btn-outline-secondary');
+  });
+  btn.classList.remove('btn-outline-secondary');
+  btn.classList.add('btn-purple', 'active');
+  render();
+}
+window.setTab = setTab;
+
+// ═══════════════════════════════════════════════════════════
+// Render
+// ═══════════════════════════════════════════════════════════
+function render() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const place = document.getElementById('placeFilter').value;
+  const titleFilter = document.getElementById('titleFilter').value;
+
+  let filtered = records.filter(r => {
+    if (activeTab !== 'all' && r.section !== activeTab) return false;
+    if (place && r.place !== place) return false;
+    if (titleFilter && !(r.title || '').includes(titleFilter)) return false;
+    if (q) {
+      const haystack = [r.pub, r.priv, r.title, r.place, r.code].join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Stats
+  document.getElementById('statTotal').textContent = records.length.toLocaleString('fa-IR');
+  document.getElementById('statAmariat').textContent = records.filter(r => r.section === 'amariat').length.toLocaleString('fa-IR');
+  document.getElementById('statMadaris').textContent = records.filter(r => r.section === 'madaris').length.toLocaleString('fa-IR');
+  document.getElementById('statTeachers').textContent = records.filter(r => (r.title || '').includes('معلم')).length.toLocaleString('fa-IR');
+  document.getElementById('statPlaces').textContent = new Set(records.map(r => r.place).filter(Boolean)).size.toLocaleString('fa-IR');
+  document.getElementById('statVisible').textContent = filtered.length.toLocaleString('fa-IR');
+  document.getElementById('cntAll').textContent = records.length.toLocaleString('fa-IR');
+  document.getElementById('cntAmariat').textContent = records.filter(r => r.section === 'amariat').length.toLocaleString('fa-IR');
+  document.getElementById('cntMadaris').textContent = records.filter(r => r.section === 'madaris').length.toLocaleString('fa-IR');
+
+  const tbody = document.getElementById('tableBody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">🔍 موردی یافت نشد</td></tr>';
+    return;
+  }
+
+  // Group by section + place
+  const groups = {};
+  const order = [];
+  filtered.forEach(r => {
+    const k = r.section + '::' + r.place;
+    if (!groups[k]) { groups[k] = []; order.push(k); }
+    groups[k].push(r);
+  });
+
+  let html = '';
+  order.forEach(k => {
+    const items = groups[k];
+    const section = items[0].section;
+    const icon = section === 'madaris' ? '🏛️' : '🏫';
+    const sectionLabel = section === 'madaris' ? 'مدارس' : 'مکاتب';
+    html += `<tr class="school-row"><td colspan="8">
+      ${icon} ${escapeHtml(items[0].place)}
+      <span class="badge bg-light text-dark ms-2">${items.length} ردیف</span>
+      <span class="badge badge-section-${section} ms-1">${sectionLabel}</span>
+    </td></tr>`;
+
+    items.forEach(r => {
+      html += `<tr>
+        <td>${r.id}</td>
+        <td>${r.pub ?? '<span class="empty-cell">—</span>'}</td>
+        <td>${r.priv ?? '<span class="empty-cell">—</span>'}</td>
+        <td>${escapeHtml(r.title) || '<span class="empty-cell">—</span>'}</td>
+        <td>${escapeHtml(r.place) || '<span class="empty-cell">—</span>'}</td>
+        <td class="code-cell">${escapeHtml(r.code)}</td>
+        <td><span class="badge badge-section-${r.section}">${r.section === 'madaris' ? 'مدارس' : 'مکاتب'}</span></td>
+        <td class="no-print">
+          <button class="btn-action btn-edit" onclick="editRow(${r.id})" title="ویرایش">✏️</button>
+          <button class="btn-action btn-delete-row" onclick="deleteRow(${r.id})" title="حذف">🗑️</button>
+        </td>
+      </tr>`;
+    });
+  });
+
+  tbody.innerHTML = html;
+}
+window.render = render;
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('placeFilter').value = '';
+  document.getElementById('titleFilter').value = '';
+  activeTab = 'all';
+  document.querySelectorAll('[data-tab]').forEach(b => {
+    b.classList.remove('btn-purple', 'active');
+    b.classList.add('btn-outline-secondary');
+  });
+  const allBtn = document.querySelector('[data-tab="all"]');
+  if (allBtn) {
+    allBtn.classList.remove('btn-outline-secondary');
+    allBtn.classList.add('btn-purple', 'active');
+  }
+  render();
+}
+window.resetFilters = resetFilters;
+
+// ═══════════════════════════════════════════════════════════
+// Forms
+// ═══════════════════════════════════════════════════════════
+function openForm(which) {
+  ['transfer', 'add', 'delete'].forEach(f => {
+    document.getElementById('form-' + f).style.display = 'none';
+  });
+  document.getElementById('form-' + which).style.display = 'block';
+}
+window.openForm = openForm;
+
+function lookupTitle(prefix) {
+  const code = normalizeCode(document.getElementById(prefix + 'Code').value);
+  document.getElementById(prefix + 'Title').value = (code && titleMap[code]) || '';
+}
+window.lookupTitle = lookupTitle;
+
+// ═══════════════════════════════════════════════════════════
+// Transfer
+// ═══════════════════════════════════════════════════════════
+async function doTransfer() {
+  const code = normalizeCode(document.getElementById('transCode').value);
+  const place = document.getElementById('transPlace').value.trim();
+  if (!code) return showToast('کد بست نامعتبر', true);
+  if (!place) return showToast('محل جدید الزامی است', true);
+
+  const rec = records.find(r => r.code === code);
+  if (!rec) return showToast('کد بست یافت نشد', true);
+
+  try {
+    const res = await fetch('/api/tashkeel/' + rec.id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ place })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showToast('✅ انتقال انجام شد');
+      document.getElementById('transCode').value = '';
+      document.getElementById('transTitle').value = '';
+      document.getElementById('transPlace').value = '';
+      await loadData();
+    } else {
+      showToast('❌ ' + (data.error || 'خطا'), true);
+    }
+  } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+}
+window.doTransfer = doTransfer;
+
+// ═══════════════════════════════════════════════════════════
+// Add
+// ═══════════════════════════════════════════════════════════
+async function doAdd() {
+  const body = {
+    pub: document.getElementById('addPub').value.trim() || null,
+    priv: document.getElementById('addPriv').value.trim() || null,
+    title: document.getElementById('addTitle').value.trim(),
+    place: document.getElementById('addPlace').value.trim(),
+    code: normalizeCode(document.getElementById('addCode').value),
+    section: document.getElementById('addSection').value
+  };
+  if (!body.title) return showToast('عنوان الزامی است', true);
+  if (!body.place) return showToast('محل الزامی است', true);
+  if (!body.code) return showToast('کد بست نامعتبر', true);
+
+  try {
+    const res = await fetch('/api/tashkeel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showToast('✅ رکورد اضافه شد');
+      ['addPub','addPriv','addTitle','addPlace','addCode'].forEach(id => document.getElementById(id).value = '');
+      await loadData();
+    } else {
+      showToast('❌ ' + (data.error || 'خطا'), true);
+    }
+  } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+}
+window.doAdd = doAdd;
+
+// ═══════════════════════════════════════════════════════════
+// Delete
+// ═══════════════════════════════════════════════════════════
+async function doDelete() {
+  const code = normalizeCode(document.getElementById('delCode').value);
+  if (!code) return showToast('کد بست نامعتبر', true);
+  const rec = records.find(r => r.code === code);
+  if (!rec) return showToast('کد بست یافت نشد', true);
+  if (!confirm(`حذف کد «${code}» از «${rec.place}»؟`)) return;
+
+  try {
+    const res = await fetch('/api/tashkeel/' + rec.id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      showToast('🗑️ حذف شد');
+      document.getElementById('delCode').value = '';
+      await loadData();
+    } else {
+      showToast('❌ خطا در حذف', true);
+    }
+  } catch (e) { showToast('❌ ارتباط برقرار نشد', true); }
+}
+window.doDelete = doDelete;
+
+// ═══════════════════════════════════════════════════════════
+// Row actions
+// ═══════════════════════════════════════════════════════════
+async function deleteRow(id) {
+  const rec = records.find(r => r.id === id);
+  if (!rec) return;
+  if (!confirm(`حذف «${rec.code}» از «${rec.place}»؟`)) return;
+  try {
+    const res = await fetch('/api/tashkeel/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) { showToast('🗑️ حذف شد'); await loadData(); }
+    else showToast('خطا', true);
+  } catch (e) { showToast('ارتباط برقرار نشد', true); }
+}
+window.deleteRow = deleteRow;
+
+async function editRow(id) {
+  const rec = records.find(r => r.id === id);
+  if (!rec) return;
+  const newTitle = prompt('عنوان وظیفه:', rec.title || '');
+  if (newTitle === null) return;
+  const newPlace = prompt('محل وظیفه:', rec.place || '');
+  if (newPlace === null) return;
+  try {
+    const res = await fetch('/api/tashkeel/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ title: newTitle, place: newPlace })
+    });
+    if (res.ok) { showToast('✅ ویرایش شد'); await loadData(); }
+    else showToast('خطا', true);
+  } catch (e) { showToast('ارتباط برقرار نشد', true); }
+}
+window.editRow = editRow;
+
+// ═══════════════════════════════════════════════════════════
+// CSV Export
+// ═══════════════════════════════════════════════════════════
+function exportCSV() {
+  if (!records.length) return showToast('داده‌ای نیست', true);
+  const rows = [['#','شماره عمومی','شماره خصوصی','عنوان وظیفه','محل وظیفه','کد بست','بخش']];
+  records.forEach(r => rows.push([
+    r.id, r.pub ?? '', r.priv ?? '', r.title ?? '', r.place ?? '', r.code ?? '',
+    r.section === 'madaris' ? 'مدارس' : 'مکاتب'
+  ]));
+  const csv = '\uFEFF' + rows.map(row =>
+    row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')
+  ).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `تشکیل_آمریت_معارف_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('✅ CSV دانلود شد');
+}
+window.exportCSV = exportCSV;
+
+// ═══════════════════════════════════════════════════════════
+// Start
+// ═══════════════════════════════════════════════════════════
+loadData();
+</script>
+</body>
+</html>

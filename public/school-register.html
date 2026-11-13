@@ -252,7 +252,7 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
             <label>کُد بست *</label>
             <input type="text" id="jobCode" placeholder="27-32-02-13056">
             <small id="jobCodeMsg" class="date-msg pending">⏳ منتظر...</small>
-            <small class="field-hint" id="jobCodeHint">🔒 کد بست باید یکتا و در بازه مجاز مکتب باشد.</small>
+            <small class="field-hint" id="jobCodeHint">🔒 کد بست باید یکتا و متعلق به مکتب شما باشد.</small>
           </div>
           <div class="form-group"><label>اسم *</label><input type="text" id="firstName" required></div>
           <div class="form-group"><label>تخلص</label><input type="text" id="lastName"></div>
@@ -282,7 +282,7 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
           <div class="form-group"><label>تاریخ تولد *</label><input type="text" id="birthDate" placeholder="1360/02/22" required><small id="birthDateMsg" class="date-msg"></small></div>
           <div class="form-group"><label>شماره تماس *</label><input type="text" id="phone" required></div>
           <div class="form-group"><label>معلولیت *</label><select id="disability" required><option value="نخیر">نخیر</option><option value="بلی">بلی</option></select></div>
-          
+
           <div style="grid-column: 1 / -1; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 10px;">
             <div style="margin-bottom: 20px;">
               <label style="color: #10b981; font-size: 14px; margin-bottom: 8px; display: block; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">محل تولد</label>
@@ -318,14 +318,14 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
           <div class="form-group"><label>تاریخ تقرر فعلی *</label><input type="text" id="currentPositionDate" placeholder="1400/03/20" required><small id="currentPositionDateMsg" class="date-msg"></small></div>
           <div class="form-group"><label>موقف وظیفوی</label><select id="positionType"><option value="">انتخاب کنید</option><option value="اصلی">اصلی</option><option value="سرپرستی">سرپرستی</option></select></div>
           <div class="form-group"><label>نوع استخدام</label><select id="employmentType"><option value="">انتخاب کنید</option><option value="حکمی">حکمی</option><option value="رقابتی">رقابتی</option></select></div>
-          
+
           <div class="form-group edu-field"><label>درجه تحصیل *</label><input type="text" id="degree" placeholder="ماستر یا 18"></div>
           <div class="form-group edu-field"><label>رشته تحصیلی *</label><input type="text" id="major"></div>
           <div class="form-group edu-field"><label>مرجع تحصیلی *</label><input type="text" id="eduInstitute"></div>
           <div class="form-group edu-field"><label>موقعیت مرجع تحصیلی *</label><input type="text" id="eduInstituteLocation"></div>
           <div class="form-group edu-field"><label>تاریخ شمولیت *</label><input type="text" id="enrollmentDate" placeholder="1397/01/01"><small id="enrollmentDateMsg" class="date-msg"></small></div>
           <div class="form-group edu-field"><label>تاریخ فراغت *</label><input type="text" id="graduationDate" placeholder="1399/01/01"><small id="graduationDateMsg" class="date-msg"></small></div>
-          
+
           <div class="form-group"><label>رشته تدریس</label><input type="text" id="teachingField"></div>
         </div>
       </div>
@@ -371,7 +371,7 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
   document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
   // ═══════════════════════════════════════════════════════════════════════
-  // مقادیر بازه مجاز مکتب
+  // بازه مجاز
   // ═══════════════════════════════════════════════════════════════════════
   const SCHOOL_RANGE = {
     first: Number(user.school_first_code) || null,
@@ -382,7 +382,6 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
     last: Number(user.madaris_last_code) || null
   };
 
-  // نمایش بازه در بالای فرم
   (function showRangeInfo() {
     const box = document.getElementById('rangeInfoBox');
     const parts = [];
@@ -393,7 +392,7 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
       parts.push(`<strong>🏛️ بازه مدارس:</strong> <span class="rng">${MADARIS_RANGE.first} – ${MADARIS_RANGE.last}</span>`);
     }
     if (parts.length) {
-      box.innerHTML = '🔒 کد بست باید در یکی از بازه‌های مجاز زیر باشد:<br>' + parts.join('<br>');
+      box.innerHTML = '🔒 کد بست باید متعلق به مکتب شما باشد:<br>' + parts.join('<br>');
     } else {
       box.innerHTML = '⚠️ بازه کد بست برای این مکتب تعریف نشده است. با مدیر تماس بگیرید.';
       box.style.background = '#fef3c7';
@@ -407,11 +406,12 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
   // ═══════════════════════════════════════════════════════════════════════
   let schoolTashkeel = [];
   let managerCodes = {};
+  let codeToSchoolMap = {};   // ← نگاشت همه کدها به نام مکتبشان
 
   // ═══════════════════════════════════════════════════════════════════════
   // Helpers
   // ═══════════════════════════════════════════════════════════════════════
-  function showToast(msg, isError = false) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : ''); clearTimeout(t._timer); t._timer = setTimeout(() => { t.classList.remove('show'); }, 4000); }
+  function showToast(msg, isError = false) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : ''); clearTimeout(t._timer); t._timer = setTimeout(() => { t.classList.remove('show'); }, 5000); }
   function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function normalizeDigits(str) { if (!str) return ''; const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩'; return String(str).split('').map(ch => { const pi = p.indexOf(ch); if (pi !== -1) return pi; const ai = a.indexOf(ch); if (ai !== -1) return ai; return ch; }).join(''); }
   function logout() { localStorage.clear(); window.location.href = '/'; }
@@ -423,20 +423,7 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // اعتبارسنجی بازه
-  // ═══════════════════════════════════════════════════════════════════════
-  function isInRange(num, first, last) {
-    if (first === null || last === null || isNaN(first) || isNaN(last)) return false;
-    return num >= first && num <= last;
-  }
-
-  function isInAnyAllowedRange(codeNum) {
-    return isInRange(codeNum, SCHOOL_RANGE.first, SCHOOL_RANGE.last)
-        || isInRange(codeNum, MADARIS_RANGE.first, MADARIS_RANGE.last);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // بارگذاری tashkeel این مکتب
+  // بارگذاری tashkeel (همه کدها + نگاشت مکتب)
   // ═══════════════════════════════════════════════════════════════════════
   async function loadSchoolTashkeel() {
     try {
@@ -446,9 +433,27 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
       if (!r.ok) return;
       const data = await r.json();
       const all = Array.isArray(data) ? data : (data.tashkeel || []);
-      schoolTashkeel = all.filter(t => t.place === user.schoolname);
 
-      // ساخت نگاشت کد مدیر
+      // ۱. نگاشت همه کدها به نام مکتبشان
+      codeToSchoolMap = {};
+      all.forEach(t => {
+        if (t.code && t.place) {
+          codeToSchoolMap[String(t.code).trim()] = String(t.place).trim();
+        }
+      });
+
+      // ۲. فیلتر کدهای همین مکتب
+      schoolTashkeel = all.filter(t => {
+        if (!t.place) return false;
+        const place = String(t.place).trim();
+        const school = String(user.schoolname || '').trim();
+        return place === school
+          || place.includes(school)
+          || school.includes(place)
+          || place.replace(/\s+/g, '') === school.replace(/\s+/g, '');
+      });
+
+      // ۳. نگاشت کد مدیر
       managerCodes = {};
       const managerTitles = ['آمر', 'مدیر', 'مدیر عمومی', 'مهتمم'];
       schoolTashkeel.forEach(t => {
@@ -459,9 +464,11 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
           }
         });
       });
+
       console.log('tashkeel این مکتب:', schoolTashkeel.length, 'ردیف');
       console.log('کدهای مدیر:', managerCodes);
-    } catch (e) { console.error(e); }
+      console.log('تعداد کل کدها در tashkeel:', Object.keys(codeToSchoolMap).length);
+    } catch (e) { console.error('خطا در loadSchoolTashkeel:', e); }
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -473,14 +480,12 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
   }
 
   function findManagerCodeForTitle(title) {
-    // اولویت: آمر > مدیر عمومی > مدیر > مدیر اجرائیه > مهتمم
     const priority = ['آمر', 'مدیر عمومی', 'مدیر', 'مدیر اجرائیه', 'مهتمم'];
     for (const mt of priority) {
       if (String(title || '').includes(mt) && managerCodes[mt]) {
         return managerCodes[mt];
       }
     }
-    // اگر پیدا نشد، اولین رکورد با عنوان مشابه
     const found = schoolTashkeel.find(t => String(t.title || '').includes(title));
     return found ? found.code : null;
   }
@@ -501,12 +506,12 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
         msg.textContent = '✅ کد مدیر به‌صورت خودکار تنظیم شد';
         msg.className = 'date-msg valid';
       } else {
-        hint.textContent = `⚠️ کد مدیر برای عنوان «${title}» در tashkeel یافت نشد. با مدیر تماس بگیرید.`;
+        hint.textContent = `⚠️ کد مدیر برای عنوان «${title}» در tashkeel یافت نشد.`;
         msg.textContent = '';
         msg.className = 'date-msg';
       }
     } else {
-      hint.textContent = '🔒 کد بست باید یکتا و در بازه مجاز مکتب باشد.';
+      hint.textContent = '🔒 کد بست باید متعلق به مکتب شما باشد.';
       if (jobCodeInput.value === '') {
         msg.textContent = '⏳ منتظر...';
         msg.className = 'date-msg pending';
@@ -537,14 +542,26 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // اعتبارسنجی کد بست (با بازه مکتب)
+  // اعتبارسنجی کد بست (فرمت + بازه)
   // ═══════════════════════════════════════════════════════════════════════
+  function isInRange(num, first, last) {
+    if (first === null || last === null || isNaN(first) || isNaN(last)) return false;
+    return num >= first && num <= last;
+  }
+
+  function isInAnyAllowedRange(codeNum) {
+    return isInRange(codeNum, SCHOOL_RANGE.first, SCHOOL_RANGE.last)
+        || isInRange(codeNum, MADARIS_RANGE.first, MADARIS_RANGE.last);
+  }
+
   function validateJobCode(codeStr) {
     if (!codeStr) return { valid: false, error: 'کد بست الزامی است' };
     const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
     if (!/^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned)) {
       return { valid: false, error: 'فرمت: 27-XX-XX-XXXXX' };
     }
+
+    // چک بازه
     const codeNum = extractCodeNumber(cleaned);
     if (codeNum === null) return { valid: false, error: 'کد نامعتبر' };
     if (!isInAnyAllowedRange(codeNum)) {
@@ -553,16 +570,53 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
       if (MADARIS_RANGE.first) rngs.push(`مدارس ${MADARIS_RANGE.first}–${MADARIS_RANGE.last}`);
       return { valid: false, error: 'کد خارج از بازه مجاز. مجاز: ' + (rngs.join(' | ') || 'تعریف نشده') };
     }
+
     return { valid: true, formatted: cleaned };
   }
 
   function validateETazkira(codeStr) { if (!codeStr) return { valid: false, error: 'تذکره الکترونیکی الزامی است' }; const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, ''); if (!/^\d+-\d+-\d+$/.test(cleaned)) return { valid: false, error: 'فرمت: XXXXX-XXXXX-XXXX' }; return { valid: true, formatted: cleaned }; }
   function validateTazkiraCode(codeStr) { if (!codeStr) return { valid: true, formatted: '' }; const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, ''); if (!/^\d{1,20}$/.test(cleaned)) return { valid: false, error: 'فقط عدد' }; return { valid: true, formatted: cleaned }; }
 
-  async function checkJobCodeUnique(codeStr, excludeId) { if (!codeStr) return { unique: false }; try { let url = '/api/check-jobcode?code=' + encodeURIComponent(codeStr); if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId); const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } }); if (!res.ok) return { unique: true }; const data = await res.json(); if (!data.exists) return { unique: true }; return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName }; } catch (e) { return { unique: true }; } }
-  async function checkETazkiraUnique(codeStr, excludeId) { if (!codeStr) return { unique: false }; try { let url = '/api/check-etazkira?code=' + encodeURIComponent(codeStr); if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId); const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } }); if (!res.ok) return { unique: true }; const data = await res.json(); if (!data.exists) return { unique: true }; return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName }; } catch (e) { return { unique: true }; } }
-  function buildDuplicateMessage(kind, result) { const label = kind === 'jobcode' ? 'کد بست' : (kind === 'etazkira' ? 'تذکره الکترونیکی' : 'تذکره کاغذی'); if (result.isSameSchool) return `⚠️ این ${label} قبلاً برای «${result.employeeName || 'نامشخص'}» در مکتب خودتان ثبت شده است.`; return `❌ این ${label} قبلاً در مکتب «${result.schoolname || 'نامشخص'}» ثبت شده است.`; }
+  // ═══════════════════════════════════════════════════════════════════════
+  // اعتبارسنجی کد بست با tashkeel (کد به کدام مکتب تعلق دارد؟)
+  // ═══════════════════════════════════════════════════════════════════════
+  function validateJobCodeWithTashkeel(codeStr) {
+    // اول فرمت و بازه
+    const basic = validateJobCode(codeStr);
+    if (!basic.valid) return basic;
 
+    const cleaned = basic.formatted;
+    const codeSchool = codeToSchoolMap[cleaned];
+
+    // اگر در tashkeel نیست
+    if (!codeSchool) {
+      return {
+        valid: false,
+        error: 'این کد در تشکیلات معارف وجود ندارد. لطفاً کد صحیح را وارد کنید.'
+      };
+    }
+
+    // اگر در tashkeel هست ولی مال مکتب دیگری است
+    const mySchool = String(user.schoolname || '').trim();
+    const isMine = codeSchool === mySchool
+      || codeSchool.includes(mySchool)
+      || mySchool.includes(codeSchool)
+      || codeSchool.replace(/\s+/g, '') === mySchool.replace(/\s+/g, '');
+
+    if (!isMine) {
+      return {
+        valid: false,
+        error: `❌ این کد مربوط به مکتب «${codeSchool}» است، نه مکتب شما`
+      };
+    }
+
+    // اگر مال خودمان بود
+    return { valid: true, formatted: cleaned, school: codeSchool };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // توگل‌ها
+  // ═══════════════════════════════════════════════════════════════════════
   function toggleAgreement() { const c = document.getElementById('agreementCheckbox'), b = document.getElementById('agreementBox'), s = document.getElementById('submitBtn'); c.checked = !c.checked; if (c.checked) { b.classList.add('checked'); s.disabled = false; } else { b.classList.remove('checked'); s.disabled = true; } }
   window.toggleAgreement = toggleAgreement;
 
@@ -588,7 +642,7 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
     const eduFields = document.querySelectorAll('.edu-field input');
     const isExempt = isEducationExemptJob(jobTitle);
     eduFields.forEach(input => {
-      if (isExempt) { input.removeAttribute('required'); input.classList.remove('invalid'); const msg = input.nextElementSibling; if (msg && msg.classList.contains('date-msg')) { msg.textContent = ''; msg.className = 'date-msg'; } } 
+      if (isExempt) { input.removeAttribute('required'); input.classList.remove('invalid'); const msg = input.nextElementSibling; if (msg && msg.classList.contains('date-msg')) { msg.textContent = ''; msg.className = 'date-msg'; } }
       else { input.setAttribute('required', 'required'); }
     });
   }
@@ -607,6 +661,9 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
     return { valid: true };
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // اعتبارسنجی تاریخ (live)
+  // ═══════════════════════════════════════════════════════════════════════
   function attachLiveValidation(inputId, validateFn, msgId) {
     const input = document.getElementById(inputId);
     const msg = msgId ? document.getElementById(msgId) : null;
@@ -620,6 +677,13 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
     });
     input.addEventListener('blur', function() { if (this.value.trim()) { const result = validateFn(this.value); if (result.valid) this.value = result.formatted; } });
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // اعتبارسنجی فیلدهای یکتا (jobCode, eTazkira, paperTazkira)
+  // ═══════════════════════════════════════════════════════════════════════
+  async function checkJobCodeUnique(codeStr, excludeId) { if (!codeStr) return { unique: false }; try { let url = '/api/check-jobcode?code=' + encodeURIComponent(codeStr); if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId); const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } }); if (!res.ok) return { unique: true }; const data = await res.json(); if (!data.exists) return { unique: true }; return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName }; } catch (e) { return { unique: true }; } }
+  async function checkETazkiraUnique(codeStr, excludeId) { if (!codeStr) return { unique: false }; try { let url = '/api/check-etazkira?code=' + encodeURIComponent(codeStr); if (excludeId) url += '&excludeId=' + encodeURIComponent(excludeId); const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } }); if (!res.ok) return { unique: true }; const data = await res.json(); if (!data.exists) return { unique: true }; return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName }; } catch (e) { return { unique: true }; } }
+  function buildDuplicateMessage(kind, result) { const label = kind === 'jobcode' ? 'کد بست' : (kind === 'etazkira' ? 'تذکره الکترونیکی' : 'تذکره کاغذی'); if (result.isSameSchool) return `⚠️ این ${label} قبلاً برای «${result.employeeName || 'نامشخص'}» در مکتب خودتان ثبت شده است.`; return `❌ این ${label} قبلاً در مکتب «${result.schoolname || 'نامشخص'}» ثبت شده است.`; }
 
   function attachUniqueFieldValidation(inputId, msgId, kind, excludeId) {
     const input = document.getElementById(inputId);
@@ -635,7 +699,7 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
     }
 
     function validateFn(v) {
-      if (kind === 'jobcode') return validateJobCode(v);
+      if (kind === 'jobcode') return validateJobCodeWithTashkeel(v);  // ← استفاده از تابع جدید
       if (kind === 'etazkira') return validateETazkira(v);
       return validateTazkiraCode(v);
     }
@@ -662,8 +726,31 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
       const val = this.value.trim();
       if (!val) { if (kind === 'tazkira') setState('pending', '⏳ اختیاری'); return; }
       const r = validateFn(val);
-      if (!r.valid) return;
+      if (!r.valid) {
+        // اگر کد بست نامعتبر است، خطا نشان بده و کاری نکن
+        return;
+      }
       this.value = r.formatted;
+
+      // برای کد بست: بعد از تأیید tashkeel، یکتایی را چک کن
+      if (kind === 'jobcode') {
+        setState('pending', '⏳ در حال بررسی یکتایی...');
+        try {
+          const uniq = await checkFn(r.formatted);
+          if (uniq.unique) {
+            setState('valid', `✅ تایید شد (${r.school || 'مکتب شما'})`);
+          } else {
+            const m = buildDuplicateMessage(kind, uniq);
+            setState('invalid', m);
+            showToast(m, true);
+          }
+        } catch (e) {
+          setState('valid', `✅ تایید شد (${r.school || 'مکتب شما'})`);
+        }
+        return;
+      }
+
+      // برای بقیه فیلدها
       if (r.formatted === lastChecked || isChecking) return;
       lastChecked = r.formatted; isChecking = true;
       setState('pending', '⏳ در حال بررسی...');
@@ -677,6 +764,9 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
     });
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // اتصال اعتبارسنجی‌ها
+  // ═══════════════════════════════════════════════════════════════════════
   attachLiveValidation('birthDate', validateShamsiDate, 'birthDateMsg');
   attachLiveValidation('firstAppointmentDate', validateShamsiDate, 'firstAppointmentDateMsg');
   attachLiveValidation('currentPositionDate', validateShamsiDate, 'currentPositionDateMsg');
@@ -688,6 +778,9 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
   attachUniqueFieldValidation('eTazkira', 'eTazkiraMsg', 'etazkira', null);
   attachUniqueFieldValidation('paperTazkira', 'paperTazkiraMsg', 'tazkira', null);
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // Submit
+  // ═══════════════════════════════════════════════════════════════════════
   document.getElementById('recordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!document.getElementById('agreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
@@ -743,9 +836,9 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
 
     if (!body.jobTitle || !body.firstName || !body.fatherName || !body.grandfatherName) { showToast('❌ فیلدهای الزامی را پر کنید', true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
 
-    // ✅ اعتبارسنجی کد بست (فرمت + بازه مکتب)
+    // ✅ اعتبارسنجی کد بست با tashkeel
     if (body.jobCode) {
-      const jc = validateJobCode(body.jobCode);
+      const jc = validateJobCodeWithTashkeel(body.jobCode);
       if (!jc.valid) { showToast('❌ ' + jc.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
       body.jobCode = jc.formatted;
     }
@@ -754,11 +847,11 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
     if (isManagerTitle(body.jobTitle)) {
       const expectedCode = findManagerCodeForTitle(body.jobTitle);
       if (expectedCode && body.jobCode !== expectedCode) {
-        showToast(`❌ برای عنوان «${body.jobTitle}»، کد بست باید ${expectedCode} باشد (از tashkeel)`, true);
+        showToast(`❌ برای عنوان «${body.jobTitle}»، کد بست باید ${expectedCode} باشد`, true);
         btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return;
       }
       if (!expectedCode) {
-        showToast(`⚠️ کد مدیر برای عنوان «${body.jobTitle}» در tashkeel یافت نشد. با مدیر تماس بگیرید.`, true);
+        showToast(`⚠️ کد مدیر برای عنوان «${body.jobTitle}» در tashkeel یافت نشد`, true);
         btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return;
       }
     }
@@ -779,14 +872,14 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
           const schoolName = localStorage.getItem('hr_schoolname') || user.schoolname || 'نامشخص';
           await emailjs.send("service_9aqrddc", "template_iizq261", {
             school_name: schoolName,
-            employee_name: body.firstName + ' ' + (body.lastName || ''), 
+            employee_name: body.firstName + ' ' + (body.lastName || ''),
             job_title: body.jobTitle || 'نامشخص',
             register_time: timeStr
           });
           console.log('✅ ایمیل ثبت کارمند ارسال شد');
-          await new Promise(resolve => setTimeout(resolve, 1500)); 
+          await new Promise(resolve => setTimeout(resolve, 1500));
         } catch (emailError) {
-          console.error('❌ خطا در ارسال ایمیل ثبت کارمند:', emailError);
+          console.error('❌ خطا در ارسال ایمیل:', emailError);
         }
 
         document.getElementById('recordForm').reset();
@@ -799,11 +892,13 @@ input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
       } else if (res.status === 409 && (data.code === 'DUPLICATE_JOBCODE' || data.code === 'DUPLICATE_ETAZKIRA')) {
         showToast(buildDuplicateMessage(data.code === 'DUPLICATE_JOBCODE' ? 'jobcode' : 'etazkira', data), true);
       } else { showToast('❌ ' + (data.error || 'خطا'), true); }
-    } catch (err) { showToast('❌ ارتباط برقرار نشد', true); } 
+    } catch (err) { showToast('❌ ارتباط برقرار نشد', true); }
     finally { btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; }
   });
 
-  // بارگذاری tashkeel در شروع
+  // ═══════════════════════════════════════════════════════════════════════
+  // شروع
+  // ═══════════════════════════════════════════════════════════════════════
   loadSchoolTashkeel();
 </script>
 </body>

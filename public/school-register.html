@@ -10,164 +10,59 @@
 </script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
-:root {
-  --primary: #173b68;
-  --blue: #2563eb;
-  --green: #0f9f78;
-  --text: #172b45;
-  --muted: #718096;
-  --border: #e2e8f0;
-  --radius: 14px;
-  --shadow: 0 8px 28px rgba(20,43,75,.07);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
-  background: radial-gradient(circle at 10% 5%, rgba(37,99,235,.08), transparent 28%), linear-gradient(135deg, #f5f8fc, #edf2f8);
-  min-height: 100vh; display: flex; justify-content: center; align-items: flex-start;
-  padding: 28px 18px; color: var(--text); line-height: 1.7;
-}
-button, input, select { font-family: inherit; }
-.main-container {
-  width: 100%; max-width: 1450px; background: #fff;
-  border: 1px solid rgba(226,232,240,.9); border-radius: 20px;
-  box-shadow: 0 18px 55px rgba(15,35,65,.10); overflow: hidden;
-  display: flex; flex-direction: column;
-}
-.topbar {
-  background: linear-gradient(115deg, #102b4d, #1b4777 65%, #245b91);
-  color: #fff; padding: 20px 30px; display: flex; justify-content: space-between;
-  align-items: center; flex-wrap: wrap; gap: 14px; position: relative;
-}
-.topbar::after {
-  content: ""; position: absolute; bottom: 0; right: 0; width: 100%; height: 3px;
-  background: linear-gradient(90deg, #20c997, #60a5fa, transparent);
-}
-.topbar h3 { font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 3px; }
-.topbar small { color: #d7e7f8; font-size: 12px; }
-.btn-logout {
-  background: rgba(255,255,255,.12); color: white; border: 1px solid rgba(255,255,255,.25);
-  padding: 9px 19px; border-radius: 9px; font-weight: 700; cursor: pointer; font-size: 13px;
-}
-.btn-logout:hover { background: #dc3545; border-color: #dc3545; }
-.main-tabs {
-  display: flex; gap: 5px; background: #fff; border-bottom: 1px solid var(--border);
-  padding: 10px 18px 0; flex-wrap: wrap;
-}
-.main-tab-btn {
-  padding: 12px 17px; border: none; background: transparent; color: #64748b;
-  font-weight: 700; cursor: pointer; border-radius: 9px 9px 0 0; font-size: 13px;
-  text-decoration: none; display: inline-block; border-bottom: 3px solid transparent;
-  white-space: nowrap;
-}
-.main-tab-btn:hover { background: #f1f6fc; color: var(--primary); }
-.main-tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: #eff6ff; }
-.page-header {
-  background: linear-gradient(110deg, #edf5ff, #f7faff); color: var(--primary);
-  padding: 22px 30px; font-size: 21px; font-weight: 900; text-align: right;
-  border-bottom: 1px solid #e5edf7; position: relative;
-}
-.page-header::before {
-  content: ""; position: absolute; right: 0; top: 18px; bottom: 18px;
-  width: 5px; background: var(--green); border-radius: 5px 0 0 5px;
-}
-.page-content { padding: 28px; background: #fbfcfe; }
-.form-section {
-  background: #fff; padding: 24px; border: 1px solid #e5eaf1;
-  border-radius: var(--radius); margin-bottom: 22px; border-right: 4px solid var(--green);
-  box-shadow: var(--shadow);
-}
-.form-section h5 {
-  color: var(--primary); font-size: 15px; font-weight: 800; padding: 0 0 13px;
-  margin-bottom: 20px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-}
-.form-section h5::before {
-  content: ""; display: inline-block; width: 8px; height: 8px;
-  background: var(--green); border-radius: 50%; box-shadow: 0 0 0 4px rgba(15,159,120,.12);
-}
-.grid-4 {
-  display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 19px 16px;
-}
-.form-group { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
-label { font-size: 12px; font-weight: 800; color: #40536b; }
-input[type="text"], select {
-  min-height: 43px; padding: 10px 12px; border: 1px solid #d6deea; border-radius: 9px;
-  font-size: 13px; color: #24364b; outline: none; background: #fff; width: 100%;
-}
-input:focus, select:focus { border-color: #4385e8; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
-input.valid { border-color: #10a779 !important; background: #f2fcf8; }
-input.invalid { border-color: #e34b56 !important; background: #fff7f7; }
-.date-msg {
-  display: block; font-size: 10px; margin-top: 2px; min-height: 16px;
-  font-weight: 700; line-height: 1.6; overflow-wrap: anywhere;
-}
-.date-msg.pending { color: #b7791f; }
-.date-msg.valid { color: #0b966c; }
-.date-msg.invalid { color: #dc3545; }
-.field-hint { display: block; font-size: 10px; color: #7b899a; margin-top: 2px; }
-.service-section {
-  background: #fffaf0; border: 1px solid #f3d99c; border-right: 4px solid #e6a23c;
-  padding: 18px; border-radius: 11px; margin-top: 15px; display: none;
-}
-.service-section.active { display: block; }
-.agreement-box {
-  background: #fff9e9; border: 1px solid #f0d48d; border-radius: 12px;
-  padding: 19px 21px; margin: 22px 0; display: flex; align-items: flex-start;
-  gap: 13px; cursor: pointer; user-select: none;
-}
-.agreement-box.checked { background: #edfaf4; border-color: #48b88d; }
-.agreement-box input[type="checkbox"] {
-  width: 21px; height: 21px; cursor: pointer; accent-color: var(--green);
-  margin-top: 3px; flex-shrink: 0; pointer-events: none;
-}
-.agreement-text { font-size: 13px; color: #78551b; font-weight: 700; line-height: 1.9; }
-.agreement-box.checked .agreement-text { color: #087653; }
-.btn {
-  padding: 13px 22px; border: none; border-radius: 10px; font-weight: 800;
-  cursor: pointer; color: white; background: linear-gradient(120deg, #0fa77b, #087f60);
-  font-size: 14px; width: 100%; margin-top: 10px;
-}
-.btn:disabled { background: #aab5c2; cursor: not-allowed; opacity: .7; }
-.btn-submit-final { padding: 16px; background: linear-gradient(120deg, #2563eb, #1749ad); font-size: 15px; }
-.toast {
-  position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px);
-  background: #0e9870; color: #fff; padding: 13px 24px; border-radius: 11px;
-  font-weight: 700; font-size: 13px; z-index: 9999; opacity: 0; transition: all .3s;
-  max-width: calc(100% - 30px); text-align: center;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.error { background: #dc3545; }
-.range-info {
-  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
-  padding: 12px 16px; margin-bottom: 15px; font-size: 12px; color: #1e40af;
-  line-height: 1.8;
-}
-.range-info strong { color: #1e3a8a; }
-.range-info .rng { display: inline-block; background: #dbeafe; padding: 2px 10px; border-radius: 20px; margin: 2px 4px; font-family: monospace; direction: ltr; }
-@media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(3, minmax(0,1fr)); } }
-@media (max-width: 800px) {
-  body { padding: 12px; }
-  .topbar { padding: 17px 19px; }
-  .main-tabs { overflow-x: auto; flex-wrap: nowrap; padding: 8px 10px 0; }
-  .main-tab-btn { flex-shrink: 0; padding: 11px 13px; font-size: 12px; }
-  .page-content { padding: 17px; }
-  .form-section { padding: 18px; }
-  .grid-4 { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 15px 12px; }
-}
-@media (max-width: 520px) {
-  body { padding: 0; background: #f5f7fb; }
-  .main-container { border-radius: 0; min-height: 100vh; }
-  .topbar { padding: 15px; }
-  .topbar h3 { font-size: 15px; }
-  .page-header { font-size: 16px; padding: 16px 19px; }
-  .page-content { padding: 12px; }
-  .form-section { padding: 15px 12px; }
-  .grid-4 { grid-template-columns: 1fr; gap: 13px; }
-  input[type="text"], select { min-height: 45px; font-size: 14px; }
-  .btn-submit-final { padding: 15px 10px; font-size: 13px; }
-}
+:root { --primary:#173b68; --blue:#2563eb; --green:#0f9f78; --text:#172b45; --muted:#718096; --border:#e2e8f0; --radius:14px; --shadow:0 8px 28px rgba(20,43,75,.07); }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Vazirmatn',Tahoma,Arial,sans-serif; background:radial-gradient(circle at 10% 5%, rgba(37,99,235,.08), transparent 28%), linear-gradient(135deg,#f5f8fc,#edf2f8); min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:28px 18px; color:var(--text); line-height:1.7; }
+button,input,select { font-family:inherit; }
+.main-container { width:100%; max-width:1450px; background:#fff; border:1px solid rgba(226,232,240,.9); border-radius:20px; box-shadow:0 18px 55px rgba(15,35,65,.10); overflow:hidden; display:flex; flex-direction:column; }
+.topbar { background:linear-gradient(115deg,#102b4d,#1b4777 65%,#245b91); color:#fff; padding:20px 30px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; position:relative; }
+.topbar::after { content:""; position:absolute; bottom:0; right:0; width:100%; height:3px; background:linear-gradient(90deg,#20c997,#60a5fa,transparent); }
+.topbar h3 { font-size:19px; font-weight:800; color:#fff; margin-bottom:3px; }
+.topbar small { color:#d7e7f8; font-size:12px; }
+.btn-logout { background:rgba(255,255,255,.12); color:white; border:1px solid rgba(255,255,255,.25); padding:9px 19px; border-radius:9px; font-weight:700; cursor:pointer; font-size:13px; }
+.btn-logout:hover { background:#dc3545; border-color:#dc3545; }
+.main-tabs { display:flex; gap:5px; background:#fff; border-bottom:1px solid var(--border); padding:10px 18px 0; flex-wrap:wrap; }
+.main-tab-btn { padding:12px 17px; border:none; background:transparent; color:#64748b; font-weight:700; cursor:pointer; border-radius:9px 9px 0 0; font-size:13px; text-decoration:none; display:inline-block; border-bottom:3px solid transparent; white-space:nowrap; }
+.main-tab-btn:hover { background:#f1f6fc; color:var(--primary); }
+.main-tab-btn.active { color:var(--blue); border-bottom-color:var(--blue); background:#eff6ff; }
+.page-header { background:linear-gradient(110deg,#edf5ff,#f7faff); color:var(--primary); padding:22px 30px; font-size:21px; font-weight:900; text-align:right; border-bottom:1px solid #e5edf7; position:relative; }
+.page-header::before { content:""; position:absolute; right:0; top:18px; bottom:18px; width:5px; background:var(--green); border-radius:5px 0 0 5px; }
+.page-content { padding:28px; background:#fbfcfe; }
+.form-section { background:#fff; padding:24px; border:1px solid #e5eaf1; border-radius:var(--radius); margin-bottom:22px; border-right:4px solid var(--green); box-shadow:var(--shadow); }
+.form-section h5 { color:var(--primary); font-size:15px; font-weight:800; padding:0 0 13px; margin-bottom:20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.form-section h5::before { content:""; display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; box-shadow:0 0 0 4px rgba(15,159,120,.12); }
+.grid-4 { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:19px 16px; }
+.form-group { display:flex; flex-direction:column; gap:7px; min-width:0; }
+label { font-size:12px; font-weight:800; color:#40536b; }
+input[type="text"],select { min-height:43px; padding:10px 12px; border:1px solid #d6deea; border-radius:9px; font-size:13px; color:#24364b; outline:none; background:#fff; width:100%; }
+input:focus,select:focus { border-color:#4385e8; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+input.valid { border-color:#10a779 !important; background:#f2fcf8; }
+input.invalid { border-color:#e34b56 !important; background:#fff7f7; }
+.date-msg { display:block; font-size:10px; margin-top:2px; min-height:16px; font-weight:700; line-height:1.6; overflow-wrap:anywhere; }
+.date-msg.pending { color:#b7791f; }
+.date-msg.valid { color:#0b966c; }
+.date-msg.invalid { color:#dc3545; }
+.field-hint { display:block; font-size:10px; color:#7b899a; margin-top:2px; }
+.service-section { background:#fffaf0; border:1px solid #f3d99c; border-right:4px solid #e6a23c; padding:18px; border-radius:11px; margin-top:15px; display:none; }
+.service-section.active { display:block; }
+.agreement-box { background:#fff9e9; border:1px solid #f0d48d; border-radius:12px; padding:19px 21px; margin:22px 0; display:flex; align-items:flex-start; gap:13px; cursor:pointer; user-select:none; }
+.agreement-box.checked { background:#edfaf4; border-color:#48b88d; }
+.agreement-box input[type="checkbox"] { width:21px; height:21px; cursor:pointer; accent-color:var(--green); margin-top:3px; flex-shrink:0; pointer-events:none; }
+.agreement-text { font-size:13px; color:#78551b; font-weight:700; line-height:1.9; }
+.agreement-box.checked .agreement-text { color:#087653; }
+.btn { padding:13px 22px; border:none; border-radius:10px; font-weight:800; cursor:pointer; color:white; background:linear-gradient(120deg,#0fa77b,#087f60); font-size:14px; width:100%; margin-top:10px; }
+.btn:disabled { background:#aab5c2; cursor:not-allowed; opacity:.7; }
+.btn-submit-final { padding:16px; background:linear-gradient(120deg,#2563eb,#1749ad); font-size:15px; }
+.toast { position:fixed; bottom:25px; left:50%; transform:translateX(-50%) translateY(100px); background:#0e9870; color:#fff; padding:13px 24px; border-radius:11px; font-weight:700; font-size:13px; z-index:9999; opacity:0; transition:all .3s; max-width:calc(100% - 30px); text-align:center; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.error { background:#dc3545; }
+.range-info { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px 16px; margin-bottom:15px; font-size:12px; color:#1e40af; line-height:1.8; }
+.range-info strong { color:#1e3a8a; }
+.range-info .rng { display:inline-block; background:#dbeafe; padding:2px 10px; border-radius:20px; margin:2px 4px; font-family:monospace; direction:ltr; }
+@media (max-width:1100px) { .grid-4 { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:800px) { body { padding:12px; } .topbar { padding:17px 19px; } .main-tabs { overflow-x:auto; flex-wrap:nowrap; padding:8px 10px 0; } .main-tab-btn { flex-shrink:0; padding:11px 13px; font-size:12px; } .page-content { padding:17px; } .form-section { padding:18px; } .grid-4 { grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px 12px; } }
+@media (max-width:520px) { body { padding:0; background:#f5f7fb; } .main-container { border-radius:0; min-height:100vh; } .topbar { padding:15px; } .topbar h3 { font-size:15px; } .page-header { font-size:16px; padding:16px 19px; } .page-content { padding:12px; } .form-section { padding:15px 12px; } .grid-4 { grid-template-columns:1fr; gap:13px; } input[type="text"],select { min-height:45px; font-size:14px; } .btn-submit-final { padding:15px 10px; font-size:13px; } }
 </style>
 </head>
 <body>
@@ -432,42 +327,18 @@ const mySchoolName = String(user.schoolname || '').trim();
 const myPlaceName = SCHOOL_NAME_TO_PLACE[mySchoolName] || mySchoolName;
 
 // ═══════════════════════════════════════════════════════════
-// 3. STATE
+// 3. RANGE
 // ═══════════════════════════════════════════════════════════
-const SCHOOL_RANGE = {
-  first: Number(user.school_first_code) || null,
-  last: Number(user.school_last_code) || null
-};
-const MADARIS_RANGE = {
-  first: Number(user.madaris_first_code) || null,
-  last: Number(user.madaris_last_code) || null
-};
+const SCHOOL_RANGE = { first: Number(user.school_first_code) || null, last: Number(user.school_last_code) || null };
+const MADARIS_RANGE = { first: Number(user.madaris_first_code) || null, last: Number(user.madaris_last_code) || null };
 
+// ═══════════════════════════════════════════════════════════
+// 4. STATE
+// ═══════════════════════════════════════════════════════════
 let schoolTashkeel = [];
 let managerCodes = {};
 let codeToSchoolMap = {};
-
-// ═══════════════════════════════════════════════════════════
-// 4. RANGE INFO
-// ═══════════════════════════════════════════════════════════
-(function showRangeInfo() {
-  const box = document.getElementById('rangeInfoBox');
-  const parts = [];
-  if (SCHOOL_RANGE.first && SCHOOL_RANGE.last) {
-    parts.push(`<strong>🏫 بازه مکاتب:</strong> <span class="rng">${SCHOOL_RANGE.first} – ${SCHOOL_RANGE.last}</span>`);
-  }
-  if (MADARIS_RANGE.first && MADARIS_RANGE.last) {
-    parts.push(`<strong>🏛️ بازه مدارس:</strong> <span class="rng">${MADARIS_RANGE.first} – ${MADARIS_RANGE.last}</span>`);
-  }
-  if (parts.length) {
-    box.innerHTML = '🔒 کد بست باید متعلق به مکتب شما باشد:<br>' + parts.join('<br>');
-  } else {
-    box.innerHTML = '⚠️ بازه کد بست تعریف نشده. با مدیر تماس بگیرید.';
-    box.style.background = '#fef3c7';
-    box.style.borderColor = '#fcd34d';
-    box.style.color = '#92400e';
-  }
-})();
+let tashkeelReady = false;
 
 // ═══════════════════════════════════════════════════════════
 // 5. HELPERS
@@ -494,65 +365,69 @@ function extractCodeNumber(codeStr) {
   const m = String(codeStr).match(/(\d+)\s*$/);
   return m ? Number(m[1]) : null;
 }
-function isInRange(num, first, last) {
-  if (first === null || last === null || isNaN(first) || isNaN(last)) return false;
-  return num >= first && num <= last;
+function isInRange(n, f, l) {
+  if (f === null || l === null || isNaN(f) || isNaN(l)) return false;
+  return n >= f && n <= l;
 }
-function isInAnyAllowedRange(codeNum) {
-  return isInRange(codeNum, SCHOOL_RANGE.first, SCHOOL_RANGE.last)
-      || isInRange(codeNum, MADARIS_RANGE.first, MADARIS_RANGE.last);
+function isInAnyAllowedRange(n) {
+  return isInRange(n, SCHOOL_RANGE.first, SCHOOL_RANGE.last) || isInRange(n, MADARIS_RANGE.first, MADARIS_RANGE.last);
 }
 
 // ═══════════════════════════════════════════════════════════
-// 6. LOAD TASHKEEL
+// 6. RANGE INFO
+// ═══════════════════════════════════════════════════════════
+(function showRangeInfo() {
+  const box = document.getElementById('rangeInfoBox');
+  const parts = [];
+  if (SCHOOL_RANGE.first && SCHOOL_RANGE.last) parts.push(`<strong>🏫 بازه مکاتب:</strong> <span class="rng">${SCHOOL_RANGE.first} – ${SCHOOL_RANGE.last}</span>`);
+  if (MADARIS_RANGE.first && MADARIS_RANGE.last) parts.push(`<strong>🏛️ بازه مدارس:</strong> <span class="rng">${MADARIS_RANGE.first} – ${MADARIS_RANGE.last}</span>`);
+  if (parts.length) box.innerHTML = '🔒 کد بست باید متعلق به مکتب شما باشد:<br>' + parts.join('<br>');
+  else {
+    box.innerHTML = '⚠️ بازه کد بست تعریف نشده. با مدیر تماس بگیرید.';
+    box.style.background = '#fef3c7'; box.style.borderColor = '#fcd34d'; box.style.color = '#92400e';
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════
+// 7. LOAD TASHKEEL
 // ═══════════════════════════════════════════════════════════
 async function loadSchoolTashkeel() {
   try {
-    const r = await fetch('/api/tashkeel', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!r.ok) { console.error('tashkeel fetch failed:', r.status); return; }
+    const r = await fetch('/api/tashkeel', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) {
+      console.error('tashkeel fetch failed:', r.status);
+      tashkeelReady = false;
+      return;
+    }
     const data = await r.json();
     const all = Array.isArray(data) ? data : (Array.isArray(data.tashkeel) ? data.tashkeel : []);
-    console.log('tashkeel total:', all.length);
 
-    // Map همه کدها به مکتب
     codeToSchoolMap = {};
     all.forEach(t => {
-      if (t.code && t.place) {
-        codeToSchoolMap[String(t.code).trim()] = String(t.place).trim();
-      }
+      if (t.code && t.place) codeToSchoolMap[String(t.code).trim()] = String(t.place).trim();
     });
-    console.log('codeToSchoolMap size:', Object.keys(codeToSchoolMap).length);
-    console.log('has 27-32-02-12810?', codeToSchoolMap['27-32-02-12810']);
 
-    // فیلتر برای همین مکتب
-    schoolTashkeel = all.filter(t => {
-      if (!t.place) return false;
-      return String(t.place).trim() === myPlaceName;
-    });
-    console.log('schoolTashkeel length:', schoolTashkeel.length);
-    console.log('myPlaceName:', myPlaceName);
+    schoolTashkeel = all.filter(t => t.place && String(t.place).trim() === myPlaceName);
 
-    // کدهای مدیر
     managerCodes = {};
     const managerTitles = ['آمر', 'مدیر', 'مدیر عمومی', 'مهتمم'];
     schoolTashkeel.forEach(t => {
       const title = (t.title || '').trim();
       managerTitles.forEach(mt => {
-        if (title.includes(mt) && !managerCodes[mt]) {
-          managerCodes[mt] = t.code;
-        }
+        if (title.includes(mt) && !managerCodes[mt]) managerCodes[mt] = t.code;
       });
     });
-    console.log('managerCodes:', managerCodes);
+
+    tashkeelReady = true;
+    console.log('tashkeel total:', all.length, '| my place:', myPlaceName, '| my codes:', schoolTashkeel.length);
   } catch (e) {
     console.error('loadSchoolTashkeel error:', e);
+    tashkeelReady = false;
   }
 }
 
 // ═══════════════════════════════════════════════════════════
-// 7. MANAGER CODE
+// 8. MANAGER CODE
 // ═══════════════════════════════════════════════════════════
 function isManagerTitle(title) {
   const managerTitles = ['آمر', 'مدیر', 'مدیر عمومی', 'مهتمم', 'مدیر اجرائیه'];
@@ -563,8 +438,7 @@ function findManagerCodeForTitle(title) {
   for (const mt of priority) {
     if (String(title || '').includes(mt) && managerCodes[mt]) return managerCodes[mt];
   }
-  const found = schoolTashkeel.find(t => String(t.title || '').includes(title));
-  return found ? found.code : null;
+  return null;
 }
 function onJobTitleChange() {
   const title = document.getElementById('jobTitle').value;
@@ -573,31 +447,27 @@ function onJobTitleChange() {
   const msg = document.getElementById('jobCodeMsg');
 
   if (isManagerTitle(title)) {
-    const expectedCode = findManagerCodeForTitle(title);
-    if (expectedCode) {
-      jobCodeInput.value = expectedCode;
+    const expected = findManagerCodeForTitle(title);
+    if (expected) {
+      jobCodeInput.value = expected;
       jobCodeInput.classList.add('valid');
       jobCodeInput.classList.remove('invalid');
-      hint.textContent = `🔒 کد بست برای عنوان «${title}» باید ${expectedCode} باشد.`;
+      hint.textContent = `🔒 کد بست برای «${title}» باید ${expected} باشد.`;
       msg.textContent = '✅ کد مدیر خودکار تنظیم شد';
       msg.className = 'date-msg valid';
     } else {
       hint.textContent = `⚠️ کد مدیر برای «${title}» پیدا نشد.`;
-      msg.textContent = '';
-      msg.className = 'date-msg';
+      msg.textContent = ''; msg.className = 'date-msg';
     }
   } else {
     hint.textContent = '🔒 کد بست باید متعلق به مکتب شما باشد.';
-    if (jobCodeInput.value === '') {
-      msg.textContent = '⏳ منتظر...';
-      msg.className = 'date-msg pending';
-    }
+    if (!jobCodeInput.value) { msg.textContent = '⏳ منتظر...'; msg.className = 'date-msg pending'; }
   }
 }
 window.onJobTitleChange = onJobTitleChange;
 
 // ═══════════════════════════════════════════════════════════
-// 8. DATE VALIDATION
+// 9. DATE VALIDATION
 // ═══════════════════════════════════════════════════════════
 function validateShamsiDate(dateStr) {
   if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
@@ -618,21 +488,19 @@ function validateShamsiDate(dateStr) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 9. JOB CODE VALIDATION (فرمت + بازه + tashkeel + مکتب)
+// 10. JOB CODE VALIDATION
 // ═══════════════════════════════════════════════════════════
 function validateJobCodeBasic(codeStr) {
   if (!codeStr) return { valid: false, error: 'کد بست الزامی است' };
   const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
-  if (!/^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned)) {
-    return { valid: false, error: 'فرمت: 27-XX-XX-XXXXX' };
-  }
-  const codeNum = extractCodeNumber(cleaned);
-  if (codeNum === null) return { valid: false, error: 'کد نامعتبر' };
-  if (!isInAnyAllowedRange(codeNum)) {
+  if (!/^27-\d{1,3}-\d{1,3}-\d{3,6}$/.test(cleaned)) return { valid: false, error: 'فرمت: 27-XX-XX-XXXXX' };
+  const n = extractCodeNumber(cleaned);
+  if (n === null) return { valid: false, error: 'کد نامعتبر' };
+  if (!isInAnyAllowedRange(n)) {
     const rngs = [];
     if (SCHOOL_RANGE.first) rngs.push(`مکاتب ${SCHOOL_RANGE.first}–${SCHOOL_RANGE.last}`);
     if (MADARIS_RANGE.first) rngs.push(`مدارس ${MADARIS_RANGE.first}–${MADARIS_RANGE.last}`);
-    return { valid: false, error: 'کد خارج از بازه مجاز. مجاز: ' + (rngs.join(' | ') || 'تعریف نشده') };
+    return { valid: false, error: 'کد خارج از بازه. مجاز: ' + (rngs.join(' | ') || 'تعریف نشده') };
   }
   return { valid: true, formatted: cleaned };
 }
@@ -644,44 +512,29 @@ function validateJobCodeWithTashkeel(codeStr) {
   const cleaned = basic.formatted;
   const codeSchool = codeToSchoolMap[cleaned];
 
-  if (!codeSchool) {
-    return { valid: false, error: 'این کد در تشکیلات معارف وجود ندارد' };
-  }
+  if (!codeSchool) return { valid: false, error: 'این کد در تشکیلات معارف وجود ندارد' };
 
-  const isMine = codeSchool === myPlaceName
-    || codeSchool === mySchoolName
-    || codeSchool.includes(myPlaceName)
-    || myPlaceName.includes(codeSchool);
+  const isMine = codeSchool === myPlaceName || codeSchool === mySchoolName
+    || codeSchool.includes(myPlaceName) || myPlaceName.includes(codeSchool);
 
-  if (!isMine) {
-    return { valid: false, error: `❌ این کد مربوط به مکتب «${codeSchool}» است، نه مکتب شما` };
-  }
-
+  if (!isMine) return { valid: false, error: `❌ این کد مربوط به مکتب «${codeSchool}» است، نه مکتب شما` };
   return { valid: true, formatted: cleaned, school: codeSchool };
 }
 
 function validateETazkira(codeStr) {
-  if (!codeStr) return { valid: false, error: 'تذکره الکترونیکی الزامی است' };
-  const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
-  if (!/^\d+-\d+-\d+$/.test(cleaned)) return { valid: false, error: 'فرمت: XXXXX-XXXXX-XXXX' };
-  return { valid: true, formatted: cleaned };
-}
-function validateTazkiraCode(codeStr) {
-  if (!codeStr) return { valid: true, formatted: '' };
-  const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
-  if (!/^\d{1,20}$/.test(cleaned)) return { valid: false, error: 'فقط عدد' };
-  return { valid: true, formatted: cleaned };
+  if (!codeStr) return { valid: false, error: 'تذکره الزامی است' };
+  const c = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
+  if (!/^\d+-\d+-\d+$/.test(c)) return { valid: false, error: 'فرمت: XXXXX-XXXXX-XXXX' };
+  return { valid: true, formatted: c };
 }
 
 // ═══════════════════════════════════════════════════════════
-// 10. UNIQUENESS CHECKS
+// 11. UNIQUENESS
 // ═══════════════════════════════════════════════════════════
 async function checkJobCodeUnique(codeStr) {
   if (!codeStr) return { unique: false };
   try {
-    const res = await fetch('/api/check-jobcode?code=' + encodeURIComponent(codeStr), {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    const res = await fetch('/api/check-jobcode?code=' + encodeURIComponent(codeStr), { headers: { 'Authorization': 'Bearer ' + token } });
     if (!res.ok) return { unique: true };
     const data = await res.json();
     if (!data.exists) return { unique: true };
@@ -691,23 +544,21 @@ async function checkJobCodeUnique(codeStr) {
 async function checkETazkiraUnique(codeStr) {
   if (!codeStr) return { unique: false };
   try {
-    const res = await fetch('/api/check-etazkira?code=' + encodeURIComponent(codeStr), {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    const res = await fetch('/api/check-etazkira?code=' + encodeURIComponent(codeStr), { headers: { 'Authorization': 'Bearer ' + token } });
     if (!res.ok) return { unique: true };
     const data = await res.json();
     if (!data.exists) return { unique: true };
     return { unique: false, isSameSchool: !!data.isSameSchool, schoolname: data.schoolname, employeeName: data.employeeName };
   } catch (e) { return { unique: true }; }
 }
-function buildDuplicateMessage(kind, result) {
-  const label = kind === 'jobcode' ? 'کد بست' : (kind === 'etazkira' ? 'تذکره الکترونیکی' : 'تذکره کاغذی');
-  if (result.isSameSchool) return `⚠️ این ${label} قبلاً برای «${result.employeeName || 'نامشخص'}» در مکتب خودتان ثبت شده.`;
-  return `❌ این ${label} قبلاً در مکتب «${result.schoolname || 'نامشخص'}» ثبت شده.`;
+function buildDuplicateMessage(kind, r) {
+  const label = kind === 'jobcode' ? 'کد بست' : 'تذکره الکترونیکی';
+  if (r.isSameSchool) return `⚠️ این ${label} قبلاً برای «${r.employeeName || 'نامشخص'}» در مکتب خودتان ثبت شده.`;
+  return `❌ این ${label} قبلاً در مکتب «${r.schoolname || 'نامشخص'}» ثبت شده.`;
 }
 
 // ═══════════════════════════════════════════════════════════
-// 11. TOGGLES
+// 12. TOGGLES
 // ═══════════════════════════════════════════════════════════
 function toggleAgreement() {
   const c = document.getElementById('agreementCheckbox'), b = document.getElementById('agreementBox'), s = document.getElementById('submitBtn');
@@ -718,28 +569,28 @@ function toggleAgreement() {
 window.toggleAgreement = toggleAgreement;
 
 function toggleWorkshopFields() {
-  const status = document.getElementById('workshopStatus').value;
-  document.getElementById('workshopTitleGroup').style.display = status === 'بلی' ? 'flex' : 'none';
-  document.getElementById('workshopDurationGroup').style.display = status === 'بلی' ? 'flex' : 'none';
+  const s = document.getElementById('workshopStatus').value;
+  document.getElementById('workshopTitleGroup').style.display = s === 'بلی' ? 'flex' : 'none';
+  document.getElementById('workshopDurationGroup').style.display = s === 'بلی' ? 'flex' : 'none';
 }
 window.toggleWorkshopFields = toggleWorkshopFields;
 
 function toggleServiceFields() {
-  const status = document.getElementById('serviceStatus').value;
-  const details = document.getElementById('serviceDetails');
-  if (status === 'بلی') details.classList.add('active'); else details.classList.remove('active');
+  const s = document.getElementById('serviceStatus').value;
+  const d = document.getElementById('serviceDetails');
+  if (s === 'بلی') d.classList.add('active'); else d.classList.remove('active');
 }
 window.toggleServiceFields = toggleServiceFields;
 
 const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
-function isEducationExemptJob(jobTitle) { return EDUCATION_EXEMPT_JOBS.includes(String(jobTitle || '').trim()); }
+function isEducationExemptJob(j) { return EDUCATION_EXEMPT_JOBS.includes(String(j || '').trim()); }
 function toggleEducationRequired() {
-  const jobTitle = document.getElementById('jobTitle').value;
-  const eduFields = document.querySelectorAll('.edu-field input');
-  const isExempt = isEducationExemptJob(jobTitle);
-  eduFields.forEach(input => {
-    if (isExempt) { input.removeAttribute('required'); input.classList.remove('invalid'); }
-    else { input.setAttribute('required', 'required'); }
+  const j = document.getElementById('jobTitle').value;
+  const fields = document.querySelectorAll('.edu-field input');
+  const ex = isEducationExemptJob(j);
+  fields.forEach(i => {
+    if (ex) { i.removeAttribute('required'); i.classList.remove('invalid'); }
+    else i.setAttribute('required', 'required');
   });
 }
 window.toggleEducationRequired = toggleEducationRequired;
@@ -751,14 +602,14 @@ function validateEducationFields(jobTitle) {
   const missing = fields.filter(([id]) => !document.getElementById(id)?.value.trim());
   if (missing.length) return { valid: false, error: 'تکمیل کنید: ' + missing.map(([, l]) => l).join('، ') };
   for (const [id, label] of [['enrollmentDate','تاریخ شمولیت'],['graduationDate','تاریخ فراغت']]) {
-    const dr = validateShamsiDate(document.getElementById(id).value.trim());
-    if (!dr.valid) return { valid: false, error: label + ': ' + dr.error };
+    const d = validateShamsiDate(document.getElementById(id).value.trim());
+    if (!d.valid) return { valid: false, error: label + ': ' + d.error };
   }
   return { valid: true };
 }
 
 // ═══════════════════════════════════════════════════════════
-// 12. LIVE VALIDATION
+// 13. LIVE VALIDATION
 // ═══════════════════════════════════════════════════════════
 function attachLiveValidation(inputId, validateFn, msgId) {
   const input = document.getElementById(inputId);
@@ -782,44 +633,42 @@ function attachJobCodeValidation() {
     this.value = normalizeDigits(this.value).replace(/[^\d-]/g, '');
     if (!this.value.trim()) {
       this.classList.remove('valid','invalid');
-      msg.textContent = '⏳ منتظر...';
-      msg.className = 'date-msg pending';
+      msg.textContent = '⏳ منتظر...'; msg.className = 'date-msg pending';
+      return;
+    }
+    if (!tashkeelReady) {
+      msg.textContent = '⏳ در حال بارگذاری تشکیلات...'; msg.className = 'date-msg pending';
       return;
     }
     const r = validateJobCodeBasic(this.value);
     if (!r.valid) {
       this.classList.add('invalid'); this.classList.remove('valid');
-      msg.textContent = '❌ ' + r.error;
-      msg.className = 'date-msg invalid';
+      msg.textContent = '❌ ' + r.error; msg.className = 'date-msg invalid';
     } else {
-      msg.textContent = '⏳ برای بررسی، از فیلد خارج شوید';
-      msg.className = 'date-msg pending';
+      msg.textContent = '⏳ برای بررسی، از فیلد خارج شوید'; msg.className = 'date-msg pending';
     }
   });
   input.addEventListener('blur', async function() {
     const val = this.value.trim();
     if (!val) return;
+    if (!tashkeelReady) { msg.textContent = '⏳ منتظر بارگذاری...'; msg.className = 'date-msg pending'; return; }
     const r = validateJobCodeWithTashkeel(val);
     if (!r.valid) {
       this.classList.add('invalid'); this.classList.remove('valid');
-      msg.textContent = '❌ ' + r.error;
-      msg.className = 'date-msg invalid';
+      msg.textContent = '❌ ' + r.error; msg.className = 'date-msg invalid';
       return;
     }
     this.value = r.formatted;
-    msg.textContent = '⏳ در حال بررسی یکتایی...';
-    msg.className = 'date-msg pending';
+    msg.textContent = '⏳ در حال بررسی یکتایی...'; msg.className = 'date-msg pending';
     this.classList.remove('valid','invalid');
-    const uniq = await checkJobCodeUnique(r.formatted);
-    if (uniq.unique) {
+    const u = await checkJobCodeUnique(r.formatted);
+    if (u.unique) {
       this.classList.add('valid'); this.classList.remove('invalid');
-      msg.textContent = `✅ تایید شد (${r.school})`;
-      msg.className = 'date-msg valid';
+      msg.textContent = `✅ تایید شد (${r.school})`; msg.className = 'date-msg valid';
     } else {
       this.classList.add('invalid'); this.classList.remove('valid');
-      const m = buildDuplicateMessage('jobcode', uniq);
-      msg.textContent = m;
-      msg.className = 'date-msg invalid';
+      const m = buildDuplicateMessage('jobcode', u);
+      msg.textContent = m; msg.className = 'date-msg invalid';
       showToast(m, true);
     }
   });
@@ -842,11 +691,10 @@ function attachETazkiraValidation() {
     const r = validateETazkira(val);
     if (!r.valid) { this.classList.add('invalid'); msg.textContent = '❌ ' + r.error; msg.className = 'date-msg invalid'; return; }
     this.value = r.formatted;
-    msg.textContent = '⏳ در حال بررسی...';
-    msg.className = 'date-msg pending';
-    const uniq = await checkETazkiraUnique(r.formatted);
-    if (uniq.unique) { this.classList.add('valid'); this.classList.remove('invalid'); msg.textContent = '✅ یکتاست'; msg.className = 'date-msg valid'; }
-    else { this.classList.add('invalid'); this.classList.remove('valid'); const m = buildDuplicateMessage('etazkira', uniq); msg.textContent = m; msg.className = 'date-msg invalid'; showToast(m, true); }
+    msg.textContent = '⏳ در حال بررسی...'; msg.className = 'date-msg pending';
+    const u = await checkETazkiraUnique(r.formatted);
+    if (u.unique) { this.classList.add('valid'); this.classList.remove('invalid'); msg.textContent = '✅ یکتاست'; msg.className = 'date-msg valid'; }
+    else { this.classList.add('invalid'); this.classList.remove('valid'); const m = buildDuplicateMessage('etazkira', u); msg.textContent = m; msg.className = 'date-msg invalid'; showToast(m, true); }
   });
 }
 
@@ -861,7 +709,7 @@ attachJobCodeValidation();
 attachETazkiraValidation();
 
 // ═══════════════════════════════════════════════════════════
-// 13. SUBMIT
+// 14. SUBMIT
 // ═══════════════════════════════════════════════════════════
 document.getElementById('recordForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -920,39 +768,32 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
     showToast('❌ فیلدهای الزامی را پر کنید', true);
     btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return;
   }
+  if (!tashkeelReady) { showToast('⏳ تشکیلات هنوز بارگذاری نشده، صبر کنید', true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
 
-  // چک کد بست
   if (body.jobCode) {
     const jc = validateJobCodeWithTashkeel(body.jobCode);
     if (!jc.valid) { showToast('❌ ' + jc.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
     body.jobCode = jc.formatted;
   }
 
-  // چک کد مدیر
   if (isManagerTitle(body.jobTitle)) {
     const expected = findManagerCodeForTitle(body.jobTitle);
-    if (expected && body.jobCode !== expected) {
-      showToast(`❌ برای «${body.jobTitle}»، کد باید ${expected} باشد`, true);
-      btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return;
-    }
-    if (!expected) {
-      showToast(`⚠️ کد مدیر برای «${body.jobTitle}» پیدا نشد`, true);
-      btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return;
-    }
+    if (expected && body.jobCode !== expected) { showToast(`❌ برای «${body.jobTitle}»، کد باید ${expected} باشد`, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
+    if (!expected) { showToast(`⚠️ کد مدیر برای «${body.jobTitle}» پیدا نشد`, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
   }
 
   const edu = validateEducationFields(body.jobTitle);
   if (!edu.valid) { showToast('❌ ' + edu.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
 
   if (body.jobCode) {
-    const jcCheck = await checkJobCodeUnique(body.jobCode);
-    if (!jcCheck.unique) { showToast(buildDuplicateMessage('jobcode', jcCheck), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
+    const u = await checkJobCodeUnique(body.jobCode);
+    if (!u.unique) { showToast(buildDuplicateMessage('jobcode', u), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
   }
   if (body.eTazkira) {
     const et = validateETazkira(body.eTazkira);
     if (!et.valid) { showToast('❌ ' + et.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
-    const etCheck = await checkETazkiraUnique(et.formatted);
-    if (!etCheck.unique) { showToast(buildDuplicateMessage('etazkira', etCheck), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
+    const u = await checkETazkiraUnique(et.formatted);
+    if (!u.unique) { showToast(buildDuplicateMessage('etazkira', u), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
   }
 
   try {
@@ -961,14 +802,13 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
     if (res.ok) {
       showToast('✅ کارمند ثبت شد');
       try {
-        const now = new Date();
         await emailjs.send("service_9aqrddc", "template_iizq261", {
           school_name: user.schoolname || 'نامشخص',
           employee_name: body.firstName + ' ' + (body.lastName || ''),
           job_title: body.jobTitle || 'نامشخص',
-          register_time: now.toLocaleString('fa-IR')
+          register_time: new Date().toLocaleString('fa-IR')
         });
-      } catch (emailError) { console.error('Email error:', emailError); }
+      } catch (er) { console.error('Email:', er); }
       document.getElementById('recordForm').reset();
       document.getElementById('agreementCheckbox').checked = false;
       document.getElementById('agreementBox').classList.remove('checked');
@@ -987,9 +827,17 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// 14. INIT
+// 15. INIT — await tashkeel
 // ═══════════════════════════════════════════════════════════
-loadSchoolTashkeel();
+(async function init() {
+  showToast('⏳ در حال بارگذاری تشکیلات...');
+  await loadSchoolTashkeel();
+  if (tashkeelReady) {
+    showToast('✅ تشکیلات بارگذاری شد (' + schoolTashkeel.length + ' کد برای مکتب شما)');
+  } else {
+    showToast('⚠️ خطا در بارگذاری تشکیلات، دوباره صفحه را باز کنید', true);
+  }
+})();
 </script>
 </body>
 </html>

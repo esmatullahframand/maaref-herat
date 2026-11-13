@@ -1,5 +1,6 @@
 // ============================================================
 // server.js — Maaref Herat Backend
+// Node 20 + Express + PostgreSQL (Neon) + Render
 // ============================================================
 'use strict';
 
@@ -9,7 +10,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 
+// ============================================================
 // ENV
+// ============================================================
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -18,7 +21,9 @@ const ADMIN_RECOVERY_KEY = process.env.ADMIN_RECOVERY_KEY;
 if (!JWT_SECRET) { console.error('FATAL: JWT_SECRET not set'); process.exit(1); }
 if (!DATABASE_URL) { console.error('FATAL: DATABASE_URL not set'); process.exit(1); }
 
+// ============================================================
 // DB
+// ============================================================
 const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: { rejectUnauthorized: false },
@@ -29,7 +34,9 @@ const pool = new Pool({
 pool.on('error', (e) => console.error('PG pool error:', e));
 const q = (text, params) => pool.query(text, params);
 
+// ============================================================
 // APP
+// ============================================================
 const app = express();
 app.set('trust proxy', 1);
 app.use(cors());
@@ -40,7 +47,9 @@ app.use(express.static('public'));
 const asyncRoute = (fn) => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
-// AUTH
+// ============================================================
+// AUTH MIDDLEWARE
+// ============================================================
 function authRequired(req, res, next) {
   const h = req.get('authorization') || '';
   const token = h.startsWith('Bearer ') ? h.slice(7) : null;
@@ -58,7 +67,9 @@ function adminOnly(req, res, next) {
   next();
 }
 
+// ============================================================
 // HELPERS
+// ============================================================
 const num = (v, def = 0) => (v === undefined || v === null || v === '' ? def : Number(v));
 const txt = (v) => (v === undefined || v === null || v === '' ? null : String(v));
 
@@ -80,13 +91,17 @@ async function tooManyFailures(ip) {
   return r.rows[0].c >= 10;
 }
 
+// ============================================================
 // HEALTH
+// ============================================================
 app.get('/api/health', asyncRoute(async (_req, res) => {
   const r = await q('SELECT 1 AS ok');
   res.json({ ok: r.rows[0].ok === 1, time: new Date().toISOString() });
 }));
 
+// ============================================================
 // LOGIN
+// ============================================================
 app.post('/api/login', asyncRoute(async (req, res) => {
   const ip = req.ip;
   const { username, password } = req.body || {};
@@ -120,7 +135,9 @@ app.post('/api/login', asyncRoute(async (req, res) => {
   });
 }));
 
+// ============================================================
 // ME
+// ============================================================
 app.get('/api/me', authRequired, asyncRoute(async (req, res) => {
   const r = await q(
     `SELECT id, username, role, schoolname, district,
@@ -133,7 +150,9 @@ app.get('/api/me', authRequired, asyncRoute(async (req, res) => {
   res.json({ user: r.rows[0] });
 }));
 
+// ============================================================
 // RECOVER ADMIN ONCE
+// ============================================================
 app.post('/api/recover-admin-once', asyncRoute(async (req, res) => {
   const key = req.get('x-admin-recovery-key');
   if (!ADMIN_RECOVERY_KEY || key !== ADMIN_RECOVERY_KEY)
@@ -151,7 +170,9 @@ app.post('/api/recover-admin-once', asyncRoute(async (req, res) => {
   res.json({ success: true, message: 'حساب مدیر ایجاد شد' });
 }));
 
+// ============================================================
 // USERS
+// ============================================================
 app.get('/api/users', authRequired, adminOnly, asyncRoute(async (_req, res) => {
   const r = await q(
     `SELECT id, username, role, schoolname, district,
@@ -243,14 +264,16 @@ app.delete('/api/users/:id', authRequired, adminOnly, asyncRoute(async (req, res
   res.json({ success: true });
 }));
 
-// ALL SCHOOL SETTINGS
+// ============================================================
+// ALL SCHOOL SETTINGS (برای ادمین)
+// ============================================================
 app.get('/api/all-school-settings', authRequired, adminOnly, asyncRoute(async (_req, res) => {
   try {
     const r = await q(
       `SELECT u.id AS user_id, u.schoolname AS user_schoolname, u.district AS user_district,
               u.school_first_code, u.school_last_code,
               u.madaris_first_code, u.madaris_last_code,
-              ss.* 
+              ss.*
          FROM users u
          LEFT JOIN school_settings ss ON ss.userid = u.id
          WHERE u.role = 'school'
@@ -269,7 +292,9 @@ app.get('/api/all-school-settings', authRequired, adminOnly, asyncRoute(async (_
   }
 }));
 
+// ============================================================
 // APP SETTINGS
+// ============================================================
 app.get('/api/app-settings', asyncRoute(async (_req, res) => {
   const r = await q('SELECT key, value, updatedat FROM app_settings ORDER BY key');
   res.json({ settings: r.rows });
@@ -293,15 +318,13 @@ app.put('/api/app-settings/:key', authRequired, adminOnly, asyncRoute(async (req
 }));
 
 // ============================================================
-// SCHOOL SETTINGS — نسخه کامل
+// SCHOOL SETTINGS
 // ============================================================
-
-// ستون‌های جدول school_settings (به‌جز id, userid, createdat, updatedat)
 const SS_TEXT_COLS = [
-  'schoolname', 'district', 'academic_member',
-  'time_type', 'budget_status',
-  'extra_bust_field', 'lack_bust_field',
-  'school_year', 'settings_data', 'branches_data'
+  'schoolname','district','academic_member',
+  'time_type','budget_status',
+  'extra_bust_field','lack_bust_field',
+  'school_year','settings_data','branches_data'
 ];
 const SS_INT_COLS = [
   'branches_f_1_3','branches_m_1_3','branches_x_1_3',
@@ -313,129 +336,101 @@ const SS_INT_COLS = [
   'total_present_female','total_present_male',
   'grad_female','grad_male',
   'extra_bust_count','lack_bust_count',
-  ...Array.from({length:12}, (_,i) => `c${i+1}_in_f`),
-  ...Array.from({length:12}, (_,i) => `c${i+1}_in_m`),
-  ...Array.from({length:12}, (_,i) => `c${i+1}_pr_f`),
-  ...Array.from({length:12}, (_,i) => `c${i+1}_pr_m`),
-  ...Array.from({length:12}, (_,i) => `e${i+1}_f`),
-  ...Array.from({length:12}, (_,i) => `e${i+1}_m`)
+  ...Array.from({length:12},(_,i)=>`c${i+1}_in_f`),
+  ...Array.from({length:12},(_,i)=>`c${i+1}_in_m`),
+  ...Array.from({length:12},(_,i)=>`c${i+1}_pr_f`),
+  ...Array.from({length:12},(_,i)=>`c${i+1}_pr_m`),
+  ...Array.from({length:12},(_,i)=>`e${i+1}_f`),
+  ...Array.from({length:12},(_,i)=>`e${i+1}_m`)
 ];
-const SS_ALL_COLS = [...SS_TEXT_COLS, ...SS_INT_COLS];
-
-// نام‌های camelCase → snake_case (برای ورودی‌های JS)
 const CAMEL_TO_SNAKE = {
-  schoolYear: 'school_year',
-  timeType: 'time_type',
-  academicMember: 'academic_member',
-  branchesF13: 'branches_f_1_3', branchesM13: 'branches_m_1_3', branchesX13: 'branches_x_1_3',
-  branchesF46: 'branches_f_4_6', branchesM46: 'branches_m_4_6', branchesX46: 'branches_x_4_6',
-  branchesF79: 'branches_f_7_9', branchesM79: 'branches_m_7_9', branchesX79: 'branches_x_7_9',
-  branchesF1012: 'branches_f_10_12', branchesM1012: 'branches_m_10_12', branchesX1012: 'branches_x_10_12',
-  branchesTotal: 'branches_total',
-  totalInFemale: 'total_in_female', totalInMale: 'total_in_male',
-  totalPresentFemale: 'total_present_female', totalPresentMale: 'total_present_male',
-  gradFemale: 'grad_female', gradMale: 'grad_male',
-  budgetStatus: 'budget_status',
-  extraBustCount: 'extra_bust_count', extraBustField: 'extra_bust_field',
-  lackBustCount: 'lack_bust_count', lackBustField: 'lack_bust_field'
+  schoolYear:'school_year', timeType:'time_type', academicMember:'academic_member',
+  branchesF13:'branches_f_1_3', branchesM13:'branches_m_1_3', branchesX13:'branches_x_1_3',
+  branchesF46:'branches_f_4_6', branchesM46:'branches_m_4_6', branchesX46:'branches_x_4_6',
+  branchesF79:'branches_f_7_9', branchesM79:'branches_m_7_9', branchesX79:'branches_x_7_9',
+  branchesF1012:'branches_f_10_12', branchesM1012:'branches_m_10_12', branchesX1012:'branches_x_10_12',
+  branchesTotal:'branches_total',
+  totalInFemale:'total_in_female', totalInMale:'total_in_male',
+  totalPresentFemale:'total_present_female', totalPresentMale:'total_present_male',
+  gradFemale:'grad_female', gradMale:'grad_male',
+  budgetStatus:'budget_status',
+  extraBustCount:'extra_bust_count', extraBustField:'extra_bust_field',
+  lackBustCount:'lack_bust_count', lackBustField:'lack_bust_field'
 };
 function normalizeSchoolBody(b) {
   const out = {};
   for (const [k, v] of Object.entries(b || {})) {
-    const snake = CAMEL_TO_SNAKE[k] || k;
-    if (SS_TEXT_COLS.includes(snake)) out[snake] = txt(v);
-    else if (SS_INT_COLS.includes(snake)) out[snake] = num(v);
+    const s = CAMEL_TO_SNAKE[k] || k;
+    if (SS_TEXT_COLS.includes(s)) out[s] = txt(v);
+    else if (SS_INT_COLS.includes(s)) out[s] = num(v);
   }
   return out;
 }
 
-// GET /api/school-settings?year=YYYY
 app.get('/api/school-settings', authRequired, asyncRoute(async (req, res) => {
   const { year } = req.query;
   try {
-    let sql = 'SELECT * FROM school_settings WHERE userid=$1';
     const params = [req.user.id];
+    let sql = 'SELECT * FROM school_settings WHERE userid=$1';
     if (year) { params.push(String(year)); sql += ' AND school_year=$2'; }
     sql += ' ORDER BY id DESC LIMIT 1';
     const r = await q(sql, params);
-    if (r.rows[0]) {
-      res.json({ exists: true, settings: r.rows[0] });
-    } else {
-      res.json({ exists: false, settings: null });
-    }
+    if (r.rows[0]) return res.json({ exists: true, settings: r.rows[0] });
+    return res.json({ exists: false, settings: null });
   } catch (e) {
     console.error('GET school-settings error:', e);
     res.status(500).json({ error: 'خطای سرور', detail: e.message });
   }
 }));
 
-// POST — upsert (insert if new, update if exists) بر اساس userid+school_year
 app.post('/api/school-settings', authRequired, asyncRoute(async (req, res) => {
   const b = normalizeSchoolBody(req.body);
-  const userId = req.user.id;
-
-  // اگر schoolname خالی بود، از کاربر بگیر
   if (!b.schoolname) b.schoolname = req.user.schoolname || null;
-
+  const userId = req.user.id;
   const year = b.school_year;
-
-  // بررسی وجود
-  let existingId = null;
-  if (year) {
-    const ex = await q('SELECT id FROM school_settings WHERE userid=$1 AND school_year=$2 LIMIT 1', [userId, year]);
-    existingId = ex.rows[0]?.id || null;
-  } else {
-    const ex = await q('SELECT id FROM school_settings WHERE userid=$1 LIMIT 1', [userId]);
-    existingId = ex.rows[0]?.id || null;
-  }
-
-  if (existingId) {
-    // UPDATE
-    const setCols = []; const params = [];
-    for (const [k, v] of Object.entries(b)) {
-      params.push(v);
-      setCols.push(`${k}=$${params.length}`);
+  try {
+    let existingId = null;
+    if (year) {
+      const ex = await q('SELECT id FROM school_settings WHERE userid=$1 AND school_year=$2 LIMIT 1', [userId, year]);
+      existingId = ex.rows[0]?.id || null;
+    } else {
+      const ex = await q('SELECT id FROM school_settings WHERE userid=$1 LIMIT 1', [userId]);
+      existingId = ex.rows[0]?.id || null;
     }
-    if (!setCols.length) return res.status(400).json({ error: 'داده‌ای برای ذخیره نیست' });
-    params.push(existingId);
-    const r = await q(
-      `UPDATE school_settings SET ${setCols.join(',')}, updatedat=NOW() WHERE id=$${params.length} RETURNING *`,
-      params
-    );
-    return res.json({ success: true, settings: r.rows[0] });
-  } else {
-    // INSERT
-    const cols = ['userid', ...Object.keys(b)];
-    const params = [userId, ...Object.values(b)];
-    const ph = cols.map((_, i) => `$${i + 1}`).join(',');
-    const r = await q(
-      `INSERT INTO school_settings (${cols.join(',')}) VALUES (${ph}) RETURNING *`,
-      params
-    );
-    return res.status(201).json({ success: true, settings: r.rows[0] });
+    if (existingId) {
+      const entries = Object.entries(b);
+      if (!entries.length) return res.status(400).json({ error: 'داده‌ای نیست' });
+      const setCols = [], params = [];
+      for (const [k, v] of entries) { params.push(v); setCols.push(`${k}=$${params.length}`); }
+      params.push(existingId);
+      const r = await q(`UPDATE school_settings SET ${setCols.join(',')}, updatedat=NOW() WHERE id=$${params.length} RETURNING *`, params);
+      return res.json({ success: true, settings: r.rows[0] });
+    } else {
+      const cols = ['userid', ...Object.keys(b)];
+      const params = [userId, ...Object.values(b)];
+      const ph = cols.map((_, i) => `$${i + 1}`).join(',');
+      const r = await q(`INSERT INTO school_settings (${cols.join(',')}) VALUES (${ph}) RETURNING *`, params);
+      return res.status(201).json({ success: true, settings: r.rows[0] });
+    }
+  } catch (e) {
+    console.error('POST school-settings error:', e);
+    res.status(500).json({ error: 'خطای سرور', detail: e.message });
   }
 }));
 
-// PUT /api/school-settings/:id — برای سازگاری
 app.put('/api/school-settings/:id', authRequired, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const chk = await q('SELECT * FROM school_settings WHERE id=$1', [id]);
   if (!chk.rows[0]) return res.status(404).json({ error: 'یافت نشد' });
   if (req.user.role !== 'admin' && chk.rows[0].userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
-
   const b = normalizeSchoolBody(req.body);
-  const setCols = []; const params = [];
-  for (const [k, v] of Object.entries(b)) {
-    params.push(v);
-    setCols.push(`${k}=$${params.length}`);
-  }
-  if (!setCols.length) return res.status(400).json({ error: 'داده‌ای برای به‌روزرسانی نیست' });
+  const entries = Object.entries(b);
+  if (!entries.length) return res.status(400).json({ error: 'داده‌ای نیست' });
+  const setCols = [], params = [];
+  for (const [k, v] of entries) { params.push(v); setCols.push(`${k}=$${params.length}`); }
   params.push(id);
-  const r = await q(
-    `UPDATE school_settings SET ${setCols.join(',')}, updatedat=NOW() WHERE id=$${params.length} RETURNING *`,
-    params
-  );
+  const r = await q(`UPDATE school_settings SET ${setCols.join(',')}, updatedat=NOW() WHERE id=$${params.length} RETURNING *`, params);
   res.json({ success: true, settings: r.rows[0] });
 }));
 
@@ -515,15 +510,66 @@ app.delete('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   res.json({ success: true });
 }));
 
-// APPROVE RECORD
 app.post('/api/records/:id/approve', authRequired, adminOnly, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
-  const r = await q(
-    `UPDATE records SET status='approved', updatedat=NOW() WHERE id=$1 RETURNING *`,
-    [id]
-  );
+  const r = await q(`UPDATE records SET status='approved', updatedat=NOW() WHERE id=$1 RETURNING *`, [id]);
   if (!r.rows[0]) return res.status(404).json({ error: 'یافت نشد' });
   res.json({ success: true, record: r.rows[0] });
+}));
+
+// ============================================================
+// CHECK UNIQUENESS (jobCode / eTazkira)
+// ============================================================
+app.get('/api/check-jobcode', authRequired, asyncRoute(async (req, res) => {
+  const { code, excludeId } = req.query;
+  if (!code) return res.json({ exists: false });
+  try {
+    const params = [String(code).trim()];
+    let sql = `SELECT r.id, r.userid, r.schoolname, r.data
+                 FROM records r
+                WHERE r.data::json->>'jobCode' = $1`;
+    if (excludeId) { params.push(Number(excludeId)); sql += ' AND r.id <> $2'; }
+    const r = await q(sql, params);
+    if (!r.rows[0]) return res.json({ exists: false });
+    const row = r.rows[0];
+    const d = typeof row.data === 'string' ? JSON.parse(row.data) : (row.data || {});
+    const name = `${d.firstName || ''} ${d.lastName || ''}`.trim() || 'نامشخص';
+    res.json({
+      exists: true,
+      isSameSchool: row.userid === req.user.id,
+      schoolname: row.schoolname,
+      employeeName: name
+    });
+  } catch (e) {
+    console.error('check-jobcode error:', e);
+    res.json({ exists: false });
+  }
+}));
+
+app.get('/api/check-etazkira', authRequired, asyncRoute(async (req, res) => {
+  const { code, excludeId } = req.query;
+  if (!code) return res.json({ exists: false });
+  try {
+    const params = [String(code).trim()];
+    let sql = `SELECT r.id, r.userid, r.schoolname, r.data
+                 FROM records r
+                WHERE r.data::json->>'eTazkira' = $1`;
+    if (excludeId) { params.push(Number(excludeId)); sql += ' AND r.id <> $2'; }
+    const r = await q(sql, params);
+    if (!r.rows[0]) return res.json({ exists: false });
+    const row = r.rows[0];
+    const d = typeof row.data === 'string' ? JSON.parse(row.data) : (row.data || {});
+    const name = `${d.firstName || ''} ${d.lastName || ''}`.trim() || 'نامشخص';
+    res.json({
+      exists: true,
+      isSameSchool: row.userid === req.user.id,
+      schoolname: row.schoolname,
+      employeeName: name
+    });
+  } catch (e) {
+    console.error('check-etazkira error:', e);
+    res.json({ exists: false });
+  }
 }));
 
 // ============================================================
@@ -560,7 +606,6 @@ app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   const b = req.body || {};
   if (!b.record_id || !b.year || !b.month)
     return res.status(400).json({ error: 'record_id, year, month الزامی است' });
-
   const cols = ['record_id','userid','schoolname','district','year','month',
                 ...SALARY_TEXT_COLS, ...SALARY_NUM_COLS];
   const vals = [
@@ -572,10 +617,7 @@ app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
     ...SALARY_NUM_COLS.map(c => num(b[c], 0))
   ];
   const ph = cols.map((_, i) => `$${i + 1}`).join(',');
-  const r = await q(
-    `INSERT INTO salaries (${cols.join(',')}) VALUES (${ph}) RETURNING *`,
-    vals
-  );
+  const r = await q(`INSERT INTO salaries (${cols.join(',')}) VALUES (${ph}) RETURNING *`, vals);
   res.status(201).json({ salary: r.rows[0] });
 }));
 app.put('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
@@ -585,7 +627,6 @@ app.put('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   if (!s) return res.status(404).json({ error: 'یافت نشد' });
   if (req.user.role !== 'admin' && s.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
-
   const b = req.body || {};
   const updates = []; const params = [];
   for (const c of [...SALARY_TEXT_COLS, ...SALARY_NUM_COLS]) {
@@ -596,10 +637,7 @@ app.put('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   if (!updates.length) return res.status(400).json({ error: 'چیزی برای به‌روزرسانی نیست' });
   updates.push('updatedat=NOW()');
   params.push(id);
-  const r = await q(
-    `UPDATE salaries SET ${updates.join(',')} WHERE id=$${params.length} RETURNING *`,
-    params
-  );
+  const r = await q(`UPDATE salaries SET ${updates.join(',')} WHERE id=$${params.length} RETURNING *`, params);
   res.json({ salary: r.rows[0] });
 }));
 app.delete('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
@@ -645,10 +683,7 @@ app.put('/api/attendance/:id', authRequired, asyncRoute(async (req, res) => {
   if (!updates.length) return res.status(400).json({ error: 'چیزی برای به‌روزرسانی نیست' });
   updates.push('updatedat=NOW()');
   params.push(id);
-  const r = await q(
-    `UPDATE attendance SET ${updates.join(',')} WHERE id=$${params.length} RETURNING *`,
-    params
-  );
+  const r = await q(`UPDATE attendance SET ${updates.join(',')} WHERE id=$${params.length} RETURNING *`, params);
   if (!r.rows[0]) return res.status(404).json({ error: 'یافت نشد' });
   res.json({ attendance: r.rows[0] });
 }));
@@ -689,7 +724,6 @@ app.post('/api/evaluations', authRequired, asyncRoute(async (req, res) => {
   const b = req.body || {};
   if (!b.record_id || !b.eval_date || b.eval_score === undefined || !b.eval_result)
     return res.status(400).json({ error: 'record_id, eval_date, eval_score, eval_result الزامی است' });
-
   const cols = ['record_id','userid','eval_score', ...EVAL_TEXT];
   const vals = [
     Number(b.record_id),
@@ -708,7 +742,6 @@ app.put('/api/evaluations/:id', authRequired, asyncRoute(async (req, res) => {
   if (!e) return res.status(404).json({ error: 'یافت نشد' });
   if (req.user.role !== 'admin' && e.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
-
   const b = req.body || {};
   const updates = []; const params = [];
   if (b.eval_score !== undefined) { params.push(Number(b.eval_score)); updates.push(`eval_score=$${params.length}`); }
@@ -719,10 +752,7 @@ app.put('/api/evaluations/:id', authRequired, asyncRoute(async (req, res) => {
   }
   if (!updates.length) return res.status(400).json({ error: 'چیزی برای به‌روزرسانی نیست' });
   params.push(id);
-  const r = await q(
-    `UPDATE evaluations SET ${updates.join(',')} WHERE id=$${params.length} RETURNING *`,
-    params
-  );
+  const r = await q(`UPDATE evaluations SET ${updates.join(',')} WHERE id=$${params.length} RETURNING *`, params);
   res.json({ evaluation: r.rows[0] });
 }));
 app.delete('/api/evaluations/:id', authRequired, asyncRoute(async (req, res) => {
@@ -747,10 +777,7 @@ app.put('/api/evaluation-permission', authRequired, adminOnly, asyncRoute(async 
   const allowed = num(req.body?.allowed, 0) ? 1 : 0;
   const existing = await q('SELECT id FROM evaluation_permission ORDER BY id LIMIT 1');
   if (existing.rows[0]) {
-    const r = await q(
-      `UPDATE evaluation_permission SET allowed=$1, updated_at=NOW() WHERE id=$2 RETURNING *`,
-      [allowed, existing.rows[0].id]
-    );
+    const r = await q(`UPDATE evaluation_permission SET allowed=$1, updated_at=NOW() WHERE id=$2 RETURNING *`, [allowed, existing.rows[0].id]);
     return res.json({ permission: r.rows[0] });
   }
   const r = await q('INSERT INTO evaluation_permission (allowed) VALUES ($1) RETURNING *', [allowed]);
@@ -807,11 +834,7 @@ app.post('/api/tashkeel', authRequired, asyncRoute(async (req, res) => {
   const r = await q(
     `INSERT INTO tashkeel (userid, pub, priv, title, place, code, section, amariat)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-    [
-      owner, txt(b.pub), txt(b.priv),
-      String(b.title), String(b.place), String(b.code),
-      b.section || 'amariat', txt(b.amariat)
-    ]
+    [owner, txt(b.pub), txt(b.priv), String(b.title), String(b.place), String(b.code), b.section || 'amariat', txt(b.amariat)]
   );
   res.status(201).json({ tashkeel: r.rows[0] });
 }));
@@ -823,7 +846,6 @@ app.put('/api/tashkeel/:id', authRequired, asyncRoute(async (req, res) => {
   if (!t) return res.status(404).json({ error: 'یافت نشد' });
   if (req.user.role !== 'admin' && t.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
-
   const b = req.body || {};
   const r = await q(
     `UPDATE tashkeel SET
@@ -855,7 +877,6 @@ app.post('/api/tashkeel/import', authRequired, adminOnly, asyncRoute(async (req,
   const { records, ownerUserId } = req.body || {};
   if (!Array.isArray(records) || records.length === 0)
     return res.status(400).json({ error: 'records آرایه الزامی است' });
-
   const owner = ownerUserId ? Number(ownerUserId) : null;
   const client = await pool.connect();
   try {
@@ -866,11 +887,7 @@ app.post('/api/tashkeel/import', authRequired, adminOnly, asyncRoute(async (req,
       await client.query(
         `INSERT INTO tashkeel (userid, pub, priv, title, place, code, section, amariat)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [
-          owner, txt(r.pub), txt(r.priv),
-          String(r.title), String(r.place), String(r.code),
-          r.section || 'amariat', txt(r.amariat)
-        ]
+        [owner, txt(r.pub), txt(r.priv), String(r.title), String(r.place), String(r.code), r.section || 'amariat', txt(r.amariat)]
       );
       inserted++;
     }
@@ -886,14 +903,10 @@ app.post('/api/tashkeel/import', authRequired, adminOnly, asyncRoute(async (req,
 
 app.post('/api/tashkeel/seed', authRequired, adminOnly, asyncRoute(async (req, res) => {
   let buildTashkeelRecords;
-  try {
-    ({ buildTashkeelRecords } = require('./tashkeel-data'));
-  } catch (e) {
-    return res.status(500).json({ error: 'فایل tashkeel-data.js پیدا نشد', detail: e.message });
-  }
-  if (typeof buildTashkeelRecords !== 'function') {
-    return res.status(500).json({ error: 'buildTashkeelRecords در tashkeel-data.js نیست' });
-  }
+  try { ({ buildTashkeelRecords } = require('./tashkeel-data')); }
+  catch (e) { return res.status(500).json({ error: 'فایل tashkeel-data.js پیدا نشد', detail: e.message }); }
+  if (typeof buildTashkeelRecords !== 'function')
+    return res.status(500).json({ error: 'buildTashkeelRecords نیست' });
 
   const records = buildTashkeelRecords();
   const client = await pool.connect();
@@ -923,30 +936,17 @@ app.post('/api/tashkeel/seed', authRequired, adminOnly, asyncRoute(async (req, r
   } catch (e) {
     await client.query('ROLLBACK');
     throw e;
-  } finally {
-    client.release();
-  }
+  } finally { client.release(); }
 }));
 
 app.get('/api/tashkeel/stats/summary', authRequired, asyncRoute(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
   const params = []; let where = '';
   if (!isAdmin) { params.push(req.user.id); where = 'WHERE userid = $1'; }
-
-  const bySection = await q(
-    `SELECT section, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY section ORDER BY section`,
-    params
-  );
-  const byAmariat = await q(
-    `SELECT amariat, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY amariat ORDER BY count DESC`,
-    params
-  );
-  const byPlace = await q(
-    `SELECT place, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY place ORDER BY count DESC LIMIT 100`,
-    params
-  );
+  const bySection = await q(`SELECT section, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY section ORDER BY section`, params);
+  const byAmariat = await q(`SELECT amariat, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY amariat ORDER BY count DESC`, params);
+  const byPlace = await q(`SELECT place, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY place ORDER BY count DESC LIMIT 100`, params);
   const total = await q(`SELECT COUNT(*)::int AS c FROM tashkeel ${where}`, params);
-
   res.json({ total: total.rows[0].c, by_section: bySection.rows, by_amariat: byAmariat.rows, by_place: byPlace.rows });
 }));
 

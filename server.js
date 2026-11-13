@@ -265,7 +265,7 @@ app.delete('/api/users/:id', authRequired, adminOnly, asyncRoute(async (req, res
 }));
 
 // ============================================================
-// ALL SCHOOL SETTINGS (برای ادمین)
+// ALL SCHOOL SETTINGS
 // ============================================================
 app.get('/api/all-school-settings', authRequired, adminOnly, asyncRoute(async (_req, res) => {
   try {
@@ -518,7 +518,7 @@ app.post('/api/records/:id/approve', authRequired, adminOnly, asyncRoute(async (
 }));
 
 // ============================================================
-// CHECK UNIQUENESS (jobCode / eTazkira)
+// CHECK UNIQUENESS
 // ============================================================
 app.get('/api/check-jobcode', authRequired, asyncRoute(async (req, res) => {
   const { code, excludeId } = req.query;
@@ -785,14 +785,15 @@ app.put('/api/evaluation-permission', authRequired, adminOnly, asyncRoute(async 
 }));
 
 // ============================================================
-// TASHKEEL
+// TASHKEEL — مشترک برای همه کاربران
 // ============================================================
 app.get('/api/tashkeel', authRequired, asyncRoute(async (req, res) => {
   const { section, place, amariat, q: search, mine } = req.query;
   const isAdmin = req.user.role === 'admin';
   const conds = []; const params = [];
 
-  if (!isAdmin || mine === '1') {
+  // tashkeel مشترک است — فقط اگر کاربر خودش رکورد اضافه کرده باشد، فیلتر می‌شود
+  if (!isAdmin && mine === '1') {
     params.push(req.user.id);
     conds.push(`userid = $${params.length}`);
   }
@@ -821,7 +822,7 @@ app.get('/api/tashkeel/:id', authRequired, asyncRoute(async (req, res) => {
   const r = await q('SELECT * FROM tashkeel WHERE id=$1', [Number(req.params.id)]);
   const t = r.rows[0];
   if (!t) return res.status(404).json({ error: 'یافت نشد' });
-  if (req.user.role !== 'admin' && t.userid !== req.user.id)
+  if (req.user.role !== 'admin' && t.userid !== null && t.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
   res.json({ tashkeel: t });
 }));
@@ -844,7 +845,7 @@ app.put('/api/tashkeel/:id', authRequired, asyncRoute(async (req, res) => {
   const r0 = await q('SELECT * FROM tashkeel WHERE id=$1', [id]);
   const t = r0.rows[0];
   if (!t) return res.status(404).json({ error: 'یافت نشد' });
-  if (req.user.role !== 'admin' && t.userid !== req.user.id)
+  if (req.user.role !== 'admin' && t.userid !== null && t.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
   const b = req.body || {};
   const r = await q(
@@ -867,7 +868,7 @@ app.delete('/api/tashkeel/:id', authRequired, asyncRoute(async (req, res) => {
   const r0 = await q('SELECT * FROM tashkeel WHERE id=$1', [id]);
   const t = r0.rows[0];
   if (!t) return res.status(404).json({ error: 'یافت نشد' });
-  if (req.user.role !== 'admin' && t.userid !== req.user.id)
+  if (req.user.role !== 'admin' && t.userid !== null && t.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
   await q('DELETE FROM tashkeel WHERE id=$1', [id]);
   res.json({ success: true });
@@ -942,7 +943,7 @@ app.post('/api/tashkeel/seed', authRequired, adminOnly, asyncRoute(async (req, r
 app.get('/api/tashkeel/stats/summary', authRequired, asyncRoute(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
   const params = []; let where = '';
-  if (!isAdmin) { params.push(req.user.id); where = 'WHERE userid = $1'; }
+  if (!isAdmin) { params.push(req.user.id); where = 'WHERE (userid = $1 OR userid IS NULL)'; }
   const bySection = await q(`SELECT section, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY section ORDER BY section`, params);
   const byAmariat = await q(`SELECT amariat, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY amariat ORDER BY count DESC`, params);
   const byPlace = await q(`SELECT place, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY place ORDER BY count DESC LIMIT 100`, params);

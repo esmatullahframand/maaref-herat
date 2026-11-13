@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>تست لاگین</title>
+<title>ورود — معارف هرات</title>
 <style>
 body{font-family:sans-serif;max-width:400px;margin:40px auto;padding:20px;background:#f5f5f5}
 input,button{width:100%;padding:12px;margin:6px 0;font-size:16px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px}
@@ -13,7 +13,7 @@ h3{text-align:center;color:#333}
 </style>
 </head>
 <body>
-<h3>تست لاگین</h3>
+<h3>ورود به سیستم</h3>
 <input id="u" value="admin" placeholder="username">
 <input id="p" type="password" value="Admin12345" placeholder="password">
 <button onclick="go()">ورود</button>
@@ -36,8 +36,10 @@ async function go() {
     out.textContent = 'Status: ' + r.status + '\n\n' + text;
     if (r.ok && text.includes('token')) {
       const data = JSON.parse(text);
-      localStorage.setItem('token', data.token);
-      out.textContent += '\n\n✅ توکن ذخیره شد.';
+      localStorage.setItem('hr_token', data.token);
+      localStorage.setItem('hr_user', JSON.stringify(data.user));
+      out.textContent += '\n\n✅ ورود موفق. در حال انتقال...';
+      setTimeout(() => location.href = '/admin-main.html', 800);
     }
   } catch (e) {
     out.textContent = 'خطا: ' + e.message;

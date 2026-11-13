@@ -834,7 +834,7 @@ app.post('/api/tashkeel/seed', authRequired, adminOnly, asyncRoute(async (req, r
     let inserted = 0;
     let skipped = 0;
     for (const r of records) {
-      const exists = await client.query('SELECT 1 FROM tashkeel WHERE code=$1', [r.code]);
+   const exists = await client.query('SELECT 1 FROM tashkeel WHERE code=$1 AND section=$2', [r.code, r.section]);
       if (exists.rows.length) { skipped++; continue; }
       await client.query(
         `INSERT INTO tashkeel (userid, pub, priv, title, place, code, section, amariat)

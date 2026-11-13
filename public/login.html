@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تست لاگین</title>
+<style>
+body{font-family:sans-serif;max-width:400px;margin:40px auto;padding:20px;background:#f5f5f5}
+input,button{width:100%;padding:12px;margin:6px 0;font-size:16px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px}
+button{background:#0a7;color:#fff;border:none;font-weight:bold;cursor:pointer}
+pre{background:#fff;padding:12px;white-space:pre-wrap;word-break:break-all;direction:ltr;text-align:left;border-radius:6px;border:1px solid #ddd;font-size:12px}
+h3{text-align:center;color:#333}
+</style>
+</head>
+<body>
+<h3>تست لاگین</h3>
+<input id="u" value="admin" placeholder="username">
+<input id="p" type="password" value="Admin12345" placeholder="password">
+<button onclick="go()">ورود</button>
+<pre id="out">آماده...</pre>
+
+<script>
+async function go() {
+  const out = document.getElementById('out');
+  out.textContent = 'در حال ارسال...';
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: document.getElementById('u').value,
+        password: document.getElementById('p').value
+      })
+    });
+    const text = await r.text();
+    out.textContent = 'Status: ' + r.status + '\n\n' + text;
+    if (r.ok && text.includes('token')) {
+      const data = JSON.parse(text);
+      localStorage.setItem('token', data.token);
+      out.textContent += '\n\n✅ توکن ذخیره شد.';
+    }
+  } catch (e) {
+    out.textContent = 'خطا: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>

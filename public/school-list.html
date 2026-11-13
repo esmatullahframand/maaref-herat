@@ -8,217 +8,44 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --primary: #17365d;
-  --primary-dark: #102944;
-  --secondary: #087e8b;
-  --accent: #14b8a6;
-  --background: #f2f5fa;
-  --surface: #ffffff;
-  --text: #243449;
-  --muted: #718096;
-  --border: #e1e8f0;
-  --success: #15966b;
-  --danger: #dc4545;
-  --warning: #d99a24;
+  --primary: #17365d; --primary-dark: #102944; --secondary: #087e8b; --accent: #14b8a6;
+  --background: #f2f5fa; --surface: #ffffff; --text: #243449; --muted: #718096;
+  --border: #e1e8f0; --success: #15966b; --danger: #dc4545; --warning: #d99a24;
   --shadow: 0 8px 28px rgba(23, 54, 93, .07);
 }
 html { scroll-behavior: smooth; }
-body {
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  background: linear-gradient(135deg, #f3f6fb, #e9eff6);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 28px 18px;
-  color: var(--text);
-  direction: rtl;
-}
+body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; background: linear-gradient(135deg, #f3f6fb, #e9eff6); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 28px 18px; color: var(--text); direction: rtl; }
 button, input, select { font-family: inherit; }
 button { transition: all .22s ease; }
-
-.main-container {
-  width: 100%;
-  max-width: 1450px;
-  background: var(--surface);
-  border-radius: 20px;
-  box-shadow: 0 15px 45px rgba(23, 54, 93, .10);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(255,255,255,.8);
-}
-
-/* ===== Topbar ===== */
-.topbar {
-  background: linear-gradient(120deg, #102944, #173f68 65%, #087e8b);
-  color: #fff;
-  padding: 22px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 5px 18px rgba(16,41,68,.18);
-}
-.topbar::after {
-  content: "";
-  position: absolute;
-  width: 220px; height: 220px;
-  border: 35px solid rgba(255,255,255,.045);
-  border-radius: 50%;
-  left: -65px; top: -125px;
-  pointer-events: none;
-}
-.topbar h3 {
-  margin: 0 0 7px;
-  font-size: 19px;
-  font-weight: 800;
-  color: #fff;
-  position: relative; z-index: 1;
-}
-.topbar small {
-  color: #c9e5ef;
-  font-size: 12px;
-  position: relative; z-index: 1;
-}
-.btn-logout {
-  background: rgba(239,68,68,.15);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.22);
-  padding: 10px 19px;
-  border-radius: 9px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 13px;
-  position: relative; z-index: 1;
-}
+.main-container { width: 100%; max-width: 1450px; background: var(--surface); border-radius: 20px; box-shadow: 0 15px 45px rgba(23, 54, 93, .10); overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,.8); }
+.topbar { background: linear-gradient(120deg, #102944, #173f68 65%, #087e8b); color: #fff; padding: 22px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; position: relative; overflow: hidden; box-shadow: 0 5px 18px rgba(16,41,68,.18); }
+.topbar::after { content: ""; position: absolute; width: 220px; height: 220px; border: 35px solid rgba(255,255,255,.045); border-radius: 50%; left: -65px; top: -125px; pointer-events: none; }
+.topbar h3 { margin: 0 0 7px; font-size: 19px; font-weight: 800; color: #fff; position: relative; z-index: 1; }
+.topbar small { color: #c9e5ef; font-size: 12px; position: relative; z-index: 1; }
+.btn-logout { background: rgba(239,68,68,.15); color: #fff; border: 1px solid rgba(255,255,255,.22); padding: 10px 19px; border-radius: 9px; font-weight: 700; cursor: pointer; font-size: 13px; position: relative; z-index: 1; }
 .btn-logout:hover { background: #dc4545; transform: translateY(-2px); }
-
-/* ===== Nav tabs ===== */
-.main-tabs {
-  display: flex;
-  gap: 6px;
-  background: #f8fafc;
-  border-bottom: 1px solid var(--border);
-  padding: 9px 18px 0;
-  flex-wrap: wrap;
-}
-.main-tab-btn {
-  padding: 13px 19px;
-  border: none;
-  background: transparent;
-  color: #61738a;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 9px 9px 0 0;
-  font-size: 13px;
-  text-decoration: none;
-  display: inline-block;
-  border-bottom: 3px solid transparent;
-  transition: all .2s;
-  white-space: nowrap;
-}
+.main-tabs { display: flex; gap: 6px; background: #f8fafc; border-bottom: 1px solid var(--border); padding: 9px 18px 0; flex-wrap: wrap; }
+.main-tab-btn { padding: 13px 19px; border: none; background: transparent; color: #61738a; font-weight: 700; cursor: pointer; border-radius: 9px 9px 0 0; font-size: 13px; text-decoration: none; display: inline-block; border-bottom: 3px solid transparent; transition: all .2s; white-space: nowrap; }
 .main-tab-btn:hover { background: #eaf1f8; color: var(--secondary); }
-.main-tab-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--accent);
-  background: #eaf5f7;
-}
-
-/* ===== Page header ===== */
-.page-header {
-  background: linear-gradient(110deg, #17365d, #087e8b);
-  color: #fff;
-  padding: 23px 30px;
-  font-size: 21px;
-  font-weight: 800;
-  text-align: right;
-  box-shadow: 0 5px 15px rgba(23,54,93,.13);
-  border-bottom: 3px solid #14b8a6;
-}
+.main-tab-btn.active { color: var(--primary); border-bottom-color: var(--accent); background: #eaf5f7; }
+.page-header { background: linear-gradient(110deg, #17365d, #087e8b); color: #fff; padding: 23px 30px; font-size: 21px; font-weight: 800; text-align: right; box-shadow: 0 5px 15px rgba(23,54,93,.13); border-bottom: 3px solid #14b8a6; }
 .page-content { padding: 28px; }
-
-/* ===== Form section ===== */
-.form-section {
-  background: #fff;
-  padding: 25px;
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  margin-bottom: 22px;
-  border-right: 5px solid var(--secondary);
-  box-shadow: var(--shadow);
-}
-
-/* ===== Button group ===== */
-.btn-group {
-  display: flex !important;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 22px;
-  width: 100%;
-}
-.btn-group .btn {
-  width: auto;
-  margin: 0;
-  padding: 11px 19px;
-  font-size: 13px;
-  border: none;
-  border-radius: 9px;
-  font-weight: 700;
-  cursor: pointer;
-  color: #fff;
-  transition: all .22s;
-  box-shadow: 0 3px 8px rgba(0,0,0,.08);
-}
-.btn-group .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0,0,0,.13);
-}
+.form-section { background: #fff; padding: 25px; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 22px; border-right: 5px solid var(--secondary); box-shadow: var(--shadow); }
+.btn-group { display: flex !important; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; width: 100%; }
+.btn-group .btn { width: auto; margin: 0; padding: 11px 19px; font-size: 13px; border: none; border-radius: 9px; font-weight: 700; cursor: pointer; color: #fff; transition: all .22s; box-shadow: 0 3px 8px rgba(0,0,0,.08); }
+.btn-group .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,.13); }
 .btn-primary { background: #2563eb !important; color: #fff !important; }
 .btn-primary:hover { background: #1d4ed8 !important; }
-.btn-success { background: #0d9875 !important; color: #fff !important; }
-.btn-success:hover { background: #087b5e !important; }
-.btn-purple { background: #7650bd !important; color: #fff !important; }
-.btn-purple:hover { background: #603ca5 !important; }
-.btn-dark { background: #263b53 !important; color: #fff !important; }
-.btn-dark:hover { background: #142b43 !important; }
-.btn-warning { background: #d99a24 !important; color: #fff !important; }
-.btn-warning:hover { background: #b78016 !important; }
 .btn-teal { background: #087e8b !important; color: #fff !important; }
 .btn-teal:hover { background: #066570 !important; }
-
-/* ===== Stats grid ===== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-.stat-box {
-  background: #fff;
-  border-radius: 13px;
-  padding: 19px 12px;
-  text-align: center;
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 12px rgba(23,54,93,.045);
-  transition: all .25s ease;
-  position: relative;
-  overflow: hidden;
-}
-.stat-box::before {
-  content: "";
-  position: absolute;
-  right: 0; top: 0;
-  width: 4px; height: 100%;
-  background: var(--secondary);
-}
+.btn-dark { background: #263b53 !important; color: #fff !important; }
+.btn-dark:hover { background: #142b43 !important; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-box { background: #fff; border-radius: 13px; padding: 19px 12px; text-align: center; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(23,54,93,.045); transition: all .25s ease; position: relative; overflow: hidden; }
+.stat-box::before { content: ""; position: absolute; right: 0; top: 0; width: 4px; height: 100%; background: var(--secondary); }
 .stat-box:hover { transform: translateY(-4px); box-shadow: 0 9px 22px rgba(23,54,93,.10); }
 .stat-box .stat-label { font-size: 13px; color: #61738a; font-weight: 700; margin-bottom: 10px; }
 .stat-box .stat-value { font-size: 27px; font-weight: 900; color: var(--primary); }
-
 .stat-box:nth-child(1) { background: #eff6ff; border-color: #c9ddfa; }
 .stat-box:nth-child(1)::before { background: #2563eb; }
 .stat-box:nth-child(1) .stat-value { color: #2563eb; }
@@ -228,393 +55,44 @@ button { transition: all .22s ease; }
 .stat-box:nth-child(3) { background: #fff9ed; border-color: #f3dfb5; }
 .stat-box:nth-child(3)::before { background: #d99a24; }
 .stat-box:nth-child(3) .stat-value { color: #b77913; }
-
-/* ===== Filters ===== */
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
-  gap: 15px;
-  padding: 20px;
-  background: #f7f9fc;
-  border-radius: 13px;
-  margin-bottom: 20px;
-  border: 1px solid var(--border);
-}
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 15px; padding: 20px; background: #f7f9fc; border-radius: 13px; margin-bottom: 20px; border: 1px solid var(--border); }
 .filter-item { min-width: 0; }
-.filter-item label {
-  font-size: 12px;
-  font-weight: 800;
-  color: #40536b;
-  margin-bottom: 7px;
-  display: block;
-}
-.filter-item select,
-.filter-item input {
-  width: 100%;
-  min-height: 42px;
-  padding: 9px 12px;
-  border: 1px solid #d5dfeb;
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: inherit;
-  background: #fff;
-  color: var(--text);
-  outline: none;
-  transition: all .2s;
-}
-.filter-item select:focus,
-.filter-item input:focus {
-  border-color: var(--secondary);
-  box-shadow: 0 0 0 3px rgba(8,126,139,.10);
-}
-
-/* ===== Table ===== */
-.table-responsive {
-  overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fff;
-  scrollbar-width: thin;
-  scrollbar-color: #a9bdce #edf2f7;
-}
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 13px;
-  min-width: 1000px;
-}
-th, td {
-  padding: 14px 11px;
-  border-bottom: 1px solid #e9eef4;
-  text-align: center;
-  white-space: nowrap;
-}
-th {
-  background: #edf3f8;
-  color: #263f5c;
-  font-weight: 800;
-  font-size: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
+.filter-item label { font-size: 12px; font-weight: 800; color: #40536b; margin-bottom: 7px; display: block; }
+.filter-item select, .filter-item input { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid #d5dfeb; border-radius: 8px; font-size: 13px; font-family: inherit; background: #fff; color: var(--text); outline: none; transition: all .2s; }
+.filter-item select:focus, .filter-item input:focus { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(8,126,139,.10); }
+.table-responsive { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: #fff; scrollbar-width: thin; scrollbar-color: #a9bdce #edf2f7; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 800px; }
+th, td { padding: 14px 11px; border-bottom: 1px solid #e9eef4; text-align: center; white-space: nowrap; }
+th { background: #edf3f8; color: #263f5c; font-weight: 800; font-size: 12px; position: sticky; top: 0; z-index: 1; }
 td { color: #40536b; background: #fff; }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: #f1f8fa; }
 td b { color: #203b59; }
-td code {
-  color: #087e8b;
-  background: #eaf5f7;
-  padding: 4px 7px;
-  border-radius: 5px;
-  font-size: 12px;
-}
-
-/* ===== Status badges ===== */
-.status-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 800;
-  font-size: 11px;
-}
+td code { color: #087e8b; background: #eaf5f7; padding: 4px 7px; border-radius: 5px; font-size: 12px; }
+.status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 11px; }
 .status-approved { background: #def5e9; color: #087a50; }
 .status-pending { background: #fff1d6; color: #a46a08; }
-
-/* ===== Action buttons ===== */
-.btn-action {
-  padding: 7px 10px;
-  font-size: 12px;
-  font-weight: 800;
-  border-radius: 7px;
-  border: none;
-  cursor: pointer;
-  margin: 2px;
-  transition: all .2s;
-}
+.status-empty { background: #fee2e2; color: #991b1b; }
+.status-filled { background: #d1fae5; color: #065f46; }
+.btn-action { padding: 7px 10px; font-size: 12px; font-weight: 800; border-radius: 7px; border: none; cursor: pointer; margin: 2px; transition: all .2s; }
 .btn-action:hover { transform: translateY(-2px); }
 .btn-view { background: #e7f0ff; color: #2563eb; }
 .btn-view:hover { background: #2563eb; color: #fff; }
-.btn-print { background: #f0e9ff; color: #7044bd; }
-.btn-print:hover { background: #7044bd; color: #fff; }
-.btn-edit { background: #fff0d7; color: #c27b0b; }
-.btn-edit:hover { background: #d99a24; color: #fff; }
-
-/* ===== Empty state ===== */
-.empty-state {
-  text-align: center;
-  padding: 55px 20px !important;
-  color: #8494a7;
-  font-size: 14px;
-  white-space: normal;
-}
-
-/* ===== Modal ===== */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(10,26,45,.68);
-  backdrop-filter: blur(5px);
-  z-index: 2000;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-.modal-overlay.active { display: flex; }
-.modal-box {
-  background: #fff;
-  border-radius: 17px;
-  max-width: 900px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 28px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.22);
-  border: 1px solid rgba(255,255,255,.7);
-  animation: modalAppear .22s ease;
-}
-@keyframes modalAppear {
-  from { opacity: 0; transform: translateY(15px) scale(.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-.modal-box h3 {
-  font-size: 19px;
-  font-weight: 900;
-  color: var(--primary);
-  margin-bottom: 22px;
-  border-bottom: 2px solid #eaf0f6;
-  padding-bottom: 15px;
-}
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid #e9eef4;
-}
-.btn-modal {
-  padding: 11px 22px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 800;
-  font-size: 13px;
-  font-family: inherit;
-  transition: all .2s;
-}
-.btn-modal:hover { transform: translateY(-2px); filter: brightness(.96); }
-.btn-modal-close { background: #edf1f5; color: #40536b; }
-
-/* ===== Form fields ===== */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  margin-bottom: 10px;
-  min-width: 0;
-}
-.form-group label {
-  font-size: 12px;
-  font-weight: 800;
-  color: #40536b;
-}
-.form-group input,
-.form-group select {
-  width: 100%;
-  min-height: 42px;
-  padding: 10px 12px;
-  border: 1px solid #d5dfeb;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 13px;
-  outline: none;
-  background: #fff;
-  color: var(--text);
-  transition: all .2s;
-}
-.form-group input:focus,
-.form-group select:focus {
-  border-color: var(--secondary);
-  box-shadow: 0 0 0 3px rgba(8,126,139,.10);
-}
-
-/* ===== Toast ===== */
-.toast {
-  position: fixed;
-  bottom: 25px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: #087e62;
-  color: #fff;
-  padding: 14px 25px;
-  border-radius: 10px;
-  font-weight: 800;
-  font-size: 13px;
-  z-index: 9999;
-  opacity: 0;
-  transition: all .3s ease;
-  box-shadow: 0 7px 25px rgba(0,0,0,.18);
-  max-width: calc(100vw - 30px);
-  text-align: center;
-}
+.empty-state { text-align: center; padding: 55px 20px !important; color: #8494a7; font-size: 14px; white-space: normal; }
+.toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px); background: #087e62; color: #fff; padding: 14px 25px; border-radius: 10px; font-weight: 800; font-size: 13px; z-index: 9999; opacity: 0; transition: all .3s ease; box-shadow: 0 7px 25px rgba(0,0,0,.18); max-width: calc(100vw - 30px); text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.error { background: #dc4545; }
-
-/* ===== Inner tabs for detailed stats ===== */
-.inner-tabs {
-  display: flex;
-  gap: 9px;
-  border-bottom: 2px solid #e2eaf2;
-  margin-bottom: 22px;
-  flex-wrap: wrap;
-}
-.inner-tab-btn {
-  padding: 11px 20px;
-  background: #edf2f7;
-  border: none;
-  border-radius: 9px 9px 0 0;
-  font-weight: 800;
-  cursor: pointer;
-  color: #61738a;
-  font-family: inherit;
-  font-size: 13px;
-}
-.inner-tab-btn:hover { background: #e2edf4; color: var(--secondary); }
-.inner-tab-btn.active { background: var(--primary); color: #fff; }
-.inner-tab-content { display: none; }
-.inner-tab-content.active { display: block; }
-
-.info-table {
-  width: 100%;
-  min-width: 600px;
-  border-collapse: collapse;
-  font-size: 13px;
-  text-align: center;
-  margin-bottom: 20px;
-  background: #fff;
-  border-radius: 9px;
-  overflow: hidden;
-}
-.info-table th,
-.info-table td {
-  border: 1px solid #dce5ee;
-  padding: 11px 9px;
-}
-.info-table th {
-  background: #eaf2f8;
-  color: #1d4669;
-  font-weight: 900;
-}
-.info-table td {
-  background: #fff;
-  font-weight: 700;
-  color: #40536b;
-}
-.info-table tbody tr:hover td { background: #f4f8fb; }
-.info-table td.total-col {
-  background: #e0f4e9;
-  color: #087a50;
-  font-weight: 900;
-}
-.stats-title {
-  color: #173f68;
-  font-weight: 900;
-  margin: 24px 0 13px;
-  padding-right: 11px;
-  border-right: 4px solid var(--accent);
-  font-size: 14px;
-}
-
-/* ===== Modal detailed stats ===== */
-#detailedStatsModal .modal-dialog { max-width: 1150px; }
-#detailedStatsModal .modal-content {
-  border: none;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 15px 50px rgba(0,0,0,.2);
-}
-#detailedStatsModal .modal-header {
-  padding: 17px 22px;
-  border-bottom: none;
-}
-#detailedStatsModal .modal-title { font-size: 17px; font-weight: 800; }
-#detailedStatsModal .modal-body { padding: 22px; background: #fbfcfe; }
-#detailedStatsModal .btn-close { margin: 0; }
-
-#viewContent > div[style*="grid-template-columns"] {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-}
-
-/* ===== Scrollbar ===== */
-.modal-box::-webkit-scrollbar,
-.table-responsive::-webkit-scrollbar,
-#detailedStatsModal .modal-body::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
-}
-.modal-box::-webkit-scrollbar-thumb,
-.table-responsive::-webkit-scrollbar-thumb,
-#detailedStatsModal .modal-body::-webkit-scrollbar-thumb {
-  background: #b8c8d7;
-  border-radius: 10px;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 992px) {
-  body { padding: 16px 10px; }
-  .page-content { padding: 20px; }
-  .form-section { padding: 20px; }
-  .main-tabs { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; }
-  .main-tab-btn { flex-shrink: 0; }
-  .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-@media (max-width: 600px) {
-  body { padding: 7px; background: #edf2f7; }
-  .main-container { border-radius: 12px; }
-  .topbar { padding: 17px 15px; align-items: flex-start; }
-  .topbar h3 { font-size: 15px; line-height: 1.8; }
-  .topbar small { font-size: 11px; }
-  .btn-logout { padding: 8px 12px; font-size: 12px; }
-  .main-tabs { padding: 7px 8px 0; gap: 3px; }
-  .main-tab-btn { padding: 11px 12px; font-size: 12px; }
-  .page-header { padding: 17px; font-size: 17px; }
-  .page-content { padding: 12px; }
-  .form-section { padding: 13px; border-radius: 11px; border-right-width: 4px; }
-  .btn-group { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .btn-group .btn { width: 100%; padding: 11px 7px; font-size: 11px; white-space: normal; }
-  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-  .stat-box { padding: 15px 7px; }
-  .stat-box .stat-label { font-size: 11px; }
-  .stat-box .stat-value { font-size: 23px; }
-  .filter-grid { grid-template-columns: 1fr; padding: 13px; gap: 12px; }
-  table { min-width: 950px; font-size: 12px; }
-  th, td { padding: 11px 8px; }
-  .modal-box { padding: 17px; border-radius: 12px; }
-  .inner-tab-btn { flex: 1; padding: 10px 7px; font-size: 11px; }
-  .toast { width: calc(100% - 24px); bottom: 14px; padding: 12px 15px; font-size: 12px; }
-}
-
-/* ===== Print ===== */
-@media print {
-  body { background: #fff; padding: 0; }
-  .main-container { box-shadow: none; border: none; }
-  .topbar, .main-tabs, .btn-group, .filter-grid, .modal-overlay, .toast { display: none !important; }
-  .page-content { padding: 0; }
-  .form-section { border: none; box-shadow: none; padding: 0; }
-  .table-responsive { overflow: visible; border: none; }
-  table { min-width: 0; font-size: 10px; }
-  th, td { white-space: normal; }
-}
+.tashkeel-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; padding: 18px; background: #f0f9ff; border-radius: 12px; border: 1px solid #bae6fd; }
+.tashkeel-summary .item { text-align: center; padding: 12px; background: #fff; border-radius: 10px; border: 1px solid #e0f2fe; }
+.tashkeel-summary .item .label { font-size: 12px; color: #0369a1; font-weight: 700; margin-bottom: 8px; }
+.tashkeel-summary .item .value { font-size: 22px; font-weight: 900; color: #0c4a6e; }
+@media (max-width: 992px) { body { padding: 16px 10px; } .page-content { padding: 20px; } .form-section { padding: 20px; } .main-tabs { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; } .main-tab-btn { flex-shrink: 0; } .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 600px) { body { padding: 7px; background: #edf2f7; } .main-container { border-radius: 12px; } .topbar { padding: 17px 15px; align-items: flex-start; } .topbar h3 { font-size: 15px; line-height: 1.8; } .topbar small { font-size: 11px; } .btn-logout { padding: 8px 12px; font-size: 12px; } .main-tabs { padding: 7px 8px 0; gap: 3px; } .main-tab-btn { padding: 11px 12px; font-size: 12px; } .page-header { padding: 17px; font-size: 17px; } .page-content { padding: 12px; } .form-section { padding: 13px; border-radius: 11px; border-right-width: 4px; } .btn-group { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .btn-group .btn { width: 100%; padding: 11px 7px; font-size: 11px; white-space: normal; } .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; } .stat-box { padding: 15px 7px; } .stat-box .stat-label { font-size: 11px; } .stat-box .stat-value { font-size: 23px; } .filter-grid { grid-template-columns: 1fr; padding: 13px; gap: 12px; } table { min-width: 700px; font-size: 12px; } th, td { padding: 11px 8px; } .toast { width: calc(100% - 24px); bottom: 14px; padding: 12px 15px; font-size: 12px; } }
 </style>
 </head>
 <body>
 
 <div class="main-container">
-  <!-- Topbar -->
   <div class="topbar">
     <div>
       <h3>پنل اختصاصی مکتب — لیست کارمندان</h3>
@@ -623,36 +101,29 @@ td code {
     <button class="btn-logout" onclick="logout()">🚪 خروج</button>
   </div>
 
-  <!-- Nav tabs -->
   <div class="main-tabs">
     <a href="school-settings.html" class="main-tab-btn">🏫 مدیریت مکتب</a>
     <a href="school-register.html" class="main-tab-btn">➕ ثبت کارمند جدید</a>
     <a href="school-list.html" class="main-tab-btn active">📋 لیست کارمندان</a>
-    <a href="school-tashkeel.html" class="main-tab-btn">📋 مدیریت تشکیل</a>
     <a href="school-evaluation.html" class="main-tab-btn">⭐ ارزیابی کارمندان</a>
     <a href="school-salaries.html" class="main-tab-btn">💰 معاشات</a>
   </div>
 
-  <!-- Page header -->
   <div class="page-header">📋 لیست کارمندان</div>
 
   <div class="page-content">
     <div class="form-section">
 
-      <!-- Buttons (با دکمه جدید مدیریت تشکیل) -->
       <div class="btn-group">
         <button class="btn btn-primary" onclick="showAllEmployees()">👁️ نمایش همه لیست</button>
-        <button class="btn btn-teal" onclick="openMyTashkeel()">📋 مدیریت تشکیل مکتب</button>
+        <button class="btn btn-teal" onclick="showTashkeel()">📋 نمایش تشکیل</button>
         <button class="btn btn-dark" onclick="showDetailedStats()">📊 آمار تفصیلی</button>
-        <button class="btn btn-purple" onclick="printEmployeeList()">🖨️ پرنت لیست</button>
-        <button class="btn btn-success" onclick="exportEmployeeExcel()">📊 خروجی اکسل</button>
       </div>
 
-      <!-- Stats -->
       <div class="stats-grid" id="statsContainer"></div>
 
-      <!-- Filters -->
-      <div class="filter-grid">
+      <!-- فیلتر کارمندان (فقط برای لیست کارمندان) -->
+      <div class="filter-grid" id="employeeFilters">
         <div class="filter-item">
           <label>🔍 جستجوی عمومی</label>
           <input class="form-control" id="searchInput" placeholder="نام، تخلص، ولد، وظیفه..." oninput="debouncedLoad()">
@@ -672,30 +143,6 @@ td code {
           </select>
         </div>
         <div class="filter-item">
-          <label>📚 ورکشاپ</label>
-          <select id="workshopFilter" onchange="loadSchoolRecords()">
-            <option value="">📋 همه</option>
-            <option value="بلی">✅ دیده</option>
-            <option value="نخیر">❌ ندیده</option>
-          </select>
-        </div>
-        <div class="filter-item">
-          <label>👤 وضعیت کارمند</label>
-          <select id="empStatusFilter" onchange="loadSchoolRecords()">
-            <option value="">📋 همه</option>
-            <option value="active">✅ فعال</option>
-            <option value="retired">🎖️ متقاعد</option>
-          </select>
-        </div>
-        <div class="filter-item">
-          <label>🏢 خدمتی رفته</label>
-          <select id="serviceFilter" onchange="loadSchoolRecords()">
-            <option value="">📋 همه</option>
-            <option value="بلی">✅ خدمتی رفته</option>
-            <option value="نخیر">❌ خدمتی نرفته</option>
-          </select>
-        </div>
-        <div class="filter-item">
           <label>📊 وضعیت تایید</label>
           <select id="approvalFilter" onchange="loadSchoolRecords()">
             <option value="" selected>📋 همه</option>
@@ -705,10 +152,26 @@ td code {
         </div>
       </div>
 
-      <!-- Table -->
+      <!-- فیلتر تشکیل (فقط برای نمایش تشکیل) -->
+      <div class="filter-grid" id="tashkeelFilters" style="display:none;">
+        <div class="filter-item">
+          <label>🔍 جستجوی کد</label>
+          <input class="form-control" id="tashkeelSearch" placeholder="جستجوی کد بست..." oninput="renderTashkeel()">
+        </div>
+        <div class="filter-item">
+          <label>📊 وضعیت</label>
+          <select id="tashkeelStatusFilter" onchange="renderTashkeel()">
+            <option value="">📋 همه</option>
+            <option value="filled">✅ پر (کارمند ثبت شده)</option>
+            <option value="empty">❌ خالی (بدون کارمند)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- جدول -->
       <div class="table-responsive">
         <table>
-          <thead>
+          <thead id="tableHead">
             <tr>
               <th>آی‌دی</th>
               <th>نام و تخلص</th>
@@ -722,7 +185,7 @@ td code {
               <th>عملیات</th>
             </tr>
           </thead>
-          <tbody id="schoolTableBody">
+          <tbody id="tableBody">
             <tr><td colspan="10" class="empty-state">
               <div style="font-size:50px; margin-bottom:15px;">🔍</div>
               <div style="font-size:16px; font-weight:bold; color:#475569; margin-bottom:8px;">برای مشاهده لیست کارمندان، از کادر جستجو استفاده کنید</div>
@@ -735,82 +198,29 @@ td code {
   </div>
 </div>
 
-<!-- ========== Edit Modal ========== -->
-<div class="modal-overlay" id="editModal">
-  <div class="modal-box" style="max-width:1000px;">
-    <h3>✏️ ویرایش معلومات</h3>
-    <div id="editContent"></div>
-    <div class="modal-actions">
-      <button class="btn-modal btn-modal-close" onclick="closeModal('editModal')">انصراف</button>
-      <button class="btn-modal" style="background:#f59e0b; color:#fff;" onclick="saveEditedRecord()">💾 ذخیره</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========== View Modal ========== -->
-<div class="modal-overlay" id="viewModal">
-  <div class="modal-box">
-    <h3>📄 مشاهده اطلاعات کارمند</h3>
-    <div id="viewContent"></div>
-    <div class="modal-actions">
-      <button class="btn-modal btn-modal-close" onclick="closeModal('viewModal')">بستن</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========== Detailed Stats Modal ========== -->
-<div class="modal fade" id="detailedStatsModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header" style="background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff;">
-        <h5 class="modal-title">📊 آمار تفصیلی مکتب</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:invert(1);"></button>
-      </div>
-      <div class="modal-body" style="max-height:75vh; overflow-y:auto;">
-        <div class="inner-tabs">
-          <button class="inner-tab-btn active" onclick="switchInnerTab('students', this)">👥 آمار شاگردان و شعبات</button>
-          <button class="inner-tab-btn" onclick="switchInnerTab('employees', this)">👨‍🏫 آمار کارمندان</button>
-        </div>
-
-        <div id="inner-tab-students" class="inner-tab-content active">
-          <div id="studentsStatsContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
-        </div>
-
-        <div id="inner-tab-employees" class="inner-tab-content">
-          <div id="employeesStatsContent"><div class="text-center p-4 text-muted">در حال بارگذاری...</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // Auth
 // ═══════════════════════════════════════════════════════════
 const token = localStorage.getItem('hr_token');
 const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
-if (!token || token === 'undefined' || token === 'null') {
-  localStorage.clear(); window.location.href = '/'; throw new Error('No token');
-}
+if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; throw new Error('No token'); }
 document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
 let cachedRecords = [];
-let editingRecordId = null;
+let cachedTashkeel = [];
 let schoolSettings = null;
+let currentView = 'employees'; // 'employees' یا 'tashkeel'
 let detailedStatsModal = null;
 const RETIREMENT_AGE = 65;
 
 const JOB_TITLES_LIST = ['آمر', 'مدیر', 'مدیر اجرائیه', 'معلم', 'سر معلم', 'معلم همکار', 'معلم سپورت', 'معلم لابرانت', 'عضو علمی معلمان', 'عضو علمی مدرسین', 'عضو مسلکی امور مالی و کارکنان', 'عضو مسلکی نظارت احصاییه و گزارش', 'عضو مسلکی تاسیسات و ترمیمات', 'عضو مسلکی شوراها', 'کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
-const EDUCATION_EXEMPT_JOBS = ['کارکن خدماتی', 'معتمد جنسی (تحویلدار)', 'سایر'];
 
 const jobFilterSelect = document.getElementById('jobTitleFilter');
 JOB_TITLES_LIST.forEach(title => {
   const opt = document.createElement('option');
-  opt.value = title;
-  opt.textContent = title;
+  opt.value = title; opt.textContent = title;
   jobFilterSelect.appendChild(opt);
 });
 
@@ -824,35 +234,15 @@ function showToast(msg, isError = false) {
   clearTimeout(t._timer);
   t._timer = setTimeout(() => { t.classList.remove('show'); }, 4000);
 }
-function escapeHtml(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-function normalizeDigits(str) {
-  if (!str) return '';
-  const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
-  return String(str).split('').map(ch => {
-    const pi = p.indexOf(ch); if (pi !== -1) return pi;
-    const ai = a.indexOf(ch); if (ai !== -1) return ai;
-    return ch;
-  }).join('');
-}
+function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function normalizeDigits(str) { if (!str) return ''; const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩'; return String(str).split('').map(ch => { const pi = p.indexOf(ch); if (pi !== -1) return pi; const ai = a.indexOf(ch); if (ai !== -1) return ai; return ch; }).join(''); }
 function logout() { localStorage.clear(); window.location.href = '/'; }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-window.closeModal = closeModal;
 window.logout = logout;
 
-// ═══════════════════════════════════════════════════════════
-// ✅ دکمه جدید: باز کردن مدیریت تشکیل مکتب
-// ═══════════════════════════════════════════════════════════
-function openMyTashkeel() {
-  window.location.href = 'school-tashkeel.html';
-}
-window.openMyTashkeel = openMyTashkeel;
+function debounce(fn, delay) { let timer; return function(...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), delay); }; }
+const debouncedLoad = debounce(loadSchoolRecords, 400);
+window.debouncedLoad = debouncedLoad;
 
-// ═══════════════════════════════════════════════════════════
-// Date / age helpers
-// ═══════════════════════════════════════════════════════════
 function parseShamsi(dateStr) {
   if (!dateStr) return null;
   const cleaned = normalizeDigits(dateStr).replace(/[.\-]/g, '/').trim();
@@ -894,20 +284,8 @@ function getEmployeeStatus(record) {
   return { age, status: '✅ فعال', cls: 'badge-active' };
 }
 
-function debounce(fn, delay) {
-  let timer;
-  return function(...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
-}
-const debouncedLoad = debounce(loadSchoolRecords, 400);
-window.debouncedLoad = debouncedLoad;
-
 const getN = (obj, ...keys) => {
-  for (const k of keys) {
-    if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0;
-  }
+  for (const k of keys) { if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return Number(obj[k]) || 0; }
   return 0;
 };
 
@@ -918,69 +296,39 @@ function flattenSettings(s) {
   for (const field of possibleJsonFields) {
     const raw = s[field];
     if (raw && typeof raw === 'string') {
-      try {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') newS = { ...newS, ...parsed };
-      } catch (e) { /* ignore */ }
-    } else if (raw && typeof raw === 'object') {
-      newS = { ...newS, ...raw };
-    }
+      try { const parsed = JSON.parse(raw); if (parsed && typeof parsed === 'object') newS = { ...newS, ...parsed }; } catch (e) { /* ignore */ }
+    } else if (raw && typeof raw === 'object') { newS = { ...newS, ...raw }; }
   }
   return newS;
 }
 
 // ═══════════════════════════════════════════════════════════
-// Load school records
+// Load records
 // ═══════════════════════════════════════════════════════════
 async function loadSchoolRecords() {
   const searchVal = document.getElementById('searchInput').value.trim();
   const jobTitleFilter = document.getElementById('jobTitleFilter').value;
   const genderFilter = document.getElementById('genderFilter').value;
-  const workshopFilter = document.getElementById('workshopFilter').value;
-  const empStatusFilter = document.getElementById('empStatusFilter').value;
-  const serviceFilter = document.getElementById('serviceFilter').value;
   const approvalFilter = document.getElementById('approvalFilter').value;
-  const tbody = document.getElementById('schoolTableBody');
+  const tbody = document.getElementById('tableBody');
 
   try {
     const statRes = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
-    if (!statRes.ok && (statRes.status === 401 || statRes.status === 403)) {
-      localStorage.clear(); window.location.href = '/'; return;
-    }
+    if (!statRes.ok && (statRes.status === 401 || statRes.status === 403)) { localStorage.clear(); window.location.href = '/'; return; }
     const allRecords = await statRes.json();
     cachedRecords = Array.isArray(allRecords) ? allRecords : [];
     updateStats(cachedRecords);
 
     let filtered = cachedRecords;
-
     if (searchVal) {
       const q = searchVal.toLowerCase();
       filtered = filtered.filter(row => {
         const info = row.data || {};
-        return (
-          (info.firstName || '').toLowerCase().includes(q) ||
-          (info.lastName || '').toLowerCase().includes(q) ||
-          (info.fatherName || '').toLowerCase().includes(q) ||
-          (info.jobTitle || '').toLowerCase().includes(q) ||
-          (info.jobCode || '').toLowerCase().includes(q)
-        );
+        return ((info.firstName || '').toLowerCase().includes(q) || (info.lastName || '').toLowerCase().includes(q) || (info.fatherName || '').toLowerCase().includes(q) || (info.jobTitle || '').toLowerCase().includes(q) || (info.jobCode || '').toLowerCase().includes(q));
       });
     }
     if (jobTitleFilter) filtered = filtered.filter(row => (row.data || {}).jobTitle === jobTitleFilter);
     if (genderFilter) filtered = filtered.filter(row => (row.data || {}).gender === genderFilter);
-    if (workshopFilter) filtered = filtered.filter(row => (row.data || {}).workshopStatus === workshopFilter);
-    if (serviceFilter) filtered = filtered.filter(row => (row.data || {}).serviceStatus === serviceFilter);
-
-    if (empStatusFilter) {
-      filtered = filtered.filter(row => {
-        const emp = getEmployeeStatus(row.data || {});
-        const isRetired = emp.status.includes('متقاعد');
-        if (empStatusFilter === 'retired') return isRetired;
-        if (empStatusFilter === 'active') return !isRetired && emp.age !== '—';
-        return true;
-      });
-    }
-
     if (approvalFilter === 'pending') filtered = filtered.filter(r => r.status !== 'approved');
     else if (approvalFilter === 'approved') filtered = filtered.filter(r => r.status === 'approved');
 
@@ -993,10 +341,7 @@ async function loadSchoolRecords() {
     filtered.forEach((row) => {
       const info = row.data || {};
       const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
-      const statusHtml = row.status === 'approved'
-        ? '<span class="status-badge status-approved">✅ تایید</span>'
-        : '<span class="status-badge status-pending">⏳ انتظار</span>';
-
+      const statusHtml = row.status === 'approved' ? '<span class="status-badge status-approved">✅ تایید</span>' : '<span class="status-badge status-pending">⏳ انتظار</span>';
       html += `<tr>
         <td>${row.id}</td>
         <td><b>${escapeHtml(name)}</b></td>
@@ -1007,11 +352,7 @@ async function loadSchoolRecords() {
         <td>${escapeHtml(info.phone || '-')}</td>
         <td>${escapeHtml(info.degree || '-')}</td>
         <td>${statusHtml}</td>
-        <td>
-          ${(info.editAllowed === true || row.editAllowed === true) ? `<button class="btn-action btn-edit" onclick="editRecord(${row.id})" title="ویرایش">✏️</button>` : ''}
-          <button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="مشاهده">👁️</button>
-          <button class="btn-action btn-print" onclick="printRecord(${row.id})" title="پرینت">🖨️</button>
-        </td>
+        <td><button class="btn-action btn-view" onclick="viewRecord(${row.id})" title="مشاهده">👁️</button></td>
       </tr>`;
     });
     tbody.innerHTML = html;
@@ -1023,13 +364,15 @@ async function loadSchoolRecords() {
 window.loadSchoolRecords = loadSchoolRecords;
 
 function showAllEmployees() {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('jobTitleFilter').value = '';
-  document.getElementById('genderFilter').value = '';
-  document.getElementById('workshopFilter').value = '';
-  document.getElementById('empStatusFilter').value = '';
-  document.getElementById('serviceFilter').value = '';
-  document.getElementById('approvalFilter').value = '';
+  currentView = 'employees';
+  document.getElementById('employeeFilters').style.display = 'grid';
+  document.getElementById('tashkeelFilters').style.display = 'none';
+  document.getElementById('tableHead').innerHTML = `
+    <tr>
+      <th>آی‌دی</th><th>نام و تخلص</th><th>ولد</th><th>عنوان بست</th>
+      <th>کُد بست</th><th>تذکره الکترونیکی</th><th>شماره تماس</th>
+      <th>درجه تحصیل</th><th>وضعیت</th><th>عملیات</th>
+    </tr>`;
   loadSchoolRecords();
 }
 window.showAllEmployees = showAllEmployees;
@@ -1040,290 +383,148 @@ function updateStats(records) {
     container.innerHTML = '<div style="text-align:center;color:#94a3b8; padding:15px;">آماری برای نمایش وجود ندارد</div>';
     return;
   }
-
   let total = records.length, approved = 0, pending = 0;
-  records.forEach((row) => {
-    if (row.status === 'approved') approved++;
-    else pending++;
-  });
-
-  let html = `
+  records.forEach((row) => { if (row.status === 'approved') approved++; else pending++; });
+  container.innerHTML = `
     <div class="stat-box"><div class="stat-label">👥 کل کارمندان</div><div class="stat-value">${total}</div></div>
     <div class="stat-box"><div class="stat-label">✅ تایید شده</div><div class="stat-value">${approved}</div></div>
     <div class="stat-box"><div class="stat-label">⏳ در انتظار</div><div class="stat-value">${pending}</div></div>
   `;
-  container.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════════
-// Detailed stats
+// نمایش تشکیل
 // ═══════════════════════════════════════════════════════════
-function switchInnerTab(tabName, btn) {
-  document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.inner-tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('inner-tab-' + tabName).classList.add('active');
-  btn.classList.add('active');
-}
-window.switchInnerTab = switchInnerTab;
+async function showTashkeel() {
+  currentView = 'tashkeel';
+  document.getElementById('employeeFilters').style.display = 'none';
+  document.getElementById('tashkeelFilters').style.display = 'grid';
+  document.getElementById('tableHead').innerHTML = `
+    <tr>
+      <th>#</th><th>عنوان بست (تشکیل)</th><th>کُد بست</th>
+      <th>نمبر عمومی</th><th>نمبر خصوصی</th><th>وضعیت</th><th>کارمند ثبت‌شده</th>
+    </tr>`;
 
-async function showDetailedStats() {
-  if (!detailedStatsModal) detailedStatsModal = new bootstrap.Modal(document.getElementById('detailedStatsModal'));
-  detailedStatsModal.show();
-  await loadSchoolSettings();
-  renderStudentsStats();
-  renderEmployeesStats();
-}
-window.showDetailedStats = showDetailedStats;
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '<tr><td colspan="7" class="empty-state">در حال بارگذاری تشکیل...</td></tr>';
 
-async function loadSchoolSettings() {
   try {
-    const res = await fetch('/api/school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.exists && data.settings) {
-        schoolSettings = flattenSettings(data.settings);
+    // بارگذاری records اگر قبلاً بارگذاری نشده
+    if (!cachedRecords || cachedRecords.length === 0) {
+      const rRes = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (rRes.ok) {
+        const data = await rRes.json();
+        cachedRecords = Array.isArray(data) ? data : [];
       }
     }
-  } catch (e) { console.error(e); }
-}
 
-function renderStudentsStats() {
-  const content = document.getElementById('studentsStatsContent');
-  if (!schoolSettings) {
-    content.innerHTML = '<div class="text-center p-4 text-warning">⚠️ ابتدا اطلاعات مکتب را در بخش مدیریت مکتب ثبت کنید.</div>';
-    return;
-  }
-
-  const s = schoolSettings;
-  const classNames = ['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم','یازدهم','دوازدهم'];
-
-  const bF13 = getN(s, 'branches_f_1_3', 'branchesF13'), bM13 = getN(s, 'branches_m_1_3', 'branchesM13'), bX13 = getN(s, 'branches_x_1_3', 'branchesX13');
-  const bF46 = getN(s, 'branches_f_4_6', 'branchesF46'), bM46 = getN(s, 'branches_m_4_6', 'branchesM46'), bX46 = getN(s, 'branches_x_4_6', 'branchesX46');
-  const bF79 = getN(s, 'branches_f_7_9', 'branchesF79'), bM79 = getN(s, 'branches_m_7_9', 'branchesM79'), bX79 = getN(s, 'branches_x_7_9', 'branchesX79');
-  const bF1012 = getN(s, 'branches_f_10_12', 'branchesF1012'), bM1012 = getN(s, 'branches_m_10_12', 'branchesM1012'), bX1012 = getN(s, 'branches_x_10_12', 'branchesX1012');
-
-  const totalInF = getN(s, 'total_in_female', 'totalInFemale'), totalInM = getN(s, 'total_in_male', 'totalInMale');
-  const totalPrF = getN(s, 'total_present_female', 'totalPresentFemale'), totalPrM = getN(s, 'total_present_male', 'totalPresentMale');
-  const gradF = getN(s, 'grad_female', 'gradFemale'), gradM = getN(s, 'grad_male', 'gradMale');
-
-  const classTotals = classNames.map((_, i) => {
-    const num = i + 1;
-    return {
-      inF: getN(s, `c${num}_in_f`), inM: getN(s, `c${num}_in_m`),
-      prF: getN(s, `c${num}_pr_f`), prM: getN(s, `c${num}_pr_m`),
-      ef: getN(s, `e${num}_f`), em: getN(s, `e${num}_m`)
-    };
-  });
-
-  const grandExpF = classTotals.reduce((sum, t) => sum + t.ef, 0);
-  const grandExpM = classTotals.reduce((sum, t) => sum + t.em, 0);
-
-  let html = `
-    <h6 class="stats-title">📚 آمار کل شعبات</h6>
-    <table class="info-table">
-      <thead><tr><th>مقطع</th><th>اناث</th><th>ذکور</th><th>مختلط</th><th>مجموع</th></tr></thead>
-      <tbody>
-        <tr><td>اول تا سوم</td><td>${bF13}</td><td>${bM13}</td><td>${bX13}</td><td class="total-col">${bF13+bM13+bX13}</td></tr>
-        <tr><td>چهارم تا ششم</td><td>${bF46}</td><td>${bM46}</td><td>${bX46}</td><td class="total-col">${bF46+bM46+bX46}</td></tr>
-        <tr><td>هفتم تا نهم</td><td>${bF79}</td><td>${bM79}</td><td>${bX79}</td><td class="total-col">${bF79+bM79+bX79}</td></tr>
-        <tr><td>دهم تا دوازدهم</td><td>${bF1012}</td><td>${bM1012}</td><td>${bX1012}</td><td class="total-col">${bF1012+bM1012+bX1012}</td></tr>
-      </tbody>
-    </table>
-
-    <h6 class="stats-title">👥 آمار کل شاگردان</h6>
-    <table class="info-table">
-      <thead><tr><th>نوع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr></thead>
-      <tbody>
-        <tr><td>تعداد داخله</td><td>${totalInF}</td><td>${totalInM}</td><td class="total-col">${totalInF+totalInM}</td></tr>
-        <tr><td>تعداد حاضر</td><td>${totalPrF}</td><td>${totalPrM}</td><td class="total-col">${totalPrF+totalPrM}</td></tr>
-      </tbody>
-    </table>
-
-    <h6 class="stats-title">📋 آمار به تفکیک هر صنف (داخله و حاضر)</h6>
-    <table class="info-table">
-      <thead>
-        <tr><th rowspan="2">صنف</th><th colspan="3">تعداد داخله</th><th colspan="3">تعداد حاضر</th></tr>
-        <tr><th>اناث</th><th>ذکور</th><th>مجموع</th><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
-      </thead>
-      <tbody>
-        ${classNames.map((cls, i) => {
-          const { inF, inM, prF, prM } = classTotals[i];
-          return `<tr><td>${cls}</td><td>${inF}</td><td>${inM}</td><td class="total-col">${inF+inM}</td><td>${prF}</td><td>${prM}</td><td class="total-col">${prF+prM}</td></tr>`;
-        }).join('')}
-        <tr style="background:#eff6ff; font-weight:bold;">
-          <td>مجموع کل</td><td>${totalInF}</td><td>${totalInM}</td><td>${totalInF+totalInM}</td><td>${totalPrF}</td><td>${totalPrM}</td><td>${totalPrF+totalPrM}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h6 class="stats-title">📋 آمار اخراجی</h6>
-    <table class="info-table">
-      <thead>
-        <tr><th rowspan="2">صنف</th><th colspan="3">تعداد اخراجی</th></tr>
-        <tr><th>اناث</th><th>ذکور</th><th>مجموع</th></tr>
-      </thead>
-      <tbody>
-        ${classNames.map((cls, i) => {
-          const { ef, em } = classTotals[i];
-          return `<tr><td>${cls}</td><td>${ef}</td><td>${em}</td><td class="total-col">${ef+em}</td></tr>`;
-        }).join('')}
-        <tr style="background:#eff6ff; font-weight:bold;">
-          <td>مجموع کل</td><td>${grandExpF}</td><td>${grandExpM}</td><td class="text-success">${grandExpF+grandExpM}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h6 class="stats-title">🎓 آمار فارغان (صنف دوازدهم)</h6>
-    <table class="info-table">
-      <thead><tr><th>نوع</th><th>تعداد</th></tr></thead>
-      <tbody>
-        <tr><td>فارغان اناث</td><td>${gradF}</td></tr>
-        <tr><td>فارغان ذکور</td><td>${gradM}</td></tr>
-        <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع فارغان</td><td class="total-col">${gradF+gradM}</td></tr>
-      </tbody>
-    </table>
-  `;
-  content.innerHTML = html;
-}
-window.renderStudentsStats = renderStudentsStats;
-
-function renderEmployeesStats() {
-  const content = document.getElementById('employeesStatsContent');
-  if (!cachedRecords || cachedRecords.length === 0) {
-    content.innerHTML = '<div class="text-center p-4 text-warning">هیچ کارمندی ثبت نشده است.</div>';
-    return;
-  }
-  const records = cachedRecords;
-  let managers = 0, headTeachers = 0, teachers = 0, services = 0, others = 0;
-  let male = 0, female = 0, active = 0, retired = 0;
-
-  records.forEach(r => {
-    const info = r.data || {};
-    const job = info.jobTitle || info.job || '';
-    const gender = info.gender || '';
-    if (job === 'آمر' || job === 'مدیر' || job === 'مدیر اجرائیه') managers++;
-    else if (job === 'سر معلم') headTeachers++;
-    else if (job.includes('معلم')) teachers++;
-    else if (job === 'کارکن خدماتی') services++;
-    else others++;
-    if (gender === 'مرد') male++;
-    else if (gender === 'زن') female++;
-    const st = getEmployeeStatus(info);
-    if (st.status.includes('متقاعد')) retired++;
-    else if (st.status.includes('فعال')) active++;
-  });
-
-  let html = `
-    <h6 class="stats-title">👨‍🏫 آمار کارمندان بر اساس عنوان بست</h6>
-    <table class="info-table">
-      <thead><tr><th>عنوان بست</th><th>تعداد</th></tr></thead>
-      <tbody>
-        <tr><td>آمر / مدیر</td><td>${managers}</td></tr>
-        <tr><td>سر معلم</td><td>${headTeachers}</td></tr>
-        <tr><td>معلم</td><td>${teachers}</td></tr>
-        <tr><td>کارکن خدماتی</td><td>${services}</td></tr>
-        <tr><td>سایر</td><td>${others}</td></tr>
-        <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع کل</td><td class="text-success">${records.length}</td></tr>
-      </tbody>
-    </table>
-
-    <h6 class="stats-title">👤 آمار بر اساس جنسیت</h6>
-    <table class="info-table">
-      <thead><tr><th>جنسیت</th><th>تعداد</th></tr></thead>
-      <tbody>
-        <tr><td>مرد</td><td>${male}</td></tr>
-        <tr><td>زن</td><td>${female}</td></tr>
-        <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع</td><td>${male+female}</td></tr>
-      </tbody>
-    </table>
-
-    <h6 class="stats-title">📊 آمار وضعیت کارمند</h6>
-    <table class="info-table">
-      <thead><tr><th>وضعیت</th><th>تعداد</th></tr></thead>
-      <tbody>
-        <tr><td>✅ فعال</td><td>${active}</td></tr>
-        <tr><td>🎖️ متقاعد</td><td>${retired}</td></tr>
-        <tr style="background:#eff6ff; font-weight:bold;"><td>مجموع</td><td>${active+retired}</td></tr>
-      </tbody>
-    </table>
-  `;
-  content.innerHTML = html;
-}
-window.renderEmployeesStats = renderEmployeesStats;
-
-// ═══════════════════════════════════════════════════════════
-// Edit record
-// ═══════════════════════════════════════════════════════════
-const EDITABLE_EMPLOYEE_FIELDS = [
-  ['jobTitle','عنوان بست','select',['JOB_TITLES_LIST']], ['jobCode','کود بست','text'],
-  ['firstName','اسم','text'], ['lastName','تخلص','text'], ['fatherName','ولد','text'], ['grandfatherName','ولدیت','text'],
-  ['eTazkira','تذکره الکترونیکی','text'], ['paperTazkira','تذکره کاغذی','text'], ['tazkiraPage','صفحه تذکره','text'], ['tazkiraVolume','جلد تذکره','text'], ['ethnicity','قومیت','text'],
-  ['gender','جنسیت','select',['مرد','زن']], ['maritalStatus','حالت مدنی','select',['مجرد','متاهل']], ['birthDate','تاریخ تولد','text'], ['birthProvince','ولایت تولد','text'], ['birthDistrict','ولسوالی تولد','text'],
-  ['originProvince','ولایت سکونت اصلی','text'], ['originDistrict','ولسوالی سکونت اصلی','text'], ['currentProvince','ولایت سکونت فعلی','text'], ['currentDistrict','ولسوالی سکونت فعلی','text'], ['phone','شماره تماس','text'], ['disability','معلولیت','select',['نخیر','بلی']],
-  ['bust','بست','text'], ['grade','قدم','text'], ['firstAppointmentDate','تاریخ اولین تقرر','text'], ['currentPositionDate','تاریخ تقرر فعلی','text'], ['positionType','موقف وظیفوی','select',['اصلی','سرپرستی']], ['employmentType','نوع تقرری','select',['حکمی','رقابتی']],
-  ['degree','درجه تحصیل','text'], ['major','رشته تحصیلی','text'], ['eduInstitute','مرجع تحصیلی','text'], ['eduInstituteLocation','موقعیت مرجع تحصیلی','text'], ['enrollmentDate','تاریخ شمولیت','text'], ['graduationDate','تاریخ فراغت','text'], ['teachingField','رشته تدریس','text'],
-  ['workshopStatus','ورکشاپ اخذ کرده؟','select',['نخیر','بلی']], ['workshopTitle','عنوان ورکشاپ','text'], ['workshopDuration','مدت ورکشاپ','text'], ['totalTeachingHours','مجموعه ساعت درسی','text'],
-  ['serviceStatus','خدمتی رفته؟','select',['نخیر','بلی']], ['serviceDistrict','نام ولسوالی خدمتی','text'], ['serviceSchool','نام مکتب خدمتی','text'], ['serviceDate','تاریخ خدمتی','text']
-];
-
-function editRecord(id) {
-  const rec = cachedRecords.find(r => r.id === id);
-  if (!rec) { showToast('رکورد یافت نشد', true); return; }
-  const info = rec.data || {};
-  if (!(info.editAllowed === true || rec.editAllowed === true)) {
-    showToast('❌ ویرایش این کارمند هنوز از طرف ادمین اجازه داده نشده است', true);
-    return;
-  }
-  editingRecordId = id;
-  let html = `<div style="background:#fef3c7;padding:12px 15px;border-radius:8px;margin-bottom:20px;font-size:13px;text-align:center; font-weight:bold;"><strong>👤 کارمند:</strong> ${escapeHtml(info.firstName || '-')} ${escapeHtml(info.lastName || '')} | تمام معلومات قابل ویرایش است</div><div class="edit-form-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">`;
-  EDITABLE_EMPLOYEE_FIELDS.forEach(([key,label,type,opts]) => {
-    const val = info[key] == null ? '' : String(info[key]);
-    const idAttr = 'e_' + key;
-    if (type === 'select') {
-      const options = (opts && opts[0] === 'JOB_TITLES_LIST' ? JOB_TITLES_LIST : (opts || [])).map(v => `<option value="${escapeHtml(v)}" ${val===v?'selected':''}>${escapeHtml(v)}</option>`).join('');
-      html += `<div class="form-group"><label>${label}</label><select id="${idAttr}" data-edit-key="${key}"><option value="">— انتخاب —</option>${options}</select></div>`;
-    } else {
-      html += `<div class="form-group"><label>${label}</label><input type="text" id="${idAttr}" data-edit-key="${key}" value="${escapeHtml(val)}"></div>`;
+    // بارگذاری tashkeel برای این مکتب (با place)
+    if (!cachedTashkeel || cachedTashkeel.length === 0) {
+      const tRes = await fetch('/api/tashkeel', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (tRes.ok) {
+        const data = await tRes.json();
+        const all = Array.isArray(data) ? data : (data.tashkeel || []);
+        // فیلتر بر اساس نام مکتب
+        const mySchool = String(user.schoolname || '').trim();
+        cachedTashkeel = all.filter(t => {
+          if (!t.place) return false;
+          const place = String(t.place).trim();
+          return place === mySchool || place.includes(mySchool) || mySchool.includes(place);
+        });
+      }
     }
-  });
-  html += '</div>';
-  document.getElementById('editContent').innerHTML = html;
-  document.getElementById('editModal').classList.add('active');
-}
-window.editRecord = editRecord;
 
-async function saveEditedRecord() {
-  if (!editingRecordId) return;
-  const body = {};
-  document.querySelectorAll('#editContent [data-edit-key]').forEach(el => {
-    body[el.dataset.editKey] = el.value.trim();
-  });
-  body.editAllowed = true;
-  if (!body.jobTitle) { showToast('❌ عنوان بست الزامی است', true); return; }
-  if (!EDUCATION_EXEMPT_JOBS.includes(body.jobTitle) && !body.degree) {
-    showToast('❌ برای این بست، درجه تحصیل الزامی است', true); return;
-  }
+    if (cachedTashkeel.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">⚠️ برای این مکتب، تشکیلاتی در سیستم تعریف نشده است.</td></tr>';
+      return;
+    }
 
-  try {
-    const res = await fetch('/api/records/' + editingRecordId, {
-      method:'PUT',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body:JSON.stringify(body)
+    // نگاشت کد → نام کارمند ثبت‌شده
+    const codeToEmployeeMap = {};
+    cachedRecords.forEach(rec => {
+      const info = rec.data || {};
+      if (info.jobCode) {
+        const name = `${info.firstName || ''} ${info.lastName || ''}`.trim();
+        codeToEmployeeMap[info.jobCode] = {
+          name: name || 'نامشخص',
+          status: rec.status
+        };
+      }
     });
-    const data = await res.json().catch(()=>({}));
-    if (res.ok) {
-      showToast('✅ تمام معلومات کارمند ذخیره شد');
-      closeModal('editModal');
-      await loadSchoolRecords();
-    } else {
-      showToast('❌ '+(data.error||'خطا در ذخیره معلومات'),true);
-    }
-  } catch(e) { showToast('❌ ارتباط برقرار نشد',true); }
+
+    renderTashkeel();
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state" style="color:red;">خطا در بارگذاری تشکیل</td></tr>';
+  }
 }
-window.saveEditedRecord = saveEditedRecord;
+window.showTashkeel = showTashkeel;
+
+function renderTashkeel() {
+  const tbody = document.getElementById('tableBody');
+  const searchVal = (document.getElementById('tashkeelSearch')?.value || '').trim().toLowerCase();
+  const statusFilter = document.getElementById('tashkeelStatusFilter')?.value || '';
+
+  // نگاشت کد → کارمند
+  const codeToEmployeeMap = {};
+  cachedRecords.forEach(rec => {
+    const info = rec.data || {};
+    if (info.jobCode) {
+      const name = `${info.firstName || ''} ${info.lastName || ''}`.trim();
+      codeToEmployeeMap[info.jobCode] = { name: name || 'نامشخص', status: rec.status };
+    }
+  });
+
+  let filtered = cachedTashkeel.filter(t => {
+    if (searchVal && !(t.code || '').toLowerCase().includes(searchVal) && !(t.title || '').toLowerCase().includes(searchVal)) return false;
+    if (statusFilter === 'filled' && !codeToEmployeeMap[t.code]) return false;
+    if (statusFilter === 'empty' && codeToEmployeeMap[t.code]) return false;
+    return true;
+  });
+
+  // آمار
+  const totalCodes = cachedTashkeel.length;
+  const filledCodes = cachedTashkeel.filter(t => codeToEmployeeMap[t.code]).length;
+  const emptyCodes = totalCodes - filledCodes;
+
+  const summaryBox = document.getElementById('statsContainer');
+  summaryBox.innerHTML = `
+    <div class="stat-box" style="background:#eff6ff;border-color:#c9ddfa;"><div class="stat-box-label">📋 کل کدهای تشکیل</div><div class="stat-value" style="color:#2563eb;">${totalCodes}</div></div>
+    <div class="stat-box" style="background:#effaf5;border-color:#c6ead7;"><div class="stat-box-label">✅ پر (کارمند ثبت شده)</div><div class="stat-value" style="color:#15845f;">${filledCodes}</div></div>
+    <div class="stat-box" style="background:#fff9ed;border-color:#f3dfb5;"><div class="stat-box-label">❌ خالی (بدون کارمند)</div><div class="stat-value" style="color:#b77913;">${emptyCodes}</div></div>
+  `;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">هیچ کدی با این فیلتر یافت نشد</td></tr>';
+    return;
+  }
+
+  let html = '';
+  filtered.forEach((t, idx) => {
+    const emp = codeToEmployeeMap[t.code];
+    const statusHtml = emp
+      ? '<span class="status-badge status-filled">✅ پر</span>'
+      : '<span class="status-badge status-empty">❌ خالی</span>';
+    const empHtml = emp
+      ? `<b>${escapeHtml(emp.name)}</b> ${emp.status === 'approved' ? '✅' : '⏳'}`
+      : '<span style="color:#94a3b8;">—</span>';
+
+    html += `<tr>
+      <td>${idx + 1}</td>
+      <td><b>${escapeHtml(t.title || '—')}</b></td>
+      <td><code>${escapeHtml(t.code || '—')}</code></td>
+      <td>${escapeHtml(t.pub || '—')}</td>
+      <td>${escapeHtml(t.priv || '—')}</td>
+      <td>${statusHtml}</td>
+      <td>${empHtml}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+window.renderTashkeel = renderTashkeel;
 
 // ═══════════════════════════════════════════════════════════
-// View / print
+// View record
 // ═══════════════════════════════════════════════════════════
 function viewRecord(id) {
   const rec = cachedRecords.find(r => r.id === id);
@@ -1359,98 +560,143 @@ function viewRecord(id) {
   });
   html += `</div>`;
 
-  document.getElementById('viewContent').innerHTML = html;
-  document.getElementById('viewModal').classList.add('active');
+  // نمایش در یک modal ساده
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(10,26,45,.68);z-index:2000;display:flex;justify-content:center;align-items:center;padding:20px;overflow-y:auto;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:17px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;padding:28px;"><h3 style="font-size:19px;font-weight:900;color:#17365d;margin-bottom:22px;border-bottom:2px solid #eaf0f6;padding-bottom:15px;">📄 مشاهده اطلاعات کارمند</h3>${html}<div style="display:flex;justify-content:flex-end;margin-top:20px;padding-top:20px;border-top:1px solid #e9eef4;"><button onclick="this.closest('div[style*=fixed]').remove()" style="padding:11px 22px;background:#edf1f5;color:#40536b;border:none;border-radius:8px;cursor:pointer;font-weight:800;font-family:inherit;">بستن</button></div></div>`;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  document.body.appendChild(modal);
 }
 window.viewRecord = viewRecord;
 
-function printRecord(id) {
-  const rec = cachedRecords.find(r => r.id === id);
-  if (!rec) return;
-  const info = rec.data || {};
+// ═══════════════════════════════════════════════════════════
+// Detailed stats (بدون تغییر)
+// ═══════════════════════════════════════════════════════════
+async function showDetailedStats() {
+  // همان کد قبلی بدون تغییر
+  if (!detailedStatsModal) {
+    // ساخت modal ساده
+    const modal = document.createElement('div');
+    modal.id = 'detailedStatsModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(10,26,45,.68);z-index:2000;display:flex;justify-content:center;align-items:center;padding:20px;overflow-y:auto;';
+    modal.innerHTML = `<div style="background:#fff;border-radius:17px;max-width:1100px;width:100%;max-height:90vh;overflow-y:auto;padding:28px;"><h3 style="font-size:19px;font-weight:900;color:#17365d;margin-bottom:22px;border-bottom:2px solid #eaf0f6;padding-bottom:15px;">📊 آمار تفصیلی مکتب</h3><div id="detailedStatsBody"><div style="text-align:center;padding:20px;color:#94a3b8;">در حال بارگذاری...</div></div><div style="display:flex;justify-content:flex-end;margin-top:20px;padding-top:20px;border-top:1px solid #e9eef4;"><button onclick="document.getElementById('detailedStatsModal').remove()" style="padding:11px 22px;background:#edf1f5;color:#40536b;border:none;border-radius:8px;cursor:pointer;font-weight:800;font-family:inherit;">بستن</button></div></div>`;
+    document.body.appendChild(modal);
+    detailedStatsModal = true;
+    modal.onclick = (e) => { if (e.target === modal) { modal.remove(); detailedStatsModal = null; } };
+    await loadSchoolSettings();
+    renderDetailedStats();
+  } else {
+    // اگر قبلاً باز است، کاری نکن
+  }
+}
+window.showDetailedStats = showDetailedStats;
 
-  const rows = [
-    ['عنوان بست', info.jobTitle], ['کد بست', info.jobCode], ['اسم', info.firstName], ['تخلص', info.lastName], ['ولد', info.fatherName], ['ولدیت', info.grandfatherName],
-    ['تذکره الکترونیکی', info.eTazkira], ['قومیت', info.ethnicity], ['جنسیت', info.gender], ['حالت مدنی', info.maritalStatus],
-    ['تاریخ تولد', info.birthDate], ['شماره تماس', info.phone], ['معلولیت', info.disability],
-    ['سکونت اصلی', `${info.originProvince || ''} ${info.originDistrict || ''}`], ['سکونت فعلی', `${info.currentProvince || ''} ${info.currentDistrict || ''}`],
-    ['بست', info.bust], ['قدم', info.grade], ['تاریخ اولین تقرر', info.firstAppointmentDate], ['تاریخ تقرر فعلی', info.currentPositionDate],
-    ['درجه تحصیل', info.degree], ['رشته تحصیلی', info.major], ['مرجع تحصیلی', info.eduInstitute], ['رشته تدریس', info.teachingField]
-  ];
-
-  let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;"><h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2><h4 style="margin:5px 0 0 0; font-size:13px;">فورم معلومات کارمند - ${escapeHtml(rec.schoolname || '')}</h4></div><table style="width:100%; border-collapse:collapse; font-size:12px;">`;
-
-  rows.forEach(([label, value]) => {
-    if (value) {
-      html += `<tr><td style="border:1px solid #333; padding:6px; background:#eee; font-weight:bold; width:30%;">${label}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(value)}</td></tr>`;
+async function loadSchoolSettings() {
+  try {
+    const res = await fetch('/api/school-settings', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.exists && data.settings) schoolSettings = flattenSettings(data.settings);
     }
-  });
-  html += '</table>';
-
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت ${escapeHtml(info.firstName || '')}</title><style>body { font-family: Tahoma; direction: rtl; padding: 15px; } @media print { @page { size: A4 portrait; margin: 1cm; } }</style></head><body>${html}<script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
-  win.document.close();
+  } catch (e) { console.error(e); }
 }
-window.printRecord = printRecord;
 
-function printEmployeeList() {
-  if (!cachedRecords || cachedRecords.length === 0) { showToast('❌ لیستی برای پرینت وجود ندارد. ابتدا جستجو کنید.', true); return; }
-  let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;"><h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2><h4 style="margin:5px 0 0 0; font-size:13px;">لیست کارمندان مکتب - ${escapeHtml(user.schoolname || '')}</h4><div style="font-size:11px; margin-top:5px;">تاریخ پرینت: ${new Date().toLocaleDateString('fa-IR')}</div></div>`;
-  html += `<table style="width:100%; border-collapse:collapse; font-size:11px;"><thead><tr style="background:#eee;"><th style="border:1px solid #333; padding:6px;">#</th><th style="border:1px solid #333; padding:6px;">نام و تخلص</th><th style="border:1px solid #333; padding:6px;">ولد</th><th style="border:1px solid #333; padding:6px;">عنوان بست</th><th style="border:1px solid #333; padding:6px;">کد بست</th><th style="border:1px solid #333; padding:6px;">تذکره</th><th style="border:1px solid #333; padding:6px;">شماره تماس</th><th style="border:1px solid #333; padding:6px;">وضعیت</th></tr></thead><tbody>`;
-  cachedRecords.forEach((row, idx) => {
-    const info = row.data || {};
-    const name = info.firstName ? `${info.firstName} ${info.lastName || ''}` : '-';
-    const statusText = row.status === 'approved' ? 'تایید شده' : 'در انتظار';
-    html += `<tr><td style="border:1px solid #333; padding:6px; text-align:center;">${idx + 1}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(name)}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.fatherName || '-')}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.jobTitle || '-')}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.jobCode || '-')}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.eTazkira || '-')}</td><td style="border:1px solid #333; padding:6px;">${escapeHtml(info.phone || '-')}</td><td style="border:1px solid #333; padding:6px; text-align:center;">${statusText}</td></tr>`;
-  });
-  html += `</tbody></table>`;
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرنت لیست کارمندان</title><style>body { font-family: Tahoma; direction: rtl; } @media print { @page { size: A4 landscape; margin: 1cm; } }</style></head><body>${html}<script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
-  win.document.close();
-}
-window.printEmployeeList = printEmployeeList;
+function renderDetailedStats() {
+  const body = document.getElementById('detailedStatsBody');
+  if (!body) return;
 
-function exportEmployeeExcel() {
-  if (!cachedRecords || cachedRecords.length === 0) { showToast('❌ لیستی برای خروجی وجود ندارد. ابتدا جستجو کنید.', true); return; }
-  const columns = [
-    { label: 'آی‌دی', get: r => r.id }, { label: 'عنوان بست', get: r => r.data?.jobTitle }, { label: 'کُد بست', get: r => r.data?.jobCode },
-    { label: 'اسم', get: r => r.data?.firstName }, { label: 'تخلص', get: r => r.data?.lastName }, { label: 'ولد', get: r => r.data?.fatherName }, { label: 'ولدیت', get: r => r.data?.grandfatherName },
-    { label: 'تذکره الکترونیکی', get: r => r.data?.eTazkira }, { label: 'تذکره کاغذی', get: r => r.data?.paperTazkira }, { label: 'صفحه تذکره', get: r => r.data?.tazkiraPage }, { label: 'جلد تذکره', get: r => r.data?.tazkiraVolume },
-    { label: 'قومیت', get: r => r.data?.ethnicity }, { label: 'جنسیت', get: r => r.data?.gender }, { label: 'حالت مدنی', get: r => r.data?.maritalStatus },
-    { label: 'تاریخ تولد', get: r => r.data?.birthDate }, { label: 'شماره تماس', get: r => r.data?.phone }, { label: 'معلولیت', get: r => r.data?.disability },
-    { label: 'ولایت تولد', get: r => r.data?.birthProvince }, { label: 'ولسوالی تولد', get: r => r.data?.birthDistrict },
-    { label: 'ولایت سکونت اصلی', get: r => r.data?.originProvince }, { label: 'ولسوالی سکونت اصلی', get: r => r.data?.originDistrict },
-    { label: 'ولایت سکونت فعلی', get: r => r.data?.currentProvince }, { label: 'ولسوالی سکونت فعلی', get: r => r.data?.currentDistrict },
-    { label: 'بست', get: r => r.data?.bust }, { label: 'قدم', get: r => r.data?.grade },
-    { label: 'تاریخ اولین تقرر', get: r => r.data?.firstAppointmentDate }, { label: 'تاریخ تقرر فعلی', get: r => r.data?.currentPositionDate },
-    { label: 'موقف وظیفوی', get: r => r.data?.positionType }, { label: 'نوع استخدام', get: r => r.data?.employmentType },
-    { label: 'درجه تحصیل', get: r => r.data?.degree }, { label: 'رشته تحصیلی', get: r => r.data?.major },
-    { label: 'مرجع تحصیلی', get: r => r.data?.eduInstitute }, { label: 'موقعیت مرجع تحصیلی', get: r => r.data?.eduInstituteLocation },
-    { label: 'تاریخ شمولیت', get: r => r.data?.enrollmentDate }, { label: 'تاریخ فراغت', get: r => r.data?.graduationDate },
-    { label: 'رشته تدریس', get: r => r.data?.teachingField },
-    { label: 'ورکشاپ اخذ کرده', get: r => r.data?.workshopStatus }, { label: 'عنوان ورکشاپ', get: r => r.data?.workshopTitle }, { label: 'مدت ورکشاپ', get: r => r.data?.workshopDuration }, { label: 'مجموعه ساعت درسی', get: r => r.data?.totalTeachingHours },
-    { label: 'خدمتی رفته', get: r => r.data?.serviceStatus }, { label: 'ولسوالی خدمتی', get: r => r.data?.serviceDistrict }, { label: 'مکتب خدمتی', get: r => r.data?.serviceSchool }, { label: 'تاریخ خدمتی', get: r => r.data?.serviceDate },
-    { label: 'وضعیت', get: r => r.status === 'approved' ? 'تایید شده' : 'در انتظار' },
-    { label: 'مکتب', get: r => r.schoolname || user.schoolname || '' },
-  ];
-  let csvContent = "\uFEFF" + columns.map(c => `"${c.label}"`).join(",") + "\n";
-  cachedRecords.forEach((row) => {
-    const cells = columns.map(c => {
-      let val = c.get(row); if (val === null || val === undefined) val = '';
-      let str = String(val).replace(/,/g, '،').replace(/\n/g, ' ').replace(/\r/g, ' ');
-      return `"${str}"`;
-    });
-    csvContent += cells.join(",") + "\n";
+  let html = '';
+
+  // آمار شاگردان
+  if (schoolSettings) {
+    const s = schoolSettings;
+    const bF13 = getN(s, 'branches_f_1_3', 'branchesF13'), bM13 = getN(s, 'branches_m_1_3', 'branchesM13'), bX13 = getN(s, 'branches_x_1_3', 'branchesX13');
+    const bF46 = getN(s, 'branches_f_4_6', 'branchesF46'), bM46 = getN(s, 'branches_m_4_6', 'branchesM46'), bX46 = getN(s, 'branches_x_4_6', 'branchesX46');
+    const bF79 = getN(s, 'branches_f_7_9', 'branchesF79'), bM79 = getN(s, 'branches_m_7_9', 'branchesM79'), bX79 = getN(s, 'branches_x_7_9', 'branchesX79');
+    const bF1012 = getN(s, 'branches_f_10_12', 'branchesF1012'), bM1012 = getN(s, 'branches_m_10_12', 'branchesM1012'), bX1012 = getN(s, 'branches_x_10_12', 'branchesX1012');
+    const totalInF = getN(s, 'total_in_female', 'totalInFemale'), totalInM = getN(s, 'total_in_male', 'totalInMale');
+    const totalPrF = getN(s, 'total_present_female', 'totalPresentFemale'), totalPrM = getN(s, 'total_present_male', 'totalPresentMale');
+    const gradF = getN(s, 'grad_female', 'gradFemale'), gradM = getN(s, 'grad_male', 'gradMale');
+
+    html += `<h6 style="color:#173f68;font-weight:900;margin:15px 0 10px;">📚 آمار شعبات</h6>
+      <table class="info-table" style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:15px;">
+        <thead><tr style="background:#eaf2f8;"><th style="border:1px solid #dce5ee;padding:8px;">مقطع</th><th style="border:1px solid #dce5ee;padding:8px;">اناث</th><th style="border:1px solid #dce5ee;padding:8px;">ذکور</th><th style="border:1px solid #dce5ee;padding:8px;">مختلط</th><th style="border:1px solid #dce5ee;padding:8px;">مجموع</th></tr></thead>
+        <tbody>
+          <tr><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">اول تا سوم</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bF13}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bM13}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bX13}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;background:#e0f4e9;">${bF13+bM13+bX13}</td></tr>
+          <tr><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">چهارم تا ششم</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bF46}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bM46}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bX46}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;background:#e0f4e9;">${bF46+bM46+bX46}</td></tr>
+          <tr><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">هفتم تا نهم</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bF79}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bM79}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bX79}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;background:#e0f4e9;">${bF79+bM79+bX79}</td></tr>
+          <tr><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">دهم تا دوازدهم</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bF1012}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bM1012}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${bX1012}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;background:#e0f4e9;">${bF1012+bM1012+bX1012}</td></tr>
+        </tbody>
+      </table>
+      <h6 style="color:#173f68;font-weight:900;margin:15px 0 10px;">👥 آمار شاگردان</h6>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:15px;">
+        <thead><tr style="background:#eaf2f8;"><th style="border:1px solid #dce5ee;padding:8px;">نوع</th><th style="border:1px solid #dce5ee;padding:8px;">اناث</th><th style="border:1px solid #dce5ee;padding:8px;">ذکور</th><th style="border:1px solid #dce5ee;padding:8px;">مجموع</th></tr></thead>
+        <tbody>
+          <tr><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">داخله</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${totalInF}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${totalInM}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;background:#e0f4e9;">${totalInF+totalInM}</td></tr>
+          <tr><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">حاضر</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${totalPrF}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${totalPrM}</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;background:#e0f4e9;">${totalPrF+totalPrM}</td></tr>
+        </tbody>
+      </table>
+      <h6 style="color:#173f68;font-weight:900;margin:15px 0 10px;">🎓 آمار فارغان</h6>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:15px;">
+        <tbody>
+          <tr><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">فارغان اناث</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${gradF}</td></tr>
+          <tr><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">فارغان ذکور</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${gradM}</td></tr>
+          <tr style="background:#eff6ff;"><td style="border:1px solid #dce5ee;padding:8px;text-align:center;font-weight:bold;">مجموع</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;font-weight:bold;color:#087a50;">${gradF+gradM}</td></tr>
+        </tbody>
+      </table>`;
+  } else {
+    html += '<div style="text-align:center;padding:20px;color:#d99a24;">⚠️ ابتدا اطلاعات مکتب را در بخش مدیریت مکتب ثبت کنید.</div>';
+  }
+
+  // آمار کارمندان
+  let managers = 0, headTeachers = 0, teachers = 0, services = 0, others = 0;
+  let male = 0, female = 0, active = 0, retired = 0;
+  cachedRecords.forEach(r => {
+    const info = r.data || {};
+    const job = info.jobTitle || '';
+    const gender = info.gender || '';
+    if (job === 'آمر' || job === 'مدیر' || job === 'مدیر اجرائیه') managers++;
+    else if (job === 'سر معلم') headTeachers++;
+    else if (job.includes('معلم')) teachers++;
+    else if (job === 'کارکن خدماتی') services++;
+    else others++;
+    if (gender === 'مرد') male++;
+    else if (gender === 'زن') female++;
+    const st = getEmployeeStatus(info);
+    if (st.status.includes('متقاعد')) retired++;
+    else if (st.status.includes('فعال')) active++;
   });
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", `لیست_کامل_کارمندان_${new Date().getTime()}.csv`);
-  document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
-  showToast(`✅ خروجی کامل اکسل دانلود شد (${cachedRecords.length} کارمند)`);
+
+  html += `<h6 style="color:#173f68;font-weight:900;margin:15px 0 10px;">👨‍🏫 آمار کارمندان (کل: ${cachedRecords.length})</h6>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="background:#eaf2f8;"><th style="border:1px solid #dce5ee;padding:8px;">عنوان</th><th style="border:1px solid #dce5ee;padding:8px;">تعداد</th></tr></thead>
+      <tbody>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">آمر / مدیر</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${managers}</td></tr>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">سر معلم</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${headTeachers}</td></tr>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">معلم</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${teachers}</td></tr>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">کارکن خدماتی</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${services}</td></tr>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">سایر</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${others}</td></tr>
+        <tr style="background:#e0f4e9;font-weight:bold;"><td style="border:1px solid #dce5ee;padding:8px;">مجموع</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${cachedRecords.length}</td></tr>
+      </tbody>
+    </table>
+    <h6 style="color:#173f68;font-weight:900;margin:15px 0 10px;">👤 آمار جنسیت</h6>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tbody>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">مرد</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${male}</td></tr>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">زن</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${female}</td></tr>
+      </tbody>
+    </table>
+    <h6 style="color:#173f68;font-weight:900;margin:15px 0 10px;">📊 وضعیت</h6>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tbody>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">✅ فعال</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${active}</td></tr>
+        <tr><td style="border:1px solid #dce5ee;padding:8px;">🎖️ متقاعد</td><td style="border:1px solid #dce5ee;padding:8px;text-align:center;">${retired}</td></tr>
+      </tbody>
+    </table>`;
+
+  body.innerHTML = html;
 }
-window.exportEmployeeExcel = exportEmployeeExcel;
+window.renderDetailedStats = renderDetailedStats;
 
 // ═══════════════════════════════════════════════════════════
 // Start

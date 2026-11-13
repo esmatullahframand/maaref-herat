@@ -332,7 +332,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 7px; }
 }
 .stats-filter-bar label { display: block; margin-bottom: 6px; }
 
-/* ===== Range fields (جدید برای کد بست) ===== */
+/* ===== Range fields ===== */
 .range-group {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -725,8 +725,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(99,102,241,.35);
 // ═══════════════════════════════════════════════════════════
 const token = localStorage.getItem('hr_token');
 const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
-if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; throw new Error('No token'); }
-if (currentUser.role !== 'admin') { window.location.href = '/school-settings.html'; throw new Error('Not admin'); }
+if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/login.html'; throw new Error('No token'); }
+if (currentUser.role !== 'admin') { window.location.href = '/login.html'; throw new Error('Not admin'); }
 
 let loadedRecordsCache = [];
 let allSchoolsList = [];
@@ -738,7 +738,7 @@ let editSchoolModal = null;
 let manageSchoolsCache = [];
 const RETIREMENT_AGE = 65;
 
-function logout() { localStorage.clear(); window.location.href = '/'; }
+function logout() { localStorage.clear(); window.location.href = '/login.html'; }
 window.logout = logout;
 
 function showToast(msg, isError = false) {
@@ -821,7 +821,7 @@ function detectSchoolType(schoolName) {
 function getSchoolNameById(userid) {
   if (!userid || !allSchoolsList) return null;
   const s = allSchoolsList.find(x => x.id === userid);
-  return s ? s.schoolname : null;
+  return s ? (s.schoolname || s.setting_schoolname || null) : null;
 }
 function getDistrictById(userid) {
   if (!userid || !allSchoolsList) return null;
@@ -833,7 +833,6 @@ let debounceTimer;
 function debouncedLoad() { clearTimeout(debounceTimer); debounceTimer = setTimeout(loadAllRecords, 400); }
 window.debouncedLoad = debouncedLoad;
 
-// ✅ دکمه جدید: باز کردن پنل تشکیل
 function openTashkeelPanel() {
   window.location.href = 'admin-tashkeel.html';
 }
@@ -961,9 +960,18 @@ async function loadAllRecords() {
     if (f.search) params.push('search=' + encodeURIComponent(f.search));
     const url = '/api/records' + (params.length ? '?' + params.join('&') : '');
     const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-    if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/'; return; }
+    if (res.status === 401 || res.status === 403) { localStorage.clear(); window.location.href = '/login.html'; return; }
     let records = await res.json();
     if (!Array.isArray(records)) records = [];
+
+    // ✅ parse داده‌های JSON ستون data اگر رشته بود
+    records = records.map(r => {
+      if (typeof r.data === 'string') {
+        try { r.data = JSON.parse(r.data); } catch (e) { r.data = {}; }
+      }
+      if (!r.data || typeof r.data !== 'object') r.data = {};
+      return r;
+    });
 
     if (f.school) {
       const selectedSchool = allSchoolsList.find(s => s.schoolname === f.school);
@@ -980,7 +988,7 @@ async function loadAllRecords() {
       const flatSettings = allSchoolSettings.map(flattenSettings);
       const budgetMap = {};
       flatSettings.forEach(s => {
-        let sName = s.schoolname;
+        let sName = s.schoolname || s.setting_schoolname;
         if (!sName && s.userid) sName = getSchoolNameById(s.userid);
         if (sName) budgetMap[sName] = s.budget_status || s.budgetStatus || 'عادی';
       });
@@ -1046,8 +1054,14 @@ async function loadStats() {
   try {
     const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
     if (res.status === 401 || res.status === 403) return;
-    const allRecords = await res.json();
+    let allRecords = await res.json();
     if (Array.isArray(allRecords)) {
+      // ✅ parse data
+      allRecords = allRecords.map(r => {
+        if (typeof r.data === 'string') { try { r.data = JSON.parse(r.data); } catch { r.data = {}; } }
+        if (!r.data || typeof r.data !== 'object') r.data = {};
+        return r;
+      });
       document.getElementById('sTotal').textContent = allRecords.length;
       document.getElementById('sApproved').textContent = allRecords.filter(r => r.status === 'approved').length;
       document.getElementById('sPending').textContent = allRecords.filter(r => r.status !== 'approved').length;
@@ -1076,7 +1090,7 @@ function renderRecords(records) {
     const serviceHtml = info.serviceStatus === 'بلی' ? '<span class="badge-service-yes">🏢 رفته</span>' : '<span class="badge-service-no">—</span>';
     let actionsHtml = '';
     if (row.status === 'pending') actionsHtml += `<button class="btn-action btn-approve" onclick="approveRecord(${row.id})">✔️</button>`;
-    const editAllowed = info.editAllowed === true || row.editAllowed === true;
+    const editAllowed = info.editAllowed === true || info.editallowed === 1 || row.editAllowed === true;
     actionsHtml += `<button class="btn-action btn-view" onclick="viewRecordAdmin(${row.id})">👁️</button><button class="btn-action btn-print" onclick="printRecordAdmin(${row.id})">🖨️</button><button class="btn-action" style="background:${editAllowed ? '#16a34a' : '#64748b'};color:#fff" onclick="setRecordEditPermission(${row.id},${!editAllowed})" title="${editAllowed ? 'لغو اجازه ویرایش' : 'اجازه ویرایش'}">${editAllowed ? '🔓' : '🔑'}</button><button class="btn-action btn-delete-row" onclick="deleteRecord(${row.id})">🗑️</button>`;
     const schoolName = row.schoolname || getSchoolNameById(row.userid) || '—';
     const district = row.district || getDistrictById(row.userid) || '—';
@@ -1487,6 +1501,12 @@ async function renderEmployeesStats() {
     }
     let records = await res.json();
     if (!Array.isArray(records)) records = [];
+    // ✅ parse data
+    records = records.map(r => {
+      if (typeof r.data === 'string') { try { r.data = JSON.parse(r.data); } catch { r.data = {}; } }
+      if (!r.data || typeof r.data !== 'object') r.data = {};
+      return r;
+    });
 
     if (schoolFilter) {
       const schoolObj = allSchoolsList.find(x => x.schoolname === schoolFilter);
@@ -1589,7 +1609,7 @@ function renderSchoolSettingsModal() {
     const tPrF=getN(s,'total_present_female','totalPresentFemale'), tPrM=getN(s,'total_present_male','totalPresentMale');
     html += `<tr>
       <td>${idx+1}</td>
-      <td><strong>${escapeHtml(s.schoolname||'-')}</strong></td>
+      <td><strong>${escapeHtml(s.schoolname||s.setting_schoolname||'-')}</strong></td>
       <td>${escapeHtml(s.district||'-')}</td>
       <td>${bF13}</td><td>${bM13}</td><td>${bX13}</td><td class="highlight">${bF13+bM13+bX13}</td>
       <td>${bF46}</td><td>${bM46}</td><td>${bX46}</td><td class="highlight">${bF46+bM46+bX46}</td>
@@ -1607,7 +1627,7 @@ function printSchoolSettings() { window.print(); }
 window.printSchoolSettings = printSchoolSettings;
 
 // ═══════════════════════════════════════════════════════════
-// Manage Schools Modal (با نمایش بازه‌ها)
+// Manage Schools Modal
 // ═══════════════════════════════════════════════════════════
 function showManageSchools() {
   if (!manageSchoolsModal) manageSchoolsModal = new bootstrap.Modal(document.getElementById('manageSchoolsModal'));
@@ -1734,7 +1754,7 @@ async function deleteSchool(id) {
 window.deleteSchool = deleteSchool;
 
 // ═══════════════════════════════════════════════════════════
-// Add user (با بازه کدها)
+// Add user
 // ═══════════════════════════════════════════════════════════
 async function addUser() {
   const username = document.getElementById('uUsername').value.trim();
@@ -1751,7 +1771,6 @@ async function addUser() {
     return;
   }
 
-  // اعتبارسنجی بازه‌ها
   if (schoolFirstCode || schoolLastCode) {
     if (!schoolFirstCode || !schoolLastCode) {
       showToast('هر دو کد بازه مکاتب (اول و آخر) را وارد کنید', true); return;
@@ -1827,8 +1846,15 @@ async function checkSixMonthServiceAlert() {
   try {
     const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
     if (!res.ok) return;
-    const allRecords = await res.json();
+    let allRecords = await res.json();
     if (!Array.isArray(allRecords)) return;
+
+    // ✅ parse data
+    allRecords = allRecords.map(r => {
+      if (typeof r.data === 'string') { try { r.data = JSON.parse(r.data); } catch { r.data = {}; } }
+      if (!r.data || typeof r.data !== 'object') r.data = {};
+      return r;
+    });
 
     const alertedList = [];
     allRecords.forEach(row => {

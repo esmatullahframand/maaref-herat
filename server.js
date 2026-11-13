@@ -1,4 +1,4 @@
-code = r'''// ============================================================
+
 // server.js — ریاست معارف ولایت هرات
 // PostgreSQL / Neon edition
 // نسخه سازگار با ساختار موجود Neon؛ بدون حذف یا بازسازی اطلاعات
@@ -924,7 +924,3 @@ initializeDatabase()
     process.exit(1);
   });
 '''
-path = "/mnt/data/server-neon.js"
-with open(path, "w", encoding="utf-8") as f:
-    f.write(code)
-print(path, len(code), "bytes")

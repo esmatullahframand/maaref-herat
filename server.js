@@ -186,7 +186,7 @@ app.get('/api/users', authRequired, adminOnly, asyncRoute(async (_req, res) => {
             madaris_first_code, madaris_last_code
        FROM users ORDER BY id`
   );
-  res.json({ users: r.rows });
+  res.json(r.rows); // ← تغییر: آرایه مستقیم (صفحه ادمین انتظار آرایه دارد)
 }));
 
 app.post('/api/users', authRequired, adminOnly, asyncRoute(async (req, res) => {
@@ -198,6 +198,12 @@ app.post('/api/users', authRequired, adminOnly, asyncRoute(async (req, res) => {
 
   const exists = await q('SELECT 1 FROM users WHERE username=$1', [String(b.username).trim()]);
   if (exists.rows.length) return res.status(409).json({ error: 'نام کاربری تکراری است' });
+
+  // پشتیبانی از هر دو نام‌گذاری camelCase و snake_case
+  const schoolFirstCode = b.school_first_code ?? b.schoolFirstCode ?? null;
+  const schoolLastCode  = b.school_last_code  ?? b.schoolLastCode  ?? null;
+  const madarisFirstCode = b.madaris_first_code ?? b.madarisFirstCode ?? null;
+  const madarisLastCode  = b.madaris_last_code  ?? b.madarisLastCode  ?? null;
 
   const hash = await bcrypt.hash(String(b.password), 12);
   const r = await q(
@@ -212,8 +218,8 @@ app.post('/api/users', authRequired, adminOnly, asyncRoute(async (req, res) => {
     [
       String(b.username).trim(), hash, b.role || 'school',
       txt(b.schoolname), txt(b.district),
-      txt(b.school_first_code), txt(b.school_last_code),
-      txt(b.madaris_first_code), txt(b.madaris_last_code)
+      txt(schoolFirstCode), txt(schoolLastCode),
+      txt(madarisFirstCode), txt(madarisLastCode)
     ]
   );
   res.status(201).json({ user: r.rows[0] });
@@ -228,6 +234,12 @@ app.put('/api/users/:id', authRequired, adminOnly, asyncRoute(async (req, res) =
       return res.status(400).json({ error: 'رمز باید حداقل ۸ حرف باشد' });
     hash = await bcrypt.hash(String(b.password), 12);
   }
+
+  const schoolFirstCode = b.school_first_code ?? b.schoolFirstCode ?? null;
+  const schoolLastCode  = b.school_last_code  ?? b.schoolLastCode  ?? null;
+  const madarisFirstCode = b.madaris_first_code ?? b.madarisFirstCode ?? null;
+  const madarisLastCode  = b.madaris_last_code  ?? b.madarisLastCode  ?? null;
+
   const r = await q(
     `UPDATE users SET
        password = COALESCE($2, password),
@@ -237,14 +249,16 @@ app.put('/api/users/:id', authRequired, adminOnly, asyncRoute(async (req, res) =
        school_first_code = COALESCE($6, school_first_code),
        school_last_code = COALESCE($7, school_last_code),
        madaris_first_code = COALESCE($8, madaris_first_code),
-       madaris_last_code = COALESCE($9, madaris_last_code)
+       madaris_last_code = COALESCE($9, madaris_last_code),
+       username = COALESCE($10, username)
      WHERE id=$1
      RETURNING id, username, role, schoolname, district,
                school_first_code, school_last_code,
                madaris_first_code, madaris_last_code`,
     [id, hash, txt(b.role), txt(b.schoolname), txt(b.district),
-     txt(b.school_first_code), txt(b.school_last_code),
-     txt(b.madaris_first_code), txt(b.madaris_last_code)]
+     txt(schoolFirstCode), txt(schoolLastCode),
+     txt(madarisFirstCode), txt(madarisLastCode),
+     txt(b.username)]
   );
   if (!r.rows[0]) return res.status(404).json({ error: 'کاربر یافت نشد' });
   res.json({ user: r.rows[0] });
@@ -256,6 +270,35 @@ app.delete('/api/users/:id', authRequired, adminOnly, asyncRoute(async (req, res
   const r = await q('DELETE FROM users WHERE id=$1 RETURNING id', [id]);
   if (!r.rows[0]) return res.status(404).json({ error: 'کاربر یافت نشد' });
   res.json({ success: true });
+}));
+
+// ============================================================
+// ALL SCHOOL SETTINGS (برای صفحه ادمین)
+// ============================================================
+app.get('/api/all-school-settings', authRequired, adminOnly, asyncRoute(async (_req, res) => {
+  // اطلاعات مکاتب + تنظیمات (اگر ستون‌های اضافی در school_settings داری، اینجا اضافه کن)
+  try {
+    const r = await q(
+      `SELECT u.id, u.schoolname, u.district,
+              u.school_first_code, u.school_last_code,
+              u.madaris_first_code, u.madaris_last_code,
+              ss.id AS setting_id, ss.schoolname AS setting_schoolname
+         FROM users u
+         LEFT JOIN school_settings ss ON ss.userid = u.id
+         WHERE u.role = 'school'
+         ORDER BY u.id`
+    );
+    res.json(r.rows);
+  } catch (e) {
+    // اگر جدول school_settings ستون‌های مورد انتظار را ندارد، فقط users را برگردان
+    const r = await q(
+      `SELECT id, schoolname, district,
+              school_first_code, school_last_code,
+              madaris_first_code, madaris_last_code
+         FROM users WHERE role = 'school' ORDER BY id`
+    );
+    res.json(r.rows);
+  }
 }));
 
 // ============================================================
@@ -330,6 +373,7 @@ app.put('/api/school-settings/:id', authRequired, asyncRoute(async (req, res) =>
 // ============================================================
 // RECORDS
 // ============================================================
+// تغییر: پاسخ آرایه مستقیم (صفحه ادمین انتظار آرایه دارد)
 app.get('/api/records', authRequired, asyncRoute(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
   const r = await q(
@@ -338,7 +382,7 @@ app.get('/api/records', authRequired, asyncRoute(async (req, res) => {
       : `SELECT * FROM records WHERE userid=$1 ORDER BY createdat DESC LIMIT 500`,
     isAdmin ? [] : [req.user.id]
   );
-  res.json({ records: r.rows });
+  res.json(r.rows);
 }));
 app.get('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   const r = await q('SELECT * FROM records WHERE id=$1', [Number(req.params.id)]);
@@ -372,6 +416,8 @@ app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
     return res.status(403).json({ error: 'دسترسی ندارید' });
 
   const b = req.body || {};
+  // پشتیبانی از editAllowed و editallowed
+  const editAllowed = b.editAllowed !== undefined ? b.editAllowed : b.editallowed;
   const r = await q(
     `UPDATE records SET
        schoolname  = COALESCE($2, schoolname),
@@ -386,7 +432,7 @@ app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
       txt(b.schoolname), txt(b.district),
       b.data === undefined ? null : (b.data === null ? null : (typeof b.data === 'string' ? b.data : JSON.stringify(b.data))),
       txt(b.status),
-      b.editallowed === undefined ? null : num(b.editallowed)
+      editAllowed === undefined ? null : num(editAllowed)
     ]
   );
   res.json({ record: r.rows[0] });
@@ -400,6 +446,19 @@ app.delete('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
     return res.status(403).json({ error: 'دسترسی ندارید' });
   await q('DELETE FROM records WHERE id=$1', [id]);
   res.json({ success: true });
+}));
+
+// ============================================================
+// APPROVE RECORD (جدید — برای دکمه تایید)
+// ============================================================
+app.post('/api/records/:id/approve', authRequired, adminOnly, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const r = await q(
+    `UPDATE records SET status='approved', updatedat=NOW() WHERE id=$1 RETURNING *`,
+    [id]
+  );
+  if (!r.rows[0]) return res.status(404).json({ error: 'یافت نشد' });
+  res.json({ success: true, record: r.rows[0] });
 }));
 
 // ============================================================

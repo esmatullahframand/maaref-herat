@@ -121,7 +121,7 @@ input.invalid { border-color:#e34b56 !important; background:#fff7f7; }
             <label>کُد بست *</label>
             <input type="text" id="jobCode" placeholder="27-32-02-13056">
             <small id="jobCodeMsg" class="date-msg pending">⏳ منتظر...</small>
-            <small class="field-hint" id="jobCodeHint">🔒 کد بست باید متعلق به مکتب شما باشد.</small>
+            <small class="field-hint" id="jobCodeHint">🔒 کد بست باید متعلق به مکتب شما و مطابق عنوان باشد.</small>
           </div>
           <div class="form-group"><label>اسم *</label><input type="text" id="firstName" required></div>
           <div class="form-group"><label>تخلص</label><input type="text" id="lastName"></div>
@@ -232,17 +232,17 @@ input.invalid { border-color:#e34b56 !important; background:#fff7f7; }
 
 <div class="toast" id="toast"></div>
 <script>
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 // 1. AUTH
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 const token = localStorage.getItem('hr_token');
 const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
 if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; throw new Error('No token'); }
 document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
-// ═══════════════════════════════════════════════════════════
-// 2. MAP: نام مکتب در users → place در tashkeel
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 2. MAP: نام مکتب (users) → place (tashkeel)
+// ============================================================
 const SCHOOL_NAME_TO_PLACE = {
   'لیسه پسرانه تورغندی': 'لیسه مختلط تورغندی',
   'لیسه دخترانه تورغندی': 'لیسه نسوان تورغندی',
@@ -326,23 +326,25 @@ const SCHOOL_NAME_TO_PLACE = {
 const mySchoolName = String(user.schoolname || '').trim();
 const myPlaceName = SCHOOL_NAME_TO_PLACE[mySchoolName] || mySchoolName;
 
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 // 3. RANGE
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 const SCHOOL_RANGE = { first: Number(user.school_first_code) || null, last: Number(user.school_last_code) || null };
 const MADARIS_RANGE = { first: Number(user.madaris_first_code) || null, last: Number(user.madaris_last_code) || null };
 
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 // 4. STATE
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 let schoolTashkeel = [];
 let managerCodes = {};
-let codeToSchoolMap = {};
+let codeToSchoolMap = {};   // کد → place
+let codeToTitleMap = {};    // کد → title
+let mySchoolCodes = new Set(); // کدهای همین مکتب
 let tashkeelReady = false;
 
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 // 5. HELPERS
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 function showToast(msg, isError = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -373,9 +375,9 @@ function isInAnyAllowedRange(n) {
   return isInRange(n, SCHOOL_RANGE.first, SCHOOL_RANGE.last) || isInRange(n, MADARIS_RANGE.first, MADARIS_RANGE.last);
 }
 
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 // 6. RANGE INFO
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 (function showRangeInfo() {
   const box = document.getElementById('rangeInfoBox');
   const parts = [];
@@ -388,27 +390,34 @@ function isInAnyAllowedRange(n) {
   }
 })();
 
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 // 7. LOAD TASHKEEL
-// ═══════════════════════════════════════════════════════════
+// ============================================================
 async function loadSchoolTashkeel() {
   try {
     const r = await fetch('/api/tashkeel', { headers: { 'Authorization': 'Bearer ' + token } });
-    if (!r.ok) {
-      console.error('tashkeel fetch failed:', r.status);
-      tashkeelReady = false;
-      return;
-    }
+    if (!r.ok) { console.error('tashkeel fetch failed:', r.status); tashkeelReady = false; return; }
     const data = await r.json();
     const all = Array.isArray(data) ? data : (Array.isArray(data.tashkeel) ? data.tashkeel : []);
 
+    // همه کدها → place و title
     codeToSchoolMap = {};
+    codeToTitleMap = {};
     all.forEach(t => {
-      if (t.code && t.place) codeToSchoolMap[String(t.code).trim()] = String(t.place).trim();
+      if (t.code) {
+        const c = String(t.code).trim();
+        if (t.place) codeToSchoolMap[c] = String(t.place).trim();
+        if (t.title) codeToTitleMap[c] = String(t.title).trim();
+      }
     });
 
+    // فیلتر رکوردهای این مکتب
     schoolTashkeel = all.filter(t => t.place && String(t.place).trim() === myPlaceName);
 
+    // Set کدهای این مکتب
+    mySchoolCodes = new Set(schoolTashkeel.map(t => String(t.code || '').trim()));
+
+    // کدهای مدیر
     managerCodes = {};
     const managerTitles = ['آمر', 'مدیر', 'مدیر عمومی', 'مهتمم'];
     schoolTashkeel.forEach(t => {
@@ -420,15 +429,59 @@ async function loadSchoolTashkeel() {
 
     tashkeelReady = true;
     console.log('tashkeel total:', all.length, '| my place:', myPlaceName, '| my codes:', schoolTashkeel.length);
+    console.log('my codes sample:', schoolTashkeel.slice(0, 5).map(t => t.code + ' → ' + t.title));
   } catch (e) {
     console.error('loadSchoolTashkeel error:', e);
     tashkeelReady = false;
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// 8. MANAGER CODE
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 8. TITLE MATCHING
+// ============================================================
+function normalizeTitle(s) {
+  return String(s || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/[()（）]/g, '')
+    .toLowerCase();
+}
+
+function isTitleMatch(selected, codeTitle) {
+  const s = normalizeTitle(selected);
+  const c = normalizeTitle(codeTitle);
+  if (!s || !c) return true;
+  if (s === c) return true;
+
+  const aliases = {
+    'آمر': ['آمر', 'امر'],
+    'مدیر': ['مدیر', 'مدیر عمومی'],
+    'مدیر اجرائیه': ['مدیر اجرائیه', 'مدیراجرائیه', 'مدیر اجراییه'],
+    'مهتمم': ['مهتمم'],
+    'معلم': ['معلم'],
+    'سر معلم': ['سر معلم', 'سرمعلم'],
+    'معلم همکار': ['معلم همکار', 'همکار'],
+    'معلم سپورت': ['معلم سپورت', 'سپورت'],
+    'معلم لابرانت': ['معلم لابرانت', 'لابرانت'],
+    'عضو علمی معلمان': ['عضو علمی'],
+    'عضو علمی مدرسین': ['عضو علمی'],
+    'عضو مسلکی امور مالی و کارکنان': ['عضو مسلکی', 'مالی و کارکنان'],
+    'عضو مسلکی نظارت احصاییه و گزارش': ['عضو مسلکی', 'نظارت'],
+    'عضو مسلکی تاسیسات و ترمیمات': ['عضو مسلکی', 'تاسیسات'],
+    'عضو مسلکی شوراها': ['عضو مسلکی', 'شوراها'],
+    'کارکن خدماتی': ['کارکن خدماتی', 'اجیر خدماتی', 'کارکن'],
+    'معتمد جنسی (تحویلدار)': ['معتمد نقدی', 'معتمد', 'تحویلدار'],
+    'سایر': []
+  };
+
+  const list = aliases[selected] || [s];
+  if (list.length === 0) return true;
+  return list.some(a => c.includes(normalizeTitle(a)));
+}
+
+// ============================================================
+// 9. MANAGER CODE
+// ============================================================
 function isManagerTitle(title) {
   const managerTitles = ['آمر', 'مدیر', 'مدیر عمومی', 'مهتمم', 'مدیر اجرائیه'];
   return managerTitles.some(mt => String(title || '').includes(mt));
@@ -457,18 +510,35 @@ function onJobTitleChange() {
       msg.className = 'date-msg valid';
     } else {
       hint.textContent = `⚠️ کد مدیر برای «${title}» پیدا نشد.`;
-      msg.textContent = ''; msg.className = 'date-msg';
+      msg.textContent = '';
+      msg.className = 'date-msg';
     }
   } else {
-    hint.textContent = '🔒 کد بست باید متعلق به مکتب شما باشد.';
-    if (!jobCodeInput.value) { msg.textContent = '⏳ منتظر...'; msg.className = 'date-msg pending'; }
+    hint.textContent = '🔒 کد بست باید متعلق به مکتب شما و مطابق عنوان باشد.';
+    if (jobCodeInput.value.trim()) {
+      const r = validateJobCodeWithTashkeel(jobCodeInput.value);
+      if (r.valid) {
+        jobCodeInput.classList.add('valid');
+        jobCodeInput.classList.remove('invalid');
+        msg.textContent = `✅ تایید شد (${r.school})`;
+        msg.className = 'date-msg valid';
+      } else {
+        jobCodeInput.classList.add('invalid');
+        jobCodeInput.classList.remove('valid');
+        msg.textContent = '❌ ' + r.error;
+        msg.className = 'date-msg invalid';
+      }
+    } else {
+      msg.textContent = '⏳ منتظر...';
+      msg.className = 'date-msg pending';
+    }
   }
 }
 window.onJobTitleChange = onJobTitleChange;
 
-// ═══════════════════════════════════════════════════════════
-// 9. DATE VALIDATION
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 10. DATE VALIDATION
+// ============================================================
 function validateShamsiDate(dateStr) {
   if (!dateStr) return { valid: false, error: 'تاریخ الزامی است' };
   const cleaned = normalizeDigits(dateStr).trim().replace(/[.\-]/g, '/');
@@ -487,9 +557,9 @@ function validateShamsiDate(dateStr) {
   return { valid: true, formatted: `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}` };
 }
 
-// ═══════════════════════════════════════════════════════════
-// 10. JOB CODE VALIDATION
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 11. JOB CODE VALIDATION
+// ============================================================
 function validateJobCodeBasic(codeStr) {
   if (!codeStr) return { valid: false, error: 'کد بست الزامی است' };
   const cleaned = normalizeDigits(codeStr).trim().replace(/\s+/g, '');
@@ -510,15 +580,28 @@ function validateJobCodeWithTashkeel(codeStr) {
   if (!basic.valid) return basic;
 
   const cleaned = basic.formatted;
-  const codeSchool = codeToSchoolMap[cleaned];
 
-  if (!codeSchool) return { valid: false, error: 'این کد در تشکیلات معارف وجود ندارد' };
+  // چک ۱: آیا کد در tashkeel هست؟
+  if (!codeToSchoolMap[cleaned]) {
+    return { valid: false, error: 'این کد در تشکیلات معارف وجود ندارد' };
+  }
 
-  const isMine = codeSchool === myPlaceName || codeSchool === mySchoolName
-    || codeSchool.includes(myPlaceName) || myPlaceName.includes(codeSchool);
+  // چک ۲: آیا کد متعلق به همین مکتب است؟
+  if (!mySchoolCodes.has(cleaned)) {
+    const owner = codeToSchoolMap[cleaned] || 'نامشخص';
+    return { valid: false, error: `❌ این کد مربوط به مکتب «${owner}» است، نه مکتب شما` };
+  }
 
-  if (!isMine) return { valid: false, error: `❌ این کد مربوط به مکتب «${codeSchool}» است، نه مکتب شما` };
-  return { valid: true, formatted: cleaned, school: codeSchool };
+  // چک ۳: آیا عنوان بست با عنوان کد مطابقت دارد؟
+  const selectedTitle = document.getElementById('jobTitle').value.trim();
+  if (selectedTitle) {
+    const codeTitle = codeToTitleMap[cleaned] || '';
+    if (!isTitleMatch(selectedTitle, codeTitle)) {
+      return { valid: false, error: `❌ این کد برای عنوان «${codeTitle}» است، نه «${selectedTitle}»` };
+    }
+  }
+
+  return { valid: true, formatted: cleaned, school: myPlaceName };
 }
 
 function validateETazkira(codeStr) {
@@ -528,9 +611,9 @@ function validateETazkira(codeStr) {
   return { valid: true, formatted: c };
 }
 
-// ═══════════════════════════════════════════════════════════
-// 11. UNIQUENESS
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 12. UNIQUENESS
+// ============================================================
 async function checkJobCodeUnique(codeStr) {
   if (!codeStr) return { unique: false };
   try {
@@ -557,9 +640,9 @@ function buildDuplicateMessage(kind, r) {
   return `❌ این ${label} قبلاً در مکتب «${r.schoolname || 'نامشخص'}» ثبت شده.`;
 }
 
-// ═══════════════════════════════════════════════════════════
-// 12. TOGGLES
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 13. TOGGLES
+// ============================================================
 function toggleAgreement() {
   const c = document.getElementById('agreementCheckbox'), b = document.getElementById('agreementBox'), s = document.getElementById('submitBtn');
   c.checked = !c.checked;
@@ -608,9 +691,9 @@ function validateEducationFields(jobTitle) {
   return { valid: true };
 }
 
-// ═══════════════════════════════════════════════════════════
-// 13. LIVE VALIDATION
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 14. LIVE VALIDATION
+// ============================================================
 function attachLiveValidation(inputId, validateFn, msgId) {
   const input = document.getElementById(inputId);
   const msg = msgId ? document.getElementById(msgId) : null;
@@ -708,9 +791,9 @@ attachLiveValidation('serviceDate', validateShamsiDate, 'serviceDateMsg');
 attachJobCodeValidation();
 attachETazkiraValidation();
 
-// ═══════════════════════════════════════════════════════════
-// 14. SUBMIT
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 15. SUBMIT
+// ============================================================
 document.getElementById('recordForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!document.getElementById('agreementCheckbox').checked) { showToast('❌ تیک موافقت را بزنید', true); return; }
@@ -826,9 +909,9 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-// 15. INIT — await tashkeel
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// 16. INIT
+// ============================================================
 (async function init() {
   showToast('⏳ در حال بارگذاری تشکیلات...');
   await loadSchoolTashkeel();

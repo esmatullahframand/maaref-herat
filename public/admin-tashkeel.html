@@ -8,9 +8,15 @@
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
 <style>
 :root {
-  --primary: #4338ca; --primary-dark: #312e81; --primary-light: #eef2ff;
-  --success: #059669; --warning: #d97706; --danger: #dc2626;
-  --dark: #172033; --muted: #64748b; --border: #e2e8f0;
+  --primary: #4338ca;
+  --primary-dark: #312e81;
+  --primary-light: #eef2ff;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --dark: #172033;
+  --muted: #64748b;
+  --border: #e2e8f0;
   --shadow-sm: 0 2px 8px rgba(15,23,42,.05);
   --shadow-md: 0 8px 24px rgba(15,23,42,.08);
   --shadow-lg: 0 18px 45px rgba(15,23,42,.12);
@@ -19,119 +25,340 @@
 * { box-sizing: border-box; }
 body {
   background: radial-gradient(circle at top right, #e0e7ff 0, transparent 30%), linear-gradient(135deg, #f8fafc, #eef2f7);
-  color: var(--dark); font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  line-height: 1.7; -webkit-font-smoothing: antialiased;
+  color: var(--dark);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
 }
+
+/* ===== Topbar ===== */
 .topbar {
   background: linear-gradient(120deg, #172554, #312e81 55%, #4338ca) !important;
-  color: white; padding: 18px 24px; border-radius: 0 0 22px 22px;
+  color: white;
+  padding: 18px 24px;
+  border-radius: 0 0 22px 22px;
   box-shadow: 0 8px 30px rgba(49,46,129,.22);
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .topbar h5 { color: #fff; font-weight: 800; margin: 0; }
+.topbar small { color: #c7d2fe; font-size: 12px; }
+
+/* ===== Nav Tabs ===== */
 .nav-tabs-custom {
-  display: flex; flex-wrap: wrap; gap: 9px; padding: 12px; margin: 20px 0;
-  background: rgba(255,255,255,.88); border: 1px solid rgba(226,232,240,.9);
-  border-radius: 17px; box-shadow: var(--shadow-sm);
-}
-.nav-tab-btn {
-  border: 1px solid transparent !important; border-radius: 12px !important;
-  padding: 11px 20px !important; font-weight: 700 !important; color: #475569 !important;
-  background: transparent !important; transition: all .25s ease !important;
-  text-decoration: none;
-}
-.nav-tab-btn:hover { color: var(--primary) !important; background: var(--primary-light) !important; transform: translateY(-2px); }
-.nav-tab-btn.active {
-  color: white !important; background: linear-gradient(135deg, #4338ca, #6366f1) !important;
-  box-shadow: 0 5px 14px rgba(67,56,202,.25);
-}
-.card-custom {
-  background: rgba(255,255,255,.96); border: 1px solid #e8edf5;
-  border-radius: var(--radius); padding: 22px; margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 12px;
+  margin: 20px 0;
+  background: rgba(255,255,255,.88);
+  border: 1px solid rgba(226,232,240,.9);
+  border-radius: 17px;
   box-shadow: var(--shadow-sm);
 }
-.card-custom:hover { border-color: #c7d2fe; box-shadow: var(--shadow-md); }
+.nav-tab-btn {
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  padding: 11px 20px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  background: transparent !important;
+  transition: all .25s ease !important;
+  text-decoration: none;
+}
+.nav-tab-btn:hover {
+  color: var(--primary) !important;
+  background: var(--primary-light) !important;
+  transform: translateY(-2px);
+}
+.nav-tab-btn.active {
+  color: white !important;
+  background: linear-gradient(135deg, #4338ca, #6366f1) !important;
+  box-shadow: 0 5px 14px rgba(67,56,202,.25);
+}
+
+/* ===== Cards ===== */
+.card-custom {
+  background: rgba(255,255,255,.96);
+  border: 1px solid #e8edf5;
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.card-custom:hover {
+  border-color: #c7d2fe;
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== Stat Cards ===== */
 .stat-card {
   background: linear-gradient(145deg, #ffffff, #f8faff);
-  border: 1px solid #e2e8f0; border-radius: 18px; padding: 23px;
-  box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 23px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
 }
-.stat-card .value { font-weight: 900; color: #1e293b; font-size: 24px; font-variant-numeric: tabular-nums; }
-.stat-card .label { color: var(--muted); font-weight: 600; }
-.btn-purple { color: white !important; background: linear-gradient(135deg, #6d28d9, #4f46e5) !important; border: none !important; }
-.btn-teal { background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff; border: none; }
+.stat-card .value {
+  font-weight: 900;
+  color: #1e293b;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+.stat-card .label {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ===== Buttons ===== */
+.btn-purple {
+  color: white !important;
+  background: linear-gradient(135deg, #6d28d9, #4f46e5) !important;
+  border: none !important;
+}
+.btn-teal {
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  color: #fff;
+  border: none;
+}
 .btn { border-radius: 10px; font-weight: 700; transition: all .22s ease; }
 button:not(.btn) { border-radius: 10px; font-weight: 700; }
 button:hover, .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+/* ===== Forms ===== */
 .form-control, .form-select {
-  width: 100%; min-height: 43px; border: 1px solid #dbe3ef !important;
-  border-radius: 10px !important; background: #fbfdff !important;
-  color: #1e293b !important; padding: 10px 13px !important; font-size: 14px;
+  width: 100%;
+  min-height: 43px;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 10px !important;
+  background: #fbfdff !important;
+  color: #1e293b !important;
+  padding: 10px 13px !important;
+  font-size: 14px;
 }
 .form-control:focus, .form-select:focus {
-  outline: none !important; border-color: #6366f1 !important;
-  background: #fff !important; box-shadow: 0 0 0 4px rgba(99,102,241,.12) !important;
+  outline: none !important;
+  border-color: #6366f1 !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 4px rgba(99,102,241,.12) !important;
 }
 label { color: #334155; font-weight: 700; margin-bottom: 6px; }
+
+/* ===== Filters ===== */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  padding: 17px;
+  background: #f8faff;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  margin: 15px 0;
+}
+
+/* ===== Table ===== */
 .table-responsive {
-  border-radius: 14px; border: 1px solid #e2e8f0;
-  box-shadow: var(--shadow-sm); background: white; overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: var(--shadow-sm);
+  background: white;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 65vh;
 }
-.table { width: 100%; margin-bottom: 0; color: #334155; background: white; }
+.table {
+  width: 100%;
+  margin-bottom: 0;
+  color: #334155;
+  background: white;
+  border-collapse: separate;
+  border-spacing: 0;
+}
 .table thead th {
-  background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: #312e81;
-  font-weight: 800; padding: 14px 12px; border-bottom: 2px solid #c7d2fe;
-  white-space: nowrap; text-align: center;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  color: #312e81;
+  font-weight: 800;
+  padding: 14px 12px;
+  border-bottom: 2px solid #c7d2fe;
+  white-space: nowrap;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
-.table tbody td { padding: 12px; vertical-align: middle; border-bottom: 1px solid #edf1f7; text-align: center; }
+.table tbody td {
+  padding: 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #edf1f7;
+  text-align: center;
+}
 .table tbody tr:nth-child(even) { background: #fafbff; }
 .table tbody tr:hover { background: #eef2ff !important; }
-.badge-amariat { background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
-.badge-madaris { background: #fce4ec; color: #c2185b; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
-.toast {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  background: #1e293b; color: white; padding: 14px 24px; border-radius: 12px;
-  box-shadow: var(--shadow-lg); display: none; z-index: 9999;
-  font-weight: 700; min-width: 280px; text-align: center;
+.table tbody tr:last-child td { border-bottom: none; }
+
+/* ===== Badges ===== */
+.badge-makatib {
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
 }
-.toast.error { background: #991b1b; }
-.filter-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 14px; padding: 17px; background: #f8faff;
-  border: 1px solid #e2e8f0; border-radius: 15px; margin: 15px 0;
+.badge-madaris {
+  background: #fce4ec;
+  color: #c2185b;
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
 }
-.modal-content { border: none; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 70px rgba(15,23,42,.2); }
-.modal-header { background: linear-gradient(120deg, #312e81, #4338ca); color: white; padding: 17px 22px; border-bottom: none; }
-.modal-header .btn-close { filter: invert(1); }
-.modal-body { padding: 24px; background: #fff; }
-.modal-footer { padding: 15px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+.badge-filled {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.badge-empty {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ===== Action buttons ===== */
 .btn-action {
-  border-radius: 8px; padding: 6px 10px; margin: 2px;
-  font-size: 12px; font-weight: 700; border: none; cursor: pointer; transition: all .2s;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all .2s;
 }
 .btn-action:hover { transform: scale(1.06); }
 .btn-edit { background: #dbeafe; color: #1e40af; }
 .btn-delete { background: #fee2e2; color: #991b1b; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  display: none;
+  z-index: 9999;
+  font-weight: 700;
+  min-width: 280px;
+  text-align: center;
+}
+.toast.error { background: #991b1b; }
+
+/* ===== Modals ===== */
+.modal-content {
+  border: none;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 25px 70px rgba(15,23,42,.2);
+}
+.modal-header {
+  background: linear-gradient(120deg, #312e81, #4338ca);
+  color: white;
+  padding: 17px 22px;
+  border-bottom: none;
+}
+.modal-header .btn-close { filter: invert(1); }
+.modal-body { padding: 24px; background: #fff; }
+.modal-footer {
+  padding: 15px 22px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* ===== Pagination (بالای جدول) ===== */
+#pagination {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+#pagination button {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all .2s;
+  background: #64748b;
+  color: #fff;
+}
+#pagination button:not(:disabled):hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+#pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+#pagination .page-badge {
+  background: linear-gradient(135deg, #4338ca, #6366f1);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+#pagination .page-info {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* ===== Responsive ===== */
 @media (max-width: 600px) {
   body { font-size: 13px; }
   .topbar { padding: 14px; }
   .card-custom { padding: 13px; }
   .table thead th, .table tbody td { padding: 9px 7px; font-size: 12px; }
   .nav-tab-btn { padding: 9px 10px !important; font-size: 12px; }
+  #pagination { justify-content: center; width: 100%; }
+  #pagination button { padding: 5px 8px; font-size: 11px; }
+  #pagination .page-info { width: 100%; text-align: center; margin-bottom: 5px; }
 }
 </style>
 </head>
 <body>
 
+<!-- ===== Topbar ===== -->
 <div class="topbar">
   <div>
     <h5>📋 مدیریت تشکیل — ریاست معارف هرات</h5>
-    <small>مدیریت تشکیلات (آمریت‌ها و مدارس) — ۹۳۹ رکورد</small>
+    <small>مدیریت تشکیلات (مکاتب و مدارس) — ۹۳۹ رکورد</small>
   </div>
   <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
 </div>
 
+<!-- ===== Nav Tabs ===== -->
 <div class="nav-tabs-custom">
   <a href="admin-main.html" class="nav-tab-btn">🏠 صفحه اصلی</a>
   <a href="admin-tashkeel.html" class="nav-tab-btn active">📋 مدیریت تشکیل</a>
@@ -141,18 +368,38 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 
 <div class="container-fluid px-4 py-3">
 
-  <!-- آمار -->
+  <!-- ===== آمار ===== -->
   <div class="card-custom">
     <h5 class="fw-bold mb-3" style="color:#6d28d9;">📊 آمار کلی تشکیل</h5>
     <div class="row g-3">
-      <div class="col-md-3"><div class="stat-card"><div class="label">📊 کل رکوردها</div><div class="value" id="sTotal">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #1565c0"><div class="label">🏛️ آمریت‌ها</div><div class="value" id="sAmariat" style="color:#1565c0">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #c2185b"><div class="label">🏫 مدارس</div><div class="value" id="sMadaris" style="color:#c2185b">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #059669"><div class="label">📍 محل‌های وظیفه</div><div class="value" id="sPlaces" style="color:#059669">0</div></div></div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="label">📊 کل رکوردها</div>
+          <div class="value" id="sTotal">0</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card" style="border-right:4px solid #1565c0">
+          <div class="label">🏫 مکاتب</div>
+          <div class="value" id="sMakatib" style="color:#1565c0">0</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card" style="border-right:4px solid #c2185b">
+          <div class="label">🏫 مدارس</div>
+          <div class="value" id="sMadaris" style="color:#c2185b">0</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card" style="border-right:4px solid #059669">
+          <div class="label">📍 محل‌های وظیفه</div>
+          <div class="value" id="sPlaces" style="color:#059669">0</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- فیلترها -->
+  <!-- ===== فیلترها ===== -->
   <div class="card-custom">
     <h5 class="fw-bold mb-3" style="color:#6d28d9;">🔍 جستجو و فیلتر</h5>
     <div class="filter-grid">
@@ -164,7 +411,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
         <label>📂 بخش</label>
         <select id="sectionFilter" class="form-select" onchange="loadList()">
           <option value="">📋 همه بخش‌ها</option>
-          <option value="amariat">🏛️ آمریت‌ها</option>
+          <option value="amariat">🏫 مکاتب</option>
           <option value="madaris">🏫 مدارس</option>
         </select>
       </div>
@@ -175,9 +422,11 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
         </select>
       </div>
       <div>
-        <label>🏛️ آمریت</label>
-        <select id="amariatFilter" class="form-select" onchange="loadList()">
-          <option value="">📋 همه آمریت‌ها</option>
+        <label>📊 وضعیت</label>
+        <select id="statusFilter" class="form-select" onchange="loadList()">
+          <option value="">📋 همه</option>
+          <option value="filled">✅ پر (کارمند ثبت شده)</option>
+          <option value="empty">❌ خالی (بدون کارمند)</option>
         </select>
       </div>
     </div>
@@ -190,20 +439,24 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
     </div>
   </div>
 
-  <!-- لیست -->
+  <!-- ===== لیست ===== -->
   <div class="card-custom">
-    <h5 class="fw-bold mb-3" style="color:#6d28d9;">📋 لیست تشکیل</h5>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h5 class="fw-bold m-0" style="color:#6d28d9;">📋 لیست تشکیل</h5>
+      <div id="pagination"></div>
+    </div>
+
     <div class="table-responsive">
       <table class="table">
         <thead>
           <tr>
             <th>#</th>
             <th>نمبر عمومی</th>
-            <th>نمبر خصوصی</th>
             <th>عنوان وظیفه</th>
             <th>محل</th>
             <th>کد</th>
             <th>بخش</th>
+            <th>وضعیت</th>
             <th>عملیات</th>
           </tr>
         </thead>
@@ -212,12 +465,11 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
         </tbody>
       </table>
     </div>
-    <div id="pagination" class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2"></div>
   </div>
 
 </div>
 
-<!-- Modal افزودن/ویرایش -->
+<!-- ===== Modal افزودن/ویرایش ===== -->
 <div class="modal fade" id="editModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -239,26 +491,16 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
           <label>کد *</label>
           <input id="editCode" class="form-control" placeholder="مثلاً: 27-32-02-12563" style="direction:ltr;text-align:left">
         </div>
-        <div class="row g-2">
-          <div class="col-6">
-            <label>نمبر عمومی</label>
-            <input id="editPub" class="form-control" style="direction:ltr;text-align:left">
-          </div>
-          <div class="col-6">
-            <label>نمبر خصوصی</label>
-            <input id="editPriv" class="form-control" style="direction:ltr;text-align:left">
-          </div>
+        <div class="mb-2">
+          <label>نمبر عمومی</label>
+          <input id="editPub" class="form-control" style="direction:ltr;text-align:left">
         </div>
         <div class="mt-2">
           <label>بخش</label>
           <select id="editSection" class="form-select">
-            <option value="amariat">آمریت</option>
-            <option value="madaris">مدارس</option>
+            <option value="amariat">🏫 مکاتب</option>
+            <option value="madaris">🏫 مدارس</option>
           </select>
-        </div>
-        <div class="mt-2">
-          <label>آمریت</label>
-          <input id="editAmariat" class="form-control" placeholder="آمریت معارف کشک رباط سنگی">
         </div>
       </div>
       <div class="modal-footer">
@@ -272,22 +514,39 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ═══════════════════════════════════════════
+// ============================================================
+// 1. AUTH
+// ============================================================
 const token = localStorage.getItem('hr_token');
 const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
-if (!token || token === 'undefined') { localStorage.clear(); window.location.href = '/login.html'; throw new Error('No token'); }
-if (currentUser.role !== 'admin') { window.location.href = '/login.html'; throw new Error('Not admin'); }
+if (!token || token === 'undefined') {
+  localStorage.clear();
+  window.location.href = '/login.html';
+  throw new Error('No token');
+}
+if (currentUser.role !== 'admin') {
+  window.location.href = '/login.html';
+  throw new Error('Not admin');
+}
 
+// ============================================================
+// 2. STATE
+// ============================================================
 let allRows = [];
 let filteredRows = [];
 let currentPage = 1;
 const PAGE_SIZE = 30;
 let editModal = null;
-let placeOptions = [];
-let amariatOptions = [];
+let registeredCodesSet = new Set();   // کدهایی که کارمند دارند
 let searchDebounce;
 
-function logout() { localStorage.clear(); window.location.href = '/login.html'; }
+// ============================================================
+// 3. HELPERS
+// ============================================================
+function logout() {
+  localStorage.clear();
+  window.location.href = '/login.html';
+}
 window.logout = logout;
 
 function showToast(msg, isError = false) {
@@ -301,7 +560,12 @@ function showToast(msg, isError = false) {
 
 function escapeHtml(s) {
   if (s === null || s === undefined) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function debouncedLoad() {
@@ -310,9 +574,9 @@ function debouncedLoad() {
 }
 window.debouncedLoad = debouncedLoad;
 
-// ═══════════════════════════════════════════
-// بارگذاری آمار
-// ═══════════════════════════════════════════
+// ============================================================
+// 4. LOAD STATS
+// ============================================================
 async function loadStats() {
   try {
     const r = await fetch('/api/tashkeel/stats/summary', {
@@ -320,16 +584,17 @@ async function loadStats() {
     });
     if (!r.ok) return;
     const d = await r.json();
+
     document.getElementById('sTotal').textContent = d.total || 0;
+
     const sec = {};
     (d.by_section || []).forEach(s => sec[s.section] = s.count);
-    document.getElementById('sAmariat').textContent = sec.amariat || 0;
+    document.getElementById('sMakatib').textContent = sec.amariat || 0;
     document.getElementById('sMadaris').textContent = sec.madaris || 0;
     document.getElementById('sPlaces').textContent = (d.by_place || []).length;
 
-    // پر کردن select های فیلتر
+    // پر کردن select محل
     const placeSel = document.getElementById('placeFilter');
-    const amariatSel = document.getElementById('amariatFilter');
     if (placeSel.options.length <= 1 && d.by_place) {
       d.by_place.forEach(p => {
         const o = document.createElement('option');
@@ -338,45 +603,72 @@ async function loadStats() {
         placeSel.appendChild(o);
       });
     }
-    if (amariatSel.options.length <= 1 && d.by_amariat) {
-      d.by_amariat.forEach(a => {
-        if (!a.amariat) return;
-        const o = document.createElement('option');
-        o.value = a.amariat;
-        o.textContent = a.amariat + ' (' + a.count + ')';
-        amariatSel.appendChild(o);
-      });
-    }
-  } catch (e) { console.error(e); }
+  } catch (e) {
+    console.error(e);
+  }
 }
 
-// ═══════════════════════════════════════════
-// بارگذاری لیست
-// ═══════════════════════════════════════════
+// ============================================================
+// 5. LOAD REGISTERED CODES (کارمندانی که کد دارند)
+// ============================================================
+async function loadRegisteredCodes() {
+  try {
+    const r = await fetch('/api/records', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!r.ok) return;
+    const records = await r.json();
+    const list = Array.isArray(records) ? records : [];
+    registeredCodesSet = new Set();
+    list.forEach(rec => {
+      const info = rec.data || {};
+      if (info.jobCode) registeredCodesSet.add(String(info.jobCode).trim());
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ============================================================
+// 6. LOAD LIST
+// ============================================================
 async function loadList() {
   const search = document.getElementById('searchInput').value.trim();
   const section = document.getElementById('sectionFilter').value;
   const place = document.getElementById('placeFilter').value;
-  const amariat = document.getElementById('amariatFilter').value;
+  const status = document.getElementById('statusFilter').value;
 
   const params = new URLSearchParams();
   if (search) params.set('q', search);
   if (section) params.set('section', section);
   if (place) params.set('place', place);
-  if (amariat) params.set('amariat', amariat);
 
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
 
   try {
+    // اگر فیلتر وضعیت فعال است، کدهای ثبت‌شده را بگیر
+    if (status) {
+      await loadRegisteredCodes();
+    }
+
     const r = await fetch('/api/tashkeel?' + params.toString(), {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (r.status === 401 || r.status === 403) { logout(); return; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
-    allRows = d.tashkeel || [];
-    filteredRows = allRows;
+    let rows = d.tashkeel || [];
+
+    // اعمال فیلتر وضعیت
+    if (status === 'filled') {
+      rows = rows.filter(t => registeredCodesSet.has(String(t.code || '').trim()));
+    } else if (status === 'empty') {
+      rows = rows.filter(t => !registeredCodesSet.has(String(t.code || '').trim()));
+    }
+
+    allRows = rows;
+    filteredRows = rows;
     currentPage = 1;
     renderTable();
   } catch (e) {
@@ -385,9 +677,9 @@ async function loadList() {
 }
 window.loadList = loadList;
 
-// ═══════════════════════════════════════════
-// نمایش جدول
-// ═══════════════════════════════════════════
+// ============================================================
+// 7. RENDER TABLE
+// ============================================================
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   document.getElementById('resultCount').textContent = filteredRows.length + ' رکورد';
@@ -405,40 +697,56 @@ function renderTable() {
   let html = '';
   pageRows.forEach((r, idx) => {
     const globalIdx = start + idx + 1;
-    const badge = r.section === 'amariat'
-      ? '<span class="badge-amariat">🏛️ آمریت</span>'
+
+    const sectionBadge = r.section === 'amariat'
+      ? '<span class="badge-makatib">🏫 مکاتب</span>'
       : '<span class="badge-madaris">🏫 مدارس</span>';
+
+    const isFilled = registeredCodesSet.has(String(r.code || '').trim());
+    const statusBadge = isFilled
+      ? '<span class="badge-filled">✅ پر</span>'
+      : '<span class="badge-empty">❌ خالی</span>';
+
     html += '<tr>' +
       '<td>' + globalIdx + '</td>' +
       '<td>' + escapeHtml(r.pub || '—') + '</td>' +
-      '<td>' + escapeHtml(r.priv || '—') + '</td>' +
       '<td style="text-align:right"><strong>' + escapeHtml(r.title || '—') + '</strong></td>' +
       '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
       '<td style="font-family:monospace;font-size:11px;direction:ltr">' + escapeHtml(r.code || '—') + '</td>' +
-      '<td>' + badge + '</td>' +
+      '<td>' + sectionBadge + '</td>' +
+      '<td>' + statusBadge + '</td>' +
       '<td>' +
         '<button class="btn-action btn-edit" onclick="editRecord(' + r.id + ')" title="ویرایش">✏️</button>' +
         '<button class="btn-action btn-delete" onclick="deleteRecord(' + r.id + ')" title="حذف">🗑️</button>' +
       '</td>' +
     '</tr>';
   });
+
   tbody.innerHTML = html;
   renderPagination();
 }
 
+// ============================================================
+// 8. RENDER PAGINATION
+// ============================================================
 function renderPagination() {
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
   const pag = document.getElementById('pagination');
-  if (totalPages <= 1) { pag.innerHTML = ''; return; }
 
-  let html = '<div class="d-flex gap-2 flex-wrap align-items-center">';
-  html += '<button class="btn btn-sm btn-secondary" onclick="goPage(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>⏮️ اول</button>';
-  html += '<button class="btn btn-sm btn-secondary" onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>◀️ قبلی</button>';
-  html += '<span class="badge bg-primary px-3 py-2" style="font-size:13px">صفحه ' + currentPage + ' از ' + totalPages + '</span>';
-  html += '<button class="btn btn-sm btn-secondary" onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>بعدی ▶️</button>';
-  html += '<button class="btn btn-sm btn-secondary" onclick="goPage(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>آخر ⏭️</button>';
-  html += '</div>';
-  html += '<small class="text-muted">نمایش ' + ((currentPage-1)*PAGE_SIZE+1) + ' تا ' + Math.min(currentPage*PAGE_SIZE, filteredRows.length) + ' از ' + filteredRows.length + '</small>';
+  if (totalPages <= 1) {
+    pag.innerHTML = `<span class="page-info">نمایش ${filteredRows.length} رکورد</span>`;
+    return;
+  }
+
+  let html = '';
+
+  html += `<span class="page-info">نمایش ${((currentPage-1)*PAGE_SIZE+1)} تا ${Math.min(currentPage*PAGE_SIZE, filteredRows.length)} از ${filteredRows.length}</span>`;
+  html += `<button onclick="goPage(1)" ${currentPage === 1 ? 'disabled' : ''}>⏮️ اول</button>`;
+  html += `<button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>◀️ قبلی</button>`;
+  html += `<span class="page-badge">صفحه ${currentPage} از ${totalPages}</span>`;
+  html += `<button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>بعدی ▶️</button>`;
+  html += `<button onclick="goPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>آخر ⏭️</button>`;
+
   pag.innerHTML = html;
 }
 
@@ -447,13 +755,14 @@ function goPage(p) {
   if (p < 1 || p > totalPages) return;
   currentPage = p;
   renderTable();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const tableWrapper = document.querySelector('.table-responsive');
+  if (tableWrapper) tableWrapper.scrollTop = 0;
 }
 window.goPage = goPage;
 
-// ═══════════════════════════════════════════
-// افزودن/ویرایش
-// ═══════════════════════════════════════════
+// ============================================================
+// 9. ADD / EDIT
+// ============================================================
 function showAddModal() {
   if (!editModal) editModal = new bootstrap.Modal(document.getElementById('editModal'));
   document.getElementById('editModalTitle').textContent = 'افزودن رکورد جدید';
@@ -462,9 +771,7 @@ function showAddModal() {
   document.getElementById('editPlace').value = '';
   document.getElementById('editCode').value = '27-32-02-';
   document.getElementById('editPub').value = '';
-  document.getElementById('editPriv').value = '';
   document.getElementById('editSection').value = 'amariat';
-  document.getElementById('editAmariat').value = 'آمریت معارف کشک رباط سنگی';
   editModal.show();
 }
 window.showAddModal = showAddModal;
@@ -479,9 +786,7 @@ function editRecord(id) {
   document.getElementById('editPlace').value = r.place || '';
   document.getElementById('editCode').value = r.code || '';
   document.getElementById('editPub').value = r.pub || '';
-  document.getElementById('editPriv').value = r.priv || '';
   document.getElementById('editSection').value = r.section || 'amariat';
-  document.getElementById('editAmariat').value = r.amariat || '';
   editModal.show();
 }
 window.editRecord = editRecord;
@@ -492,23 +797,30 @@ async function saveRecord() {
   const place = document.getElementById('editPlace').value.trim();
   const code = document.getElementById('editCode').value.trim();
   const pub = document.getElementById('editPub').value.trim();
-  const priv = document.getElementById('editPriv').value.trim();
   const section = document.getElementById('editSection').value;
-  const amariat = document.getElementById('editAmariat').value.trim();
 
   if (!title || !place || !code) {
     showToast('عنوان، محل و کد الزامی است', true);
     return;
   }
 
-  const body = { title, place, code, pub: pub || null, priv: priv || null, section, amariat: amariat || null };
+  const body = {
+    title,
+    place,
+    code,
+    pub: pub || null,
+    section
+  };
 
   try {
     const url = id ? '/api/tashkeel/' + id : '/api/tashkeel';
     const method = id ? 'PUT' : 'POST';
     const r = await fetch(url, {
       method,
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(body)
     });
     const data = await r.json().catch(() => ({}));
@@ -547,12 +859,15 @@ async function deleteRecord(id) {
 }
 window.deleteRecord = deleteRecord;
 
-// ═══════════════════════════════════════════
-// خروجی CSV
-// ═══════════════════════════════════════════
+// ============================================================
+// 10. EXPORT CSV
+// ============================================================
 function exportCSV() {
-  if (filteredRows.length === 0) { showToast('رکوردی برای خروجی نیست', true); return; }
-  const cols = ['id','pub','priv','title','place','code','section','amariat'];
+  if (filteredRows.length === 0) {
+    showToast('رکوردی برای خروجی نیست', true);
+    return;
+  }
+  const cols = ['id', 'pub', 'title', 'place', 'code', 'section'];
   let csv = '\uFEFF' + cols.join(',') + '\n';
   filteredRows.forEach(r => {
     csv += cols.map(c => {
@@ -571,9 +886,9 @@ function exportCSV() {
 }
 window.exportCSV = exportCSV;
 
-// ═══════════════════════════════════════════
-// شروع
-// ═══════════════════════════════════════════
+// ============================================================
+// 11. START
+// ============================================================
 loadStats();
 loadList();
 </script>

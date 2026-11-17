@@ -262,17 +262,15 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
         <thead>
           <tr>
             <th>#</th>
-            <th>نمبر عمومی</th>
             <th>عنوان وظیفه / مشخصات کارمند</th>
             <th>محل</th>
-            <th>کد</th>
             <th>بخش</th>
             <th>وضعیت</th>
             <th>عملیات</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
+          <tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
         </tbody>
       </table>
     </div>
@@ -452,7 +450,7 @@ async function loadList() {
   if (place)   params.set('place', place);
 
   const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
 
   try {
     try { await loadRegisteredCodes(); } catch (e) { console.warn('[loadList] records skip:', e); }
@@ -483,7 +481,7 @@ async function loadList() {
     renderTable();
   } catch (e) {
     console.error('[loadList]', e);
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-danger">خطا: ' + escapeHtml(e.message) + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-danger">خطا: ' + escapeHtml(e.message) + '</td></tr>';
   }
 }
 window.loadList = loadList;
@@ -496,7 +494,7 @@ function renderTable() {
   document.getElementById('resultCount').textContent = filteredRows.length + ' رکورد';
 
   if (filteredRows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
@@ -543,10 +541,8 @@ function renderTable() {
 
     html += '<tr>' +
       '<td>' + globalIdx + '</td>' +
-      '<td>' + escapeHtml(r.pub || '—') + '</td>' +
       '<td style="text-align:right;direction:rtl">' + titleCell + '</td>' +
       '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
-      '<td style="font-family:monospace;font-size:11px;direction:ltr">' + escapeHtml(r.code || '—') + '</td>' +
       '<td>' + sectionBadge + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '<td>' +

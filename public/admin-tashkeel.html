@@ -293,7 +293,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
   border-top: 1px solid #e2e8f0;
 }
 
-/* ===== Pagination (بالای جدول) ===== */
+/* ===== Pagination ===== */
 #pagination {
   display: flex;
   gap: 8px;
@@ -353,7 +353,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 <div class="topbar">
   <div>
     <h5>📋 مدیریت تشکیل — ریاست معارف هرات</h5>
-    <small>مدیریت تشکیلات (مکاتب و مدارس) — ۹۳۹ رکورد</small>
+    <small>مدیریت تشکیلات (مکاتب و مدارس)</small>
   </div>
   <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
 </div>
@@ -434,7 +434,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
       <button class="btn btn-primary" onclick="loadList()">🔄 به‌روزرسانی</button>
       <button class="btn btn-purple" onclick="showAddModal()">➕ افزودن رکورد</button>
       <button class="btn btn-secondary" onclick="exportCSV()">📊 خروجی اکسل</button>
-      <button class="btn btn-teal" onclick="window.print()">🖨️ چاپ</button>
+      <button class="btn btn-teal" onclick="printTable()">🖨️ چاپ</button>
       <span id="resultCount" class="badge bg-purple text-white px-3 py-2" style="font-size:13px; align-self:center;">۰ رکورد</span>
     </div>
   </div>
@@ -537,7 +537,7 @@ let filteredRows = [];
 let currentPage = 1;
 const PAGE_SIZE = 30;
 let editModal = null;
-let registeredCodesSet = new Set();   // کدهایی که کارمند دارند
+let registeredCodesSet = new Set();
 let searchDebounce;
 
 // ============================================================
@@ -593,7 +593,6 @@ async function loadStats() {
     document.getElementById('sMadaris').textContent = sec.madaris || 0;
     document.getElementById('sPlaces').textContent = (d.by_place || []).length;
 
-    // پر کردن select محل
     const placeSel = document.getElementById('placeFilter');
     if (placeSel.options.length <= 1 && d.by_place) {
       d.by_place.forEach(p => {
@@ -609,7 +608,7 @@ async function loadStats() {
 }
 
 // ============================================================
-// 5. LOAD REGISTERED CODES (کارمندانی که کد دارند)
+// 5. LOAD REGISTERED CODES
 // ============================================================
 async function loadRegisteredCodes() {
   try {
@@ -647,7 +646,6 @@ async function loadList() {
   tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
 
   try {
-    // اگر فیلتر وضعیت فعال است، کدهای ثبت‌شده را بگیر
     if (status) {
       await loadRegisteredCodes();
     }
@@ -660,7 +658,6 @@ async function loadList() {
     const d = await r.json();
     let rows = d.tashkeel || [];
 
-    // اعمال فیلتر وضعیت
     if (status === 'filled') {
       rows = rows.filter(t => registeredCodesSet.has(String(t.code || '').trim()));
     } else if (status === 'empty') {
@@ -860,34 +857,195 @@ async function deleteRecord(id) {
 window.deleteRecord = deleteRecord;
 
 // ============================================================
-// 10. EXPORT CSV
+// 10. PRINT TABLE — دقیق مطابق فایل رسمی تشکیلات
 // ============================================================
-function exportCSV() {
-  if (filteredRows.length === 0) {
-    showToast('رکوردی برای خروجی نیست', true);
+function printTable() {
+  if (!filteredRows || filteredRows.length === 0) {
+    showToast('رکوردی برای پرینت وجود ندارد', true);
     return;
   }
-  const cols = ['id', 'pub', 'title', 'place', 'code', 'section'];
-  let csv = '\uFEFF' + cols.join(',') + '\n';
-  filteredRows.forEach(r => {
-    csv += cols.map(c => {
-      let v = r[c] == null ? '' : String(r[c]);
-      return '"' + v.replace(/"/g, '""') + '"';
+
+  let rowsHtml = '';
+  filteredRows.forEach((r, idx) => {
+    const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
+    rowsHtml += `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${escapeHtml(r.pub || '')}</td>
+        <td style="text-align:right">${escapeHtml(r.title || '')}</td>
+        <td style="text-align:right">${escapeHtml(r.place || '')}</td>
+        <td style="font-family:monospace;font-size:9px;direction:ltr">${escapeHtml(r.code || '')}</td>
+        <td>${sectionLabel}</td>
+      </tr>`;
+  });
+
+  const html = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>پرینت تشکیلات</title>
+<style>
+  @page { size: A4 landscape; margin: 8mm; }
+  body { font-family: "B Nazanin", "Tahoma", Arial, sans-serif; direction: rtl; padding: 8px; }
+  .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; }
+  .header h1 { font-size: 16px; margin: 0 0 4px 0; }
+  .header h2 { font-size: 13px; margin: 0 0 2px 0; font-weight: normal; }
+  .header h3 { font-size: 11px; margin: 0; font-weight: normal; color: #444; }
+  .header h4 { font-size: 12px; margin: 6px 0 0 0; font-weight: bold; }
+  .meta { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 8px; padding: 4px 0; border-bottom: 1px solid #ccc; }
+  table { width: 100%; border-collapse: collapse; font-size: 10px; }
+  thead th {
+    background: #e8e8e8;
+    border: 1px solid #333;
+    padding: 5px 4px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+  }
+  tbody td {
+    border: 1px solid #333;
+    padding: 4px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  tbody tr:nth-child(even) td { background: #f8f8f8; }
+  .footer { margin-top: 10px; font-size: 9px; text-align: left; border-top: 1px solid #ccc; padding-top: 5px; }
+  @media print {
+    .no-print { display: none !important; }
+    body { padding: 0; }
+  }
+  .no-print { text-align: center; margin-top: 15px; }
+  .no-print button { padding: 10px 25px; font-size: 14px; background: #4338ca; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>امارت اسلامی افغانستان</h1>
+    <h2>وزارت معارف</h2>
+    <h3>ریاست معارف ولایت هرات — آمریت معارف کشک رباط سنگی</h3>
+    <h3>مدیریت عمومی اداری و اجرائیوی</h3>
+    <h4>جدول شهرت پرسونل تشکیلات مکاتب و مدارس</h4>
+  </div>
+
+  <div class="meta">
+    <span><strong>تاریخ پرینت:</strong> ${new Date().toLocaleDateString('fa-IR')}</span>
+    <span><strong>تعداد رکورد:</strong> ${filteredRows.length}</span>
+    <span><strong>بخش:</strong> ${document.getElementById('sectionFilter').value ? (document.getElementById('sectionFilter').value === 'madaris' ? 'مدارس' : 'مکاتب') : 'مکاتب و مدارس'}</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:35px;">#</th>
+        <th style="width:70px;">نمبر عمومی</th>
+        <th>عنوان وظیفه</th>
+        <th>محل وظیفه</th>
+        <th style="width:120px;">کود نمبر (کد بست)</th>
+        <th style="width:60px;">بخش</th>
+      </tr>
+    </thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+
+  <div class="footer">
+    <p>این جدول از سیستم دیجیتالی مدیریت معلومات ریاست معارف ولایت هرات استخراج شده است.</p>
+  </div>
+
+  <div class="no-print">
+    <button onclick="window.print()">🖨️ چاپ</button>
+  </div>
+
+  <script>setTimeout(()=>window.print(), 500);</script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+}
+window.printTable = printTable;
+
+// ============================================================
+// 11. EXPORT CSV — دقیقاً مطابق فایل رسمی تشکیلات
+// ============================================================
+function exportCSV() {
+  if (!filteredRows || filteredRows.length === 0) {
+    showToast('رکوردی برای خروجی وجود ندارد', true);
+    return;
+  }
+
+  // ستون‌های رسمی مطابق فایل اکسل تشکیلات
+  const headers = [
+    'نمبر عمومی',
+    'نمبر خصوصی',
+    'اسم',
+    'ولد',
+    'ولدیت',
+    'تخلص',
+    'عنوان وظیفه',
+    'درجه تحصیل',
+    'رشته تحصیل',
+    'رشته تدریس',
+    'بست',
+    'قدم',
+    'تاریخ تقرر',
+    'تاریخ تولد',
+    'نمبر تذکره',
+    'جنسیت',
+    'قومیت',
+    'کود نمبر',
+    'محل وظیفه',
+    'آمریت معارف',
+    'ملاحظات'
+  ];
+
+  let csv = '\uFEFF'; // BOM برای UTF-8
+  csv += headers.map(h => `"${h}"`).join(',') + '\n';
+
+  filteredRows.forEach((r, idx) => {
+    const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
+    const row = [
+      idx + 1,
+      r.pub || '',
+      '',
+      '',
+      '',
+      '',
+      r.title || '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      r.code || '',
+      r.place || '',
+      r.amariat || 'آمریت معارف کشک رباط سنگی',
+      sectionLabel
+    ];
+    csv += row.map(v => {
+      const s = String(v == null ? '' : v).replace(/"/g, '""');
+      return `"${s}"`;
     }).join(',') + '\n';
   });
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'tashkeel_' + Date.now() + '.csv';
+  a.download = `تشکیلات_آمریت_معارف_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast('✅ خروجی CSV دانلود شد');
+  showToast(`✅ خروجی اکسل تشکیلات دانلود شد (${filteredRows.length} رکورد)`);
 }
 window.exportCSV = exportCSV;
 
 // ============================================================
-// 11. START
+// 12. START
 // ============================================================
 loadStats();
 loadList();

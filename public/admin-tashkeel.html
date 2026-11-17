@@ -263,6 +263,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
           <tr>
             <th>#</th>
             <th>عنوان وظیفه / مشخصات کارمند</th>
+            <th>کد بست</th>
             <th>محل</th>
             <th>بخش</th>
             <th>وضعیت</th>
@@ -270,7 +271,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
+          <tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
         </tbody>
       </table>
     </div>
@@ -451,7 +452,7 @@ async function loadList() {
   if (place)   params.set('place', place);
 
   const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
 
   try {
     try { await loadRegisteredCodes(); } catch (e) { console.warn('[loadList] records skip:', e); }
@@ -520,7 +521,7 @@ function renderTable() {
       : '<span class="badge-empty">❌ خالی</span>';
 
     // بخش عنوان وظیفه / مشخصات کارمند
-    let titleCell = '<div style="text-align:right;direction:rtl"><strong>' + escapeHtml(r.title || '—') + '</strong><div class="detail"><strong>کد بست:</strong> <span dir="ltr" style="display:inline-block">' + escapeHtml(rowCode || '—') + '</span></div></div>';
+    let titleCell = '<div style="text-align:right;direction:rtl"><strong>' + escapeHtml(r.title || '—') + '</strong></div>';
     
     if (isFilled) {
       // استخراج فیلدها (با پشتیبانی از نام‌های مختلف احتمالی)
@@ -535,7 +536,7 @@ function renderTable() {
         <div class="employee-info" style="text-align:right;direction:rtl">
           <div class="detail"><strong>عنوان بست:</strong> ${escapeHtml(jobTitle)}</div>
           <div class="name">👤 ${escapeHtml(employee.firstName || employee.name || '—')} ${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</div>
-          <div class="detail"><strong>کد بست:</strong> <span style="direction:ltr;display:inline-block;">${escapeHtml(jobCode)}</span> | <strong>مکتب:</strong> ${escapeHtml(schoolName)}</div>
+          <div class="detail"><strong>مکتب:</strong> ${escapeHtml(schoolName)}</div>
           <div class="contact" style="direction:rtl;display:block;text-align:right">📞 ${escapeHtml(phone)}</div>
         </div>
       `;
@@ -544,6 +545,7 @@ function renderTable() {
     html += '<tr>' +
       '<td>' + globalIdx + '</td>' +
       '<td style="text-align:right;direction:rtl">' + titleCell + '</td>' +
+      '<td dir="ltr" style="text-align:center;white-space:nowrap">' + escapeHtml(rowCode || '—') + '</td>' +
       '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
       '<td>' + sectionBadge + '</td>' +
       '<td>' + statusBadge + '</td>' +

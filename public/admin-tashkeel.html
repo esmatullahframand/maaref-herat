@@ -123,6 +123,14 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 .badge-filled { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
 .badge-empty { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
 
+/* ===== Employee Info Card in Table ===== */
+.employee-info {
+  text-align: right; line-height: 1.6; font-size: 12px; padding: 2px 0;
+}
+.employee-info .name { color: #1e40af; font-weight: 800; margin-bottom: 4px; font-size: 13px; }
+.employee-info .detail { color: #334155; margin-bottom: 2px; }
+.employee-info .contact { color: #059669; font-weight: 700; font-size: 11px; margin-top: 4px; direction: ltr; display: inline-block; }
+
 /* ===== Action ===== */
 .btn-action {
   border-radius: 8px; padding: 6px 10px; margin: 2px;
@@ -255,7 +263,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
           <tr>
             <th>#</th>
             <th>نمبر عمومی</th>
-            <th>عنوان وظیفه</th>
+            <th>عنوان وظیفه / مشخصات کارمند</th>
             <th>محل</th>
             <th>کد</th>
             <th>بخش</th>
@@ -325,7 +333,7 @@ let filteredRows = [];
 let currentPage = 1;
 const PAGE_SIZE = 30;
 let editModal = null;
-let registeredCodesSet = new Set();
+let registeredDataMap = new Map(); // تغییر از Set به Map
 let searchDebounce;
 
 /* ============================================================
@@ -363,7 +371,7 @@ function debouncedLoad() {
 window.debouncedLoad = debouncedLoad;
 
 /* ============================================================
-   ۳. استخراج آرایه از پاسخ API (پشتیبانی از ۷ ساختار)
+   ۳. استخراج آرایه از پاسخ API
    ============================================================ */
 function extractArray(payload) {
   if (Array.isArray(payload)) return payload;
@@ -409,7 +417,7 @@ async function loadStats() {
 }
 
 /* ============================================================
-   ۵. بارگذاری کدهای ثبت‌شده (برای فیلتر وضعیت)
+   ۵. بارگذاری اطلاعات کارمندان ثبت‌شده (Map)
    ============================================================ */
 async function loadRegisteredCodes() {
   try {
@@ -421,25 +429,28 @@ async function loadRegisteredCodes() {
     const payload = await r.json();
     const list = extractArray(payload);
 
-    registeredCodesSet = new Set();
+    registeredDataMap = new Map();
 
     list.forEach(function(rec) {
       let info = (rec && rec.data) || {};
       if (typeof info === 'string') {
         try { info = JSON.parse(info); } catch (e) { info = {}; }
       }
+      
       const code = info.jobCode || info.jobcode || info.code || info.job_code;
-      if (code) registeredCodesSet.add(String(code).trim());
+      if (code) {
+        registeredDataMap.set(String(code).trim(), info);
+      }
     });
 
-    console.log('✅ کدهای ثبت‌شده (' + registeredCodesSet.size + '):', Array.from(registeredCodesSet));
+    console.log('✅ کارمندان ثبت‌شده:', registeredDataMap.size);
   } catch (e) {
     console.error('[loadRegisteredCodes]', e);
   }
 }
 
 /* ============================================================
-   ۶. بارگذاری لیست تشکیل  ← نقطه اصلی اصلاح‌شده
+   ۶. بارگذاری لیست تشکیل
    ============================================================ */
 async function loadList() {
   const search  = document.getElementById('searchInput').value.trim();
@@ -456,7 +467,6 @@ async function loadList() {
   tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
 
   try {
-    // بارگذاری کدهای ثبت‌شده — خطای آن لیست را متوقف نکند
     try { await loadRegisteredCodes(); } catch (e) { console.warn('[loadList] records skip:', e); }
 
     const r = await fetch('/api/tashkeel?' + params.toString(), {
@@ -466,33 +476,16 @@ async function loadList() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
 
     const payload = await r.json();
-
-    // لاگ تشخیصی — ساختار واقعی پاسخ
-    if (Array.isArray(payload)) {
-      console.log('[loadList] پاسخ: آرایه مستقیم | تعداد:', payload.length);
-    } else if (payload && typeof payload === 'object') {
-      console.log('[loadList] پاسخ: شیء | کلیدها:', Object.keys(payload));
-    } else {
-      console.warn('[loadList] پاسخ نامعتبر:', payload);
-    }
-
-    // استخراج آرایه از هر ساختاری
     let rows = extractArray(payload);
-
-    if (rows.length === 0 && payload && typeof payload === 'object' && !Array.isArray(payload)) {
-      console.warn('[loadList] آرایه‌ای یافت نشد. کلیدهای پاسخ:', Object.keys(payload));
-    }
-
-    console.log('[loadList] تعداد رکوردهای دریافتی:', rows.length);
 
     // اعمال فیلتر وضعیت
     if (status === 'filled') {
       rows = rows.filter(function(t) {
-        return registeredCodesSet.has(String(t.code || '').trim());
+        return registeredDataMap.has(String(t.code || '').trim());
       });
     } else if (status === 'empty') {
       rows = rows.filter(function(t) {
-        return !registeredCodesSet.has(String(t.code || '').trim());
+        return !registeredDataMap.has(String(t.code || '').trim());
       });
     }
 
@@ -502,15 +495,13 @@ async function loadList() {
     renderTable();
   } catch (e) {
     console.error('[loadList]', e);
-    tbody.innerHTML =
-      '<tr><td colspan="8" class="text-center p-4 text-danger">خطا: ' +
-      escapeHtml(e.message) + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-danger">خطا: ' + escapeHtml(e.message) + '</td></tr>';
   }
 }
 window.loadList = loadList;
 
 /* ============================================================
-   ۷. رندر جدول
+   ۷. رندر جدول (با نمایش جزئیات کارمند)
    ============================================================ */
 function renderTable() {
   const tbody = document.getElementById('tableBody');
@@ -529,30 +520,52 @@ function renderTable() {
   let html = '';
   pageRows.forEach(function(r, idx) {
     const globalIdx = start + idx + 1;
+    const employee = registeredDataMap.get(String(r.code || '').trim());
+    const isFilled = !!employee;
 
     const sectionBadge = r.section === 'amariat'
       ? '<span class="badge-makatib">🏫 مکاتب</span>'
       : '<span class="badge-madaris">🏫 مدارس</span>';
 
-    const isFilled = registeredCodesSet.has(String(r.code || '').trim());
     const statusBadge = isFilled
       ? '<span class="badge-filled">✅ پر</span>'
       : '<span class="badge-empty">❌ خالی</span>';
 
-    html +=
-      '<tr>' +
-        '<td>' + globalIdx + '</td>' +
-        '<td>' + escapeHtml(r.pub || '—') + '</td>' +
-        '<td style="text-align:right"><strong>' + escapeHtml(r.title || '—') + '</strong></td>' +
-        '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
-        '<td style="font-family:monospace;font-size:11px;direction:ltr">' + escapeHtml(r.code || '—') + '</td>' +
-        '<td>' + sectionBadge + '</td>' +
-        '<td>' + statusBadge + '</td>' +
-        '<td>' +
-          '<button class="btn-action btn-edit" onclick="editRecord(' + r.id + ')" title="ویرایش">✏️</button>' +
-          '<button class="btn-action btn-delete" onclick="deleteRecord(' + r.id + ')" title="حذف">🗑️</button>' +
-        '</td>' +
-      '</tr>';
+    // بخش عنوان وظیفه / مشخصات کارمند
+    let titleCell = '<strong>' + escapeHtml(r.title || '—') + '</strong>';
+    
+    if (isFilled) {
+      // استخراج فیلدها (با پشتیبانی از نام‌های مختلف احتمالی)
+      const lastName = employee.lastName || employee.lastname || employee.takhallos || employee['تخلص'] || '—';
+      const fatherName = employee.fatherName || employee.fathername || employee.walid || employee['نام پدر'] || employee['ولد'] || '—';
+      const jobTitle = employee.jobTitle || employee.job || employee.title || r.title;
+      const jobCode = employee.jobCode || employee.jobcode || r.code;
+      const schoolName = employee.school || employee.schoolName || employee.maktab || employee['مکتب'] || r.place;
+      const phone = employee.phone || employee.mobile || employee.contact || employee['شماره تماس'] || '—';
+
+      titleCell = `
+        <div class="employee-info">
+          <div class="name">👤 ${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</div>
+          <div class="detail"><strong>عنوان:</strong> ${escapeHtml(jobTitle)}</div>
+          <div class="detail"><strong>کد:</strong> <span style="direction:ltr; display:inline-block;">${escapeHtml(jobCode)}</span> | <strong>مکتب:</strong> ${escapeHtml(schoolName)}</div>
+          <div class="contact">📞 ${escapeHtml(phone)}</div>
+        </div>
+      `;
+    }
+
+    html += '<tr>' +
+      '<td>' + globalIdx + '</td>' +
+      '<td>' + escapeHtml(r.pub || '—') + '</td>' +
+      '<td style="text-align:right">' + titleCell + '</td>' +
+      '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
+      '<td style="font-family:monospace;font-size:11px;direction:ltr">' + escapeHtml(r.code || '—') + '</td>' +
+      '<td>' + sectionBadge + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td>' +
+        '<button class="btn-action btn-edit" onclick="editRecord(' + r.id + ')" title="ویرایش">✏️</button>' +
+        '<button class="btn-action btn-delete" onclick="deleteRecord(' + r.id + ')" title="حذف">🗑️</button>' +
+      '</td>' +
+    '</tr>';
   });
 
   tbody.innerHTML = html;
@@ -699,15 +712,24 @@ function printTable() {
   let rowsHtml = '';
   filteredRows.forEach(function(r, idx) {
     const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
-    rowsHtml +=
-      '<tr>' +
-        '<td>' + (idx + 1) + '</td>' +
-        '<td>' + escapeHtml(r.pub || '') + '</td>' +
-        '<td style="text-align:right">' + escapeHtml(r.title || '') + '</td>' +
-        '<td style="text-align:right">' + escapeHtml(r.place || '') + '</td>' +
-        '<td style="direction:ltr">' + escapeHtml(r.code || '') + '</td>' +
-        '<td>' + sectionLabel + '</td>' +
-      '</tr>';
+    const employee = registeredDataMap.get(String(r.code || '').trim());
+    let titleContent = escapeHtml(r.title || '');
+    
+    if (employee) {
+      const lastName = employee.lastName || employee.lastname || employee.takhallos || employee['تخلص'] || '—';
+      const fatherName = employee.fatherName || employee.fathername || employee.walid || employee['نام پدر'] || employee['ولد'] || '—';
+      const phone = employee.phone || employee.mobile || employee.contact || '—';
+      titleContent = `<strong>${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</strong><br><small>${escapeHtml(r.title)} - ${escapeHtml(phone)}</small>`;
+    }
+
+    rowsHtml += '<tr>' +
+      '<td>' + (idx + 1) + '</td>' +
+      '<td>' + escapeHtml(r.pub || '') + '</td>' +
+      '<td style="text-align:right">' + titleContent + '</td>' +
+      '<td style="text-align:right">' + escapeHtml(r.place || '') + '</td>' +
+      '<td style="direction:ltr">' + escapeHtml(r.code || '') + '</td>' +
+      '<td>' + sectionLabel + '</td>' +
+    '</tr>';
   });
 
   const html =
@@ -743,7 +765,7 @@ function printTable() {
     '<table><thead><tr>' +
       '<th style="width:35px">#</th>' +
       '<th style="width:70px">نمبر عمومی</th>' +
-      '<th>عنوان وظیفه</th>' +
+      '<th>عنوان وظیفه / مشخصات</th>' +
       '<th>محل وظیفه</th>' +
       '<th style="width:120px">کود نمبر (کد بست)</th>' +
       '<th style="width:60px">بخش</th>' +
@@ -778,10 +800,23 @@ function exportCSV() {
 
   filteredRows.forEach(function(r, idx) {
     const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
+    const employee = registeredDataMap.get(String(r.code || '').trim());
+    
+    // مقادیر پیش‌فرض
+    let lastName = '';
+    let fatherName = '';
+    let phone = '';
+    
+    if (employee) {
+      lastName = employee.lastName || employee.lastname || employee.takhallos || employee['تخلص'] || '';
+      fatherName = employee.fatherName || employee.fathername || employee.walid || employee['نام پدر'] || employee['ولد'] || '';
+      phone = employee.phone || employee.mobile || employee.contact || employee['شماره تماس'] || '';
+    }
+
     const row = [
       idx + 1,
       r.pub || '',
-      '', '', '', '',
+      '', fatherName, '', lastName,
       r.title || '',
       '', '', '',
       '', '',

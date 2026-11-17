@@ -5,16 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>مدیریت تشکیل — پنل ادمین</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
 <style>
 :root {
   --primary: #4338ca;
-  --primary-dark: #312e81;
-  --primary-light: #eef2ff;
   --success: #059669;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --dark: #172033;
   --muted: #64748b;
   --border: #e2e8f0;
   --shadow-sm: 0 2px 8px rgba(15,23,42,.05);
@@ -25,7 +19,7 @@
 * { box-sizing: border-box; }
 body {
   background: radial-gradient(circle at top right, #e0e7ff 0, transparent 30%), linear-gradient(135deg, #f8fafc, #eef2f7);
-  color: var(--dark);
+  color: #172033;
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
@@ -49,7 +43,7 @@ body {
 .topbar h5 { color: #fff; font-weight: 800; margin: 0; }
 .topbar small { color: #c7d2fe; font-size: 12px; }
 
-/* ===== Nav Tabs ===== */
+/* ===== Nav ===== */
 .nav-tabs-custom {
   display: flex;
   flex-wrap: wrap;
@@ -73,7 +67,7 @@ body {
 }
 .nav-tab-btn:hover {
   color: var(--primary) !important;
-  background: var(--primary-light) !important;
+  background: #eef2ff !important;
   transform: translateY(-2px);
 }
 .nav-tab-btn.active {
@@ -119,16 +113,8 @@ body {
 }
 
 /* ===== Buttons ===== */
-.btn-purple {
-  color: white !important;
-  background: linear-gradient(135deg, #6d28d9, #4f46e5) !important;
-  border: none !important;
-}
-.btn-teal {
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
-  color: #fff;
-  border: none;
-}
+.btn-purple { color: white !important; background: linear-gradient(135deg, #6d28d9, #4f46e5) !important; border: none !important; }
+.btn-teal { background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff; border: none; }
 .btn { border-radius: 10px; font-weight: 700; transition: all .22s ease; }
 button:not(.btn) { border-radius: 10px; font-weight: 700; }
 button:hover, .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
@@ -202,43 +188,30 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 }
 .table tbody tr:nth-child(even) { background: #fafbff; }
 .table tbody tr:hover { background: #eef2ff !important; }
-.table tbody tr:last-child td { border-bottom: none; }
 
 /* ===== Badges ===== */
 .badge-makatib {
-  background: #e3f2fd;
-  color: #1565c0;
-  padding: 4px 10px;
-  border-radius: 30px;
-  font-size: 11px;
-  font-weight: 800;
+  background: #e3f2fd; color: #1565c0;
+  padding: 4px 10px; border-radius: 30px;
+  font-size: 11px; font-weight: 800;
 }
 .badge-madaris {
-  background: #fce4ec;
-  color: #c2185b;
-  padding: 4px 10px;
-  border-radius: 30px;
-  font-size: 11px;
-  font-weight: 800;
+  background: #fce4ec; color: #c2185b;
+  padding: 4px 10px; border-radius: 30px;
+  font-size: 11px; font-weight: 800;
 }
 .badge-filled {
-  background: #d1fae5;
-  color: #065f46;
-  padding: 4px 10px;
-  border-radius: 30px;
-  font-size: 11px;
-  font-weight: 800;
+  background: #d1fae5; color: #065f46;
+  padding: 4px 10px; border-radius: 30px;
+  font-size: 11px; font-weight: 800;
 }
 .badge-empty {
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 4px 10px;
-  border-radius: 30px;
-  font-size: 11px;
-  font-weight: 800;
+  background: #fee2e2; color: #991b1b;
+  padding: 4px 10px; border-radius: 30px;
+  font-size: 11px; font-weight: 800;
 }
 
-/* ===== Action buttons ===== */
+/* ===== Action ===== */
 .btn-action {
   border-radius: 8px;
   padding: 6px 10px;
@@ -272,26 +245,12 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 }
 .toast.error { background: #991b1b; }
 
-/* ===== Modals ===== */
-.modal-content {
-  border: none;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 25px 70px rgba(15,23,42,.2);
-}
-.modal-header {
-  background: linear-gradient(120deg, #312e81, #4338ca);
-  color: white;
-  padding: 17px 22px;
-  border-bottom: none;
-}
+/* ===== Modal ===== */
+.modal-content { border: none; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 70px rgba(15,23,42,.2); }
+.modal-header { background: linear-gradient(120deg, #312e81, #4338ca); color: white; padding: 17px 22px; border-bottom: none; }
 .modal-header .btn-close { filter: invert(1); }
 .modal-body { padding: 24px; background: #fff; }
-.modal-footer {
-  padding: 15px 22px;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-}
+.modal-footer { padding: 15px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
 
 /* ===== Pagination ===== */
 #pagination {
@@ -312,14 +271,8 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
   background: #64748b;
   color: #fff;
 }
-#pagination button:not(:disabled):hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-}
-#pagination button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+#pagination button:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.1); }
+#pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 #pagination .page-badge {
   background: linear-gradient(135deg, #4338ca, #6366f1);
   color: white;
@@ -328,11 +281,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
   font-size: 12px;
   font-weight: 800;
 }
-#pagination .page-info {
-  font-size: 12px;
-  color: #64748b;
-  font-weight: 600;
-}
+#pagination .page-info { font-size: 12px; color: #64748b; font-weight: 600; }
 
 /* ===== Responsive ===== */
 @media (max-width: 600px) {
@@ -349,7 +298,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 </head>
 <body>
 
-<!-- ===== Topbar ===== -->
 <div class="topbar">
   <div>
     <h5>📋 مدیریت تشکیل — ریاست معارف هرات</h5>
@@ -358,7 +306,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
   <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
 </div>
 
-<!-- ===== Nav Tabs ===== -->
 <div class="nav-tabs-custom">
   <a href="admin-main.html" class="nav-tab-btn">🏠 صفحه اصلی</a>
   <a href="admin-tashkeel.html" class="nav-tab-btn active">📋 مدیریت تشکیل</a>
@@ -368,45 +315,22 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 
 <div class="container-fluid px-4 py-3">
 
-  <!-- ===== آمار ===== -->
+  <!-- آمار -->
   <div class="card-custom">
     <h5 class="fw-bold mb-3" style="color:#6d28d9;">📊 آمار کلی تشکیل</h5>
     <div class="row g-3">
-      <div class="col-md-3">
-        <div class="stat-card">
-          <div class="label">📊 کل رکوردها</div>
-          <div class="value" id="sTotal">0</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card" style="border-right:4px solid #1565c0">
-          <div class="label">🏫 مکاتب</div>
-          <div class="value" id="sMakatib" style="color:#1565c0">0</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card" style="border-right:4px solid #c2185b">
-          <div class="label">🏫 مدارس</div>
-          <div class="value" id="sMadaris" style="color:#c2185b">0</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card" style="border-right:4px solid #059669">
-          <div class="label">📍 محل‌های وظیفه</div>
-          <div class="value" id="sPlaces" style="color:#059669">0</div>
-        </div>
-      </div>
+      <div class="col-md-3"><div class="stat-card"><div class="label">📊 کل رکوردها</div><div class="value" id="sTotal">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #1565c0"><div class="label">🏫 مکاتب</div><div class="value" id="sMakatib" style="color:#1565c0">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #c2185b"><div class="label">🏫 مدارس</div><div class="value" id="sMadaris" style="color:#c2185b">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #059669"><div class="label">📍 محل‌های وظیفه</div><div class="value" id="sPlaces" style="color:#059669">0</div></div></div>
     </div>
   </div>
 
-  <!-- ===== فیلترها ===== -->
+  <!-- فیلترها -->
   <div class="card-custom">
     <h5 class="fw-bold mb-3" style="color:#6d28d9;">🔍 جستجو و فیلتر</h5>
     <div class="filter-grid">
-      <div>
-        <label>🔍 جستجوی عمومی</label>
-        <input id="searchInput" class="form-control" placeholder="عنوان، محل، کد..." oninput="debouncedLoad()">
-      </div>
+      <div><label>🔍 جستجوی عمومی</label><input id="searchInput" class="form-control" placeholder="عنوان، محل، کد..." oninput="debouncedLoad()"></div>
       <div>
         <label>📂 بخش</label>
         <select id="sectionFilter" class="form-select" onchange="loadList()">
@@ -439,13 +363,12 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
     </div>
   </div>
 
-  <!-- ===== لیست ===== -->
+  <!-- لیست -->
   <div class="card-custom">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <h5 class="fw-bold m-0" style="color:#6d28d9;">📋 لیست تشکیل</h5>
       <div id="pagination"></div>
     </div>
-
     <div class="table-responsive">
       <table class="table">
         <thead>
@@ -469,7 +392,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 
 </div>
 
-<!-- ===== Modal افزودن/ویرایش ===== -->
+<!-- Modal -->
 <div class="modal fade" id="editModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -479,22 +402,10 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
       </div>
       <div class="modal-body">
         <input type="hidden" id="editId">
-        <div class="mb-2">
-          <label>عنوان وظیفه *</label>
-          <input id="editTitle" class="form-control" placeholder="مثلاً: معلم">
-        </div>
-        <div class="mb-2">
-          <label>محل *</label>
-          <input id="editPlace" class="form-control" placeholder="مثلاً: لیسه مختلط تورغندی">
-        </div>
-        <div class="mb-2">
-          <label>کد *</label>
-          <input id="editCode" class="form-control" placeholder="مثلاً: 27-32-02-12563" style="direction:ltr;text-align:left">
-        </div>
-        <div class="mb-2">
-          <label>نمبر عمومی</label>
-          <input id="editPub" class="form-control" style="direction:ltr;text-align:left">
-        </div>
+        <div class="mb-2"><label>عنوان وظیفه *</label><input id="editTitle" class="form-control" placeholder="مثلاً: معلم"></div>
+        <div class="mb-2"><label>محل *</label><input id="editPlace" class="form-control" placeholder="مثلاً: لیسه مختلط تورغندی"></div>
+        <div class="mb-2"><label>کد *</label><input id="editCode" class="form-control" placeholder="27-32-02-12563" style="direction:ltr;text-align:left"></div>
+        <div class="mb-2"><label>نمبر عمومی</label><input id="editPub" class="form-control" style="direction:ltr;text-align:left"></div>
         <div class="mt-2">
           <label>بخش</label>
           <select id="editSection" class="form-select">
@@ -514,9 +425,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ============================================================
-// 1. AUTH
-// ============================================================
 const token = localStorage.getItem('hr_token');
 const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
 if (!token || token === 'undefined') {
@@ -529,9 +437,6 @@ if (currentUser.role !== 'admin') {
   throw new Error('Not admin');
 }
 
-// ============================================================
-// 2. STATE
-// ============================================================
 let allRows = [];
 let filteredRows = [];
 let currentPage = 1;
@@ -540,22 +445,19 @@ let editModal = null;
 let registeredCodesSet = new Set();
 let searchDebounce;
 
-// ============================================================
-// 3. HELPERS
-// ============================================================
 function logout() {
   localStorage.clear();
   window.location.href = '/login.html';
 }
 window.logout = logout;
 
-function showToast(msg, isError = false) {
+function showToast(msg, isError) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast' + (isError ? ' error' : '');
   t.style.display = 'block';
   clearTimeout(t._timer);
-  t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
+  t._timer = setTimeout(function() { t.style.display = 'none'; }, 3500);
 }
 
 function escapeHtml(s) {
@@ -574,9 +476,6 @@ function debouncedLoad() {
 }
 window.debouncedLoad = debouncedLoad;
 
-// ============================================================
-// 4. LOAD STATS
-// ============================================================
 async function loadStats() {
   try {
     const r = await fetch('/api/tashkeel/stats/summary', {
@@ -584,18 +483,16 @@ async function loadStats() {
     });
     if (!r.ok) return;
     const d = await r.json();
-
     document.getElementById('sTotal').textContent = d.total || 0;
-
     const sec = {};
-    (d.by_section || []).forEach(s => sec[s.section] = s.count);
+    (d.by_section || []).forEach(function(s) { sec[s.section] = s.count; });
     document.getElementById('sMakatib').textContent = sec.amariat || 0;
     document.getElementById('sMadaris').textContent = sec.madaris || 0;
     document.getElementById('sPlaces').textContent = (d.by_place || []).length;
 
     const placeSel = document.getElementById('placeFilter');
     if (placeSel.options.length <= 1 && d.by_place) {
-      d.by_place.forEach(p => {
+      d.by_place.forEach(function(p) {
         const o = document.createElement('option');
         o.value = p.place;
         o.textContent = p.place + ' (' + p.count + ')';
@@ -607,9 +504,6 @@ async function loadStats() {
   }
 }
 
-// ============================================================
-// 5. LOAD REGISTERED CODES
-// ============================================================
 async function loadRegisteredCodes() {
   try {
     const r = await fetch('/api/records', {
@@ -619,7 +513,7 @@ async function loadRegisteredCodes() {
     const records = await r.json();
     const list = Array.isArray(records) ? records : [];
     registeredCodesSet = new Set();
-    list.forEach(rec => {
+    list.forEach(function(rec) {
       const info = rec.data || {};
       if (info.jobCode) registeredCodesSet.add(String(info.jobCode).trim());
     });
@@ -628,9 +522,6 @@ async function loadRegisteredCodes() {
   }
 }
 
-// ============================================================
-// 6. LOAD LIST
-// ============================================================
 async function loadList() {
   const search = document.getElementById('searchInput').value.trim();
   const section = document.getElementById('sectionFilter').value;
@@ -659,9 +550,9 @@ async function loadList() {
     let rows = d.tashkeel || [];
 
     if (status === 'filled') {
-      rows = rows.filter(t => registeredCodesSet.has(String(t.code || '').trim()));
+      rows = rows.filter(function(t) { return registeredCodesSet.has(String(t.code || '').trim()); });
     } else if (status === 'empty') {
-      rows = rows.filter(t => !registeredCodesSet.has(String(t.code || '').trim()));
+      rows = rows.filter(function(t) { return !registeredCodesSet.has(String(t.code || '').trim()); });
     }
 
     allRows = rows;
@@ -674,9 +565,6 @@ async function loadList() {
 }
 window.loadList = loadList;
 
-// ============================================================
-// 7. RENDER TABLE
-// ============================================================
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   document.getElementById('resultCount').textContent = filteredRows.length + ' رکورد';
@@ -692,13 +580,11 @@ function renderTable() {
   const pageRows = filteredRows.slice(start, end);
 
   let html = '';
-  pageRows.forEach((r, idx) => {
+  pageRows.forEach(function(r, idx) {
     const globalIdx = start + idx + 1;
-
     const sectionBadge = r.section === 'amariat'
       ? '<span class="badge-makatib">🏫 مکاتب</span>'
       : '<span class="badge-madaris">🏫 مدارس</span>';
-
     const isFilled = registeredCodesSet.has(String(r.code || '').trim());
     const statusBadge = isFilled
       ? '<span class="badge-filled">✅ پر</span>'
@@ -723,26 +609,22 @@ function renderTable() {
   renderPagination();
 }
 
-// ============================================================
-// 8. RENDER PAGINATION
-// ============================================================
 function renderPagination() {
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
   const pag = document.getElementById('pagination');
 
   if (totalPages <= 1) {
-    pag.innerHTML = `<span class="page-info">نمایش ${filteredRows.length} رکورد</span>`;
+    pag.innerHTML = '<span class="page-info">نمایش ' + filteredRows.length + ' رکورد</span>';
     return;
   }
 
   let html = '';
-
-  html += `<span class="page-info">نمایش ${((currentPage-1)*PAGE_SIZE+1)} تا ${Math.min(currentPage*PAGE_SIZE, filteredRows.length)} از ${filteredRows.length}</span>`;
-  html += `<button onclick="goPage(1)" ${currentPage === 1 ? 'disabled' : ''}>⏮️ اول</button>`;
-  html += `<button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>◀️ قبلی</button>`;
-  html += `<span class="page-badge">صفحه ${currentPage} از ${totalPages}</span>`;
-  html += `<button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>بعدی ▶️</button>`;
-  html += `<button onclick="goPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>آخر ⏭️</button>`;
+  html += '<span class="page-info">نمایش ' + ((currentPage-1)*PAGE_SIZE+1) + ' تا ' + Math.min(currentPage*PAGE_SIZE, filteredRows.length) + ' از ' + filteredRows.length + '</span>';
+  html += '<button onclick="goPage(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>⏮️ اول</button>';
+  html += '<button onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>◀️ قبلی</button>';
+  html += '<span class="page-badge">صفحه ' + currentPage + ' از ' + totalPages + '</span>';
+  html += '<button onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>بعدی ▶️</button>';
+  html += '<button onclick="goPage(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>آخر ⏭️</button>';
 
   pag.innerHTML = html;
 }
@@ -757,9 +639,6 @@ function goPage(p) {
 }
 window.goPage = goPage;
 
-// ============================================================
-// 9. ADD / EDIT
-// ============================================================
 function showAddModal() {
   if (!editModal) editModal = new bootstrap.Modal(document.getElementById('editModal'));
   document.getElementById('editModalTitle').textContent = 'افزودن رکورد جدید';
@@ -774,7 +653,7 @@ function showAddModal() {
 window.showAddModal = showAddModal;
 
 function editRecord(id) {
-  const r = allRows.find(x => x.id === id);
+  const r = allRows.find(function(x) { return x.id === id; });
   if (!r) return;
   if (!editModal) editModal = new bootstrap.Modal(document.getElementById('editModal'));
   document.getElementById('editModalTitle').textContent = 'ویرایش رکورد #' + id;
@@ -801,26 +680,17 @@ async function saveRecord() {
     return;
   }
 
-  const body = {
-    title,
-    place,
-    code,
-    pub: pub || null,
-    section
-  };
+  const body = { title: title, place: place, code: code, pub: pub || null, section: section };
 
   try {
     const url = id ? '/api/tashkeel/' + id : '/api/tashkeel';
     const method = id ? 'PUT' : 'POST';
     const r = await fetch(url, {
-      method,
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
+      method: method,
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    const data = await r.json().catch(() => ({}));
+    const data = await r.json().catch(function() { return {}; });
     if (r.ok) {
       showToast(id ? '✅ ویرایش شد' : '✅ افزوده شد');
       editModal.hide();
@@ -847,7 +717,7 @@ async function deleteRecord(id) {
       loadList();
       loadStats();
     } else {
-      const d = await r.json().catch(() => ({}));
+      const d = await r.json().catch(function() { return {}; });
       showToast('❌ ' + (d.error || 'خطا'), true);
     }
   } catch (e) {
@@ -856,9 +726,7 @@ async function deleteRecord(id) {
 }
 window.deleteRecord = deleteRecord;
 
-// ============================================================
-// 10. PRINT TABLE — دقیق مطابق فایل رسمی تشکیلات
-// ============================================================
+// ===== PRINT =====
 function printTable() {
   if (!filteredRows || filteredRows.length === 0) {
     showToast('رکوردی برای پرینت وجود ندارد', true);
@@ -866,98 +734,57 @@ function printTable() {
   }
 
   let rowsHtml = '';
-  filteredRows.forEach((r, idx) => {
+  filteredRows.forEach(function(r, idx) {
     const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
-    rowsHtml += `
-      <tr>
-        <td>${idx + 1}</td>
-        <td>${escapeHtml(r.pub || '')}</td>
-        <td style="text-align:right">${escapeHtml(r.title || '')}</td>
-        <td style="text-align:right">${escapeHtml(r.place || '')}</td>
-        <td style="font-family:monospace;font-size:9px;direction:ltr">${escapeHtml(r.code || '')}</td>
-        <td>${sectionLabel}</td>
-      </tr>`;
+    rowsHtml += '<tr>' +
+      '<td>' + (idx + 1) + '</td>' +
+      '<td>' + escapeHtml(r.pub || '') + '</td>' +
+      '<td style="text-align:right">' + escapeHtml(r.title || '') + '</td>' +
+      '<td style="text-align:right">' + escapeHtml(r.place || '') + '</td>' +
+      '<td style="direction:ltr">' + escapeHtml(r.code || '') + '</td>' +
+      '<td>' + sectionLabel + '</td>' +
+    '</tr>';
   });
 
-  const html = `<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<title>پرینت تشکیلات</title>
-<style>
-  @page { size: A4 landscape; margin: 8mm; }
-  body { font-family: "B Nazanin", "Tahoma", Arial, sans-serif; direction: rtl; padding: 8px; }
-  .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; }
-  .header h1 { font-size: 16px; margin: 0 0 4px 0; }
-  .header h2 { font-size: 13px; margin: 0 0 2px 0; font-weight: normal; }
-  .header h3 { font-size: 11px; margin: 0; font-weight: normal; color: #444; }
-  .header h4 { font-size: 12px; margin: 6px 0 0 0; font-weight: bold; }
-  .meta { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 8px; padding: 4px 0; border-bottom: 1px solid #ccc; }
-  table { width: 100%; border-collapse: collapse; font-size: 10px; }
-  thead th {
-    background: #e8e8e8;
-    border: 1px solid #333;
-    padding: 5px 4px;
-    font-weight: bold;
-    text-align: center;
-    white-space: nowrap;
-  }
-  tbody td {
-    border: 1px solid #333;
-    padding: 4px;
-    text-align: center;
-    vertical-align: middle;
-  }
-  tbody tr:nth-child(even) td { background: #f8f8f8; }
-  .footer { margin-top: 10px; font-size: 9px; text-align: left; border-top: 1px solid #ccc; padding-top: 5px; }
-  @media print {
-    .no-print { display: none !important; }
-    body { padding: 0; }
-  }
-  .no-print { text-align: center; margin-top: 15px; }
-  .no-print button { padding: 10px 25px; font-size: 14px; background: #4338ca; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-</style>
-</head>
-<body>
-  <div class="header">
-    <h1>امارت اسلامی افغانستان</h1>
-    <h2>وزارت معارف</h2>
-    <h3>ریاست معارف ولایت هرات — آمریت معارف کشک رباط سنگی</h3>
-    <h3>مدیریت عمومی اداری و اجرائیوی</h3>
-    <h4>جدول شهرت پرسونل تشکیلات مکاتب و مدارس</h4>
-  </div>
-
-  <div class="meta">
-    <span><strong>تاریخ پرینت:</strong> ${new Date().toLocaleDateString('fa-IR')}</span>
-    <span><strong>تعداد رکورد:</strong> ${filteredRows.length}</span>
-    <span><strong>بخش:</strong> ${document.getElementById('sectionFilter').value ? (document.getElementById('sectionFilter').value === 'madaris' ? 'مدارس' : 'مکاتب') : 'مکاتب و مدارس'}</span>
-  </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th style="width:35px;">#</th>
-        <th style="width:70px;">نمبر عمومی</th>
-        <th>عنوان وظیفه</th>
-        <th>محل وظیفه</th>
-        <th style="width:120px;">کود نمبر (کد بست)</th>
-        <th style="width:60px;">بخش</th>
-      </tr>
-    </thead>
-    <tbody>${rowsHtml}</tbody>
-  </table>
-
-  <div class="footer">
-    <p>این جدول از سیستم دیجیتالی مدیریت معلومات ریاست معارف ولایت هرات استخراج شده است.</p>
-  </div>
-
-  <div class="no-print">
-    <button onclick="window.print()">🖨️ چاپ</button>
-  </div>
-
-  <script>setTimeout(()=>window.print(), 500);</script>
-</body>
-</html>`;
+  const html = '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">' +
+    '<title>پرینت تشکیلات</title>' +
+    '<style>@page{size:A4 landscape;margin:8mm}' +
+    'body{font-family:Tahoma,Arial,sans-serif;direction:rtl;padding:8px}' +
+    '.header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:10px}' +
+    '.header h1{font-size:16px;margin:0 0 4px}' +
+    '.header h2{font-size:13px;margin:0 0 2px;font-weight:normal}' +
+    '.header h3{font-size:11px;margin:0;font-weight:normal;color:#444}' +
+    '.header h4{font-size:12px;margin:6px 0 0;font-weight:bold}' +
+    '.meta{display:flex;justify-content:space-between;font-size:10px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid #ccc}' +
+    'table{width:100%;border-collapse:collapse;font-size:10px}' +
+    'thead th{background:#e8e8e8;border:1px solid #333;padding:5px 4px;font-weight:bold;text-align:center}' +
+    'tbody td{border:1px solid #333;padding:4px;text-align:center}' +
+    'tbody tr:nth-child(even) td{background:#f8f8f8}' +
+    '@media print{.no-print{display:none!important}body{padding:0}}' +
+    '.no-print{text-align:center;margin-top:15px}' +
+    '.no-print button{padding:10px 25px;font-size:14px;background:#4338ca;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold}' +
+    '</style></head><body>' +
+    '<div class="header">' +
+      '<h1>امارت اسلامی افغانستان</h1>' +
+      '<h2>وزارت معارف</h2>' +
+      '<h3>ریاست معارف ولایت هرات — آمریت معارف کشک رباط سنگی</h3>' +
+      '<h4>جدول شهرت پرسونل تشکیلات مکاتب و مدارس</h4>' +
+    '</div>' +
+    '<div class="meta">' +
+      '<span><strong>تاریخ پرینت:</strong> ' + new Date().toLocaleDateString('fa-IR') + '</span>' +
+      '<span><strong>تعداد رکورد:</strong> ' + filteredRows.length + '</span>' +
+    '</div>' +
+    '<table><thead><tr>' +
+      '<th style="width:35px">#</th>' +
+      '<th style="width:70px">نمبر عمومی</th>' +
+      '<th>عنوان وظیفه</th>' +
+      '<th>محل وظیفه</th>' +
+      '<th style="width:120px">کود نمبر (کد بست)</th>' +
+      '<th style="width:60px">بخش</th>' +
+    '</tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+    '<div class="no-print"><button onclick="window.print()">🖨️ چاپ</button></div>' +
+    '<script>setTimeout(function(){window.print()},500);<\/script>' +
+    '</body></html>';
 
   const win = window.open('', '_blank');
   win.document.write(html);
@@ -965,71 +792,41 @@ function printTable() {
 }
 window.printTable = printTable;
 
-// ============================================================
-// 11. EXPORT CSV — دقیقاً مطابق فایل رسمی تشکیلات
-// ============================================================
+// ===== EXPORT CSV =====
 function exportCSV() {
   if (!filteredRows || filteredRows.length === 0) {
     showToast('رکوردی برای خروجی وجود ندارد', true);
     return;
   }
 
-  // ستون‌های رسمی مطابق فایل اکسل تشکیلات
   const headers = [
-    'نمبر عمومی',
-    'نمبر خصوصی',
-    'اسم',
-    'ولد',
-    'ولدیت',
-    'تخلص',
-    'عنوان وظیفه',
-    'درجه تحصیل',
-    'رشته تحصیل',
-    'رشته تدریس',
-    'بست',
-    'قدم',
-    'تاریخ تقرر',
-    'تاریخ تولد',
-    'نمبر تذکره',
-    'جنسیت',
-    'قومیت',
-    'کود نمبر',
-    'محل وظیفه',
-    'آمریت معارف',
-    'ملاحظات'
+    'نمبر عمومی', 'نمبر خصوصی', 'اسم', 'ولد', 'ولدیت', 'تخلص',
+    'عنوان وظیفه', 'درجه تحصیل', 'رشته تحصیل', 'رشته تدریس',
+    'بست', 'قدم', 'تاریخ تقرر', 'تاریخ تولد', 'نمبر تذکره',
+    'جنسیت', 'قومیت', 'کود نمبر', 'محل وظیفه', 'آمریت معارف', 'ملاحظات'
   ];
 
-  let csv = '\uFEFF'; // BOM برای UTF-8
-  csv += headers.map(h => `"${h}"`).join(',') + '\n';
+  let csv = '\uFEFF' + headers.map(function(h) { return '"' + h + '"'; }).join(',') + '\n';
 
-  filteredRows.forEach((r, idx) => {
+  filteredRows.forEach(function(r, idx) {
     const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
     const row = [
       idx + 1,
       r.pub || '',
-      '',
-      '',
-      '',
-      '',
+      '', '', '', '',
       r.title || '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
+      '', '', '',
+      '', '',
+      '', '', '',
+      '', '',
       r.code || '',
       r.place || '',
       r.amariat || 'آمریت معارف کشک رباط سنگی',
       sectionLabel
     ];
-    csv += row.map(v => {
+    csv += row.map(function(v) {
       const s = String(v == null ? '' : v).replace(/"/g, '""');
-      return `"${s}"`;
+      return '"' + s + '"';
     }).join(',') + '\n';
   });
 
@@ -1037,16 +834,14 @@ function exportCSV() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `تشکیلات_آمریت_معارف_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = 'تشکیلات_' + new Date().toISOString().slice(0, 10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
-  showToast(`✅ خروجی اکسل تشکیلات دانلود شد (${filteredRows.length} رکورد)`);
+  showToast('✅ خروجی اکسل دانلود شد (' + filteredRows.length + ' رکورد)');
 }
 window.exportCSV = exportCSV;
 
-// ============================================================
-// 12. START
-// ============================================================
+// ===== START =====
 loadStats();
 loadList();
 </script>

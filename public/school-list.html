@@ -664,17 +664,14 @@ async function openMyTashkeel() {
   document.getElementById('tableHead').innerHTML = `
     <tr>
       <th>#</th>
-      <th>عنوان بست</th>
-      <th>کُد بست</th>
-      <th>نمبر عمومی</th>
-      <th>نمبر خصوصی</th>
+      <th>عنوان وظیفه / مشخصات کارمند</th>
+      <th>محل</th>
       <th>بخش</th>
       <th>وضعیت</th>
-      <th>کارمند ثبت‌شده</th>
     </tr>`;
 
   const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty-state">در حال بارگذاری تشکیل...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" class="empty-state">در حال بارگذاری تشکیل...</td></tr>';
 
   try {
     // بارگذاری tashkeel
@@ -699,7 +696,7 @@ async function openMyTashkeel() {
     }
 
     if (tashkeelData.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">
         ⚠️ برای این مکتب، تشکیلاتی در سیستم تعریف نشده است.<br>
         <small style="color:#94a3b8; margin-top:10px; display:block;">نام مکتب در سیستم: «${escapeHtml(user.schoolname || '—')}»<br>place مورد جستجو: «${escapeHtml(myPlaceName)}»</small>
       </td></tr>`;
@@ -709,7 +706,7 @@ async function openMyTashkeel() {
     renderTashkeelTable();
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state" style="color:red;">خطا: ' + escapeHtml(err.message) + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color:red;">خطا: ' + escapeHtml(err.message) + '</td></tr>';
   }
 }
 window.openMyTashkeel = openMyTashkeel;
@@ -728,8 +725,8 @@ function renderTashkeelTable() {
   tashkeelFiltered=filtered;
   const total=tashkeelData.length, filled=tashkeelData.filter(t=>getEmp(t)).length;
   document.getElementById('statsContainer').innerHTML=`<div class="stat-box"><div class="stat-label">📋 کل کدهای تشکیل</div><div class="stat-value">${total}</div></div><div class="stat-box"><div class="stat-label">✅ پر</div><div class="stat-value">${filled}</div></div><div class="stat-box"><div class="stat-label">❌ خالی</div><div class="stat-value">${total-filled}</div></div>`;
-  if(!filtered.length){tbody.innerHTML='<tr><td colspan="8" class="empty-state">هیچ کدی با این فیلتر یافت نشد</td></tr>';return;}
-  tbody.innerHTML=filtered.map((t,i)=>{const e=getEmp(t);return `<tr><td>${i+1}</td><td><b>${escapeHtml(t.title||'—')}</b></td><td><code>${escapeHtml(t.code||'—')}</code></td><td>${escapeHtml(t.pub||'—')}</td><td>${escapeHtml(t.priv||'—')}</td><td>${t.section==='madaris'?'مدارس':'آمریت'}</td><td>${e?'<span class="status-badge status-filled">✅ پر</span>':'<span class="status-badge status-empty">❌ خالی</span>'}</td><td>${e?`<div style="text-align:right;direction:rtl"><b>${escapeHtml(e.firstName)} ${escapeHtml(e.lastName)}</b><br>ولد ${escapeHtml(e.fatherName)}<br><small>کد بست: ${escapeHtml(e.jobCode||t.code)} | مکتب: ${escapeHtml(e.school||t.place)} | تماس: ${escapeHtml(e.phone)}</small></div>`:'—'}</td></tr>`;}).join('');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="5" class="empty-state">هیچ کدی با این فیلتر یافت نشد</td></tr>';return;}
+  tbody.innerHTML=filtered.map((t,i)=>{const e=getEmp(t);const jobTitle=e?.jobTitle||t.title||'—';const employeeInfo=e?`<div class="employee-info" style="text-align:right;direction:rtl"><div class="detail"><strong>عنوان بست:</strong> ${escapeHtml(jobTitle)}</div><div class="name">👤 ${escapeHtml(e.firstName||'—')} ${escapeHtml(e.lastName||'—')} ولد ${escapeHtml(e.fatherName||'—')}</div><div class="detail"><strong>کد بست:</strong> <span style="direction:ltr;display:inline-block">${escapeHtml(t.code||e.jobCode||'—')}</span> | <strong>مکتب:</strong> ${escapeHtml(e.school||t.place||'—')}</div><div class="contact" style="direction:rtl;display:block;text-align:right">📞 ${escapeHtml(e.phone||'—')}</div></div>`:`<strong>${escapeHtml(t.title||'—')}</strong>`;return `<tr><td>${i+1}</td><td style="text-align:right;direction:rtl">${employeeInfo}</td><td style="text-align:right">${escapeHtml(t.place||'—')}</td><td>${t.section==='madaris'?'🏫 مدارس':'🏫 آمریت'}</td><td>${e?'<span class="status-badge status-filled">✅ پر</span>':'<span class="status-badge status-empty">❌ خالی</span>'}</td></tr>`;}).join('');
 }
 window.renderTashkeelTable = renderTashkeelTable;
 

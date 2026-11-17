@@ -425,6 +425,9 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+/* ============================================================
+   ۱. احراز هویت و متغیرهای سراسری
+   ============================================================ */
 const token = localStorage.getItem('hr_token');
 const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
 if (!token || token === 'undefined') {
@@ -445,6 +448,9 @@ let editModal = null;
 let registeredCodesSet = new Set();
 let searchDebounce;
 
+/* ============================================================
+   ۲. ابزارهای کمکی
+   ============================================================ */
 function logout() {
   localStorage.clear();
   window.location.href = '/login.html';
@@ -476,6 +482,22 @@ function debouncedLoad() {
 }
 window.debouncedLoad = debouncedLoad;
 
+/* ============================================================
+   ۳. استخراج آرایه از پاسخ API (پشتیبانی از همه ساختارها)
+   ============================================================ */
+function extractArray(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== 'object') return [];
+  const keys = ['tashkeel', 'data', 'items', 'records', 'results', 'list', 'rows'];
+  for (let i = 0; i < keys.length; i++) {
+    if (Array.isArray(payload[keys[i]])) return payload[keys[i]];
+  }
+  return [];
+}
+
+/* ============================================================
+   ۴. بارگذاری آمار
+   ============================================================ */
 async function loadStats() {
   try {
     const r = await fetch('/api/tashkeel/stats/summary', {
@@ -483,15 +505,18 @@ async function loadStats() {
     });
     if (!r.ok) return;
     const d = await r.json();
+
     document.getElementById('sTotal').textContent = d.total || 0;
+
     const sec = {};
     (d.by_section || []).forEach(function(s) { sec[s.section] = s.count; });
     document.getElementById('sMakatib').textContent = sec.amariat || 0;
     document.getElementById('sMadaris').textContent = sec.madaris || 0;
     document.getElementById('sPlaces').textContent = (d.by_place || []).length;
 
+    // پر کردن فیلتر محل (فقط یک‌بار)
     const placeSel = document.getElementById('placeFilter');
-    if (placeSel.options.length <= 1 && d.by_place) {
+    if (placeSel.options.length <= 1 && Array.isArray(d.by_place)) {
       d.by_place.forEach(function(p) {
         const o = document.createElement('option');
         o.value = p.place;
@@ -500,38 +525,44 @@ async function loadStats() {
       });
     }
   } catch (e) {
-    console.error(e);
+    console.error('[loadStats]', e);
   }
 }
 
+/* ============================================================
+   ۵. بارگذاری کدهای ثبت‌شده (برای فیلتر وضعیت)
+   ============================================================ */
 async function loadRegisteredCodes() {
   try {
     const r = await fetch('/api/records', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!r.ok) return;
-    const records = await r.json();
-    const list = Array.isArray(records) ? records : [];
+    const payload = await r.json();
+    const list = extractArray(payload);
     registeredCodesSet = new Set();
     list.forEach(function(rec) {
-      const info = rec.data || {};
+      const info = (rec && rec.data) || {};
       if (info.jobCode) registeredCodesSet.add(String(info.jobCode).trim());
     });
   } catch (e) {
-    console.error(e);
+    console.error('[loadRegisteredCodes]', e);
   }
 }
 
+/* ============================================================
+   ۶. بارگذاری لیست تشکیل  ← نقطه اصلی اصلاح‌شده
+   ============================================================ */
 async function loadList() {
-  const search = document.getElementById('searchInput').value.trim();
+  const search  = document.getElementById('searchInput').value.trim();
   const section = document.getElementById('sectionFilter').value;
-  const place = document.getElementById('placeFilter').value;
-  const status = document.getElementById('statusFilter').value;
+  const place   = document.getElementById('placeFilter').value;
+  const status  = document.getElementById('statusFilter').value;
 
   const params = new URLSearchParams();
-  if (search) params.set('q', search);
+  if (search)  params.set('q', search);
   if (section) params.set('section', section);
-  if (place) params.set('place', place);
+  if (place)   params.set('place', place);
 
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
@@ -546,13 +577,25 @@ async function loadList() {
     });
     if (r.status === 401 || r.status === 403) { logout(); return; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
-    let rows = d.tashkeel || [];
 
+    const payload = await r.json();
+
+    // ← پشتیبانی از همه ساختارهای ممکن پاسخ
+    let rows = extractArray(payload);
+
+    if (rows.length === 0 && payload && typeof payload === 'object' && !Array.isArray(payload)) {
+      console.warn('[loadList] پاسخ API آرایه نبود. کلیدهای موجود:', Object.keys(payload));
+    }
+
+    // اعمال فیلتر وضعیت
     if (status === 'filled') {
-      rows = rows.filter(function(t) { return registeredCodesSet.has(String(t.code || '').trim()); });
+      rows = rows.filter(function(t) {
+        return registeredCodesSet.has(String(t.code || '').trim());
+      });
     } else if (status === 'empty') {
-      rows = rows.filter(function(t) { return !registeredCodesSet.has(String(t.code || '').trim()); });
+      rows = rows.filter(function(t) {
+        return !registeredCodesSet.has(String(t.code || '').trim());
+      });
     }
 
     allRows = rows;
@@ -560,23 +603,30 @@ async function loadList() {
     currentPage = 1;
     renderTable();
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-danger">خطا: ' + escapeHtml(e.message) + '</td></tr>';
+    console.error('[loadList]', e);
+    tbody.innerHTML =
+      '<tr><td colspan="8" class="text-center p-4 text-danger">خطا: ' +
+      escapeHtml(e.message) + '</td></tr>';
   }
 }
 window.loadList = loadList;
 
+/* ============================================================
+   ۷. رندر جدول
+   ============================================================ */
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   document.getElementById('resultCount').textContent = filteredRows.length + ' رکورد';
 
   if (filteredRows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
+    tbody.innerHTML =
+      '<tr><td colspan="8" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
 
   const start = (currentPage - 1) * PAGE_SIZE;
-  const end = Math.min(start + PAGE_SIZE, filteredRows.length);
+  const end   = Math.min(start + PAGE_SIZE, filteredRows.length);
   const pageRows = filteredRows.slice(start, end);
 
   let html = '';
@@ -585,30 +635,35 @@ function renderTable() {
     const sectionBadge = r.section === 'amariat'
       ? '<span class="badge-makatib">🏫 مکاتب</span>'
       : '<span class="badge-madaris">🏫 مدارس</span>';
+
     const isFilled = registeredCodesSet.has(String(r.code || '').trim());
     const statusBadge = isFilled
       ? '<span class="badge-filled">✅ پر</span>'
       : '<span class="badge-empty">❌ خالی</span>';
 
-    html += '<tr>' +
-      '<td>' + globalIdx + '</td>' +
-      '<td>' + escapeHtml(r.pub || '—') + '</td>' +
-      '<td style="text-align:right"><strong>' + escapeHtml(r.title || '—') + '</strong></td>' +
-      '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
-      '<td style="font-family:monospace;font-size:11px;direction:ltr">' + escapeHtml(r.code || '—') + '</td>' +
-      '<td>' + sectionBadge + '</td>' +
-      '<td>' + statusBadge + '</td>' +
-      '<td>' +
-        '<button class="btn-action btn-edit" onclick="editRecord(' + r.id + ')" title="ویرایش">✏️</button>' +
-        '<button class="btn-action btn-delete" onclick="deleteRecord(' + r.id + ')" title="حذف">🗑️</button>' +
-      '</td>' +
-    '</tr>';
+    html +=
+      '<tr>' +
+        '<td>' + globalIdx + '</td>' +
+        '<td>' + escapeHtml(r.pub || '—') + '</td>' +
+        '<td style="text-align:right"><strong>' + escapeHtml(r.title || '—') + '</strong></td>' +
+        '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
+        '<td style="font-family:monospace;font-size:11px;direction:ltr">' + escapeHtml(r.code || '—') + '</td>' +
+        '<td>' + sectionBadge + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td>' +
+          '<button class="btn-action btn-edit" onclick="editRecord(' + r.id + ')" title="ویرایش">✏️</button>' +
+          '<button class="btn-action btn-delete" onclick="deleteRecord(' + r.id + ')" title="حذف">🗑️</button>' +
+        '</td>' +
+      '</tr>';
   });
 
   tbody.innerHTML = html;
   renderPagination();
 }
 
+/* ============================================================
+   ۸. صفحه‌بندی
+   ============================================================ */
 function renderPagination() {
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
   const pag = document.getElementById('pagination');
@@ -618,8 +673,11 @@ function renderPagination() {
     return;
   }
 
+  const start = (currentPage - 1) * PAGE_SIZE + 1;
+  const end = Math.min(currentPage * PAGE_SIZE, filteredRows.length);
+
   let html = '';
-  html += '<span class="page-info">نمایش ' + ((currentPage-1)*PAGE_SIZE+1) + ' تا ' + Math.min(currentPage*PAGE_SIZE, filteredRows.length) + ' از ' + filteredRows.length + '</span>';
+  html += '<span class="page-info">نمایش ' + start + ' تا ' + end + ' از ' + filteredRows.length + '</span>';
   html += '<button onclick="goPage(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>⏮️ اول</button>';
   html += '<button onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>◀️ قبلی</button>';
   html += '<span class="page-badge">صفحه ' + currentPage + ' از ' + totalPages + '</span>';
@@ -639,6 +697,9 @@ function goPage(p) {
 }
 window.goPage = goPage;
 
+/* ============================================================
+   ۹. مودال افزودن / ویرایش
+   ============================================================ */
 function showAddModal() {
   if (!editModal) editModal = new bootstrap.Modal(document.getElementById('editModal'));
   document.getElementById('editModalTitle').textContent = 'افزودن رکورد جدید';
@@ -668,11 +729,11 @@ function editRecord(id) {
 window.editRecord = editRecord;
 
 async function saveRecord() {
-  const id = document.getElementById('editId').value;
-  const title = document.getElementById('editTitle').value.trim();
-  const place = document.getElementById('editPlace').value.trim();
-  const code = document.getElementById('editCode').value.trim();
-  const pub = document.getElementById('editPub').value.trim();
+  const id      = document.getElementById('editId').value;
+  const title   = document.getElementById('editTitle').value.trim();
+  const place   = document.getElementById('editPlace').value.trim();
+  const code    = document.getElementById('editCode').value.trim();
+  const pub     = document.getElementById('editPub').value.trim();
   const section = document.getElementById('editSection').value;
 
   if (!title || !place || !code) {
@@ -683,7 +744,7 @@ async function saveRecord() {
   const body = { title: title, place: place, code: code, pub: pub || null, section: section };
 
   try {
-    const url = id ? '/api/tashkeel/' + id : '/api/tashkeel';
+    const url    = id ? '/api/tashkeel/' + id : '/api/tashkeel';
     const method = id ? 'PUT' : 'POST';
     const r = await fetch(url, {
       method: method,
@@ -705,6 +766,9 @@ async function saveRecord() {
 }
 window.saveRecord = saveRecord;
 
+/* ============================================================
+   ۱۰. حذف
+   ============================================================ */
 async function deleteRecord(id) {
   if (!confirm('آیا از حذف این رکورد مطمئن هستید؟')) return;
   try {
@@ -726,7 +790,9 @@ async function deleteRecord(id) {
 }
 window.deleteRecord = deleteRecord;
 
-// ===== PRINT =====
+/* ============================================================
+   ۱۱. پرینت
+   ============================================================ */
 function printTable() {
   if (!filteredRows || filteredRows.length === 0) {
     showToast('رکوردی برای پرینت وجود ندارد', true);
@@ -736,17 +802,19 @@ function printTable() {
   let rowsHtml = '';
   filteredRows.forEach(function(r, idx) {
     const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
-    rowsHtml += '<tr>' +
-      '<td>' + (idx + 1) + '</td>' +
-      '<td>' + escapeHtml(r.pub || '') + '</td>' +
-      '<td style="text-align:right">' + escapeHtml(r.title || '') + '</td>' +
-      '<td style="text-align:right">' + escapeHtml(r.place || '') + '</td>' +
-      '<td style="direction:ltr">' + escapeHtml(r.code || '') + '</td>' +
-      '<td>' + sectionLabel + '</td>' +
-    '</tr>';
+    rowsHtml +=
+      '<tr>' +
+        '<td>' + (idx + 1) + '</td>' +
+        '<td>' + escapeHtml(r.pub || '') + '</td>' +
+        '<td style="text-align:right">' + escapeHtml(r.title || '') + '</td>' +
+        '<td style="text-align:right">' + escapeHtml(r.place || '') + '</td>' +
+        '<td style="direction:ltr">' + escapeHtml(r.code || '') + '</td>' +
+        '<td>' + sectionLabel + '</td>' +
+      '</tr>';
   });
 
-  const html = '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">' +
+  const html =
+    '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">' +
     '<title>پرینت تشکیلات</title>' +
     '<style>@page{size:A4 landscape;margin:8mm}' +
     'body{font-family:Tahoma,Arial,sans-serif;direction:rtl;padding:8px}' +
@@ -792,7 +860,9 @@ function printTable() {
 }
 window.printTable = printTable;
 
-// ===== EXPORT CSV =====
+/* ============================================================
+   ۱۲. خروجی CSV
+   ============================================================ */
 function exportCSV() {
   if (!filteredRows || filteredRows.length === 0) {
     showToast('رکوردی برای خروجی وجود ندارد', true);
@@ -821,7 +891,7 @@ function exportCSV() {
       '', '',
       r.code || '',
       r.place || '',
-      r.amariat || 'آمریت معارف کشک رباط سنگی',
+      r.amariat || 'آمرفلت معارف کشک رباط سنگی',
       sectionLabel
     ];
     csv += row.map(function(v) {
@@ -841,7 +911,9 @@ function exportCSV() {
 }
 window.exportCSV = exportCSV;
 
-// ===== START =====
+/* ============================================================
+   ۱۳. شروع
+   ============================================================ */
 loadStats();
 loadList();
 </script>

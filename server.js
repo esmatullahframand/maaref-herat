@@ -73,6 +73,22 @@ function adminOnly(req, res, next) {
 const num = (v, def = 0) => (v === undefined || v === null || v === '' ? def : Number(v));
 const txt = (v) => (v === undefined || v === null || v === '' ? null : String(v));
 
+// ✅ تبدیل data به رشته JSON (مهم برای ذخیره درست)
+function stringifyData(data) {
+  if (data === undefined || data === null) return null;
+  if (typeof data === 'string') {
+    try {
+      // اگر رشته معتبر JSON بود، همان را برگردان
+      JSON.parse(data);
+      return data;
+    } catch {
+      // اگر رشته JSON نبود، به عنوان مقدار ساده در JSON قرار بده
+      return JSON.stringify({ value: data });
+    }
+  }
+  return JSON.stringify(data);
+}
+
 async function logAttempt(ip, username, success) {
   try {
     await q(
@@ -437,6 +453,8 @@ app.put('/api/school-settings/:id', authRequired, asyncRoute(async (req, res) =>
 // ============================================================
 // RECORDS
 // ============================================================
+
+// ✅ GET — فقط ۱۰۰ رکورد اخیر
 app.get('/api/records', authRequired, asyncRoute(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
   const r = await q(
@@ -445,31 +463,80 @@ app.get('/api/records', authRequired, asyncRoute(async (req, res) => {
       : `SELECT * FROM records WHERE userid=$1 ORDER BY createdat DESC LIMIT 500`,
     isAdmin ? [] : [req.user.id]
   );
-  res.json(r.rows);
+
+  // ✅ تبدیل data از رشته به شیء (برای فرانت‌اند)
+  const rows = r.rows.map(rec => {
+    if (typeof rec.data === 'string') {
+      try { rec.data = JSON.parse(rec.data); } catch { rec.data = {}; }
+    }
+    if (!rec.data || typeof rec.data !== 'object') rec.data = {};
+    return rec;
+  });
+
+  res.json(rows);
 }));
+
 app.get('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   const r = await q('SELECT * FROM records WHERE id=$1', [Number(req.params.id)]);
   const rec = r.rows[0];
   if (!rec) return res.status(404).json({ error: 'یافت نشد' });
   if (req.user.role !== 'admin' && rec.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
+
+  // ✅ تبدیل data
+  if (typeof rec.data === 'string') {
+    try { rec.data = JSON.parse(rec.data); } catch { rec.data = {}; }
+  }
+  if (!rec.data || typeof rec.data !== 'object') rec.data = {};
+
   res.json({ record: rec });
 }));
+
+// ✅ POST — ذخیره اطلاعات کارمند در data
 app.post('/api/records', authRequired, asyncRoute(async (req, res) => {
   const b = req.body || {};
+
+  // اگر b.data وجود نداشت، فیلدهای مستقیم را داخل data قرار بده
+  let employeeData = b.data;
+  if (!employeeData) {
+    const possibleFields = ['firstName', 'lastName', 'jobTitle', 'jobCode', 'fatherName', 'grandfatherName'];
+    const hasDirectFields = possibleFields.some(f => b[f] !== undefined);
+    if (hasDirectFields) {
+      employeeData = { ...b };
+      delete employeeData.schoolname;
+      delete employeeData.district;
+      delete employeeData.status;
+      delete employeeData.editallowed;
+      delete employeeData.userid;
+      delete employeeData.data;
+    }
+  }
+
+  const dataStr = stringifyData(employeeData);
+
   const r = await q(
     `INSERT INTO records (userid, schoolname, district, data, status, editallowed)
      VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
     [
       req.user.role === 'admin' && b.userid ? Number(b.userid) : req.user.id,
-      txt(b.schoolname ?? req.user.schoolname), txt(b.district ?? req.user.district),
-      b.data === undefined || b.data === null ? null : (typeof b.data === 'string' ? b.data : JSON.stringify(b.data)),
+      txt(b.schoolname ?? req.user.schoolname),
+      txt(b.district ?? req.user.district),
+      dataStr, // ✅ رشته JSON
       b.status || 'pending',
       num(b.editallowed, 0)
     ]
   );
-  res.status(201).json({ record: r.rows[0] });
+
+  // ✅ تبدیل data برای پاسخ
+  const rec = r.rows[0];
+  if (typeof rec.data === 'string') {
+    try { rec.data = JSON.parse(rec.data); } catch { rec.data = {}; }
+  }
+
+  res.status(201).json({ record: rec });
 }));
+
+// ✅ PUT — به‌روزرسانی data
 app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const r0 = await q('SELECT * FROM records WHERE id=$1', [id]);
@@ -479,6 +546,31 @@ app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
     return res.status(403).json({ error: 'دسترسی ندارید' });
 
   const b = req.body || {};
+
+  let newData = null;
+  if (b.data !== undefined) {
+    newData = stringifyData(b.data);
+  } else {
+    // اگر data ارسال نشد ولی فیلدهای کارمند ارسال شدند، merge کن
+    const possibleFields = ['firstName', 'lastName', 'jobTitle', 'jobCode', 'fatherName', 'grandfatherName'];
+    const hasDirectFields = possibleFields.some(f => b[f] !== undefined);
+    if (hasDirectFields) {
+      let oldData = rec.data;
+      if (typeof oldData === 'string') {
+        try { oldData = JSON.parse(oldData); } catch { oldData = {}; }
+      }
+      if (!oldData || typeof oldData !== 'object') oldData = {};
+      const merged = { ...oldData, ...b };
+      delete merged.schoolname;
+      delete merged.district;
+      delete merged.status;
+      delete merged.editallowed;
+      delete merged.userid;
+      delete merged.data;
+      newData = stringifyData(merged);
+    }
+  }
+
   const editAllowed = b.editAllowed !== undefined ? b.editAllowed : b.editallowed;
   const r = await q(
     `UPDATE records SET
@@ -492,13 +584,21 @@ app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
     [
       id,
       txt(b.schoolname), txt(b.district),
-      b.data === undefined ? null : (b.data === null ? null : (typeof b.data === 'string' ? b.data : JSON.stringify(b.data))),
+      newData,
       txt(b.status),
       editAllowed === undefined ? null : num(editAllowed)
     ]
   );
-  res.json({ record: r.rows[0] });
+
+  // ✅ تبدیل data
+  const outRec = r.rows[0];
+  if (typeof outRec.data === 'string') {
+    try { outRec.data = JSON.parse(outRec.data); } catch { outRec.data = {}; }
+  }
+
+  res.json({ record: outRec });
 }));
+
 app.delete('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const r0 = await q('SELECT * FROM records WHERE id=$1', [id]);
@@ -785,14 +885,13 @@ app.put('/api/evaluation-permission', authRequired, adminOnly, asyncRoute(async 
 }));
 
 // ============================================================
-// TASHKEEL — مشترک برای همه کاربران
+// TASHKEEL
 // ============================================================
 app.get('/api/tashkeel', authRequired, asyncRoute(async (req, res) => {
   const { section, place, amariat, q: search, mine } = req.query;
   const isAdmin = req.user.role === 'admin';
   const conds = []; const params = [];
 
-  // tashkeel مشترک است — فقط اگر کاربر خودش رکورد اضافه کرده باشد، فیلتر می‌شود
   if (!isAdmin && mine === '1') {
     params.push(req.user.id);
     conds.push(`userid = $${params.length}`);

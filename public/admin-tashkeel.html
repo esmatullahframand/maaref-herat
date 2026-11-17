@@ -8,7 +8,12 @@
 <style>
 :root {
   --primary: #4338ca;
+  --primary-dark: #312e81;
+  --primary-light: #eef2ff;
   --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --dark: #172033;
   --muted: #64748b;
   --border: #e2e8f0;
   --shadow-sm: 0 2px 8px rgba(15,23,42,.05);
@@ -19,98 +24,56 @@
 * { box-sizing: border-box; }
 body {
   background: radial-gradient(circle at top right, #e0e7ff 0, transparent 30%), linear-gradient(135deg, #f8fafc, #eef2f7);
-  color: #172033;
+  color: var(--dark);
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
 }
 
 /* ===== Topbar ===== */
 .topbar {
   background: linear-gradient(120deg, #172554, #312e81 55%, #4338ca) !important;
-  color: white;
-  padding: 18px 24px;
+  color: white; padding: 18px 24px;
   border-radius: 0 0 22px 22px;
   box-shadow: 0 8px 30px rgba(49,46,129,.22);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
 }
 .topbar h5 { color: #fff; font-weight: 800; margin: 0; }
 .topbar small { color: #c7d2fe; font-size: 12px; }
 
 /* ===== Nav ===== */
 .nav-tabs-custom {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-  padding: 12px;
-  margin: 20px 0;
-  background: rgba(255,255,255,.88);
-  border: 1px solid rgba(226,232,240,.9);
-  border-radius: 17px;
-  box-shadow: var(--shadow-sm);
+  display: flex; flex-wrap: wrap; gap: 9px; padding: 12px; margin: 20px 0;
+  background: rgba(255,255,255,.88); border: 1px solid rgba(226,232,240,.9);
+  border-radius: 17px; box-shadow: var(--shadow-sm);
 }
 .nav-tab-btn {
-  border: 1px solid transparent !important;
-  border-radius: 12px !important;
-  padding: 11px 20px !important;
-  font-weight: 700 !important;
-  color: #475569 !important;
-  background: transparent !important;
-  transition: all .25s ease !important;
-  text-decoration: none;
+  border: 1px solid transparent !important; border-radius: 12px !important;
+  padding: 11px 20px !important; font-weight: 700 !important;
+  color: #475569 !important; background: transparent !important;
+  transition: all .25s ease !important; text-decoration: none;
 }
-.nav-tab-btn:hover {
-  color: var(--primary) !important;
-  background: #eef2ff !important;
-  transform: translateY(-2px);
-}
-.nav-tab-btn.active {
-  color: white !important;
-  background: linear-gradient(135deg, #4338ca, #6366f1) !important;
-  box-shadow: 0 5px 14px rgba(67,56,202,.25);
-}
+.nav-tab-btn:hover { color: var(--primary) !important; background: #eef2ff !important; transform: translateY(-2px); }
+.nav-tab-btn.active { color: white !important; background: linear-gradient(135deg, #4338ca, #6366f1) !important; box-shadow: 0 5px 14px rgba(67,56,202,.25); }
 
 /* ===== Cards ===== */
 .card-custom {
-  background: rgba(255,255,255,.96);
-  border: 1px solid #e8edf5;
-  border-radius: var(--radius);
-  padding: 22px;
-  margin-bottom: 20px;
+  background: rgba(255,255,255,.96); border: 1px solid #e8edf5;
+  border-radius: var(--radius); padding: 22px; margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
 }
-.card-custom:hover {
-  border-color: #c7d2fe;
-  box-shadow: var(--shadow-md);
-}
+.card-custom:hover { border-color: #c7d2fe; box-shadow: var(--shadow-md); }
 
 /* ===== Stat Cards ===== */
 .stat-card {
   background: linear-gradient(145deg, #ffffff, #f8faff);
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 23px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
+  border: 1px solid #e2e8f0; border-radius: 18px; padding: 23px;
+  box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
 }
-.stat-card .value {
-  font-weight: 900;
-  color: #1e293b;
-  font-size: 24px;
-  font-variant-numeric: tabular-nums;
-}
-.stat-card .label {
-  color: var(--muted);
-  font-weight: 600;
-  font-size: 13px;
-}
+.stat-card .value { font-weight: 900; color: #1e293b; font-size: 24px; font-variant-numeric: tabular-nums; }
+.stat-card .label { color: var(--muted); font-weight: 600; font-size: 13px; }
 
 /* ===== Buttons ===== */
 .btn-purple { color: white !important; background: linear-gradient(135deg, #6d28d9, #4f46e5) !important; border: none !important; }
@@ -121,105 +84,49 @@ button:hover, .btn:hover { transform: translateY(-2px); filter: brightness(1.05)
 
 /* ===== Forms ===== */
 .form-control, .form-select {
-  width: 100%;
-  min-height: 43px;
-  border: 1px solid #dbe3ef !important;
-  border-radius: 10px !important;
-  background: #fbfdff !important;
-  color: #1e293b !important;
-  padding: 10px 13px !important;
-  font-size: 14px;
+  width: 100%; min-height: 43px; border: 1px solid #dbe3ef !important;
+  border-radius: 10px !important; background: #fbfdff !important;
+  color: #1e293b !important; padding: 10px 13px !important; font-size: 14px;
 }
 .form-control:focus, .form-select:focus {
-  outline: none !important;
-  border-color: #6366f1 !important;
-  background: #fff !important;
-  box-shadow: 0 0 0 4px rgba(99,102,241,.12) !important;
+  outline: none !important; border-color: #6366f1 !important;
+  background: #fff !important; box-shadow: 0 0 0 4px rgba(99,102,241,.12) !important;
 }
 label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 
 /* ===== Filters ===== */
 .filter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 14px;
-  padding: 17px;
-  background: #f8faff;
-  border: 1px solid #e2e8f0;
-  border-radius: 15px;
-  margin: 15px 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px; padding: 17px; background: #f8faff;
+  border: 1px solid #e2e8f0; border-radius: 15px; margin: 15px 0;
 }
 
 /* ===== Table ===== */
 .table-responsive {
-  border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  box-shadow: var(--shadow-sm);
-  background: white;
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 65vh;
+  border-radius: 14px; border: 1px solid #e2e8f0;
+  box-shadow: var(--shadow-sm); background: white;
+  overflow-x: auto; overflow-y: auto; max-height: 65vh;
 }
-.table {
-  width: 100%;
-  margin-bottom: 0;
-  color: #334155;
-  background: white;
-  border-collapse: separate;
-  border-spacing: 0;
-}
+.table { width: 100%; margin-bottom: 0; color: #334155; background: white; border-collapse: separate; border-spacing: 0; }
 .table thead th {
-  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-  color: #312e81;
-  font-weight: 800;
-  padding: 14px 12px;
-  border-bottom: 2px solid #c7d2fe;
-  white-space: nowrap;
-  text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: #312e81;
+  font-weight: 800; padding: 14px 12px; border-bottom: 2px solid #c7d2fe;
+  white-space: nowrap; text-align: center; position: sticky; top: 0; z-index: 2;
 }
-.table tbody td {
-  padding: 12px;
-  vertical-align: middle;
-  border-bottom: 1px solid #edf1f7;
-  text-align: center;
-}
+.table tbody td { padding: 12px; vertical-align: middle; border-bottom: 1px solid #edf1f7; text-align: center; }
 .table tbody tr:nth-child(even) { background: #fafbff; }
 .table tbody tr:hover { background: #eef2ff !important; }
 
 /* ===== Badges ===== */
-.badge-makatib {
-  background: #e3f2fd; color: #1565c0;
-  padding: 4px 10px; border-radius: 30px;
-  font-size: 11px; font-weight: 800;
-}
-.badge-madaris {
-  background: #fce4ec; color: #c2185b;
-  padding: 4px 10px; border-radius: 30px;
-  font-size: 11px; font-weight: 800;
-}
-.badge-filled {
-  background: #d1fae5; color: #065f46;
-  padding: 4px 10px; border-radius: 30px;
-  font-size: 11px; font-weight: 800;
-}
-.badge-empty {
-  background: #fee2e2; color: #991b1b;
-  padding: 4px 10px; border-radius: 30px;
-  font-size: 11px; font-weight: 800;
-}
+.badge-makatib { background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
+.badge-madaris { background: #fce4ec; color: #c2185b; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
+.badge-filled { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
+.badge-empty { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
 
 /* ===== Action ===== */
 .btn-action {
-  border-radius: 8px;
-  padding: 6px 10px;
-  margin: 2px;
-  font-size: 12px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
+  border-radius: 8px; padding: 6px 10px; margin: 2px;
+  font-size: 12px; font-weight: 700; border: none; cursor: pointer;
   transition: all .2s;
 }
 .btn-action:hover { transform: scale(1.06); }
@@ -228,20 +135,10 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 
 /* ===== Toast ===== */
 .toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1e293b;
-  color: white;
-  padding: 14px 24px;
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  display: none;
-  z-index: 9999;
-  font-weight: 700;
-  min-width: 280px;
-  text-align: center;
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #1e293b; color: white; padding: 14px 24px;
+  border-radius: 12px; box-shadow: var(--shadow-lg);
+  display: none; z-index: 9999; font-weight: 700; min-width: 280px; text-align: center;
 }
 .toast.error { background: #991b1b; }
 
@@ -253,33 +150,16 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 .modal-footer { padding: 15px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
 
 /* ===== Pagination ===== */
-#pagination {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-}
+#pagination { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
 #pagination button {
-  padding: 6px 12px;
-  font-size: 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: all .2s;
-  background: #64748b;
-  color: #fff;
+  padding: 6px 12px; font-size: 12px; border: none; border-radius: 8px;
+  cursor: pointer; font-weight: 700; transition: all .2s; background: #64748b; color: #fff;
 }
 #pagination button:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.1); }
 #pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 #pagination .page-badge {
-  background: linear-gradient(135deg, #4338ca, #6366f1);
-  color: white;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 800;
+  background: linear-gradient(135deg, #4338ca, #6366f1); color: white;
+  padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 800;
 }
 #pagination .page-info { font-size: 12px; color: #64748b; font-weight: 600; }
 
@@ -483,7 +363,7 @@ function debouncedLoad() {
 window.debouncedLoad = debouncedLoad;
 
 /* ============================================================
-   ۳. استخراج آرایه از پاسخ API (پشتیبانی از همه ساختارها)
+   ۳. استخراج آرایه از پاسخ API (پشتیبانی از ۷ ساختار)
    ============================================================ */
 function extractArray(payload) {
   if (Array.isArray(payload)) return payload;
@@ -514,7 +394,6 @@ async function loadStats() {
     document.getElementById('sMadaris').textContent = sec.madaris || 0;
     document.getElementById('sPlaces').textContent = (d.by_place || []).length;
 
-    // پر کردن فیلتر محل (فقط یک‌بار)
     const placeSel = document.getElementById('placeFilter');
     if (placeSel.options.length <= 1 && Array.isArray(d.by_place)) {
       d.by_place.forEach(function(p) {
@@ -538,13 +417,22 @@ async function loadRegisteredCodes() {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!r.ok) return;
+
     const payload = await r.json();
     const list = extractArray(payload);
+
     registeredCodesSet = new Set();
+
     list.forEach(function(rec) {
-      const info = (rec && rec.data) || {};
-      if (info.jobCode) registeredCodesSet.add(String(info.jobCode).trim());
+      let info = (rec && rec.data) || {};
+      if (typeof info === 'string') {
+        try { info = JSON.parse(info); } catch (e) { info = {}; }
+      }
+      const code = info.jobCode || info.jobcode || info.code || info.job_code;
+      if (code) registeredCodesSet.add(String(code).trim());
     });
+
+    console.log('✅ کدهای ثبت‌شده (' + registeredCodesSet.size + '):', Array.from(registeredCodesSet));
   } catch (e) {
     console.error('[loadRegisteredCodes]', e);
   }
@@ -568,9 +456,8 @@ async function loadList() {
   tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
 
   try {
-    if (status) {
-      await loadRegisteredCodes();
-    }
+    // بارگذاری کدهای ثبت‌شده — خطای آن لیست را متوقف نکند
+    try { await loadRegisteredCodes(); } catch (e) { console.warn('[loadList] records skip:', e); }
 
     const r = await fetch('/api/tashkeel?' + params.toString(), {
       headers: { 'Authorization': 'Bearer ' + token }
@@ -580,12 +467,23 @@ async function loadList() {
 
     const payload = await r.json();
 
-    // ← پشتیبانی از همه ساختارهای ممکن پاسخ
+    // لاگ تشخیصی — ساختار واقعی پاسخ
+    if (Array.isArray(payload)) {
+      console.log('[loadList] پاسخ: آرایه مستقیم | تعداد:', payload.length);
+    } else if (payload && typeof payload === 'object') {
+      console.log('[loadList] پاسخ: شیء | کلیدها:', Object.keys(payload));
+    } else {
+      console.warn('[loadList] پاسخ نامعتبر:', payload);
+    }
+
+    // استخراج آرایه از هر ساختاری
     let rows = extractArray(payload);
 
     if (rows.length === 0 && payload && typeof payload === 'object' && !Array.isArray(payload)) {
-      console.warn('[loadList] پاسخ API آرایه نبود. کلیدهای موجود:', Object.keys(payload));
+      console.warn('[loadList] آرایه‌ای یافت نشد. کلیدهای پاسخ:', Object.keys(payload));
     }
+
+    console.log('[loadList] تعداد رکوردهای دریافتی:', rows.length);
 
     // اعمال فیلتر وضعیت
     if (status === 'filled') {
@@ -619,8 +517,7 @@ function renderTable() {
   document.getElementById('resultCount').textContent = filteredRows.length + ' رکورد';
 
   if (filteredRows.length === 0) {
-    tbody.innerHTML =
-      '<tr><td colspan="8" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
@@ -632,6 +529,7 @@ function renderTable() {
   let html = '';
   pageRows.forEach(function(r, idx) {
     const globalIdx = start + idx + 1;
+
     const sectionBadge = r.section === 'amariat'
       ? '<span class="badge-makatib">🏫 مکاتب</span>'
       : '<span class="badge-madaris">🏫 مدارس</span>';
@@ -683,7 +581,6 @@ function renderPagination() {
   html += '<span class="page-badge">صفحه ' + currentPage + ' از ' + totalPages + '</span>';
   html += '<button onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>بعدی ▶️</button>';
   html += '<button onclick="goPage(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>آخر ⏭️</button>';
-
   pag.innerHTML = html;
 }
 
@@ -816,21 +713,22 @@ function printTable() {
   const html =
     '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">' +
     '<title>پرینت تشکیلات</title>' +
-    '<style>@page{size:A4 landscape;margin:8mm}' +
-    'body{font-family:Tahoma,Arial,sans-serif;direction:rtl;padding:8px}' +
-    '.header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:10px}' +
-    '.header h1{font-size:16px;margin:0 0 4px}' +
-    '.header h2{font-size:13px;margin:0 0 2px;font-weight:normal}' +
-    '.header h3{font-size:11px;margin:0;font-weight:normal;color:#444}' +
-    '.header h4{font-size:12px;margin:6px 0 0;font-weight:bold}' +
-    '.meta{display:flex;justify-content:space-between;font-size:10px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid #ccc}' +
-    'table{width:100%;border-collapse:collapse;font-size:10px}' +
-    'thead th{background:#e8e8e8;border:1px solid #333;padding:5px 4px;font-weight:bold;text-align:center}' +
-    'tbody td{border:1px solid #333;padding:4px;text-align:center}' +
-    'tbody tr:nth-child(even) td{background:#f8f8f8}' +
-    '@media print{.no-print{display:none!important}body{padding:0}}' +
-    '.no-print{text-align:center;margin-top:15px}' +
-    '.no-print button{padding:10px 25px;font-size:14px;background:#4338ca;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold}' +
+    '<style>' +
+    '@page { size: A4 landscape; margin: 8mm; }' +
+    'body { font-family: Tahoma, Arial, sans-serif; direction: rtl; padding: 8px; }' +
+    '.header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; }' +
+    '.header h1 { font-size: 16px; margin: 0 0 4px 0; }' +
+    '.header h2 { font-size: 13px; margin: 0 0 2px 0; font-weight: normal; }' +
+    '.header h3 { font-size: 11px; margin: 0; font-weight: normal; color: #444; }' +
+    '.header h4 { font-size: 12px; margin: 6px 0 0 0; font-weight: bold; }' +
+    '.meta { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 8px; padding: 4px 0; border-bottom: 1px solid #ccc; }' +
+    'table { width: 100%; border-collapse: collapse; font-size: 10px; }' +
+    'thead th { background: #e8e8e8; border: 1px solid #333; padding: 5px 4px; font-weight: bold; text-align: center; }' +
+    'tbody td { border: 1px solid #333; padding: 4px; text-align: center; }' +
+    'tbody tr:nth-child(even) td { background: #f8f8f8; }' +
+    '@media print { .no-print { display: none !important; } body { padding: 0; } }' +
+    '.no-print { text-align: center; margin-top: 15px; }' +
+    '.no-print button { padding: 10px 25px; font-size: 14px; background: #4338ca; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }' +
     '</style></head><body>' +
     '<div class="header">' +
       '<h1>امارت اسلامی افغانستان</h1>' +
@@ -891,7 +789,7 @@ function exportCSV() {
       '', '',
       r.code || '',
       r.place || '',
-      r.amariat || 'آمرفلت معارف کشک رباط سنگی',
+      r.amariat || 'آمریت معارف کشک رباط سنگی',
       sectionLabel
     ];
     csv += row.map(function(v) {

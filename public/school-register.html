@@ -241,7 +241,7 @@ if (!token || token === 'undefined' || token === 'null') { localStorage.clear();
 document.getElementById('schoolInfo').innerText = `${user.username || '-'} | ${user.schoolname || ''}`;
 
 // ============================================================
-// 2. MAP: نام مکتب (users) → place (tashkeel)
+// 2. MAP
 // ============================================================
 const SCHOOL_NAME_TO_PLACE = {
   'لیسه پسرانه تورغندی': 'لیسه مختلط تورغندی',
@@ -337,9 +337,9 @@ const MADARIS_RANGE = { first: Number(user.madaris_first_code) || null, last: Nu
 // ============================================================
 let schoolTashkeel = [];
 let managerCodes = {};
-let codeToSchoolMap = {};   // کد → place
-let codeToTitleMap = {};    // کد → title
-let mySchoolCodes = new Set(); // کدهای همین مکتب
+let codeToSchoolMap = {};
+let codeToTitleMap = {};
+let mySchoolCodes = new Set();
 let tashkeelReady = false;
 
 // ============================================================
@@ -400,7 +400,6 @@ async function loadSchoolTashkeel() {
     const data = await r.json();
     const all = Array.isArray(data) ? data : (Array.isArray(data.tashkeel) ? data.tashkeel : []);
 
-    // همه کدها → place و title
     codeToSchoolMap = {};
     codeToTitleMap = {};
     all.forEach(t => {
@@ -411,13 +410,9 @@ async function loadSchoolTashkeel() {
       }
     });
 
-    // فیلتر رکوردهای این مکتب
     schoolTashkeel = all.filter(t => t.place && String(t.place).trim() === myPlaceName);
-
-    // Set کدهای این مکتب
     mySchoolCodes = new Set(schoolTashkeel.map(t => String(t.code || '').trim()));
 
-    // کدهای مدیر
     managerCodes = {};
     const managerTitles = ['آمر', 'مدیر', 'مدیر عمومی', 'مهتمم'];
     schoolTashkeel.forEach(t => {
@@ -428,8 +423,6 @@ async function loadSchoolTashkeel() {
     });
 
     tashkeelReady = true;
-    console.log('tashkeel total:', all.length, '| my place:', myPlaceName, '| my codes:', schoolTashkeel.length);
-    console.log('my codes sample:', schoolTashkeel.slice(0, 5).map(t => t.code + ' → ' + t.title));
   } catch (e) {
     console.error('loadSchoolTashkeel error:', e);
     tashkeelReady = false;
@@ -440,19 +433,13 @@ async function loadSchoolTashkeel() {
 // 8. TITLE MATCHING
 // ============================================================
 function normalizeTitle(s) {
-  return String(s || '')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/[()（）]/g, '')
-    .toLowerCase();
+  return String(s || '').trim().replace(/\s+/g, ' ').replace(/[()（）]/g, '').toLowerCase();
 }
-
 function isTitleMatch(selected, codeTitle) {
   const s = normalizeTitle(selected);
   const c = normalizeTitle(codeTitle);
   if (!s || !c) return true;
   if (s === c) return true;
-
   const aliases = {
     'آمر': ['آمر', 'امر'],
     'مدیر': ['مدیر', 'مدیر عمومی'],
@@ -473,7 +460,6 @@ function isTitleMatch(selected, codeTitle) {
     'معتمد جنسی (تحویلدار)': ['معتمد نقدی', 'معتمد', 'تحویلدار'],
     'سایر': []
   };
-
   const list = aliases[selected] || [s];
   if (list.length === 0) return true;
   return list.some(a => c.includes(normalizeTitle(a)));
@@ -580,19 +566,13 @@ function validateJobCodeWithTashkeel(codeStr) {
   if (!basic.valid) return basic;
 
   const cleaned = basic.formatted;
-
-  // چک ۱: آیا کد در tashkeel هست؟
   if (!codeToSchoolMap[cleaned]) {
     return { valid: false, error: 'این کد در تشکیلات معارف وجود ندارد' };
   }
-
-  // چک ۲: آیا کد متعلق به همین مکتب است؟
   if (!mySchoolCodes.has(cleaned)) {
     const owner = codeToSchoolMap[cleaned] || 'نامشخص';
     return { valid: false, error: `❌ این کد مربوط به مکتب «${owner}» است، نه مکتب شما` };
   }
-
-  // چک ۳: آیا عنوان بست با عنوان کد مطابقت دارد؟
   const selectedTitle = document.getElementById('jobTitle').value.trim();
   if (selectedTitle) {
     const codeTitle = codeToTitleMap[cleaned] || '';
@@ -600,7 +580,6 @@ function validateJobCodeWithTashkeel(codeStr) {
       return { valid: false, error: `❌ این کد برای عنوان «${codeTitle}» است، نه «${selectedTitle}»` };
     }
   }
-
   return { valid: true, formatted: cleaned, school: myPlaceName };
 }
 
@@ -792,7 +771,7 @@ attachJobCodeValidation();
 attachETazkiraValidation();
 
 // ============================================================
-// 15. SUBMIT
+// 15. SUBMIT — اصلاح‌شده (ارسال در data)
 // ============================================================
 document.getElementById('recordForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -800,80 +779,88 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.innerText = '⏳ در حال ذخیره...';
 
+  // ✅ فیلدهای کارمند را داخل data قرار می‌دهیم
   const body = {
-    jobTitle: document.getElementById('jobTitle').value.trim(),
-    jobCode: document.getElementById('jobCode').value.trim(),
-    firstName: document.getElementById('firstName').value.trim(),
-    lastName: document.getElementById('lastName').value.trim(),
-    fatherName: document.getElementById('fatherName').value.trim(),
-    grandfatherName: document.getElementById('grandfatherName').value.trim(),
-    eTazkira: document.getElementById('eTazkira').value.trim(),
-    paperTazkira: document.getElementById('paperTazkira').value.trim(),
-    tazkiraPage: document.getElementById('tazkiraPage').value.trim(),
-    tazkiraVolume: document.getElementById('tazkiraVolume').value.trim(),
-    ethnicity: document.getElementById('ethnicity').value.trim(),
-    gender: document.getElementById('gender').value,
-    maritalStatus: document.getElementById('maritalStatus').value,
-    birthDate: document.getElementById('birthDate').value.trim(),
-    birthProvince: document.getElementById('birthProvince').value.trim(),
-    birthDistrict: document.getElementById('birthDistrict').value.trim(),
-    originProvince: document.getElementById('originProvince').value.trim(),
-    originDistrict: document.getElementById('originDistrict').value.trim(),
-    currentProvince: document.getElementById('currentProvince').value.trim(),
-    currentDistrict: document.getElementById('currentDistrict').value.trim(),
-    phone: document.getElementById('phone').value.trim(),
-    disability: document.getElementById('disability').value,
-    bust: document.getElementById('bust').value.trim(),
-    grade: document.getElementById('grade').value.trim(),
-    firstAppointmentDate: document.getElementById('firstAppointmentDate').value.trim(),
-    currentPositionDate: document.getElementById('currentPositionDate').value.trim(),
-    positionType: document.getElementById('positionType').value,
-    employmentType: document.getElementById('employmentType').value,
-    degree: document.getElementById('degree').value.trim(),
-    major: document.getElementById('major').value.trim(),
-    eduInstitute: document.getElementById('eduInstitute').value.trim(),
-    eduInstituteLocation: document.getElementById('eduInstituteLocation').value.trim(),
-    enrollmentDate: document.getElementById('enrollmentDate').value.trim(),
-    graduationDate: document.getElementById('graduationDate').value.trim(),
-    teachingField: document.getElementById('teachingField').value.trim(),
-    workshopStatus: document.getElementById('workshopStatus').value,
-    workshopTitle: document.getElementById('workshopTitle').value.trim(),
-    workshopDuration: document.getElementById('workshopDuration').value.trim(),
-    totalTeachingHours: document.getElementById('totalTeachingHours').value.trim(),
-    serviceStatus: document.getElementById('serviceStatus').value,
-    serviceDistrict: document.getElementById('serviceDistrict').value.trim(),
-    serviceSchool: document.getElementById('serviceSchool').value.trim(),
-    serviceDate: document.getElementById('serviceDate').value.trim(),
-    agreement: true
+    schoolname: user.schoolname || '',
+    district: user.district || '',
+    status: 'pending',
+    data: {
+      jobTitle: document.getElementById('jobTitle').value.trim(),
+      jobCode: document.getElementById('jobCode').value.trim(),
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName: document.getElementById('lastName').value.trim(),
+      fatherName: document.getElementById('fatherName').value.trim(),
+      grandfatherName: document.getElementById('grandfatherName').value.trim(),
+      eTazkira: document.getElementById('eTazkira').value.trim(),
+      paperTazkira: document.getElementById('paperTazkira').value.trim(),
+      tazkiraPage: document.getElementById('tazkiraPage').value.trim(),
+      tazkiraVolume: document.getElementById('tazkiraVolume').value.trim(),
+      ethnicity: document.getElementById('ethnicity').value.trim(),
+      gender: document.getElementById('gender').value,
+      maritalStatus: document.getElementById('maritalStatus').value,
+      birthDate: document.getElementById('birthDate').value.trim(),
+      birthProvince: document.getElementById('birthProvince').value.trim(),
+      birthDistrict: document.getElementById('birthDistrict').value.trim(),
+      originProvince: document.getElementById('originProvince').value.trim(),
+      originDistrict: document.getElementById('originDistrict').value.trim(),
+      currentProvince: document.getElementById('currentProvince').value.trim(),
+      currentDistrict: document.getElementById('currentDistrict').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      disability: document.getElementById('disability').value,
+      bust: document.getElementById('bust').value.trim(),
+      grade: document.getElementById('grade').value.trim(),
+      firstAppointmentDate: document.getElementById('firstAppointmentDate').value.trim(),
+      currentPositionDate: document.getElementById('currentPositionDate').value.trim(),
+      positionType: document.getElementById('positionType').value,
+      employmentType: document.getElementById('employmentType').value,
+      degree: document.getElementById('degree').value.trim(),
+      major: document.getElementById('major').value.trim(),
+      eduInstitute: document.getElementById('eduInstitute').value.trim(),
+      eduInstituteLocation: document.getElementById('eduInstituteLocation').value.trim(),
+      enrollmentDate: document.getElementById('enrollmentDate').value.trim(),
+      graduationDate: document.getElementById('graduationDate').value.trim(),
+      teachingField: document.getElementById('teachingField').value.trim(),
+      workshopStatus: document.getElementById('workshopStatus').value,
+      workshopTitle: document.getElementById('workshopTitle').value.trim(),
+      workshopDuration: document.getElementById('workshopDuration').value.trim(),
+      totalTeachingHours: document.getElementById('totalTeachingHours').value.trim(),
+      serviceStatus: document.getElementById('serviceStatus').value,
+      serviceDistrict: document.getElementById('serviceDistrict').value.trim(),
+      serviceSchool: document.getElementById('serviceSchool').value.trim(),
+      serviceDate: document.getElementById('serviceDate').value.trim(),
+      agreement: true
+    }
   };
 
-  if (!body.jobTitle || !body.firstName || !body.fatherName || !body.grandfatherName) {
+  const d = body.data;
+
+  if (!d.jobTitle || !d.firstName || !d.fatherName || !d.grandfatherName) {
     showToast('❌ فیلدهای الزامی را پر کنید', true);
     btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return;
   }
   if (!tashkeelReady) { showToast('⏳ تشکیلات هنوز بارگذاری نشده، صبر کنید', true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
 
-  if (body.jobCode) {
-    const jc = validateJobCodeWithTashkeel(body.jobCode);
+  if (d.jobCode) {
+    const jc = validateJobCodeWithTashkeel(d.jobCode);
     if (!jc.valid) { showToast('❌ ' + jc.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
-    body.jobCode = jc.formatted;
+    d.jobCode = jc.formatted;
   }
 
-  if (isManagerTitle(body.jobTitle)) {
-    const expected = findManagerCodeForTitle(body.jobTitle);
-    if (expected && body.jobCode !== expected) { showToast(`❌ برای «${body.jobTitle}»، کد باید ${expected} باشد`, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
-    if (!expected) { showToast(`⚠️ کد مدیر برای «${body.jobTitle}» پیدا نشد`, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
+  if (isManagerTitle(d.jobTitle)) {
+    const expected = findManagerCodeForTitle(d.jobTitle);
+    if (expected && d.jobCode !== expected) { showToast(`❌ برای «${d.jobTitle}»، کد باید ${expected} باشد`, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
+    if (!expected) { showToast(`⚠️ کد مدیر برای «${d.jobTitle}» پیدا نشد`, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
   }
 
-  const edu = validateEducationFields(body.jobTitle);
+  const edu = validateEducationFields(d.jobTitle);
   if (!edu.valid) { showToast('❌ ' + edu.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
 
-  if (body.jobCode) {
-    const u = await checkJobCodeUnique(body.jobCode);
+  if (d.jobCode) {
+    const u = await checkJobCodeUnique(d.jobCode);
     if (!u.unique) { showToast(buildDuplicateMessage('jobcode', u), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
   }
-  if (body.eTazkira) {
-    const et = validateETazkira(body.eTazkira);
+  if (d.eTazkira) {
+    const et = validateETazkira(d.eTazkira);
     if (!et.valid) { showToast('❌ ' + et.error, true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
     const u = await checkETazkiraUnique(et.formatted);
     if (!u.unique) { showToast(buildDuplicateMessage('etazkira', u), true); btn.disabled = false; btn.innerText = '💾 ذخیره و ارسال'; return; }
@@ -887,8 +874,8 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
       try {
         await emailjs.send("service_9aqrddc", "template_iizq261", {
           school_name: user.schoolname || 'نامشخص',
-          employee_name: body.firstName + ' ' + (body.lastName || ''),
-          job_title: body.jobTitle || 'نامشخص',
+          employee_name: d.firstName + ' ' + (d.lastName || ''),
+          job_title: d.jobTitle || 'نامشخص',
           register_time: new Date().toLocaleString('fa-IR')
         });
       } catch (er) { console.error('Email:', er); }

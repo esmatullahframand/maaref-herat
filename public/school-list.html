@@ -262,6 +262,7 @@ td code { color: #087e8b; background: #eaf5f7; padding: 4px 7px; border-radius: 
 </div>
 
 <div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // 1. AUTH
@@ -403,6 +404,72 @@ function normalizeDigits(str) {
     return ch;
   }).join('');
 }
+function normalizeJobCode(value) {
+  return normalizeDigits(String(value ?? '')).replace(/[\s\u200c\u200f\u200e\-_/]/g, '').trim().toLowerCase();
+}
+function recordInfo(rec) {
+  let d = rec && (rec.data || rec.employee || rec.profile || rec);
+  if (typeof d === 'string') { try { d = JSON.parse(d); } catch (_) { d = {}; } }
+  return d && typeof d === 'object' ? d : {};
+}
+function firstValue(obj, keys, fallback='') {
+  for (const k of keys) { const v = obj && obj[k]; if (v !== undefined && v !== null && String(v).trim() !== '') return v; }
+  return fallback;
+}
+function employeeForRecord(rec) {
+  const d = recordInfo(rec);
+  return {
+    firstName: firstValue(d, ['firstName','firstname','name','first_name','اسم','نام']),
+    lastName: firstValue(d, ['lastName','lastname','surname','takhallos','last_name','تخلص']),
+    fatherName: firstValue(d, ['fatherName','fathername','father_name','walid','ولد','نام پدر']),
+    jobTitle: firstValue(d, ['jobTitle','job_title','job','position','title','عنوان وظیفه','عنوان بست']),
+    jobCode: firstValue(d, ['jobCode','jobcode','job_code','code','postCode','کود نمبر','کد بست']),
+    school: firstValue(d, ['school','schoolName','schoolname','school_name','maktab','place','مکتب','نام مکتب']),
+    phone: firstValue(d, ['phone','mobile','contact','phoneNumber','phone_number','شماره تماس','تماس']),
+    gender: firstValue(d, ['gender','sex','جنسیت']),
+    education: firstValue(d, ['education','degree','تحصیل','درجه تحصیل']),
+    field: firstValue(d, ['field','major','رشته تحصیل']),
+    teachingField: firstValue(d, ['teachingField','teaching_field','رشته تدریس']),
+    grade: firstValue(d, ['grade','bast','بست']), step: firstValue(d, ['step','قدم']),
+    appointmentDate: firstValue(d, ['appointmentDate','appointment_date','تاریخ تقرر']),
+    birthDate: firstValue(d, ['birthDate','birth_date','تاریخ تولد']),
+    tazkira: firstValue(d, ['tazkira','nationalId','national_id','نمبر تذکره']),
+    ethnicity: firstValue(d, ['ethnicity',' قومیت','قومیت']),
+    status: rec && rec.status || d.status || ''
+  };
+}
+function buildSchoolEmployeeMap() {
+  const map = new Map();
+  (cachedRecords || []).forEach(rec => {
+    const e = employeeForRecord(rec), key = normalizeJobCode(e.jobCode);
+    if (key) map.set(key, e);
+  });
+  return map;
+}
+function tashkeelExportRow(t, emp, index, amariat='رباط سنگی') {
+  const e = emp || {};
+  return [index + 1, t.priv || '', e.firstName || '', e.fatherName || '', '', e.lastName || '', e.jobTitle || t.title || '', e.education || '', e.field || '', e.teachingField || '', e.grade || '', e.step || '', e.appointmentDate || '', e.birthDate || '', e.tazkira || '', e.gender || '', e.ethnicity || '', t.code || '', e.school || t.place || '', amariat, e.phone || ''];
+}
+function downloadTashkeelXlsx(rows, filename) {
+  const headers = ['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];
+  const groupHeader = ['نمبر عمومی','نمبر خصوصی','مشخصات وظیفوی','','','','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','رتبه','','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];
+  const subHeader = ['','','اسم','ولد','ولدیت','تخلص','','','','','بست','قدم','','','','','','','','',''];
+  const data = [
+    ['امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی'],
+    ['جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف'],
+    groupHeader, subHeader, ['پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی'], headers, ...rows
+  ];
+  if (window.XLSX) {
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:20}},{s:{r:1,c:0},e:{r:1,c:20}},{s:{r:2,c:2},e:{r:2,c:5}},{s:{r:2,c:10},e:{r:2,c:11}},{s:{r:4,c:0},e:{r:4,c:20}}];
+    ws['!cols'] = headers.map((_,i)=>({wch: i===6?24: i===18?25: i===20?20:14}));
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'تشکیل'); XLSX.writeFile(wb, filename.replace(/\.xlsx$/i,'')+'.xlsx');
+  } else {
+    const csv='\uFEFF'+data.map(r=>headers.map((_,i)=>{const v=r[i]??'';return '"'+String(v).replace(/"/g,'""')+'"';}).join(',')).join('\n');
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); const link=document.createElement('a'); link.href=url; link.download=filename.replace(/\.xlsx$/i,'')+'.csv'; link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+}
+
 function logout() { localStorage.clear(); window.location.href = '/'; }
 window.logout = logout;
 
@@ -648,80 +715,21 @@ async function openMyTashkeel() {
 window.openMyTashkeel = openMyTashkeel;
 
 function renderTashkeelTable() {
-  const tbody = document.getElementById('tableBody');
-  const search = (document.getElementById('tashkeelSearch')?.value || '').trim().toLowerCase();
-  const status = (document.getElementById('tashkeelStatus')?.value || '');
-
-  // نگاشت کد → کارمند
-  const codeToEmployeeMap = {};
-  cachedRecords.forEach(rec => {
-    const info = rec.data || {};
-    if (info.jobCode) {
-      const name = `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص';
-      codeToEmployeeMap[info.jobCode] = { name, status: rec.status };
-    }
+  const tbody=document.getElementById('tableBody');
+  const search=(document.getElementById('tashkeelSearch')?.value||'').trim().toLowerCase();
+  const status=document.getElementById('tashkeelStatus')?.value||'';
+  const map=buildSchoolEmployeeMap();
+  const getEmp=t=>map.get(normalizeJobCode(t.code));
+  const filtered=tashkeelData.filter(t=>{
+    const e=getEmp(t); const q=[t.code,t.title,t.place,e?.firstName,e?.lastName,e?.fatherName,e?.phone].join(' ').toLowerCase();
+    if(search&&!q.includes(search)) return false;
+    if(status==='filled'&&!e) return false; if(status==='empty'&&e) return false; return true;
   });
-
-  let filtered = tashkeelData.filter(t => {
-    if (search && !(t.code || '').toLowerCase().includes(search) && !(t.title || '').toLowerCase().includes(search)) return false;
-    const isFilled = !!codeToEmployeeMap[t.code];
-    if (status === 'filled' && !isFilled) return false;
-    if (status === 'empty' && isFilled) return false;
-    return true;
-  });
-
-  tashkeelFiltered = filtered;
-
-  // آمار
-  const total = tashkeelData.length;
-  const filled = tashkeelData.filter(t => codeToEmployeeMap[t.code]).length;
-  const empty = total - filled;
-
-  document.getElementById('statsContainer').innerHTML = `
-    <div class="stat-box" style="background:#eff6ff;border-color:#c9ddfa;">
-      <div class="stat-label">📋 کل کدهای تشکیل</div>
-      <div class="stat-value" style="color:#2563eb;">${total}</div>
-    </div>
-    <div class="stat-box" style="background:#effaf5;border-color:#c6ead7;">
-      <div class="stat-label">✅ پر (کارمند ثبت شده)</div>
-      <div class="stat-value" style="color:#15845f;">${filled}</div>
-    </div>
-    <div class="stat-box" style="background:#fff1f1;border-color:#fcc5c5;">
-      <div class="stat-label">❌ خالی (بدون کارمند)</div>
-      <div class="stat-value" style="color:#b71c1c;">${empty}</div>
-    </div>
-  `;
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">هیچ کدی با این فیلتر یافت نشد</td></tr>';
-    return;
-  }
-
-  let html = '';
-  filtered.forEach((t, idx) => {
-    const emp = codeToEmployeeMap[t.code];
-    const statusHtml = emp
-      ? '<span class="status-badge status-filled">✅ پر</span>'
-      : '<span class="status-badge status-empty">❌ خالی</span>';
-    const empHtml = emp
-      ? `<b>${escapeHtml(emp.name)}</b> ${emp.status === 'approved' ? '✅' : '⏳'}`
-      : '<span style="color:#94a3b8;">—</span>';
-    const sectionBadge = t.section === 'madaris'
-      ? '<span class="section-badge section-madaris">🏫 مدارس</span>'
-      : '<span class="section-badge section-amariat">🏛️ آمریت</span>';
-
-    html += `<tr>
-      <td>${idx + 1}</td>
-      <td><b>${escapeHtml(t.title || '—')}</b></td>
-      <td><code>${escapeHtml(t.code || '—')}</code></td>
-      <td>${escapeHtml(t.pub || '—')}</td>
-      <td>${escapeHtml(t.priv || '—')}</td>
-      <td>${sectionBadge}</td>
-      <td>${statusHtml}</td>
-      <td>${empHtml}</td>
-    </tr>`;
-  });
-  tbody.innerHTML = html;
+  tashkeelFiltered=filtered;
+  const total=tashkeelData.length, filled=tashkeelData.filter(t=>getEmp(t)).length;
+  document.getElementById('statsContainer').innerHTML=`<div class="stat-box"><div class="stat-label">📋 کل کدهای تشکیل</div><div class="stat-value">${total}</div></div><div class="stat-box"><div class="stat-label">✅ پر</div><div class="stat-value">${filled}</div></div><div class="stat-box"><div class="stat-label">❌ خالی</div><div class="stat-value">${total-filled}</div></div>`;
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="8" class="empty-state">هیچ کدی با این فیلتر یافت نشد</td></tr>';return;}
+  tbody.innerHTML=filtered.map((t,i)=>{const e=getEmp(t);return `<tr><td>${i+1}</td><td><b>${escapeHtml(t.title||'—')}</b></td><td><code>${escapeHtml(t.code||'—')}</code></td><td>${escapeHtml(t.pub||'—')}</td><td>${escapeHtml(t.priv||'—')}</td><td>${t.section==='madaris'?'مدارس':'آمریت'}</td><td>${e?'<span class="status-badge status-filled">✅ پر</span>':'<span class="status-badge status-empty">❌ خالی</span>'}</td><td>${e?`<b>${escapeHtml(e.firstName)} ${escapeHtml(e.lastName)}</b><br>ولد ${escapeHtml(e.fatherName)}<br><small>${escapeHtml(e.jobTitle||t.title)} | ${escapeHtml(e.jobCode||t.code)} | ${escapeHtml(e.school||t.place)} | ${escapeHtml(e.phone)}</small>`:'—'}</td></tr>`;}).join('');
 }
 window.renderTashkeelTable = renderTashkeelTable;
 
@@ -729,60 +737,13 @@ window.renderTashkeelTable = renderTashkeelTable;
 // 7. PRINT TASHKEEL
 // ═══════════════════════════════════════════════════════════
 function printTashkeel() {
-  if (!tashkeelFiltered || tashkeelFiltered.length === 0) {
-    showToast('❌ کدی برای پرینت وجود ندارد', true);
-    return;
-  }
-
-  const codeToEmployeeMap = {};
-  cachedRecords.forEach(rec => {
-    const info = rec.data || {};
-    if (info.jobCode) {
-      const name = `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص';
-      codeToEmployeeMap[info.jobCode] = { name, status: rec.status };
-    }
-  });
-
-  let html = `<div style="text-align:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
-    <h2 style="margin:0; font-size:18px;">ریاست معارف ولایت هرات</h2>
-    <h4 style="margin:5px 0 0 0; font-size:13px;">تشکیل مکتب - ${escapeHtml(user.schoolname || '')}</h4>
-    <div style="font-size:11px; margin-top:5px;">تاریخ پرینت: ${new Date().toLocaleDateString('fa-IR')}</div>
-  </div>`;
-
-  html += `<table style="width:100%; border-collapse:collapse; font-size:11px;">
-    <thead>
-      <tr style="background:#eee;">
-        <th style="border:1px solid #333; padding:6px;">#</th>
-        <th style="border:1px solid #333; padding:6px;">عنوان بست</th>
-        <th style="border:1px solid #333; padding:6px;">کد بست</th>
-        <th style="border:1px solid #333; padding:6px;">نمبر عمومی</th>
-        <th style="border:1px solid #333; padding:6px;">نمبر خصوصی</th>
-        <th style="border:1px solid #333; padding:6px;">وضعیت</th>
-        <th style="border:1px solid #333; padding:6px;">کارمند</th>
-      </tr>
-    </thead>
-    <tbody>`;
-
-  tashkeelFiltered.forEach((t, idx) => {
-    const emp = codeToEmployeeMap[t.code];
-    const statusText = emp ? 'پر' : 'خالی';
-    const empName = emp ? emp.name : '—';
-    html += `<tr>
-      <td style="border:1px solid #333; padding:6px; text-align:center;">${idx + 1}</td>
-      <td style="border:1px solid #333; padding:6px;">${escapeHtml(t.title || '—')}</td>
-      <td style="border:1px solid #333; padding:6px; text-align:center;">${escapeHtml(t.code || '—')}</td>
-      <td style="border:1px solid #333; padding:6px; text-align:center;">${escapeHtml(t.pub || '—')}</td>
-      <td style="border:1px solid #333; padding:6px; text-align:center;">${escapeHtml(t.priv || '—')}</td>
-      <td style="border:1px solid #333; padding:6px; text-align:center;">${statusText}</td>
-      <td style="border:1px solid #333; padding:6px;">${escapeHtml(empName)}</td>
-    </tr>`;
-  });
-
-  html += `</tbody></table>`;
-
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرینت تشکیل</title><style>body { font-family: Tahoma; direction: rtl; } @media print { @page { size: A4 portrait; margin: 1cm; } }</style></head><body>${html}<script>setTimeout(()=>window.print(),500);<\/script></body></html>`);
-  win.document.close();
+  if(!tashkeelFiltered?.length){showToast('❌ کدی برای پرینت وجود ندارد',true);return;}
+  const map=buildSchoolEmployeeMap();
+  const heads=['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];
+  const rows=tashkeelFiltered.map((t,i)=>tashkeelExportRow(t,map.get(normalizeJobCode(t.code)),i,user.schoolname||'رباط سنگی'));
+  const table=`<table><thead><tr><th rowspan=2>نمبر عمومی</th><th rowspan=2>نمبر خصوصی</th><th colspan=4>مشخصات وظیفوی</th><th rowspan=2>عنوان وظیفه</th><th rowspan=2>درجه تحصیل</th><th rowspan=2>رشته تحصیل</th><th rowspan=2>رشته تدریس</th><th colspan=2>رتبه</th><th rowspan=2>تاریخ تقرر</th><th rowspan=2>تاریخ تولد</th><th rowspan=2>نمبر تذکره</th><th rowspan=2>جنسیت</th><th rowspan=2>قومیت</th><th rowspan=2>کود نمبر</th><th rowspan=2>محل وظیفه</th><th rowspan=2>آمریت معارف</th><th rowspan=2>ملاحظات</th></tr><tr><th>اسم</th><th>ولد</th><th>ولدیت</th><th>تخلص</th><th>بست</th><th>قدم</th></tr></thead><tbody><tr><th colspan=21>پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی</th></tr>${rows.map(r=>`<tr>${r.map(v=>`<td>${escapeHtml(v??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  const w=window.open('','_blank'); if(!w){showToast('اجازه بازشدن پنجره چاپ را بدهید',true);return;}
+  w.document.write(`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>جدول شهرت پرسونل</title><style>@page{size:A3 landscape;margin:8mm}body{font-family:Tahoma,Arial,sans-serif}h2,h3{text-align:center;white-space:pre-line}table{border-collapse:collapse;width:100%;font-size:8px}th,td{border:1px solid #222;padding:4px;text-align:center;white-space:normal}th{background:#eee;font-weight:bold}tr{break-inside:avoid}</style></head><body><h2>امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی</h2><h3>جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف</h3>${table}<script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script></body></html>`);w.document.close();
 }
 window.printTashkeel = printTashkeel;
 
@@ -790,53 +751,11 @@ window.printTashkeel = printTashkeel;
 // 8. EXPORT TASHKEEL EXCEL
 // ═══════════════════════════════════════════════════════════
 function exportTashkeelExcel() {
-  if (!tashkeelFiltered || tashkeelFiltered.length === 0) {
-    showToast('❌ کدی برای خروجی وجود ندارد', true);
-    return;
-  }
-
-  const codeToEmployeeMap = {};
-  cachedRecords.forEach(rec => {
-    const info = rec.data || {};
-    if (info.jobCode) {
-      const name = `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'نامشخص';
-      codeToEmployeeMap[info.jobCode] = { name, status: rec.status };
-    }
-  });
-
-  const columns = [
-    { label: '#', get: (t, i) => i + 1 },
-    { label: 'عنوان بست', get: t => t.title || '' },
-    { label: 'کد بست', get: t => t.code || '' },
-    { label: 'نمبر عمومی', get: t => t.pub || '' },
-    { label: 'نمبر خصوصی', get: t => t.priv || '' },
-    { label: 'بخش', get: t => t.section === 'madaris' ? 'مدارس' : 'آمریت' },
-    { label: 'وضعیت', get: t => codeToEmployeeMap[t.code] ? 'پر' : 'خالی' },
-    { label: 'کارمند ثبت‌شده', get: t => codeToEmployeeMap[t.code]?.name || '—' },
-    { label: 'تایید', get: t => codeToEmployeeMap[t.code]?.status === 'approved' ? 'تایید' : (codeToEmployeeMap[t.code] ? 'انتظار' : '—') }
-  ];
-
-  let csvContent = "\uFEFF" + columns.map(c => `"${c.label}"`).join(",") + "\n";
-  tashkeelFiltered.forEach((row, idx) => {
-    const cells = columns.map(c => {
-      let val = c.get(row, idx);
-      if (val === null || val === undefined) val = '';
-      let str = String(val).replace(/,/g, '،').replace(/\n/g, ' ').replace(/\r/g, ' ');
-      return `"${str}"`;
-    });
-    csvContent += cells.join(",") + "\n";
-  });
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", `تشکیل_${user.schoolname || 'مکتب'}_${new Date().getTime()}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-  showToast(`✅ خروجی اکسل تشکیل دانلود شد (${tashkeelFiltered.length} کد)`);
+  if(!tashkeelFiltered?.length){showToast('❌ کدی برای خروجی وجود ندارد',true);return;}
+  const map=buildSchoolEmployeeMap();
+  const rows=tashkeelFiltered.map((t,i)=>tashkeelExportRow(t,map.get(normalizeJobCode(t.code)),i,user.schoolname||'رباط سنگی'));
+  downloadTashkeelXlsx(rows,`تشکیل_${user.schoolname||'مکتب'}_${Date.now()}.xlsx`);
+  showToast(`✅ خروجی تشکیل آماده شد (${rows.length} بست)`);
 }
 window.exportTashkeelExcel = exportTashkeelExcel;
 

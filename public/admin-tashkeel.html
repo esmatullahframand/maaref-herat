@@ -532,11 +532,11 @@ function renderTable() {
       const phone = employee.phone || employee.mobile || employee.contact || employee['شماره تماس'] || '—';
 
       titleCell = `
-        <div class="employee-info">
-          <div class="name">👤 ${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</div>
-          <div class="detail"><strong>عنوان:</strong> ${escapeHtml(jobTitle)}</div>
-          <div class="detail"><strong>کد:</strong> <span style="direction:ltr; display:inline-block;">${escapeHtml(jobCode)}</span> | <strong>مکتب:</strong> ${escapeHtml(schoolName)}</div>
-          <div class="contact">📞 ${escapeHtml(phone)}</div>
+        <div class="employee-info" style="text-align:right;direction:rtl">
+          <div class="detail"><strong>عنوان بست:</strong> ${escapeHtml(jobTitle)}</div>
+          <div class="name">👤 ${escapeHtml(employee.firstName || employee.name || '—')} ${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</div>
+          <div class="detail"><strong>کد بست:</strong> <span style="direction:ltr;display:inline-block;">${escapeHtml(jobCode)}</span> | <strong>مکتب:</strong> ${escapeHtml(schoolName)}</div>
+          <div class="contact" style="direction:rtl;display:block;text-align:right">📞 ${escapeHtml(phone)}</div>
         </div>
       `;
     }
@@ -544,7 +544,7 @@ function renderTable() {
     html += '<tr>' +
       '<td>' + globalIdx + '</td>' +
       '<td>' + escapeHtml(r.pub || '—') + '</td>' +
-      '<td style="text-align:right">' + titleCell + '</td>' +
+      '<td style="text-align:right;direction:rtl">' + titleCell + '</td>' +
       '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
       '<td style="font-family:monospace;font-size:11px;direction:ltr">' + escapeHtml(r.code || '—') + '</td>' +
       '<td>' + sectionBadge + '</td>' +

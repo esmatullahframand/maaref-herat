@@ -312,6 +312,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 /* ============================================================
    ۱. احراز هویت و متغیرهای سراسری
@@ -419,35 +420,22 @@ async function loadStats() {
 /* ============================================================
    ۵. بارگذاری اطلاعات کارمندان ثبت‌شده (Map)
    ============================================================ */
+function normalizeAdminCode(value) { return String(value??'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[\s\u200c\u200f\u200e\-_/]/g,'').trim().toLowerCase(); }
+function adminInfo(rec) { let d=(rec&&(rec.data||rec.employee||rec.profile||rec))||{}; if(typeof d==='string'){try{d=JSON.parse(d)}catch(_){d={}}} return d&&typeof d==='object'?d:{}; }
+function adminValue(o,keys,f=''){for(const k of keys){const v=o&&o[k];if(v!==undefined&&v!==null&&String(v).trim()!=='')return v;}return f;}
+function employeeDetails(rec) { const d=adminInfo(rec); return {firstName:adminValue(d,['firstName','firstname','name','اسم','نام']),lastName:adminValue(d,['lastName','lastname','surname','takhallos','تخلص']),fatherName:adminValue(d,['fatherName','fathername','father_name','walid','ولد','نام پدر']),jobTitle:adminValue(d,['jobTitle','job_title','job','title','position','عنوان وظیفه','عنوان بست']),jobCode:adminValue(d,['jobCode','jobcode','job_code','code','postCode','کود نمبر','کد بست']),school:adminValue(d,['school','schoolName','schoolname','school_name','maktab','place','مکتب','نام مکتب']),phone:adminValue(d,['phone','mobile','contact','phoneNumber','شماره تماس','تماس']),gender:adminValue(d,['gender','sex','جنسیت']),education:adminValue(d,['education','degree','درجه تحصیل']),field:adminValue(d,['field','major','رشته تحصیل']),teachingField:adminValue(d,['teachingField','teaching_field','رشته تدریس']),grade:adminValue(d,['grade','bast','بست']),step:adminValue(d,['step','قدم']),appointmentDate:adminValue(d,['appointmentDate','appointment_date','تاریخ تقرر']),birthDate:adminValue(d,['birthDate','birth_date','تاریخ تولد']),tazkira:adminValue(d,['tazkira','nationalId','national_id','نمبر تذکره']),ethnicity:adminValue(d,['ethnicity','قومیت'])}; }
 async function loadRegisteredCodes() {
   try {
-    const r = await fetch('/api/records', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!r.ok) return;
-
-    const payload = await r.json();
-    const list = extractArray(payload);
-
-    registeredDataMap = new Map();
-
-    list.forEach(function(rec) {
-      let info = (rec && rec.data) || {};
-      if (typeof info === 'string') {
-        try { info = JSON.parse(info); } catch (e) { info = {}; }
-      }
-      
-      const code = info.jobCode || info.jobcode || info.code || info.job_code;
-      if (code) {
-        registeredDataMap.set(String(code).trim(), info);
-      }
-    });
-
-    console.log('✅ کارمندان ثبت‌شده:', registeredDataMap.size);
-  } catch (e) {
-    console.error('[loadRegisteredCodes]', e);
-  }
+    const r=await fetch('/api/records',{headers:{'Authorization':'Bearer '+token}}); if(!r.ok)return;
+    const list=extractArray(await r.json()); registeredDataMap=new Map();
+    list.forEach(rec=>{const e=employeeDetails(rec);const code=normalizeAdminCode(e.jobCode);if(code)registeredDataMap.set(code,e);});
+    console.log('✅ کارمندان ثبت‌شده:',registeredDataMap.size);
+  } catch(e){console.error('[loadRegisteredCodes]',e);}
 }
+function adminEmployeeFor(code){return registeredDataMap.get(normalizeAdminCode(code));}
+function adminExportRow(r,e,i){e=e||{};return [i+1,r.priv||'',e.firstName||'',e.fatherName||'', '',e.lastName||'',e.jobTitle||r.title||'',e.education||'',e.field||'',e.teachingField||'',e.grade||'',e.step||'',e.appointmentDate||'',e.birthDate||'',e.tazkira||'',e.gender||'',e.ethnicity||'',r.code||'',e.school||r.place||'',r.amariat||'آمریت معارف کشک رباط سنگی',e.phone||''];}
+function adminExportRows(rows){return rows.map((r,i)=>adminExportRow(r,adminEmployeeFor(r.code),i));}
+function adminDownloadExcel(rows,filename){const h=['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];const gh=['نمبر عمومی','نمبر خصوصی','مشخصات وظیفوی','','','','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','رتبه','','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];const sh=['','','اسم','ولد','ولدیت','تخلص','','','','','بست','قدم','','','','','','','','',''];const data=[['امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی'],['جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف'],gh,sh,['پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی'],h,...rows];if(window.XLSX){const ws=XLSX.utils.aoa_to_sheet(data);ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:20}},{s:{r:1,c:0},e:{r:1,c:20}},{s:{r:2,c:2},e:{r:2,c:5}},{s:{r:2,c:10},e:{r:2,c:11}},{s:{r:4,c:0},e:{r:4,c:20}}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'تشکیل');XLSX.writeFile(wb,filename);}else{const csv='\uFEFF'+data.map(r=>h.map((_,i)=>'"'+String(r[i]??'').replace(/"/g,'""')+'"').join(',')).join('\n');const u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const x=document.createElement('a');x.href=u;x.download=filename.replace(/\.xlsx$/i,'.csv');x.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}}
 
 /* ============================================================
    ۶. بارگذاری لیست تشکیل
@@ -481,11 +469,11 @@ async function loadList() {
     // اعمال فیلتر وضعیت
     if (status === 'filled') {
       rows = rows.filter(function(t) {
-        return registeredDataMap.has(String(t.code || '').trim());
+        return !!adminEmployeeFor(t.code);
       });
     } else if (status === 'empty') {
       rows = rows.filter(function(t) {
-        return !registeredDataMap.has(String(t.code || '').trim());
+        return !!!adminEmployeeFor(t.code);
       });
     }
 
@@ -520,7 +508,7 @@ function renderTable() {
   let html = '';
   pageRows.forEach(function(r, idx) {
     const globalIdx = start + idx + 1;
-    const employee = registeredDataMap.get(String(r.code || '').trim());
+    const employee = adminEmployeeFor(r.code);
     const isFilled = !!employee;
 
     const sectionBadge = r.section === 'amariat'
@@ -704,145 +692,20 @@ window.deleteRecord = deleteRecord;
    ۱۱. پرینت
    ============================================================ */
 function printTable() {
-  if (!filteredRows || filteredRows.length === 0) {
-    showToast('رکوردی برای پرینت وجود ندارد', true);
-    return;
-  }
-
-  let rowsHtml = '';
-  filteredRows.forEach(function(r, idx) {
-    const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
-    const employee = registeredDataMap.get(String(r.code || '').trim());
-    let titleContent = escapeHtml(r.title || '');
-    
-    if (employee) {
-      const lastName = employee.lastName || employee.lastname || employee.takhallos || employee['تخلص'] || '—';
-      const fatherName = employee.fatherName || employee.fathername || employee.walid || employee['نام پدر'] || employee['ولد'] || '—';
-      const phone = employee.phone || employee.mobile || employee.contact || '—';
-      titleContent = `<strong>${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</strong><br><small>${escapeHtml(r.title)} - ${escapeHtml(phone)}</small>`;
-    }
-
-    rowsHtml += '<tr>' +
-      '<td>' + (idx + 1) + '</td>' +
-      '<td>' + escapeHtml(r.pub || '') + '</td>' +
-      '<td style="text-align:right">' + titleContent + '</td>' +
-      '<td style="text-align:right">' + escapeHtml(r.place || '') + '</td>' +
-      '<td style="direction:ltr">' + escapeHtml(r.code || '') + '</td>' +
-      '<td>' + sectionLabel + '</td>' +
-    '</tr>';
-  });
-
-  const html =
-    '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">' +
-    '<title>پرینت تشکیلات</title>' +
-    '<style>' +
-    '@page { size: A4 landscape; margin: 8mm; }' +
-    'body { font-family: Tahoma, Arial, sans-serif; direction: rtl; padding: 8px; }' +
-    '.header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; }' +
-    '.header h1 { font-size: 16px; margin: 0 0 4px 0; }' +
-    '.header h2 { font-size: 13px; margin: 0 0 2px 0; font-weight: normal; }' +
-    '.header h3 { font-size: 11px; margin: 0; font-weight: normal; color: #444; }' +
-    '.header h4 { font-size: 12px; margin: 6px 0 0 0; font-weight: bold; }' +
-    '.meta { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 8px; padding: 4px 0; border-bottom: 1px solid #ccc; }' +
-    'table { width: 100%; border-collapse: collapse; font-size: 10px; }' +
-    'thead th { background: #e8e8e8; border: 1px solid #333; padding: 5px 4px; font-weight: bold; text-align: center; }' +
-    'tbody td { border: 1px solid #333; padding: 4px; text-align: center; }' +
-    'tbody tr:nth-child(even) td { background: #f8f8f8; }' +
-    '@media print { .no-print { display: none !important; } body { padding: 0; } }' +
-    '.no-print { text-align: center; margin-top: 15px; }' +
-    '.no-print button { padding: 10px 25px; font-size: 14px; background: #4338ca; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }' +
-    '</style></head><body>' +
-    '<div class="header">' +
-      '<h1>امارت اسلامی افغانستان</h1>' +
-      '<h2>وزارت معارف</h2>' +
-      '<h3>ریاست معارف ولایت هرات — آمریت معارف کشک رباط سنگی</h3>' +
-      '<h4>جدول شهرت پرسونل تشکیلات مکاتب و مدارس</h4>' +
-    '</div>' +
-    '<div class="meta">' +
-      '<span><strong>تاریخ پرینت:</strong> ' + new Date().toLocaleDateString('fa-IR') + '</span>' +
-      '<span><strong>تعداد رکورد:</strong> ' + filteredRows.length + '</span>' +
-    '</div>' +
-    '<table><thead><tr>' +
-      '<th style="width:35px">#</th>' +
-      '<th style="width:70px">نمبر عمومی</th>' +
-      '<th>عنوان وظیفه / مشخصات</th>' +
-      '<th>محل وظیفه</th>' +
-      '<th style="width:120px">کود نمبر (کد بست)</th>' +
-      '<th style="width:60px">بخش</th>' +
-    '</tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
-    '<div class="no-print"><button onclick="window.print()">🖨️ چاپ</button></div>' +
-    '<script>setTimeout(function(){window.print()},500);<\/script>' +
-    '</body></html>';
-
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
+  if(!filteredRows?.length){showToast('رکوردی برای پرینت وجود ندارد',true);return;}
+  const h=['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];
+  const rows=adminExportRows(filteredRows);
+  const table=`<table><thead><tr><th rowspan=2>نمبر عمومی</th><th rowspan=2>نمبر خصوصی</th><th colspan=4>مشخصات وظیفوی</th><th rowspan=2>عنوان وظیفه</th><th rowspan=2>درجه تحصیل</th><th rowspan=2>رشته تحصیل</th><th rowspan=2>رشته تدریس</th><th colspan=2>رتبه</th><th rowspan=2>تاریخ تقرر</th><th rowspan=2>تاریخ تولد</th><th rowspan=2>نمبر تذکره</th><th rowspan=2>جنسیت</th><th rowspan=2>قومیت</th><th rowspan=2>کود نمبر</th><th rowspan=2>محل وظیفه</th><th rowspan=2>آمریت معارف</th><th rowspan=2>ملاحظات</th></tr><tr><th>اسم</th><th>ولد</th><th>ولدیت</th><th>تخلص</th><th>بست</th><th>قدم</th></tr></thead><tbody><tr><th colspan=21>پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی</th></tr>${rows.map(r=>`<tr>${r.map(v=>`<td>${escapeHtml(v??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  const w=window.open('','_blank');if(!w){showToast('اجازه بازشدن پنجره چاپ را بدهید',true);return;}
+  w.document.write(`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>جدول شهرت پرسونل</title><style>@page{size:A3 landscape;margin:8mm}body{font-family:Tahoma,Arial,sans-serif}h2,h3{text-align:center;white-space:pre-line}table{border-collapse:collapse;width:100%;font-size:8px}th,td{border:1px solid #222;padding:4px;text-align:center;white-space:normal}th{background:#eee}tr{break-inside:avoid}</style></head><body><h2>امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی</h2><h3>جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف</h3>${table}<script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script></body></html>`);w.document.close();
 }
-window.printTable = printTable;
-
-/* ============================================================
-   ۱۲. خروجی CSV
-   ============================================================ */
+window.printTable=printTable;
 function exportCSV() {
-  if (!filteredRows || filteredRows.length === 0) {
-    showToast('رکوردی برای خروجی وجود ندارد', true);
-    return;
-  }
-
-  const headers = [
-    'نمبر عمومی', 'نمبر خصوصی', 'اسم', 'ولد', 'ولدیت', 'تخلص',
-    'عنوان وظیفه', 'درجه تحصیل', 'رشته تحصیل', 'رشته تدریس',
-    'بست', 'قدم', 'تاریخ تقرر', 'تاریخ تولد', 'نمبر تذکره',
-    'جنسیت', 'قومیت', 'کود نمبر', 'محل وظیفه', 'آمریت معارف', 'ملاحظات'
-  ];
-
-  let csv = '\uFEFF' + headers.map(function(h) { return '"' + h + '"'; }).join(',') + '\n';
-
-  filteredRows.forEach(function(r, idx) {
-    const sectionLabel = r.section === 'madaris' ? 'مدارس' : 'مکاتب';
-    const employee = registeredDataMap.get(String(r.code || '').trim());
-    
-    // مقادیر پیش‌فرض
-    let lastName = '';
-    let fatherName = '';
-    let phone = '';
-    
-    if (employee) {
-      lastName = employee.lastName || employee.lastname || employee.takhallos || employee['تخلص'] || '';
-      fatherName = employee.fatherName || employee.fathername || employee.walid || employee['نام پدر'] || employee['ولد'] || '';
-      phone = employee.phone || employee.mobile || employee.contact || employee['شماره تماس'] || '';
-    }
-
-    const row = [
-      idx + 1,
-      r.pub || '',
-      '', fatherName, '', lastName,
-      r.title || '',
-      '', '', '',
-      '', '',
-      '', '', '',
-      '', '',
-      r.code || '',
-      r.place || '',
-      r.amariat || 'آمریت معارف کشک رباط سنگی',
-      sectionLabel
-    ];
-    csv += row.map(function(v) {
-      const s = String(v == null ? '' : v).replace(/"/g, '""');
-      return '"' + s + '"';
-    }).join(',') + '\n';
-  });
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'تشکیلات_' + new Date().toISOString().slice(0, 10) + '.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('✅ خروجی اکسل دانلود شد (' + filteredRows.length + ' رکورد)');
+  if(!filteredRows?.length){showToast('رکوردی برای خروجی وجود ندارد',true);return;}
+  adminDownloadExcel(adminExportRows(filteredRows),'تشکیلات_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast('✅ خروجی تشکیل آماده شد ('+filteredRows.length+' رکورد)');
 }
-window.exportCSV = exportCSV;
+window.exportCSV=exportCSV;
 
 /* ============================================================
    ۱۳. شروع

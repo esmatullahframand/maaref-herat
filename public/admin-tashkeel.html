@@ -30,8 +30,6 @@ body {
   -webkit-font-smoothing: antialiased;
   margin: 0; padding: 0;
 }
-
-/* ===== Topbar ===== */
 .topbar {
   background: linear-gradient(120deg, #172554, #312e81 55%, #4338ca) !important;
   color: white; padding: 18px 24px;
@@ -42,8 +40,6 @@ body {
 }
 .topbar h5 { color: #fff; font-weight: 800; margin: 0; }
 .topbar small { color: #c7d2fe; font-size: 12px; }
-
-/* ===== Nav ===== */
 .nav-tabs-custom {
   display: flex; flex-wrap: wrap; gap: 9px; padding: 12px; margin: 20px 0;
   background: rgba(255,255,255,.88); border: 1px solid rgba(226,232,240,.9);
@@ -57,16 +53,12 @@ body {
 }
 .nav-tab-btn:hover { color: var(--primary) !important; background: #eef2ff !important; transform: translateY(-2px); }
 .nav-tab-btn.active { color: white !important; background: linear-gradient(135deg, #4338ca, #6366f1) !important; box-shadow: 0 5px 14px rgba(67,56,202,.25); }
-
-/* ===== Cards ===== */
 .card-custom {
   background: rgba(255,255,255,.96); border: 1px solid #e8edf5;
   border-radius: var(--radius); padding: 22px; margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
 }
 .card-custom:hover { border-color: #c7d2fe; box-shadow: var(--shadow-md); }
-
-/* ===== Stat Cards ===== */
 .stat-card {
   background: linear-gradient(145deg, #ffffff, #f8faff);
   border: 1px solid #e2e8f0; border-radius: 18px; padding: 23px;
@@ -74,15 +66,11 @@ body {
 }
 .stat-card .value { font-weight: 900; color: #1e293b; font-size: 24px; font-variant-numeric: tabular-nums; }
 .stat-card .label { color: var(--muted); font-weight: 600; font-size: 13px; }
-
-/* ===== Buttons ===== */
 .btn-purple { color: white !important; background: linear-gradient(135deg, #6d28d9, #4f46e5) !important; border: none !important; }
 .btn-teal { background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff; border: none; }
 .btn { border-radius: 10px; font-weight: 700; transition: all .22s ease; }
 button:not(.btn) { border-radius: 10px; font-weight: 700; }
 button:hover, .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
-
-/* ===== Forms ===== */
 .form-control, .form-select {
   width: 100%; min-height: 43px; border: 1px solid #dbe3ef !important;
   border-radius: 10px !important; background: #fbfdff !important;
@@ -93,15 +81,11 @@ button:hover, .btn:hover { transform: translateY(-2px); filter: brightness(1.05)
   background: #fff !important; box-shadow: 0 0 0 4px rgba(99,102,241,.12) !important;
 }
 label { color: #334155; font-weight: 700; margin-bottom: 6px; }
-
-/* ===== Filters ===== */
 .filter-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 14px; padding: 17px; background: #f8faff;
   border: 1px solid #e2e8f0; border-radius: 15px; margin: 15px 0;
 }
-
-/* ===== Table ===== */
 .table-responsive {
   border-radius: 14px; border: 1px solid #e2e8f0;
   box-shadow: var(--shadow-sm); background: white;
@@ -116,22 +100,16 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 .table tbody td { padding: 12px; vertical-align: middle; border-bottom: 1px solid #edf1f7; text-align: center; }
 .table tbody tr:nth-child(even) { background: #fafbff; }
 .table tbody tr:hover { background: #eef2ff !important; }
-
-/* ===== Badges ===== */
 .badge-makatib { background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
 .badge-madaris { background: #fce4ec; color: #c2185b; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
 .badge-filled { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
 .badge-empty { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
-
-/* ===== Employee Info Card in Table ===== */
 .employee-info {
   text-align: right; line-height: 1.6; font-size: 12px; padding: 2px 0;
 }
 .employee-info .name { color: #1e40af; font-weight: 800; margin-bottom: 4px; font-size: 13px; }
 .employee-info .detail { color: #334155; margin-bottom: 2px; }
 .employee-info .contact { color: #059669; font-weight: 700; font-size: 11px; margin-top: 4px; direction: ltr; display: inline-block; }
-
-/* ===== Action ===== */
 .btn-action {
   border-radius: 8px; padding: 6px 10px; margin: 2px;
   font-size: 12px; font-weight: 700; border: none; cursor: pointer;
@@ -140,8 +118,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 .btn-action:hover { transform: scale(1.06); }
 .btn-edit { background: #dbeafe; color: #1e40af; }
 .btn-delete { background: #fee2e2; color: #991b1b; }
-
-/* ===== Toast ===== */
 .toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
   background: #1e293b; color: white; padding: 14px 24px;
@@ -149,15 +125,11 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
   display: none; z-index: 9999; font-weight: 700; min-width: 280px; text-align: center;
 }
 .toast.error { background: #991b1b; }
-
-/* ===== Modal ===== */
 .modal-content { border: none; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 70px rgba(15,23,42,.2); }
 .modal-header { background: linear-gradient(120deg, #312e81, #4338ca); color: white; padding: 17px 22px; border-bottom: none; }
 .modal-header .btn-close { filter: invert(1); }
 .modal-body { padding: 24px; background: #fff; }
 .modal-footer { padding: 15px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
-
-/* ===== Pagination ===== */
 #pagination { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
 #pagination button {
   padding: 6px 12px; font-size: 12px; border: none; border-radius: 8px;
@@ -170,8 +142,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
   padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 800;
 }
 #pagination .page-info { font-size: 12px; color: #64748b; font-weight: 600; }
-
-/* ===== Responsive ===== */
 @media (max-width: 600px) {
   body { font-size: 13px; }
   .topbar { padding: 14px; }
@@ -203,7 +173,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 
 <div class="container-fluid px-4 py-3">
 
-  <!-- آمار -->
   <div class="card-custom">
     <h5 class="fw-bold mb-3" style="color:#6d28d9;">📊 آمار کلی تشکیل</h5>
     <div class="row g-3">
@@ -214,7 +183,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
     </div>
   </div>
 
-  <!-- فیلترها -->
   <div class="card-custom">
     <h5 class="fw-bold mb-3" style="color:#6d28d9;">🔍 جستجو و فیلتر</h5>
     <div class="filter-grid">
@@ -251,7 +219,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
     </div>
   </div>
 
-  <!-- لیست -->
   <div class="card-custom">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <h5 class="fw-bold m-0" style="color:#6d28d9;">📋 لیست تشکیل</h5>
@@ -279,7 +246,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 
 </div>
 
-<!-- Modal -->
 <div class="modal fade" id="editModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -417,14 +383,74 @@ async function loadStats() {
 }
 
 /* ============================================================
-   ۵. بارگذاری اطلاعات کارمندان ثبت‌شده (Map)
+   ۵. بارگذاری اطلاعات کارمندان ثبت‌شده
    ============================================================ */
-function getAdminTashkeelCode(row) { return row && (row.code ?? row.jobCode ?? row.job_code ?? row.postCode ?? row.post_code ?? row.kod ?? row.kodNumber ?? row.kod_number ?? row['کد بست'] ?? row['کود نمبر']) || ''; }
-function normalizeAdminCode(value) { return String(value??'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[\s\u200c\u200f\u200e\-_/]/g,'').trim().toLowerCase(); }
-function adminInfo(rec) { let d=(rec&&(rec.data||rec.employee||rec.profile||rec))||{}; if(typeof d==='string'){try{d=JSON.parse(d)}catch(_){d={}}} return d&&typeof d==='object'?d:{}; }
-function adminValue(o,keys,f=''){for(const k of keys){const v=o&&o[k];if(v!==undefined&&v!==null&&String(v).trim()!=='')return v;}return f;}
 
-// ← اصلاح شده: بست، قدم، تاریخ تقرر فعلی و نمبر تذکره برقی از داده واقعی کارمند
+function getAdminTashkeelCode(row) {
+  return row && (
+    row.code ??
+    row.jobCode ??
+    row.job_code ??
+    row.postCode ??
+    row.post_code ??
+    row.kod ??
+    row.kodNumber ??
+    row.kod_number ??
+    row['کد بست'] ??
+    row['کود نمبر']
+  ) || '';
+}
+
+function normalizeAdminCode(value) {
+  return String(value ?? '')
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[\s\u200c\u200f\u200e\-_/]/g, '')
+    .trim()
+    .toLowerCase();
+}
+
+/* ادغام رکورد اصلی با data داخلی */
+function adminInfo(rec) {
+  if (!rec || typeof rec !== 'object') return {};
+  let inner = rec.data || rec.employee || rec.profile || {};
+  if (typeof inner === 'string') {
+    try { inner = JSON.parse(inner); } catch (e) { inner = {}; }
+  }
+  if (!inner || typeof inner !== 'object') inner = {};
+  return Object.assign({}, rec, inner);
+}
+
+/* جستجوی بازگشتی: کلید را در کل ساختار (حتی تودرتو) پیدا می‌کند */
+function deepFind(obj, keys, depth = 0) {
+  if (!obj || typeof obj !== 'object' || depth > 6) return '';
+  for (const key of keys) {
+    const v = obj[key];
+    if (v !== undefined && v !== null && String(v).trim() !== '' && typeof v !== 'object') {
+      return v;
+    }
+  }
+  for (const k of Object.keys(obj)) {
+    const child = obj[k];
+    if (child && typeof child === 'object') {
+      const found = deepFind(child, keys, depth + 1);
+      if (found !== '') return found;
+    }
+  }
+  return '';
+}
+
+function adminValue(obj, keys, fallback = '') {
+  for (const key of keys) {
+    const value = obj && obj[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return value;
+    }
+  }
+  const deep = deepFind(obj, keys);
+  return deep !== '' ? deep : fallback;
+}
+
 function employeeDetails(rec) {
   const d = adminInfo(rec);
   return {
@@ -432,72 +458,125 @@ function employeeDetails(rec) {
     lastName: adminValue(d, ['lastName','lastname','surname','takhallos','تخلص']),
     fatherName: adminValue(d, ['fatherName','fathername','father_name','walid','ولد','نام پدر']),
     jobTitle: adminValue(d, ['jobTitle','job_title','job','title','position','عنوان وظیفه','عنوان بست']),
-    jobCode: adminValue(d, ['jobCode','jobcode','job_code','code','postCode','کود نمبر','کد بست']),
+    jobCode: adminValue(d, ['jobCode','jobcode','job_code','code','postCode','post_code','کود نمبر','کد بست']),
     school: adminValue(d, ['school','schoolName','schoolname','school_name','maktab','place','مکتب','نام مکتب']),
-    phone: adminValue(d, ['phone','mobile','contact','phoneNumber','شماره تماس','تماس']),
+    phone: adminValue(d, ['phone','mobile','contact','phoneNumber','phone_number','شماره تماس','تماس']),
     gender: adminValue(d, ['gender','sex','جنسیت']),
     education: adminValue(d, ['education','degree','درجه تحصیل']),
     field: adminValue(d, ['field','major','رشته تحصیل']),
     teachingField: adminValue(d, ['teachingField','teaching_field','رشته تدریس']),
-    // ← بست: مقدار واقعی ثبت‌شده
-    grade: adminValue(d, ['grade','bast','بست','رتبه','rank','bust','gradeLevel','grade_level','بست وظیفه']),
-    // ← قدم: مقدار واقعی ثبت‌شده
-    step: adminValue(d, ['step','قدم','qadam','stepNo','step_no','stepNumber','step_number','قدم وظیفه']),
-    // ← تاریخ تقرر فعلی
+
+    /* بست: هرچه ثبت شده */
+    grade: adminValue(d, [
+      'grade','bast','bust','jobGrade','job_grade','gradeLevel','grade_level',
+      'rank','رتبه','بست','بست وظیفه'
+    ]),
+
+    /* قدم: هرچه ثبت شده */
+    step: adminValue(d, [
+      'step','qadam','jobStep','job_step','stepNo','step_no',
+      'stepNumber','step_number','قدم','قدم وظیفه'
+    ]),
+
+    /* تاریخ تقرر فعلی */
     appointmentDate: adminValue(d, [
-      'appointmentDate','appointment_date','currentAppointmentDate','current_appointment_date',
-      'dateOfAppointment','date_of_appointment','تاریخ تقرر فعلی','تاریخ تقرر','تقرر',
-      'hireDate','hire_date','startDate','start_date'
+      'currentAppointmentDate','current_appointment_date',
+      'appointmentDate','appointment_date',
+      'dateOfAppointment','date_of_appointment',
+      'hireDate','hire_date','startDate','start_date',
+      'تاریخ تقرر فعلی','تاریخ تقرر','تقرر'
     ]),
-    birthDate: adminValue(d, ['birthDate','birth_date','تاریخ تولد','dob','dateOfBirth','date_of_birth']),
-    // ← نمبر تذکره برقی
+
+    birthDate: adminValue(d, [
+      'birthDate','birth_date','dateOfBirth','date_of_birth','dob','تاریخ تولد'
+    ]),
+
+    /* نمبر تذکره برقی */
     tazkira: adminValue(d, [
-      'electronicTazkira','electronic_tazkira','eTazkira','e_tazkira',
-      'etazkira','etazkiraNumber','etazkira_number','nationalId','national_id',
-      'tazkira','نمبر تذکره برقی','شماره تذکره برقی','نمبر تذکره','تذکره برقی'
+      'electronicTazkira','electronic_tazkira',
+      'eTazkira','e_tazkira','etazkira',
+      'etazkiraNumber','etazkira_number',
+      'tazkiraElectronic','tazkira_electronic',
+      'tazkiraNumber','tazkira_number',
+      'tazkiraNo','tazkira_no',
+      'nationalId','national_id','nid','tazkira',
+      'نمبر تذکره برقی','شماره تذکره برقی','نمبر تذکره','تذکره برقی'
     ]),
+
     ethnicity: adminValue(d, ['ethnicity','قومیت'])
   };
 }
 
 async function loadRegisteredCodes() {
   try {
-    const r=await fetch('/api/records',{headers:{'Authorization':'Bearer '+token}}); if(!r.ok)return;
-    const list=extractArray(await r.json()); registeredDataMap=new Map();
-    list.forEach(rec=>{const e=employeeDetails(rec);const code=normalizeAdminCode(e.jobCode);if(code)registeredDataMap.set(code,e);});
-    console.log('✅ کارمندان ثبت‌شده:',registeredDataMap.size);
-  } catch(e){console.error('[loadRegisteredCodes]',e);}
-}
-function adminEmployeeFor(code){return registeredDataMap.get(normalizeAdminCode(code));}
+    const r = await fetch('/api/records', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!r.ok) return;
 
-// ← اصلاح اصلی: بست و قدم از داده واقعی کارمند (e.grade, e.step) خوانده می‌شوند، نه 4 و 1 ثابت
-function adminExportRow(r,e,i){
-  e=e||{};
+    const list = extractArray(await r.json());
+    registeredDataMap = new Map();
+
+    list.forEach(function(rec) {
+      const employee = employeeDetails(rec);
+      const code = normalizeAdminCode(employee.jobCode);
+      if (code) registeredDataMap.set(code, employee);
+    });
+
+    console.log('✅ کارمندان ثبت‌شده:', registeredDataMap.size);
+
+    if (list.length > 0) {
+      const merged = adminInfo(list[0]);
+      console.log('🔍 کلیدهای رکورد اول:', Object.keys(merged));
+      console.log('🔍 نمونه کامل رکورد اول:', merged);
+      console.log('🔍 استخراج‌شده بست:', employeeDetails(list[0]).grade);
+      console.log('🔍 استخراج‌شده قدم:', employeeDetails(list[0]).step);
+      console.log('🔍 استخراج‌شده تاریخ تقرر:', employeeDetails(list[0]).appointmentDate);
+      console.log('🔍 استخراج‌شده نمبر تذکره:', employeeDetails(list[0]).tazkira);
+    }
+  } catch (e) {
+    console.error('[loadRegisteredCodes]', e);
+  }
+}
+
+function adminEmployeeFor(code) {
+  return registeredDataMap.get(normalizeAdminCode(code));
+}
+
+function adminExportRow(r, e, i) {
+  e = e || {};
   return [
-    i+1,
-    r.priv||'',
-    e.firstName||'',
-    e.fatherName||'',
+    i + 1,
+    r.priv || '',
+    e.firstName || '',
+    e.fatherName || '',
     '',
-    e.lastName||'',
-    e.jobTitle||r.title||'',
-    e.education||'',
-    e.field||'',
-    e.teachingField||'',
-    e.grade||'',      // ← بست: مقدار واقعی
-    e.step||'',       // ← قدم: مقدار واقعی
-    e.appointmentDate||'',   // ← تاریخ تقرر فعلی
-    e.birthDate||'',
-    e.tazkira||'',    // ← نمبر تذکره برقی
-    e.gender||'',
-    e.ethnicity||'',
+    e.lastName || '',
+    e.jobTitle || r.title || '',
+    e.education || '',
+    e.field || '',
+    e.teachingField || '',
+    e.grade || '',
+    e.step || '',
+    e.appointmentDate || '',
+    e.birthDate || '',
+    e.tazkira || '',
+    e.gender || '',
+    e.ethnicity || '',
     getAdminTashkeelCode(r),
-    e.school||r.place||'',
-    r.amariat||'آمریت معارف کشک رباط سنگی',
+    e.school || r.place || '',
+    r.amariat || 'آمریت معارف کشک رباط سنگی',
     ''
   ];
 }
-function adminExportRows(rows){return rows.map((r,i)=>adminExportRow(r,adminEmployeeFor(r.code),i));}
+
+function adminExportRows(rows) {
+  return rows.map(function(r, i) {
+    const employee = adminEmployeeFor(getAdminTashkeelCode(r));
+    return adminExportRow(r, employee, i);
+  });
+}
+
 function adminDownloadExcel(rows,filename){const h=['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];const gh=['نمبر عمومی','نمبر خصوصی','مشخصات وظیفوی','','','','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','رتبه','','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];const sh=['','','اسم','ولد','ولدیت','تخلص','','','','','بست','قدم','','','','','','','','',''];const data=[['امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی'],['جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف'],gh,sh,['پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی'],h,...rows];if(window.XLSX){const ws=XLSX.utils.aoa_to_sheet(data);ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:20}},{s:{r:1,c:0},e:{r:1,c:20}},{s:{r:2,c:2},e:{r:2,c:5}},{s:{r:2,c:10},e:{r:2,c:11}},{s:{r:4,c:0},e:{r:4,c:20}}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'تشکیل');XLSX.writeFile(wb,filename);}else{const csv='\uFEFF'+data.map(r=>h.map((_,i)=>'"'+String(r[i]??'').replace(/"/g,'""')+'"').join(',')).join('\n');const u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const x=document.createElement('a');x.href=u;x.download=filename.replace(/\.xlsx$/i,'.csv');x.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}}
 
 /* ============================================================
@@ -551,7 +630,7 @@ async function loadList() {
 window.loadList = loadList;
 
 /* ============================================================
-   ۷. رندر جدول (با نمایش جزئیات کارمند)
+   ۷. رندر جدول
    ============================================================ */
 function renderTable() {
   const tbody = document.getElementById('tableBody');

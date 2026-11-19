@@ -333,7 +333,7 @@ let filteredRows = [];
 let currentPage = 1;
 const PAGE_SIZE = 30;
 let editModal = null;
-let registeredDataMap = new Map(); // تغییر از Set به Map
+let registeredDataMap = new Map();
 let searchDebounce;
 
 /* ============================================================
@@ -423,7 +423,43 @@ function getAdminTashkeelCode(row) { return row && (row.code ?? row.jobCode ?? r
 function normalizeAdminCode(value) { return String(value??'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[\s\u200c\u200f\u200e\-_/]/g,'').trim().toLowerCase(); }
 function adminInfo(rec) { let d=(rec&&(rec.data||rec.employee||rec.profile||rec))||{}; if(typeof d==='string'){try{d=JSON.parse(d)}catch(_){d={}}} return d&&typeof d==='object'?d:{}; }
 function adminValue(o,keys,f=''){for(const k of keys){const v=o&&o[k];if(v!==undefined&&v!==null&&String(v).trim()!=='')return v;}return f;}
-function employeeDetails(rec) { const d=adminInfo(rec); return {firstName:adminValue(d,['firstName','firstname','name','اسم','نام']),lastName:adminValue(d,['lastName','lastname','surname','takhallos','تخلص']),fatherName:adminValue(d,['fatherName','fathername','father_name','walid','ولد','نام پدر']),jobTitle:adminValue(d,['jobTitle','job_title','job','title','position','عنوان وظیفه','عنوان بست']),jobCode:adminValue(d,['jobCode','jobcode','job_code','code','postCode','کود نمبر','کد بست']),school:adminValue(d,['school','schoolName','schoolname','school_name','maktab','place','مکتب','نام مکتب']),phone:adminValue(d,['phone','mobile','contact','phoneNumber','شماره تماس','تماس']),gender:adminValue(d,['gender','sex','جنسیت']),education:adminValue(d,['education','degree','درجه تحصیل']),field:adminValue(d,['field','major','رشته تحصیل']),teachingField:adminValue(d,['teachingField','teaching_field','رشته تدریس']),grade:adminValue(d,['grade','bast','بست']),step:adminValue(d,['step','قدم']),appointmentDate:adminValue(d,['appointmentDate','appointment_date','currentAppointmentDate','current_appointment_date','dateOfAppointment','date_of_appointment','تاریخ تقرر فعلی','تاریخ تقرر']),birthDate:adminValue(d,['birthDate','birth_date','تاریخ تولد']),tazkira:adminValue(d,['electronicTazkira','electronic_tazkira','eTazkira','e_tazkira','etazkira','etazkiraNumber','etazkira_number','nationalId','national_id','tazkira','نمبر تذکره برقی','شماره تذکره برقی','نمبر تذکره','تذکره برقی']),ethnicity:adminValue(d,['ethnicity','قومیت'])}; }
+
+// ← اصلاح شده: بست، قدم، تاریخ تقرر فعلی و نمبر تذکره برقی از داده واقعی کارمند
+function employeeDetails(rec) {
+  const d = adminInfo(rec);
+  return {
+    firstName: adminValue(d, ['firstName','firstname','name','اسم','نام']),
+    lastName: adminValue(d, ['lastName','lastname','surname','takhallos','تخلص']),
+    fatherName: adminValue(d, ['fatherName','fathername','father_name','walid','ولد','نام پدر']),
+    jobTitle: adminValue(d, ['jobTitle','job_title','job','title','position','عنوان وظیفه','عنوان بست']),
+    jobCode: adminValue(d, ['jobCode','jobcode','job_code','code','postCode','کود نمبر','کد بست']),
+    school: adminValue(d, ['school','schoolName','schoolname','school_name','maktab','place','مکتب','نام مکتب']),
+    phone: adminValue(d, ['phone','mobile','contact','phoneNumber','شماره تماس','تماس']),
+    gender: adminValue(d, ['gender','sex','جنسیت']),
+    education: adminValue(d, ['education','degree','درجه تحصیل']),
+    field: adminValue(d, ['field','major','رشته تحصیل']),
+    teachingField: adminValue(d, ['teachingField','teaching_field','رشته تدریس']),
+    // ← بست: مقدار واقعی ثبت‌شده
+    grade: adminValue(d, ['grade','bast','بست','رتبه','rank','bust','gradeLevel','grade_level','بست وظیفه']),
+    // ← قدم: مقدار واقعی ثبت‌شده
+    step: adminValue(d, ['step','قدم','qadam','stepNo','step_no','stepNumber','step_number','قدم وظیفه']),
+    // ← تاریخ تقرر فعلی
+    appointmentDate: adminValue(d, [
+      'appointmentDate','appointment_date','currentAppointmentDate','current_appointment_date',
+      'dateOfAppointment','date_of_appointment','تاریخ تقرر فعلی','تاریخ تقرر','تقرر',
+      'hireDate','hire_date','startDate','start_date'
+    ]),
+    birthDate: adminValue(d, ['birthDate','birth_date','تاریخ تولد','dob','dateOfBirth','date_of_birth']),
+    // ← نمبر تذکره برقی
+    tazkira: adminValue(d, [
+      'electronicTazkira','electronic_tazkira','eTazkira','e_tazkira',
+      'etazkira','etazkiraNumber','etazkira_number','nationalId','national_id',
+      'tazkira','نمبر تذکره برقی','شماره تذکره برقی','نمبر تذکره','تذکره برقی'
+    ]),
+    ethnicity: adminValue(d, ['ethnicity','قومیت'])
+  };
+}
+
 async function loadRegisteredCodes() {
   try {
     const r=await fetch('/api/records',{headers:{'Authorization':'Bearer '+token}}); if(!r.ok)return;
@@ -433,7 +469,34 @@ async function loadRegisteredCodes() {
   } catch(e){console.error('[loadRegisteredCodes]',e);}
 }
 function adminEmployeeFor(code){return registeredDataMap.get(normalizeAdminCode(code));}
-function adminExportRow(r,e,i){e=e||{};return [i+1,r.priv||'',e.firstName||'',e.fatherName||'', '',e.lastName||'',e.jobTitle||r.title||'',e.education||'',e.field||'',e.teachingField||'','4','1',e.appointmentDate||'',e.birthDate||'',e.tazkira||'',e.gender||'',e.ethnicity||'',getAdminTashkeelCode(r),e.school||r.place||'',r.amariat||'آمریت معارف کشک رباط سنگی',''];}
+
+// ← اصلاح اصلی: بست و قدم از داده واقعی کارمند (e.grade, e.step) خوانده می‌شوند، نه 4 و 1 ثابت
+function adminExportRow(r,e,i){
+  e=e||{};
+  return [
+    i+1,
+    r.priv||'',
+    e.firstName||'',
+    e.fatherName||'',
+    '',
+    e.lastName||'',
+    e.jobTitle||r.title||'',
+    e.education||'',
+    e.field||'',
+    e.teachingField||'',
+    e.grade||'',      // ← بست: مقدار واقعی
+    e.step||'',       // ← قدم: مقدار واقعی
+    e.appointmentDate||'',   // ← تاریخ تقرر فعلی
+    e.birthDate||'',
+    e.tazkira||'',    // ← نمبر تذکره برقی
+    e.gender||'',
+    e.ethnicity||'',
+    getAdminTashkeelCode(r),
+    e.school||r.place||'',
+    r.amariat||'آمریت معارف کشک رباط سنگی',
+    ''
+  ];
+}
 function adminExportRows(rows){return rows.map((r,i)=>adminExportRow(r,adminEmployeeFor(r.code),i));}
 function adminDownloadExcel(rows,filename){const h=['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];const gh=['نمبر عمومی','نمبر خصوصی','مشخصات وظیفوی','','','','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','رتبه','','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];const sh=['','','اسم','ولد','ولدیت','تخلص','','','','','بست','قدم','','','','','','','','',''];const data=[['امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی'],['جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف'],gh,sh,['پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی'],h,...rows];if(window.XLSX){const ws=XLSX.utils.aoa_to_sheet(data);ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:20}},{s:{r:1,c:0},e:{r:1,c:20}},{s:{r:2,c:2},e:{r:2,c:5}},{s:{r:2,c:10},e:{r:2,c:11}},{s:{r:4,c:0},e:{r:4,c:20}}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'تشکیل');XLSX.writeFile(wb,filename);}else{const csv='\uFEFF'+data.map(r=>h.map((_,i)=>'"'+String(r[i]??'').replace(/"/g,'""')+'"').join(',')).join('\n');const u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const x=document.createElement('a');x.href=u;x.download=filename.replace(/\.xlsx$/i,'.csv');x.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}}
 
@@ -466,7 +529,6 @@ async function loadList() {
     const payload = await r.json();
     let rows = extractArray(payload);
 
-    // اعمال فیلتر وضعیت
     if (status === 'filled') {
       rows = rows.filter(function(t) {
         return !!adminEmployeeFor(getAdminTashkeelCode(t));
@@ -520,22 +582,19 @@ function renderTable() {
       ? '<span class="badge-filled">✅ پر</span>'
       : '<span class="badge-empty">❌ خالی</span>';
 
-    // بخش عنوان وظیفه / مشخصات کارمند
     let titleCell = '<div style="text-align:right;direction:rtl"><strong>' + escapeHtml(r.title || '—') + '</strong></div>';
-    
+
     if (isFilled) {
-      // استخراج فیلدها (با پشتیبانی از نام‌های مختلف احتمالی)
-      const lastName = employee.lastName || employee.lastname || employee.takhallos || employee['تخلص'] || '—';
-      const fatherName = employee.fatherName || employee.fathername || employee.walid || employee['نام پدر'] || employee['ولد'] || '—';
-      const jobTitle = employee.jobTitle || employee.job || employee.title || r.title;
-      const jobCode = employee.jobCode || employee.jobcode || rowCode;
-      const schoolName = employee.school || employee.schoolName || employee.maktab || employee['مکتب'] || r.place;
-      const phone = employee.phone || employee.mobile || employee.contact || employee['شماره تماس'] || '—';
+      const lastName = employee.lastName || '—';
+      const fatherName = employee.fatherName || '—';
+      const jobTitle = employee.jobTitle || r.title;
+      const schoolName = employee.school || r.place;
+      const phone = employee.phone || '—';
 
       titleCell = `
         <div class="employee-info" style="text-align:right;direction:rtl">
           <div class="detail"><strong>عنوان بست:</strong> ${escapeHtml(jobTitle)}</div>
-          <div class="name">👤 ${escapeHtml(employee.firstName || employee.name || '—')} ${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</div>
+          <div class="name">👤 ${escapeHtml(employee.firstName || '—')} ${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</div>
           <div class="detail"><strong>مکتب:</strong> ${escapeHtml(schoolName)}</div>
           <div class="contact" style="direction:rtl;display:block;text-align:right">📞 ${escapeHtml(phone)}</div>
         </div>

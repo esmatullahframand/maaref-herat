@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -7,150 +8,137 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <style>
 :root {
-  --primary: #4338ca;
-  --primary-dark: #312e81;
-  --primary-light: #eef2ff;
-  --success: #059669;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --dark: #172033;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --shadow-sm: 0 2px 8px rgba(15,23,42,.05);
-  --shadow-md: 0 8px 24px rgba(15,23,42,.08);
-  --shadow-lg: 0 18px 45px rgba(15,23,42,.12);
-  --radius: 16px;
+  --primary:#4338ca;--primary-dark:#312e81;--primary-light:#eef2ff;
+  --success:#059669;--warning:#d97706;--danger:#dc2626;
+  --dark:#172033;--muted:#64748b;--border:#e2e8f0;
+  --shadow-sm:0 2px 8px rgba(15,23,42,.05);
+  --shadow-md:0 8px 24px rgba(15,23,42,.08);
+  --shadow-lg:0 18px 45px rgba(15,23,42,.12);
+  --radius:16px;
 }
-* { box-sizing: border-box; }
-body {
-  background: radial-gradient(circle at top right, #e0e7ff 0, transparent 30%), linear-gradient(135deg, #f8fafc, #eef2f7);
-  color: var(--dark);
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  line-height: 1.7;
-  -webkit-font-smoothing: antialiased;
-  margin: 0; padding: 0;
+*{box-sizing:border-box}
+body{
+  background:radial-gradient(circle at top right,#e0e7ff 0,transparent 30%),linear-gradient(135deg,#f8fafc,#eef2f7);
+  color:var(--dark);font-family:"Segoe UI",Tahoma,Arial,sans-serif;
+  line-height:1.7;-webkit-font-smoothing:antialiased;margin:0;padding:0
 }
-.topbar {
-  background: linear-gradient(120deg, #172554, #312e81 55%, #4338ca) !important;
-  color: white; padding: 18px 24px;
-  border-radius: 0 0 22px 22px;
-  box-shadow: 0 8px 30px rgba(49,46,129,.22);
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 12px;
+.topbar{
+  background:linear-gradient(120deg,#172554,#312e81 55%,#4338ca)!important;
+  color:white;padding:18px 24px;border-radius:0 0 22px 22px;
+  box-shadow:0 8px 30px rgba(49,46,129,.22);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px
 }
-.topbar h5 { color: #fff; font-weight: 800; margin: 0; }
-.topbar small { color: #c7d2fe; font-size: 12px; }
-.nav-tabs-custom {
-  display: flex; flex-wrap: wrap; gap: 9px; padding: 12px; margin: 20px 0;
-  background: rgba(255,255,255,.88); border: 1px solid rgba(226,232,240,.9);
-  border-radius: 17px; box-shadow: var(--shadow-sm);
+.topbar h5{color:#fff;font-weight:800;margin:0}
+.topbar small{color:#c7d2fe;font-size:12px}
+.nav-tabs-custom{
+  display:flex;flex-wrap:wrap;gap:9px;padding:12px;margin:20px 0;
+  background:rgba(255,255,255,.88);border:1px solid rgba(226,232,240,.9);
+  border-radius:17px;box-shadow:var(--shadow-sm)
 }
-.nav-tab-btn {
-  border: 1px solid transparent !important; border-radius: 12px !important;
-  padding: 11px 20px !important; font-weight: 700 !important;
-  color: #475569 !important; background: transparent !important;
-  transition: all .25s ease !important; text-decoration: none;
+.nav-tab-btn{
+  border:1px solid transparent!important;border-radius:12px!important;
+  padding:11px 20px!important;font-weight:700!important;
+  color:#475569!important;background:transparent!important;
+  transition:all .25s ease!important;text-decoration:none
 }
-.nav-tab-btn:hover { color: var(--primary) !important; background: #eef2ff !important; transform: translateY(-2px); }
-.nav-tab-btn.active { color: white !important; background: linear-gradient(135deg, #4338ca, #6366f1) !important; box-shadow: 0 5px 14px rgba(67,56,202,.25); }
-.card-custom {
-  background: rgba(255,255,255,.96); border: 1px solid #e8edf5;
-  border-radius: var(--radius); padding: 22px; margin-bottom: 20px;
-  box-shadow: var(--shadow-sm);
+.nav-tab-btn:hover{color:var(--primary)!important;background:#eef2ff!important;transform:translateY(-2px)}
+.nav-tab-btn.active{
+  color:white!important;background:linear-gradient(135deg,#4338ca,#6366f1)!important;
+  box-shadow:0 5px 14px rgba(67,56,202,.25)
 }
-.card-custom:hover { border-color: #c7d2fe; box-shadow: var(--shadow-md); }
-.stat-card {
-  background: linear-gradient(145deg, #ffffff, #f8faff);
-  border: 1px solid #e2e8f0; border-radius: 18px; padding: 23px;
-  box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+.card-custom{
+  background:rgba(255,255,255,.96);border:1px solid #e8edf5;
+  border-radius:var(--radius);padding:22px;margin-bottom:20px;box-shadow:var(--shadow-sm)
 }
-.stat-card .value { font-weight: 900; color: #1e293b; font-size: 24px; font-variant-numeric: tabular-nums; }
-.stat-card .label { color: var(--muted); font-weight: 600; font-size: 13px; }
-.btn-purple { color: white !important; background: linear-gradient(135deg, #6d28d9, #4f46e5) !important; border: none !important; }
-.btn-teal { background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff; border: none; }
-.btn { border-radius: 10px; font-weight: 700; transition: all .22s ease; }
-button:not(.btn) { border-radius: 10px; font-weight: 700; }
-button:hover, .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
-.form-control, .form-select {
-  width: 100%; min-height: 43px; border: 1px solid #dbe3ef !important;
-  border-radius: 10px !important; background: #fbfdff !important;
-  color: #1e293b !important; padding: 10px 13px !important; font-size: 14px;
+.card-custom:hover{border-color:#c7d2fe;box-shadow:var(--shadow-md)}
+.stat-card{
+  background:linear-gradient(145deg,#fff,#f8faff);border:1px solid #e2e8f0;
+  border-radius:18px;padding:23px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden
 }
-.form-control:focus, .form-select:focus {
-  outline: none !important; border-color: #6366f1 !important;
-  background: #fff !important; box-shadow: 0 0 0 4px rgba(99,102,241,.12) !important;
+.stat-card .value{font-weight:900;color:#1e293b;font-size:24px;font-variant-numeric:tabular-nums}
+.stat-card .label{color:var(--muted);font-weight:600;font-size:13px}
+.btn-purple{color:white!important;background:linear-gradient(135deg,#6d28d9,#4f46e5)!important;border:none!important}
+.btn-teal{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;border:none}
+.btn{border-radius:10px;font-weight:700;transition:all .22s ease}
+button:not(.btn){border-radius:10px;font-weight:700}
+button:hover,.btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.form-control,.form-select{
+  width:100%;min-height:43px;border:1px solid #dbe3ef!important;
+  border-radius:10px!important;background:#fbfdff!important;
+  color:#1e293b!important;padding:10px 13px!important;font-size:14px
 }
-label { color: #334155; font-weight: 700; margin-bottom: 6px; }
-.filter-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 14px; padding: 17px; background: #f8faff;
-  border: 1px solid #e2e8f0; border-radius: 15px; margin: 15px 0;
+.form-control:focus,.form-select:focus{
+  outline:none!important;border-color:#6366f1!important;background:#fff!important;
+  box-shadow:0 0 0 4px rgba(99,102,241,.12)!important
 }
-.table-responsive {
-  border-radius: 14px; border: 1px solid #e2e8f0;
-  box-shadow: var(--shadow-sm); background: white;
-  overflow-x: auto; overflow-y: auto; max-height: 65vh;
+label{color:#334155;font-weight:700;margin-bottom:6px}
+.filter-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:14px;padding:17px;background:#f8faff;border:1px solid #e2e8f0;
+  border-radius:15px;margin:15px 0
 }
-.table { width: 100%; margin-bottom: 0; color: #334155; background: white; border-collapse: separate; border-spacing: 0; }
-.table thead th {
-  background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: #312e81;
-  font-weight: 800; padding: 14px 12px; border-bottom: 2px solid #c7d2fe;
-  white-space: nowrap; text-align: center; position: sticky; top: 0; z-index: 2;
+.table-responsive{
+  border-radius:14px;border:1px solid #e2e8f0;box-shadow:var(--shadow-sm);
+  background:white;overflow-x:auto;overflow-y:auto;max-height:65vh
 }
-.table tbody td { padding: 12px; vertical-align: middle; border-bottom: 1px solid #edf1f7; text-align: center; }
-.table tbody tr:nth-child(even) { background: #fafbff; }
-.table tbody tr:hover { background: #eef2ff !important; }
-.badge-makatib { background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
-.badge-madaris { background: #fce4ec; color: #c2185b; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
-.badge-filled { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
-.badge-empty { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 30px; font-size: 11px; font-weight: 800; }
-.employee-info {
-  text-align: right; line-height: 1.6; font-size: 12px; padding: 2px 0;
+.table{
+  width:100%;margin-bottom:0;color:#334155;background:white;
+  border-collapse:separate;border-spacing:0
 }
-.employee-info .name { color: #1e40af; font-weight: 800; margin-bottom: 4px; font-size: 13px; }
-.employee-info .detail { color: #334155; margin-bottom: 2px; }
-.employee-info .contact { color: #059669; font-weight: 700; font-size: 11px; margin-top: 4px; direction: ltr; display: inline-block; }
-.btn-action {
-  border-radius: 8px; padding: 6px 10px; margin: 2px;
-  font-size: 12px; font-weight: 700; border: none; cursor: pointer;
-  transition: all .2s;
+.table thead th{
+  background:linear-gradient(135deg,#eef2ff,#e0e7ff);color:#312e81;
+  font-weight:800;padding:14px 12px;border-bottom:2px solid #c7d2fe;
+  white-space:nowrap;text-align:center;position:sticky;top:0;z-index:2
 }
-.btn-action:hover { transform: scale(1.06); }
-.btn-edit { background: #dbeafe; color: #1e40af; }
-.btn-delete { background: #fee2e2; color: #991b1b; }
-.toast {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  background: #1e293b; color: white; padding: 14px 24px;
-  border-radius: 12px; box-shadow: var(--shadow-lg);
-  display: none; z-index: 9999; font-weight: 700; min-width: 280px; text-align: center;
+.table tbody td{padding:12px;vertical-align:middle;border-bottom:1px solid #edf1f7;text-align:center}
+.table tbody tr:nth-child(even){background:#fafbff}
+.table tbody tr:hover{background:#eef2ff!important}
+.badge-makatib{background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:30px;font-size:11px;font-weight:800}
+.badge-madaris{background:#fce4ec;color:#c2185b;padding:4px 10px;border-radius:30px;font-size:11px;font-weight:800}
+.badge-filled{background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:30px;font-size:11px;font-weight:800}
+.badge-empty{background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:30px;font-size:11px;font-weight:800}
+.employee-info{text-align:right;line-height:1.6;font-size:12px;padding:2px 0}
+.employee-info .name{color:#1e40af;font-weight:800;margin-bottom:4px;font-size:13px}
+.employee-info .detail{color:#334155;margin-bottom:2px}
+.employee-info .contact{color:#059669;font-weight:700;font-size:11px;margin-top:4px;direction:ltr;display:inline-block}
+.btn-action{
+  border-radius:8px;padding:6px 10px;margin:2px;font-size:12px;
+  font-weight:700;border:none;cursor:pointer;transition:all .2s
 }
-.toast.error { background: #991b1b; }
-.modal-content { border: none; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 70px rgba(15,23,42,.2); }
-.modal-header { background: linear-gradient(120deg, #312e81, #4338ca); color: white; padding: 17px 22px; border-bottom: none; }
-.modal-header .btn-close { filter: invert(1); }
-.modal-body { padding: 24px; background: #fff; }
-.modal-footer { padding: 15px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
-#pagination { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
-#pagination button {
-  padding: 6px 12px; font-size: 12px; border: none; border-radius: 8px;
-  cursor: pointer; font-weight: 700; transition: all .2s; background: #64748b; color: #fff;
+.btn-action:hover{transform:scale(1.06)}
+.btn-edit{background:#dbeafe;color:#1e40af}
+.btn-delete{background:#fee2e2;color:#991b1b}
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:#1e293b;color:white;padding:14px 24px;border-radius:12px;
+  box-shadow:var(--shadow-lg);display:none;z-index:9999;
+  font-weight:700;min-width:280px;text-align:center
 }
-#pagination button:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.1); }
-#pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
-#pagination .page-badge {
-  background: linear-gradient(135deg, #4338ca, #6366f1); color: white;
-  padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 800;
+.toast.error{background:#991b1b}
+.modal-content{border:none;border-radius:18px;overflow:hidden;box-shadow:0 25px 70px rgba(15,23,42,.2)}
+.modal-header{background:linear-gradient(120deg,#312e81,#4338ca);color:white;padding:17px 22px;border-bottom:none}
+.modal-header .btn-close{filter:invert(1)}
+.modal-body{padding:24px;background:#fff}
+.modal-footer{padding:15px 22px;background:#f8fafc;border-top:1px solid #e2e8f0}
+#pagination{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+#pagination button{
+  padding:6px 12px;font-size:12px;border:none;border-radius:8px;
+  cursor:pointer;font-weight:700;transition:all .2s;background:#64748b;color:#fff
 }
-#pagination .page-info { font-size: 12px; color: #64748b; font-weight: 600; }
-@media (max-width: 600px) {
-  body { font-size: 13px; }
-  .topbar { padding: 14px; }
-  .card-custom { padding: 13px; }
-  .table thead th, .table tbody td { padding: 9px 7px; font-size: 12px; }
-  .nav-tab-btn { padding: 9px 10px !important; font-size: 12px; }
-  #pagination { justify-content: center; width: 100%; }
-  #pagination button { padding: 5px 8px; font-size: 11px; }
-  #pagination .page-info { width: 100%; text-align: center; margin-bottom: 5px; }
+#pagination button:not(:disabled):hover{transform:translateY(-2px);filter:brightness(1.1)}
+#pagination button:disabled{opacity:.4;cursor:not-allowed}
+#pagination .page-badge{
+  background:linear-gradient(135deg,#4338ca,#6366f1);color:white;
+  padding:6px 14px;border-radius:8px;font-size:12px;font-weight:800
+}
+#pagination .page-info{font-size:12px;color:#64748b;font-weight:600}
+@media(max-width:600px){
+  body{font-size:13px}.topbar{padding:14px}.card-custom{padding:13px}
+  .table thead th,.table tbody td{padding:9px 7px;font-size:12px}
+  .nav-tab-btn{padding:9px 10px!important;font-size:12px}
+  #pagination{justify-content:center;width:100%}
+  #pagination button{padding:5px 8px;font-size:11px}
+  #pagination .page-info{width:100%;text-align:center;margin-bottom:5px}
 }
 </style>
 </head>
@@ -172,14 +160,13 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 </div>
 
 <div class="container-fluid px-4 py-3">
-
   <div class="card-custom">
     <h5 class="fw-bold mb-3" style="color:#6d28d9;">📊 آمار کلی تشکیل</h5>
     <div class="row g-3">
       <div class="col-md-3"><div class="stat-card"><div class="label">📊 کل رکوردها</div><div class="value" id="sTotal">0</div></div></div>
       <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #1565c0"><div class="label">🏫 مکاتب</div><div class="value" id="sMakatib" style="color:#1565c0">0</div></div></div>
       <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #c2185b"><div class="label">🏫 مدارس</div><div class="value" id="sMadaris" style="color:#c2185b">0</div></div></div>
-      <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #059669"><div class="label">📍 محل‌های وظیفه</div><div class="value" id="sPlaces" style="color:#059669">0</div></div></div>
+      <div class="col-md-3"><div class="stat-card" style="border-right:4px solid #059669"><div class="label">📍 محل‌های وظیفه</div><div class="value" id="sPlaces">0</div></div></div>
     </div>
   </div>
 
@@ -215,7 +202,7 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
       <button class="btn btn-purple" onclick="showAddModal()">➕ افزودن رکورد</button>
       <button class="btn btn-secondary" onclick="exportCSV()">📊 خروجی اکسل</button>
       <button class="btn btn-teal" onclick="printTable()">🖨️ چاپ</button>
-      <span id="resultCount" class="badge bg-purple text-white px-3 py-2" style="font-size:13px; align-self:center;">۰ رکورد</span>
+      <span id="resultCount" class="badge bg-purple text-white px-3 py-2" style="font-size:13px;align-self:center;">۰ رکورد</span>
     </div>
   </div>
 
@@ -228,13 +215,8 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
       <table class="table">
         <thead>
           <tr>
-            <th>#</th>
-            <th>عنوان وظیفه / مشخصات کارمند</th>
-            <th>کد بست</th>
-            <th>محل</th>
-            <th>بخش</th>
-            <th>وضعیت</th>
-            <th>عملیات</th>
+            <th>#</th><th>عنوان وظیفه / مشخصات کارمند</th><th>کد بست</th>
+            <th>محل</th><th>بخش</th><th>وضعیت</th><th>عملیات</th>
           </tr>
         </thead>
         <tbody id="tableBody">
@@ -243,7 +225,6 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
       </table>
     </div>
   </div>
-
 </div>
 
 <div class="modal fade" id="editModal" tabindex="-1">
@@ -278,12 +259,14 @@ label { color: #334155; font-weight: 700; margin-bottom: 6px; }
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <script>
 /* ============================================================
    ۱. احراز هویت و متغیرهای سراسری
    ============================================================ */
 const token = localStorage.getItem('hr_token');
 const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
+
 if (!token || token === 'undefined') {
   localStorage.clear();
   window.location.href = '/login.html';
@@ -317,7 +300,7 @@ function showToast(msg, isError) {
   t.className = 'toast' + (isError ? ' error' : '');
   t.style.display = 'block';
   clearTimeout(t._timer);
-  t._timer = setTimeout(function() { t.style.display = 'none'; }, 3500);
+  t._timer = setTimeout(() => t.style.display = 'none', 3500);
 }
 
 function escapeHtml(s) {
@@ -342,9 +325,10 @@ window.debouncedLoad = debouncedLoad;
 function extractArray(payload) {
   if (Array.isArray(payload)) return payload;
   if (!payload || typeof payload !== 'object') return [];
-  const keys = ['tashkeel', 'data', 'items', 'records', 'results', 'list', 'rows'];
-  for (let i = 0; i < keys.length; i++) {
-    if (Array.isArray(payload[keys[i]])) return payload[keys[i]];
+
+  const keys = ['tashkeel','data','items','records','results','list','rows'];
+  for (const key of keys) {
+    if (Array.isArray(payload[key])) return payload[key];
   }
   return [];
 }
@@ -355,27 +339,32 @@ function extractArray(payload) {
 async function loadStats() {
   try {
     const r = await fetch('/api/tashkeel/stats/summary', {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { Authorization: 'Bearer ' + token }
     });
     if (!r.ok) return;
-    const d = await r.json();
 
+    const d = await r.json();
     document.getElementById('sTotal').textContent = d.total || 0;
 
     const sec = {};
-    (d.by_section || []).forEach(function(s) { sec[s.section] = s.count; });
+    (d.by_section || []).forEach(s => sec[s.section] = s.count);
+
     document.getElementById('sMakatib').textContent = sec.amariat || 0;
     document.getElementById('sMadaris').textContent = sec.madaris || 0;
     document.getElementById('sPlaces').textContent = (d.by_place || []).length;
 
     const placeSel = document.getElementById('placeFilter');
-    if (placeSel.options.length <= 1 && Array.isArray(d.by_place)) {
-      d.by_place.forEach(function(p) {
+    const selectedPlace = placeSel.value;
+
+    if (Array.isArray(d.by_place)) {
+      placeSel.innerHTML = '<option value="">📋 همه محل‌ها</option>';
+      d.by_place.forEach(p => {
         const o = document.createElement('option');
         o.value = p.place;
         o.textContent = p.place + ' (' + p.count + ')';
         placeSel.appendChild(o);
       });
+      placeSel.value = selectedPlace;
     }
   } catch (e) {
     console.error('[loadStats]', e);
@@ -383,24 +372,10 @@ async function loadStats() {
 }
 
 /* ============================================================
-   ۵. بارگذاری اطلاعات کارمندان ثبت‌شده
+   ۵. ابزارهای استخراج معلومات کارمندان
    ============================================================ */
 
-function getAdminTashkeelCode(row) {
-  return row && (
-    row.code ??
-    row.jobCode ??
-    row.job_code ??
-    row.postCode ??
-    row.post_code ??
-    row.kod ??
-    row.kodNumber ??
-    row.kod_number ??
-    row['کد بست'] ??
-    row['کود نمبر']
-  ) || '';
-}
-
+/* تبدیل ارقام فارسی و عربی به انگلیسی و یکسان‌سازی کد */
 function normalizeAdminCode(value) {
   return String(value ?? '')
     .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
@@ -410,28 +385,84 @@ function normalizeAdminCode(value) {
     .toLowerCase();
 }
 
-/* ادغام رکورد بیرونی با data داخلی — تا فیلدهای هر دو سطح دیده شوند */
+/* خواندن کد بست از ساختارهای مختلف رکورد تشکیل */
+function getAdminTashkeelCode(row) {
+  if (!row || typeof row !== 'object') return '';
+
+  const directKeys = [
+    'code','jobCode','job_code','postCode','post_code',
+    'kod','kodNumber','kod_number','کد بست','کود نمبر'
+  ];
+
+  for (const key of directKeys) {
+    if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
+      return row[key];
+    }
+  }
+
+  const nested = [row.data,row.employee,row.position,row.post];
+  for (const obj of nested) {
+    if (!obj || typeof obj !== 'object') continue;
+    for (const key of directKeys) {
+      if (obj[key] !== undefined && obj[key] !== null && String(obj[key]).trim() !== '') {
+        return obj[key];
+      }
+    }
+  }
+
+  return '';
+}
+
+/* تبدیل JSON متنی به Object */
+function parseAdminObject(value) {
+  if (!value) return {};
+  if (typeof value === 'object' && !Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  }
+  return {};
+}
+
+/* رکورد اصلی و اطلاعات داخلی آن */
 function adminInfo(rec) {
   if (!rec || typeof rec !== 'object') return {};
-  let inner = rec.data || rec.employee || rec.profile || {};
-  if (typeof inner === 'string') {
-    try { inner = JSON.parse(inner); } catch (e) { inner = {}; }
-  }
-  if (!inner || typeof inner !== 'object') inner = {};
+
+  const inner = parseAdminObject(rec.data || rec.employee || rec.profile || {});
   return Object.assign({}, rec, inner);
 }
 
-/* جستجوی بازگشتی: کلید را در کل ساختار (حتی تودرتو تا ۶ سطح) پیدا می‌کند */
-function deepFind(obj, keys, depth = 0) {
-  if (!obj || typeof obj !== 'object' || depth > 6) return '';
+/* خواندن اولین مقدار معتبر از کلیدهای مشخص */
+function adminValue(obj, keys, fallback = '') {
+  if (!obj || typeof obj !== 'object') return fallback;
+
   for (const key of keys) {
-    const v = obj[key];
-    if (v !== undefined && v !== null && String(v).trim() !== '' && typeof v !== 'object') {
-      return v;
+    const value = obj[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return value;
     }
   }
-  for (const k of Object.keys(obj)) {
-    const child = obj[k];
+  return fallback;
+}
+
+/* جستجوی بازگشتی برای فیلدهایی که در ساختار تو در تو هستند */
+function deepFind(obj, keys, depth = 0) {
+  if (!obj || typeof obj !== 'object' || depth > 5) return '';
+
+  for (const key of keys) {
+    const value = obj[key];
+    if (value !== undefined && value !== null &&
+        typeof value !== 'object' && String(value).trim() !== '') {
+      return value;
+    }
+  }
+
+  for (const key of Object.keys(obj)) {
+    const child = obj[key];
     if (child && typeof child === 'object') {
       const found = deepFind(child, keys, depth + 1);
       if (found !== '') return found;
@@ -440,216 +471,375 @@ function deepFind(obj, keys, depth = 0) {
   return '';
 }
 
-function adminValue(obj, keys, fallback = '') {
-  for (const key of keys) {
-    const value = obj && obj[key];
-    if (value !== undefined && value !== null && String(value).trim() !== '') {
-      return value;
-    }
-  }
-  const deep = deepFind(obj, keys);
-  return deep !== '' ? deep : fallback;
+/* مقدار مستقیم اولویت دارد؛ جستجوی تودرتو فقط در صورت خالی بودن */
+function adminValueDeep(obj, keys, fallback = '') {
+  const direct = adminValue(obj, keys, '');
+  if (direct !== '') return direct;
+  const nested = deepFind(obj, keys);
+  return nested !== '' ? nested : fallback;
 }
 
+/* ============================================================
+   ۶. استخراج کامل مشخصات کارمند
+   ============================================================ */
 function employeeDetails(rec) {
   const d = adminInfo(rec);
-  return {
-    firstName: adminValue(d, ['firstName','firstname','name','اسم','نام']),
-    lastName: adminValue(d, ['lastName','lastname','surname','takhallos','تخلص']),
-    fatherName: adminValue(d, ['fatherName','fathername','father_name','walid','ولد','نام پدر']),
-    jobTitle: adminValue(d, ['jobTitle','job_title','job','title','position','عنوان وظیفه','عنوان بست']),
-    jobCode: adminValue(d, ['jobCode','jobcode','job_code','code','postCode','post_code','کود نمبر','کد بست']),
-    school: adminValue(d, ['school','schoolName','schoolname','school_name','maktab','place','مکتب','نام مکتب']),
-    phone: adminValue(d, ['phone','mobile','contact','phoneNumber','phone_number','شماره تماس','تماس']),
-    gender: adminValue(d, ['gender','sex','جنسیت']),
-    education: adminValue(d, ['education','degree','درجه تحصیل']),
-    field: adminValue(d, ['field','major','رشته تحصیل']),
-    teachingField: adminValue(d, ['teachingField','teaching_field','رشته تدریس']),
 
-    /* بست: مقدار واقعی ثبت‌شده */
-    grade: adminValue(d, [
-      'grade','bast','bust','jobGrade','job_grade','gradeLevel','grade_level',
-      'rank','رتبه','بست','بست وظیفه'
+  return {
+    firstName: adminValueDeep(d, [
+      'firstName','firstname','name','اسم','نام'
     ]),
 
-    /* قدم: مقدار واقعی ثبت‌شده */
-    step: adminValue(d, [
-      'step','qadam','jobStep','job_step','stepNo','step_no',
+    lastName: adminValueDeep(d, [
+      'lastName','lastname','surname','takhallos','تخلص'
+    ]),
+
+    fatherName: adminValueDeep(d, [
+      'fatherName','fathername','father_name','walid','ولد','نام پدر'
+    ]),
+
+    grandfatherName: adminValueDeep(d, [
+      'grandfatherName','grandfather_name','grandFatherName','نام پدرکلان'
+    ]),
+
+    jobTitle: adminValueDeep(d, [
+      'jobTitle','job_title','job','title','position','عنوان وظیفه','عنوان بست'
+    ]),
+
+    jobCode: adminValueDeep(d, [
+      'jobCode','jobcode','job_code','code','postCode','post_code','کود نمبر','کد بست'
+    ]),
+
+    school: adminValueDeep(d, [
+      'serviceSchool','school','schoolName','schoolname','school_name',
+      'maktab','place','مکتب','نام مکتب'
+    ]),
+
+    phone: adminValueDeep(d, [
+      'phone','mobile','contact','phoneNumber','phone_number','شماره تماس','تماس'
+    ]),
+
+    gender: adminValueDeep(d, [
+      'gender','sex','جنسیت'
+    ]),
+
+    education: adminValueDeep(d, [
+      'degree','education','درجه تحصیل'
+    ]),
+
+    field: adminValueDeep(d, [
+      'major','field','رشته تحصیل'
+    ]),
+
+    teachingField: adminValueDeep(d, [
+      'teachingField','teaching_field','رشته تدریس'
+    ]),
+
+    /*
+      نگاشت فیلدهای اصلی دیتابیس:
+      bust = بست
+      grade = قدم
+      این دو فیلد عمداً با هم جابه‌جا نمی‌شوند.
+    */
+    grade: adminValueDeep(d, [
+      'bust','bast','jobGrade','job_grade','gradeLevel','grade_level',
+      'رتبه','بست','بست وظیفه'
+    ]),
+
+    step: adminValueDeep(d, [
+      'grade','step','qadam','jobStep','job_step','stepNo','step_no',
       'stepNumber','step_number','قدم','قدم وظیفه'
     ]),
 
-    /* تاریخ تقرر فعلی */
-    appointmentDate: adminValue(d, [
+    /*
+      تاریخ تقرر فعلی از currentPositionDate خوانده می‌شود.
+      تاریخ تقرر ابتدایی فقط در صورت نبود تاریخ فعلی استفاده می‌شود.
+    */
+    appointmentDate: adminValueDeep(d, [
+      'currentPositionDate','current_position_date',
       'currentAppointmentDate','current_appointment_date',
       'appointmentDate','appointment_date',
       'dateOfAppointment','date_of_appointment',
-      'hireDate','hire_date','startDate','start_date',
+      'firstAppointmentDate','first_appointment_date',
       'تاریخ تقرر فعلی','تاریخ تقرر','تقرر'
     ]),
 
-    birthDate: adminValue(d, [
+    firstAppointmentDate: adminValueDeep(d, [
+      'firstAppointmentDate','first_appointment_date'
+    ]),
+
+    birthDate: adminValueDeep(d, [
       'birthDate','birth_date','dateOfBirth','date_of_birth','dob','تاریخ تولد'
     ]),
 
-    /* نمبر تذکره برقی */
-    tazkira: adminValue(d, [
-      'electronicTazkira','electronic_tazkira',
+    /*
+      تذکره برقی؛ eTazkira اولویت دارد.
+      تذکره کاغذی جایگزین تذکره برقی نمی‌شود.
+    */
+    tazkira: adminValueDeep(d, [
       'eTazkira','e_tazkira','etazkira',
+      'electronicTazkira','electronic_tazkira',
       'etazkiraNumber','etazkira_number',
       'tazkiraElectronic','tazkira_electronic',
-      'tazkiraNumber','tazkira_number',
-      'tazkiraNo','tazkira_no',
-      'nationalId','national_id','nid','tazkira',
-      'نمبر تذکره برقی','شماره تذکره برقی','نمبر تذکره','تذکره برقی'
+      'نمبر تذکره برقی','شماره تذکره برقی','تذکره برقی'
     ]),
 
-    ethnicity: adminValue(d, ['ethnicity','قومیت'])
+    paperTazkira: adminValueDeep(d, [
+      'paperTazkira','paper_tazkira','تذکره کاغذی'
+    ]),
+
+    ethnicity: adminValueDeep(d, [
+      'ethnicity','قومیت'
+    ])
   };
 }
 
+/* ============================================================
+   ۷. بارگذاری کارمندان و اتصال به کد بست تشکیل
+   ============================================================ */
 async function loadRegisteredCodes() {
   try {
     const r = await fetch('/api/records', {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { Authorization: 'Bearer ' + token }
     });
-    if (!r.ok) return;
 
-    const list = extractArray(await r.json());
+    if (r.status === 401 || r.status === 403) {
+      logout();
+      return;
+    }
+    if (!r.ok) throw new Error('خطا در دریافت کارمندان: ' + r.status);
+
+    const payload = await r.json();
+    const list = extractArray(payload);
+
     registeredDataMap = new Map();
 
-    list.forEach(function(rec) {
+    list.forEach(rec => {
       const employee = employeeDetails(rec);
       const code = normalizeAdminCode(employee.jobCode);
-      if (code) registeredDataMap.set(code, employee);
+
+      if (code) {
+        registeredDataMap.set(code, employee);
+      }
     });
 
-    console.log('✅ کارمندان ثبت‌شده:', registeredDataMap.size);
+    console.log('✅ تعداد کارمندان دارای کد بست:', registeredDataMap.size);
 
-    /* ← دیباگ: دیدن کلیدهای واقعی و مقادیر استخراج‌شده */
     if (list.length > 0) {
-      const merged = adminInfo(list[0]);
-      console.log('🔍 کلیدهای رکورد اول:', Object.keys(merged));
-      console.log('🔍 نمونه کامل رکورد اول:', merged);
-      console.log('🔍 استخراج‌شده بست:', employeeDetails(list[0]).grade);
-      console.log('🔍 استخراج‌شده قدم:', employeeDetails(list[0]).step);
-      console.log('🔍 استخراج‌شده تاریخ تقرر:', employeeDetails(list[0]).appointmentDate);
-      console.log('🔍 استخراج‌شده نمبر تذکره:', employeeDetails(list[0]).tazkira);
+      const firstRecord = list[0];
+      const rawData = parseAdminObject(firstRecord.data || {});
+      const employee = employeeDetails(firstRecord);
+
+      console.log('🔍 کلیدهای معلومات کارمند:', Object.keys(rawData));
+      console.log('🔍 معلومات اصلی کارمند:', JSON.stringify(rawData, null, 2));
+      console.log('🔍 کد بست کارمند:', employee.jobCode);
+      console.log('🔍 بست استخراج‌شده:', employee.grade);
+      console.log('🔍 قدم استخراج‌شده:', employee.step);
+      console.log('🔍 تاریخ تقرر فعلی:', employee.appointmentDate);
+      console.log('🔍 تذکره برقی:', employee.tazkira);
     }
+
   } catch (e) {
     console.error('[loadRegisteredCodes]', e);
+    showToast('خطا در بارگذاری معلومات کارمندان', true);
   }
 }
 
+/* دریافت کارمند مطابق کد بست */
 function adminEmployeeFor(code) {
-  return registeredDataMap.get(normalizeAdminCode(code));
+  const normalized = normalizeAdminCode(code);
+  if (!normalized) return null;
+  return registeredDataMap.get(normalized) || null;
 }
 
-/* ← اصلاح اصلی: بست و قدم از مقدار واقعی e.grade و e.step (نه ۴ و ۱ ثابت) */
+/* ============================================================
+   ۸. آماده‌سازی ردیف‌های چاپ و اکسل
+   ============================================================ */
 function adminExportRow(r, e, i) {
   e = e || {};
+
   return [
     i + 1,
     r.priv || '',
     e.firstName || '',
     e.fatherName || '',
-    '',
+    e.grandfatherName || '',
     e.lastName || '',
     e.jobTitle || r.title || '',
     e.education || '',
     e.field || '',
     e.teachingField || '',
-    e.grade || '',           // ← بست واقعی
-    e.step || '',            // ← قدم واقعی
-    e.appointmentDate || '', // ← تاریخ تقرر فعلی
+    e.grade || '',
+    e.step || '',
+    e.appointmentDate || '',
     e.birthDate || '',
-    e.tazkira || '',         // ← نمبر تذکره برقی
+    e.tazkira || '',
     e.gender || '',
     e.ethnicity || '',
     getAdminTashkeelCode(r),
     e.school || r.place || '',
-    r.amariat || 'آمรیت معارف کشک رباط سنگی',
+    r.amariat || 'آمریت معارف کشک رباط سنگی',
     ''
   ];
 }
 
 function adminExportRows(rows) {
-  return rows.map(function(r, i) {
+  return rows.map((r, i) => {
     const employee = adminEmployeeFor(getAdminTashkeelCode(r));
     return adminExportRow(r, employee, i);
   });
 }
 
-function adminDownloadExcel(rows,filename){const h=['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];const gh=['نمبر عمومی','نمبر خصوصی','مشخصات وظیفوی','','','','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','رتبه','','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];const sh=['','','اسم','ولد','ولدیت','تخلص','','','','','بست','قدم','','','','','','','','',''];const data=[['امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی'],['جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف'],gh,sh,['پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی'],h,...rows];if(window.XLSX){const ws=XLSX.utils.aoa_to_sheet(data);ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:20}},{s:{r:1,c:0},e:{r:1,c:20}},{s:{r:2,c:2},e:{r:2,c:5}},{s:{r:2,c:10},e:{r:2,c:11}},{s:{r:4,c:0},e:{r:4,c:20}}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'تشکیل');XLSX.writeFile(wb,filename);}else{const csv='\uFEFF'+data.map(r=>h.map((_,i)=>'"'+String(r[i]??'').replace(/"/g,'""')+'"').join(',')).join('\n');const u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const x=document.createElement('a');x.href=u;x.download=filename.replace(/\.xlsx$/i,'.csv');x.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}}
+/* ============================================================
+   ۹. ساخت فایل اکسل
+   ============================================================ */
+function adminDownloadExcel(rows, filename) {
+  const h = [
+    'نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص',
+    'عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس',
+    'بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره',
+    'جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'
+  ];
+
+  const gh = [
+    'نمبر عمومی','نمبر خصوصی','مشخصات وظیفوی','','','','',
+    'درجه تحصیل','رشته تحصیل','رشته تدریس','رتبه','',
+    'تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت',
+    'کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'
+  ];
+
+  const sh = [
+    '','','اسم','ولد','ولدیت','تخلص','','','','',
+    'بست','قدم','','','','','','','','',''
+  ];
+
+  const data = [
+    ['امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی'],
+    ['جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف'],
+    gh,
+    sh,
+    ['پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی'],
+    h,
+    ...rows
+  ];
+
+  if (window.XLSX) {
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    ws['!merges'] = [
+      {s:{r:0,c:0},e:{r:0,c:20}},
+      {s:{r:1,c:0},e:{r:1,c:20}},
+      {s:{r:2,c:2},e:{r:2,c:5}},
+      {s:{r:2,c:10},e:{r:2,c:11}},
+      {s:{r:4,c:0},e:{r:4,c:20}}
+    ];
+
+    ws['!cols'] = h.map(() => ({wch:16}));
+    ws['!cols'][2] = {wch:18};
+    ws['!cols'][6] = {wch:24};
+    ws['!cols'][12] = {wch:18};
+    ws['!cols'][14] = {wch:22};
+    ws['!cols'][17] = {wch:20};
+    ws['!cols'][18] = {wch:25};
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'تشکیل');
+    XLSX.writeFile(wb, filename);
+
+  } else {
+    const csv = '\uFEFF' + data.map(row =>
+      h.map((_, i) =>
+        '"' + String(row[i] ?? '').replace(/"/g, '""') + '"'
+      ).join(',')
+    ).join('\n');
+
+    const u = URL.createObjectURL(new Blob([csv], {
+      type:'text/csv;charset=utf-8'
+    }));
+
+    const a = document.createElement('a');
+    a.href = u;
+    a.download = filename.replace(/\.xlsx$/i, '.csv');
+    a.click();
+
+    setTimeout(() => URL.revokeObjectURL(u), 1000);
+  }
+}
 
 /* ============================================================
-   ۶. بارگذاری لیست تشکیل
+   ۱۰. بارگذاری لیست تشکیل
    ============================================================ */
 async function loadList() {
-  const search  = document.getElementById('searchInput').value.trim();
+  const search = document.getElementById('searchInput').value.trim();
   const section = document.getElementById('sectionFilter').value;
-  const place   = document.getElementById('placeFilter').value;
-  const status  = document.getElementById('statusFilter').value;
+  const place = document.getElementById('placeFilter').value;
+  const status = document.getElementById('statusFilter').value;
 
   const params = new URLSearchParams();
-  if (search)  params.set('q', search);
+  if (search) params.set('q', search);
   if (section) params.set('section', section);
-  if (place)   params.set('place', place);
+  if (place) params.set('place', place);
 
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
 
   try {
-    try { await loadRegisteredCodes(); } catch (e) { console.warn('[loadList] records skip:', e); }
+    await loadRegisteredCodes();
 
     const r = await fetch('/api/tashkeel?' + params.toString(), {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { Authorization: 'Bearer ' + token }
     });
-    if (r.status === 401 || r.status === 403) { logout(); return; }
+
+    if (r.status === 401 || r.status === 403) {
+      logout();
+      return;
+    }
+
     if (!r.ok) throw new Error('HTTP ' + r.status);
 
     const payload = await r.json();
     let rows = extractArray(payload);
 
     if (status === 'filled') {
-      rows = rows.filter(function(t) {
-        return !!adminEmployeeFor(getAdminTashkeelCode(t));
-      });
+      rows = rows.filter(t => !!adminEmployeeFor(getAdminTashkeelCode(t)));
     } else if (status === 'empty') {
-      rows = rows.filter(function(t) {
-        return !!!adminEmployeeFor(getAdminTashkeelCode(t));
-      });
+      rows = rows.filter(t => !adminEmployeeFor(getAdminTashkeelCode(t)));
     }
 
     allRows = rows;
     filteredRows = rows;
     currentPage = 1;
     renderTable();
+
   } catch (e) {
     console.error('[loadList]', e);
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-danger">خطا: ' + escapeHtml(e.message) + '</td></tr>';
+    tbody.innerHTML =
+      '<tr><td colspan="7" class="text-center p-4 text-danger">خطا: ' +
+      escapeHtml(e.message) + '</td></tr>';
   }
 }
 window.loadList = loadList;
 
 /* ============================================================
-   ۷. رندر جدول
+   ۱۱. نمایش جدول
    ============================================================ */
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   document.getElementById('resultCount').textContent = filteredRows.length + ' رکورد';
 
-  if (filteredRows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
+  if (!filteredRows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
 
   const start = (currentPage - 1) * PAGE_SIZE;
-  const end   = Math.min(start + PAGE_SIZE, filteredRows.length);
+  const end = Math.min(start + PAGE_SIZE, filteredRows.length);
   const pageRows = filteredRows.slice(start, end);
 
   let html = '';
-  pageRows.forEach(function(r, idx) {
+
+  pageRows.forEach((r, idx) => {
     const globalIdx = start + idx + 1;
     const rowCode = getAdminTashkeelCode(r);
     const employee = adminEmployeeFor(rowCode);
@@ -663,21 +853,17 @@ function renderTable() {
       ? '<span class="badge-filled">✅ پر</span>'
       : '<span class="badge-empty">❌ خالی</span>';
 
-    let titleCell = '<div style="text-align:right;direction:rtl"><strong>' + escapeHtml(r.title || '—') + '</strong></div>';
+    let titleCell =
+      '<div style="text-align:right;direction:rtl"><strong>' +
+      escapeHtml(r.title || '—') + '</strong></div>';
 
     if (isFilled) {
-      const lastName = employee.lastName || '—';
-      const fatherName = employee.fatherName || '—';
-      const jobTitle = employee.jobTitle || r.title;
-      const schoolName = employee.school || r.place;
-      const phone = employee.phone || '—';
-
       titleCell = `
         <div class="employee-info" style="text-align:right;direction:rtl">
-          <div class="detail"><strong>عنوان بست:</strong> ${escapeHtml(jobTitle)}</div>
-          <div class="name">👤 ${escapeHtml(employee.firstName || '—')} ${escapeHtml(lastName)} ولد ${escapeHtml(fatherName)}</div>
-          <div class="detail"><strong>مکتب:</strong> ${escapeHtml(schoolName)}</div>
-          <div class="contact" style="direction:rtl;display:block;text-align:right">📞 ${escapeHtml(phone)}</div>
+          <div class="detail"><strong>عنوان بست:</strong> ${escapeHtml(employee.jobTitle || r.title || '—')}</div>
+          <div class="name">👤 ${escapeHtml(employee.firstName || '—')} ${escapeHtml(employee.lastName || '—')} ولد ${escapeHtml(employee.fatherName || '—')}</div>
+          <div class="detail"><strong>مکتب:</strong> ${escapeHtml(employee.school || r.place || '—')}</div>
+          <div class="contact" style="direction:rtl;display:block;text-align:right">📞 ${escapeHtml(employee.phone || '—')}</div>
         </div>
       `;
     }
@@ -690,8 +876,8 @@ function renderTable() {
       '<td>' + sectionBadge + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '<td>' +
-        '<button class="btn-action btn-edit" onclick="editRecord(' + r.id + ')" title="ویرایش">✏️</button>' +
-        '<button class="btn-action btn-delete" onclick="deleteRecord(' + r.id + ')" title="حذف">🗑️</button>' +
+        '<button class="btn-action btn-edit" onclick="editRecord(' + Number(r.id) + ')" title="ویرایش">✏️</button>' +
+        '<button class="btn-action btn-delete" onclick="deleteRecord(' + Number(r.id) + ')" title="حذف">🗑️</button>' +
       '</td>' +
     '</tr>';
   });
@@ -701,7 +887,7 @@ function renderTable() {
 }
 
 /* ============================================================
-   ۸. صفحه‌بندی
+   ۱۲. صفحه‌بندی
    ============================================================ */
 function renderPagination() {
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
@@ -722,24 +908,30 @@ function renderPagination() {
   html += '<span class="page-badge">صفحه ' + currentPage + ' از ' + totalPages + '</span>';
   html += '<button onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>بعدی ▶️</button>';
   html += '<button onclick="goPage(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>آخر ⏭️</button>';
+
   pag.innerHTML = html;
 }
 
 function goPage(p) {
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
   if (p < 1 || p > totalPages) return;
+
   currentPage = p;
   renderTable();
+
   const tableWrapper = document.querySelector('.table-responsive');
   if (tableWrapper) tableWrapper.scrollTop = 0;
 }
 window.goPage = goPage;
 
 /* ============================================================
-   ۹. مودال افزودن / ویرایش
+   ۱۳. مودال افزودن و ویرایش
    ============================================================ */
 function showAddModal() {
-  if (!editModal) editModal = new bootstrap.Modal(document.getElementById('editModal'));
+  if (!editModal) {
+    editModal = new bootstrap.Modal(document.getElementById('editModal'));
+  }
+
   document.getElementById('editModalTitle').textContent = 'افزودن رکورد جدید';
   document.getElementById('editId').value = '';
   document.getElementById('editTitle').value = '';
@@ -747,31 +939,37 @@ function showAddModal() {
   document.getElementById('editCode').value = '27-32-02-';
   document.getElementById('editPub').value = '';
   document.getElementById('editSection').value = 'amariat';
+
   editModal.show();
 }
 window.showAddModal = showAddModal;
 
 function editRecord(id) {
-  const r = allRows.find(function(x) { return x.id === id; });
+  const r = allRows.find(x => String(x.id) === String(id));
   if (!r) return;
-  if (!editModal) editModal = new bootstrap.Modal(document.getElementById('editModal'));
+
+  if (!editModal) {
+    editModal = new bootstrap.Modal(document.getElementById('editModal'));
+  }
+
   document.getElementById('editModalTitle').textContent = 'ویرایش رکورد #' + id;
   document.getElementById('editId').value = r.id;
   document.getElementById('editTitle').value = r.title || '';
   document.getElementById('editPlace').value = r.place || '';
-  document.getElementById('editCode').value = r.code || '';
-  document.getElementById('editPub').value = r.pub || '';
+  document.getElementById('editCode').value = getAdminTashkeelCode(r);
+  document.getElementById('editPub').value = r.pub || r.priv || '';
   document.getElementById('editSection').value = r.section || 'amariat';
+
   editModal.show();
 }
 window.editRecord = editRecord;
 
 async function saveRecord() {
-  const id      = document.getElementById('editId').value;
-  const title   = document.getElementById('editTitle').value.trim();
-  const place   = document.getElementById('editPlace').value.trim();
-  const code    = document.getElementById('editCode').value.trim();
-  const pub     = document.getElementById('editPub').value.trim();
+  const id = document.getElementById('editId').value;
+  const title = document.getElementById('editTitle').value.trim();
+  const place = document.getElementById('editPlace').value.trim();
+  const code = document.getElementById('editCode').value.trim();
+  const pub = document.getElementById('editPub').value.trim();
   const section = document.getElementById('editSection').value;
 
   if (!title || !place || !code) {
@@ -779,76 +977,187 @@ async function saveRecord() {
     return;
   }
 
-  const body = { title: title, place: place, code: code, pub: pub || null, section: section };
+  const body = {
+    title,
+    place,
+    code,
+    pub: pub || null,
+    section
+  };
 
   try {
-    const url    = id ? '/api/tashkeel/' + id : '/api/tashkeel';
+    const url = id ? '/api/tashkeel/' + id : '/api/tashkeel';
     const method = id ? 'PUT' : 'POST';
+
     const r = await fetch(url, {
-      method: method,
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      method,
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(body)
     });
-    const data = await r.json().catch(function() { return {}; });
+
+    const data = await r.json().catch(() => ({}));
+
     if (r.ok) {
       showToast(id ? '✅ ویرایش شد' : '✅ افزوده شد');
       editModal.hide();
-      loadList();
+      await loadList();
       loadStats();
     } else {
       showToast('❌ ' + (data.error || 'خطا'), true);
     }
   } catch (e) {
+    console.error('[saveRecord]', e);
     showToast('❌ ارتباط برقرار نشد', true);
   }
 }
 window.saveRecord = saveRecord;
 
 /* ============================================================
-   ۱۰. حذف
+   ۱۴. حذف رکورد
    ============================================================ */
 async function deleteRecord(id) {
   if (!confirm('آیا از حذف این رکورد مطمئن هستید؟')) return;
+
   try {
     const r = await fetch('/api/tashkeel/' + id, {
       method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { Authorization: 'Bearer ' + token }
     });
+
     if (r.ok) {
       showToast('🗑️ حذف شد');
-      loadList();
+      await loadList();
       loadStats();
     } else {
-      const d = await r.json().catch(function() { return {}; });
+      const d = await r.json().catch(() => ({}));
       showToast('❌ ' + (d.error || 'خطا'), true);
     }
   } catch (e) {
+    console.error('[deleteRecord]', e);
     showToast('❌ ارتباط برقرار نشد', true);
   }
 }
 window.deleteRecord = deleteRecord;
 
 /* ============================================================
-   ۱۱. پرینت
+   ۱۵. چاپ
    ============================================================ */
 function printTable() {
-  if(!filteredRows?.length){showToast('رکوردی برای پرینت وجود ندارد',true);return;}
-  const h=['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];
-  const rows=adminExportRows(filteredRows);
-  const table=`<table><thead><tr><th rowspan=2>نمبر عمومی</th><th rowspan=2>نمبر خصوصی</th><th colspan=4>مشخصات وظیفوی</th><th rowspan=2>عنوان وظیفه</th><th rowspan=2>درجه تحصیل</th><th rowspan=2>رشته تحصیل</th><th rowspan=2>رشته تدریس</th><th colspan=2>رتبه</th><th rowspan=2>تاریخ تقرر</th><th rowspan=2>تاریخ تولد</th><th rowspan=2>نمبر تذکره</th><th rowspan=2>جنسیت</th><th rowspan=2>قومیت</th><th rowspan=2>کود نمبر</th><th rowspan=2>محل وظیفه</th><th rowspan=2>آمریت معارف</th><th rowspan=2>ملاحظات</th></tr><tr><th>اسم</th><th>ولد</th><th>ولدیت</th><th>تخلص</th><th>بست</th><th>قدم</th></tr></thead><tbody><tr><th colspan=21>پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی</th></tr>${rows.map(r=>`<tr>${r.map(v=>`<td>${escapeHtml(v??'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-  const w=window.open('','_blank');if(!w){showToast('اجازه بازشدن پنجره چاپ را بدهید',true);return;}
-  w.document.write(`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>جدول شهرت پرسونل</title><style>@page{size:A3 landscape;margin:8mm}body{font-family:Tahoma,Arial,sans-serif}h2,h3{text-align:center;white-space:pre-line}table{border-collapse:collapse;width:100%;font-size:8px}th,td{border:1px solid #222;padding:4px;text-align:center;white-space:normal}th{background:#eee}tr{break-inside:avoid}</style></head><body><h2>امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی</h2><h3>جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف</h3>${table}<script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script></body></html>`);w.document.close();
+  if (!filteredRows.length) {
+    showToast('رکوردی برای پرینت وجود ندارد', true);
+    return;
+  }
+
+  const rows = adminExportRows(filteredRows);
+
+  const table = `
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">نمبر عمومی</th>
+          <th rowspan="2">نمبر خصوصی</th>
+          <th colspan="4">مشخصات وظیفوی</th>
+          <th rowspan="2">عنوان وظیفه</th>
+          <th rowspan="2">درجه تحصیل</th>
+          <th rowspan="2">رشته تحصیل</th>
+          <th rowspan="2">رشته تدریس</th>
+          <th colspan="2">رتبه</th>
+          <th rowspan="2">تاریخ تقرر</th>
+          <th rowspan="2">تاریخ تولد</th>
+          <th rowspan="2">نمبر تذکره</th>
+          <th rowspan="2">جنسیت</th>
+          <th rowspan="2">قومیت</th>
+          <th rowspan="2">کود نمبر</th>
+          <th rowspan="2">محل وظیفه</th>
+          <th rowspan="2">آمریت معارف</th>
+          <th rowspan="2">ملاحظات</th>
+        </tr>
+        <tr>
+          <th>اسم</th><th>ولد</th><th>ولدیت</th><th>تخلص</th>
+          <th>بست</th><th>قدم</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th colspan="21">پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی</th></tr>
+        ${rows.map(row =>
+          '<tr>' + row.map(value =>
+            '<td>' + escapeHtml(value ?? '') + '</td>'
+          ).join('') + '</tr>'
+        ).join('')}
+      </tbody>
+    </table>
+  `;
+
+  const w = window.open('', '_blank');
+  if (!w) {
+    showToast('اجازه بازشدن پنجره چاپ را بدهید', true);
+    return;
+  }
+
+  w.document.write(`
+    <!doctype html>
+    <html lang="fa" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>جدول شهرت پرسونل</title>
+      <style>
+        @page{size:A3 landscape;margin:8mm}
+        body{font-family:Tahoma,Arial,sans-serif}
+        h2,h3{text-align:center;white-space:pre-line}
+        table{border-collapse:collapse;width:100%;font-size:8px}
+        th,td{border:1px solid #222;padding:4px;text-align:center;white-space:normal}
+        th{background:#eee}
+        tr{break-inside:avoid}
+      </style>
+    </head>
+    <body>
+      <h2>امارت اسلامی افغانستان
+وزارت معارف
+ریاست معارف ولایت هرات
+آمریت معارف کشک رباط سنگی
+مدیریت عمومی اداری و اجرائیوی</h2>
+      <h3>جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف</h3>
+      ${table}
+      <script>
+        window.onload = () => setTimeout(() => window.print(), 400);
+      <\/script>
+    </body>
+    </html>
+  `);
+
+  w.document.close();
 }
-window.printTable=printTable;
-function exportCSV() {
-  if(!filteredRows?.length){showToast('رکوردی برای خروجی وجود ندارد',true);return;}
-  adminDownloadExcel(adminExportRows(filteredRows),'تشکیلات_'+new Date().toISOString().slice(0,10)+'.xlsx');
-  showToast('✅ خروجی تشکیل آماده شد ('+filteredRows.length+' رکورد)');
-}
-window.exportCSV=exportCSV;
+window.printTable = printTable;
 
 /* ============================================================
-   ۱۳. شروع
+   ۱۶. خروجی اکسل
+   ============================================================ */
+async function exportCSV() {
+  if (!filteredRows.length) {
+    showToast('رکوردی برای خروجی وجود ندارد', true);
+    return;
+  }
+
+  /*
+    قبل از خروجی، معلومات کارمندان دوباره دریافت می‌شود
+    تا اطلاعات چاپ و اکسل تازه باشد.
+  */
+  await loadRegisteredCodes();
+
+  adminDownloadExcel(
+    adminExportRows(filteredRows),
+    'تشکیلات_' + new Date().toISOString().slice(0,10) + '.xlsx'
+  );
+
+  showToast('✅ خروجی تشکیل آماده شد (' + filteredRows.length + ' رکورد)');
+}
+window.exportCSV = exportCSV;
+
+/* ============================================================
+   ۱۷. شروع برنامه
    ============================================================ */
 loadStats();
 loadList();

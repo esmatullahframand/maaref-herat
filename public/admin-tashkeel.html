@@ -269,29 +269,32 @@ function normalizeKey(value){
     .replace(/[أإآ]/g,'ا')
     .replace(/[يى]/g,'ی')
     .replace(/[ك]/g,'ک')
-    .replace(/[\s_\-./\\()[\]{}:،,؛؛]/g,'')
+    .replace(/[\s_\-./\\()[\]{}:،,؛]/g,'')
     .trim();
 }
 
+/* نام‌های واقعی فیلدها مطابق اطلاعات برگشتی API */
 const FIELD_ALIASES={
-  firstName:['firstName','firstname','first_name','name','fullName','full_name','اسم','نام'],
-  lastName:['lastName','lastname','last_name','surname','familyName','family_name','takhallos','تخلص','نام خانوادگی'],
-  fatherName:['fatherName','fathername','father_name','father','walid','ولد','نام پدر','اسم پدر','نام والد'],
-  grandfatherName:['grandFatherName','grandfatherName','grand_father_name','grandfather_name','grandFather','grandfather','fatherFatherName','father_father_name','جد','نام پدرکلان','نام پدر کلان','ولدیت','ولدیت پدر'],
-  jobTitle:['jobTitle','job_title','job','title','position','positionTitle','position_title','عنوان وظیفه','عنوان بست','وظیفه'],
-  jobCode:['jobCode','jobcode','job_code','code','postCode','post_code','positionCode','position_code','kod','kodNumber','kod_number','کود نمبر','کد بست','کود بست','شماره بست'],
-  school:['school','schoolName','schoolname','school_name','maktab','place','workPlace','work_place','مکتب','نام مکتب','محل وظیفه','محل کار'],
-  phone:['phone','mobile','contact','phoneNumber','phone_number','mobileNumber','mobile_number','شماره تماس','تماس'],
-  gender:['gender','sex','جنسیت','جنس'],
-  education:['education','degree','educationLevel','education_level','درجه تحصیل','سطح تحصیل'],
-  field:['field','major','studyField','study_field','رشته تحصیل','رشته'],
-  teachingField:['teachingField','teaching_field','teachingSubject','teaching_subject','رشته تدریس','مضمون تدریس'],
-  grade:['grade','bast','bust','jobGrade','job_grade','gradeLevel','grade_level','rank','jobRank','job_rank','رتبه','بست','بست وظیفه','درجه بست','نمبر بست'],
-  step:['step','qadam','jobStep','job_step','stepNo','step_no','stepNumber','step_number','قدم','قدم وظیفه','نمبر قدم'],
-  appointmentDate:['currentAppointmentDate','current_appointment_date','appointmentDate','appointment_date','dateOfAppointment','date_of_appointment','hireDate','hire_date','startDate','start_date','currentHireDate','تاریخ تقرر فعلی','تاریخ تقرر','تاریخ استخدام','تاریخ شروع وظیفه','تقرر'],
-  birthDate:['birthDate','birth_date','dateOfBirth','date_of_birth','dob','تاریخ تولد','تاریخ پیدایش'],
-  tazkira:['electronicTazkira','electronic_tazkira','eTazkira','e_tazkira','etazkira','etazkiraNumber','etazkira_number','tazkiraElectronic','tazkira_electronic','tazkiraNumber','tazkira_number','tazkiraNo','tazkira_no','nationalId','national_id','nid','electronicId','electronic_id','نمبر تذکره برقی','شماره تذکره برقی','نمبر تذکره','شماره تذکره','تذکره برقی','آی دی نمبر'],
-  ethnicity:['ethnicity',' قومیت','قومیت','قوم']
+  firstName:['firstName'],
+  lastName:['lastName'],
+  fatherName:['fatherName'],
+  grandfatherName:['grandfatherName'],
+  jobTitle:['jobTitle'],
+  jobCode:['jobCode'],
+  school:['serviceSchool','schoolname','schoolName','school','serviceSchool'],
+  phone:['phone'],
+  gender:['gender'],
+  education:['degree'],
+  field:['major'],
+  teachingField:['teachingField'],
+  grade:['bust'],
+  step:['grade'],
+  appointmentDate:['currentPositionDate'],
+  firstAppointmentDate:['firstAppointmentDate'],
+  birthDate:['birthDate'],
+  tazkira:['eTazkira'],
+  paperTazkira:['paperTazkira'],
+  ethnicity:['ethnicity']
 };
 
 function parseObject(value){
@@ -301,7 +304,7 @@ function parseObject(value){
   return value;
 }
 
-/* ادغام اطلاعات اصلی و تمام ساختارهای تو در تو */
+/* اطلاعات کارمند در API داخل data قرار دارد */
 function adminInfo(rec){
   if(!rec||typeof rec!=='object')return {};
   const result={};
@@ -324,7 +327,6 @@ function adminInfo(rec){
   return result;
 }
 
-/* جستجوی عمیق با مقایسه کلیدهای نرمال‌شده */
 function deepFind(obj,keys,depth=0,seen=new Set()){
   if(!obj||typeof obj!=='object'||depth>10||seen.has(obj))return '';
   seen.add(obj);
@@ -354,14 +356,10 @@ function deepFind(obj,keys,depth=0,seen=new Set()){
 function adminValue(obj,keys,fallback=''){
   if(!obj)return fallback;
   const wanted=new Set(keys.map(normalizeKey));
-  const sources=[obj];
-  for(const source of sources){
-    if(!source||typeof source!=='object')continue;
-    for(const [key,value] of Object.entries(source)){
-      if(wanted.has(normalizeKey(key))&&value!==null&&value!==undefined&&
-         typeof value!=='object'&&String(value).trim()!==''){
-        return value;
-      }
+  for(const [key,value] of Object.entries(obj)){
+    if(wanted.has(normalizeKey(key))&&value!==null&&value!==undefined&&
+       typeof value!=='object'&&String(value).trim()!==''){
+      return value;
     }
   }
   const found=deepFind(obj,keys);
@@ -369,11 +367,12 @@ function adminValue(obj,keys,fallback=''){
 }
 
 /* ============================================================
-   ۵. استخراج اطلاعات کامل کارمند
+   ۵. استخراج دقیق اطلاعات کارمند
    ============================================================ */
 function employeeDetails(rec){
   const d=adminInfo(rec);
-  const get=name=>adminValue(rec,FIELD_ALIASES[name]||[],adminValue(d,FIELD_ALIASES[name]||[],''));
+  const get=name=>adminValue(d,FIELD_ALIASES[name]||[],'');
+  const data=parseObject(rec?.data)||{};
 
   return {
     firstName:get('firstName'),
@@ -382,7 +381,7 @@ function employeeDetails(rec){
     grandfatherName:get('grandfatherName'),
     jobTitle:get('jobTitle'),
     jobCode:get('jobCode'),
-    school:get('school'),
+    school:get('school')||rec?.schoolname||data.serviceSchool||'',
     phone:get('phone'),
     gender:get('gender'),
     education:get('education'),
@@ -391,19 +390,19 @@ function employeeDetails(rec){
     grade:get('grade'),
     step:get('step'),
     appointmentDate:get('appointmentDate'),
+    firstAppointmentDate:get('firstAppointmentDate'),
     birthDate:get('birthDate'),
     tazkira:get('tazkira'),
+    paperTazkira:get('paperTazkira'),
     ethnicity:get('ethnicity')
   };
 }
 
-/* کد بست را از هر محل ممکن در رکورد پیدا می‌کند */
+/* کد بست از jobCode داخل data خوانده می‌شود */
 function getAdminTashkeelCode(row){
   if(!row)return '';
-  const aliases=FIELD_ALIASES.jobCode;
-  let value=adminValue(row,aliases,'');
-  if(value!=='')return value;
-  return deepFind(row,aliases)||'';
+  const data=parseObject(row.data)||{};
+  return row.jobCode||data.jobCode||adminValue(row,FIELD_ALIASES.jobCode,'')||'';
 }
 
 /* ============================================================
@@ -427,7 +426,6 @@ async function loadRegisteredCodes(){
       const code=normalizeAdminCode(employee.jobCode||getAdminTashkeelCode(rec));
       if(!code)return;
 
-      /* اگر کد تکراری بود، رکوردی که معلومات بیشتری دارد نگه‌داری شود */
       const old=newMap.get(code);
       if(!old){
         newMap.set(code,employee);
@@ -443,10 +441,7 @@ async function loadRegisteredCodes(){
 
     registeredDataMap=newMap;
     console.log('کارمندان ثبت‌شده:',registeredDataMap.size);
-
-    if(list.length){
-      console.log('نمونه استخراج کارمند:',employeeDetails(list[0]));
-    }
+    if(list.length)console.log('نمونه استخراج کارمند:',employeeDetails(list[0]));
   }catch(e){
     console.error('[loadRegisteredCodes]',e);
   }
@@ -462,27 +457,27 @@ function adminEmployeeFor(code){
 function adminExportRow(r,e,i){
   e=e||{};
   return [
-    i+1,                         // نمبر عمومی
-    r.priv||'',                  // نمبر خصوصی
-    e.firstName||'',             // اسم
-    e.fatherName||'',            // ولد
-    e.grandfatherName||'',       // ولدیت
-    e.lastName||'',              // تخلص
-    e.jobTitle||r.title||'',     // عنوان وظیفه
-    e.education||'',             // درجه تحصیل
-    e.field||'',                 // رشته تحصیل
-    e.teachingField||'',         // رشته تدریس
-    e.grade||'',                 // بست
-    e.step||'',                  // قدم
-    e.appointmentDate||'',       // تاریخ تقرر
-    e.birthDate||'',             // تاریخ تولد
-    e.tazkira||'',               // نمبر تذکره برقی
-    e.gender||'',                // جنسیت
-    e.ethnicity||'',             // قومیت
-    getAdminTashkeelCode(r),     // کود نمبر
-    e.school||r.place||'',       // محل وظیفه
+    i+1,
+    r.priv||r.pub||'',
+    e.firstName||'',
+    e.fatherName||'',
+    e.grandfatherName||'',
+    e.lastName||'',
+    e.jobTitle||r.title||'',
+    e.education||'',
+    e.field||'',
+    e.teachingField||'',
+    e.grade||'',
+    e.step||'',
+    e.appointmentDate||'',
+    e.birthDate||'',
+    e.tazkira||'',
+    e.gender||'',
+    e.ethnicity||'',
+    getAdminTashkeelCode(r),
+    e.school||r.place||'',
     r.amariat||'آمریت معارف کشک رباط سنگی',
-    ''                           // ملاحظات
+    ''
   ];
 }
 

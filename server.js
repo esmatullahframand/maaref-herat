@@ -78,11 +78,9 @@ function stringifyData(data) {
   if (data === undefined || data === null) return null;
   if (typeof data === 'string') {
     try {
-      // اگر رشته معتبر JSON بود، همان را برگردان
       JSON.parse(data);
       return data;
     } catch {
-      // اگر رشته JSON نبود، به عنوان مقدار ساده در JSON قرار بده
       return JSON.stringify({ value: data });
     }
   }
@@ -453,8 +451,6 @@ app.put('/api/school-settings/:id', authRequired, asyncRoute(async (req, res) =>
 // ============================================================
 // RECORDS
 // ============================================================
-
-// ✅ GET — فقط ۱۰۰ رکورد اخیر
 app.get('/api/records', authRequired, asyncRoute(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
   const r = await q(
@@ -464,7 +460,6 @@ app.get('/api/records', authRequired, asyncRoute(async (req, res) => {
     isAdmin ? [] : [req.user.id]
   );
 
-  // ✅ تبدیل data از رشته به شیء (برای فرانت‌اند)
   const rows = r.rows.map(rec => {
     if (typeof rec.data === 'string') {
       try { rec.data = JSON.parse(rec.data); } catch { rec.data = {}; }
@@ -483,7 +478,6 @@ app.get('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   if (req.user.role !== 'admin' && rec.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
 
-  // ✅ تبدیل data
   if (typeof rec.data === 'string') {
     try { rec.data = JSON.parse(rec.data); } catch { rec.data = {}; }
   }
@@ -492,11 +486,9 @@ app.get('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   res.json({ record: rec });
 }));
 
-// ✅ POST — ذخیره اطلاعات کارمند در data
 app.post('/api/records', authRequired, asyncRoute(async (req, res) => {
   const b = req.body || {};
 
-  // اگر b.data وجود نداشت، فیلدهای مستقیم را داخل data قرار بده
   let employeeData = b.data;
   if (!employeeData) {
     const possibleFields = ['firstName', 'lastName', 'jobTitle', 'jobCode', 'fatherName', 'grandfatherName'];
@@ -521,13 +513,12 @@ app.post('/api/records', authRequired, asyncRoute(async (req, res) => {
       req.user.role === 'admin' && b.userid ? Number(b.userid) : req.user.id,
       txt(b.schoolname ?? req.user.schoolname),
       txt(b.district ?? req.user.district),
-      dataStr, // ✅ رشته JSON
+      dataStr,
       b.status || 'pending',
       num(b.editallowed, 0)
     ]
   );
 
-  // ✅ تبدیل data برای پاسخ
   const rec = r.rows[0];
   if (typeof rec.data === 'string') {
     try { rec.data = JSON.parse(rec.data); } catch { rec.data = {}; }
@@ -536,7 +527,6 @@ app.post('/api/records', authRequired, asyncRoute(async (req, res) => {
   res.status(201).json({ record: rec });
 }));
 
-// ✅ PUT — به‌روزرسانی data
 app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const r0 = await q('SELECT * FROM records WHERE id=$1', [id]);
@@ -551,7 +541,6 @@ app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
   if (b.data !== undefined) {
     newData = stringifyData(b.data);
   } else {
-    // اگر data ارسال نشد ولی فیلدهای کارمند ارسال شدند، merge کن
     const possibleFields = ['firstName', 'lastName', 'jobTitle', 'jobCode', 'fatherName', 'grandfatherName'];
     const hasDirectFields = possibleFields.some(f => b[f] !== undefined);
     if (hasDirectFields) {
@@ -590,7 +579,6 @@ app.put('/api/records/:id', authRequired, asyncRoute(async (req, res) => {
     ]
   );
 
-  // ✅ تبدیل data
   const outRec = r.rows[0];
   if (typeof outRec.data === 'string') {
     try { outRec.data = JSON.parse(outRec.data); } catch { outRec.data = {}; }
@@ -694,6 +682,7 @@ app.get('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   const r = await q(`SELECT * FROM salaries ${where} ORDER BY createdat DESC LIMIT 1000`, params);
   res.json({ salaries: r.rows });
 }));
+
 app.get('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   const r = await q('SELECT * FROM salaries WHERE id=$1', [Number(req.params.id)]);
   const s = r.rows[0];
@@ -702,24 +691,102 @@ app.get('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
     return res.status(403).json({ error: 'دسترسی ندارید' });
   res.json({ salary: s });
 }));
+
+// ✅ POST /api/salaries — نسخهٔ اصلاح‌شده و مقاوم در برابر خطا
 app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   const b = req.body || {};
-  if (!b.record_id || !b.year || !b.month)
-    return res.status(400).json({ error: 'record_id, year, month الزامی است' });
-  const cols = ['record_id','userid','schoolname','district','year','month',
-                ...SALARY_TEXT_COLS, ...SALARY_NUM_COLS];
-  const vals = [
-    Number(b.record_id),
-    req.user.role === 'admin' && b.userid ? Number(b.userid) : req.user.id,
-    txt(b.schoolname), txt(b.district),
-    String(b.year), String(b.month),
-    ...SALARY_TEXT_COLS.map(c => c === 'status' ? (b.status || 'draft') : txt(b[c])),
-    ...SALARY_NUM_COLS.map(c => num(b[c], 0))
-  ];
-  const ph = cols.map((_, i) => `$${i + 1}`).join(',');
-  const r = await q(`INSERT INTO salaries (${cols.join(',')}) VALUES (${ph}) RETURNING *`, vals);
-  res.status(201).json({ salary: r.rows[0] });
+
+  // --- اعتبارسنجی فیلدهای الزامی ---
+  const recordId = Number(b.record_id);
+  const year  = b.year  === undefined || b.year  === null ? '' : String(b.year).trim();
+  const month = b.month === undefined || b.month === null ? '' : String(b.month).trim();
+
+  if (!Number.isFinite(recordId) || recordId <= 0 || !year || !month) {
+    return res.status(400).json({
+      success: false,
+      error: 'شناسه کارمند، سال و ماه الزامی است.'
+    });
+  }
+
+  try {
+    const cols = [
+      'record_id', 'userid', 'schoolname', 'district', 'year', 'month',
+      ...SALARY_TEXT_COLS, ...SALARY_NUM_COLS
+    ];
+
+    const vals = [
+      recordId,
+      req.user.role === 'admin' && b.userid ? Number(b.userid) : req.user.id,
+      txt(b.schoolname),
+      txt(b.district),
+      year,
+      month,
+      ...SALARY_TEXT_COLS.map(c =>
+        c === 'status' ? (b.status || 'draft') : txt(b[c])
+      ),
+      ...SALARY_NUM_COLS.map(c => num(b[c], 0))
+    ];
+
+    const ph = cols.map((_, i) => `$${i + 1}`).join(',');
+
+    const r = await q(
+      `INSERT INTO salaries (${cols.join(',')})
+       VALUES (${ph}) RETURNING *`,
+      vals
+    );
+
+    return res.status(201).json({
+      success: true,
+      salary: r.rows[0],
+      message: 'معاش با موفقیت ثبت شد.'
+    });
+
+  } catch (e) {
+    // --- نقض قید یکتایی: قبلاً معاش برای این کارمند در همین ماه/سال ثبت شده ---
+    if (e && e.code === '23505') {
+      const constraint = String(e.constraint || '');
+      const detail     = String(e.detail || '');
+      const isSalaryUnique =
+        constraint === 'salaries_record_id_year_month_key' ||
+        (detail.includes('record_id') && detail.includes('year') && detail.includes('month'));
+
+      if (isSalaryUnique) {
+        return res.status(409).json({
+          success: false,
+          error: 'DUPLICATE_SALARY',
+          message: `برای این کارمند در ماه ${month} سال ${year} قبلاً معاش ثبت شده است.`
+        });
+      }
+    }
+
+    // --- نقض کلید خارجی: کارمند معتبر نیست ---
+    if (e && e.code === '23503') {
+      return res.status(400).json({
+        success: false,
+        error: 'INVALID_RECORD_REFERENCE',
+        message: 'کارمند انتخاب‌شده معتبر نیست.'
+      });
+    }
+
+    // --- نقض قید CHECK پایگاه‌داده ---
+    if (e && e.code === '23514') {
+      return res.status(400).json({
+        success: false,
+        error: 'CHECK_VIOLATION',
+        message: 'مقادیر ارسالی با محدودیت‌های پایگاه‌داده سازگار نیست.'
+      });
+    }
+
+    console.error('POST /api/salaries error:', e);
+
+    return res.status(500).json({
+      success: false,
+      error: 'خطا در ثبت معاش',
+      detail: e && e.message ? e.message : 'Unknown error'
+    });
+  }
 }));
+
 app.put('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const r0 = await q('SELECT * FROM salaries WHERE id=$1', [id]);
@@ -740,6 +807,7 @@ app.put('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   const r = await q(`UPDATE salaries SET ${updates.join(',')} WHERE id=$${params.length} RETURNING *`, params);
   res.json({ salary: r.rows[0] });
 }));
+
 app.delete('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const r0 = await q('SELECT * FROM salaries WHERE id=$1', [id]);
@@ -1039,6 +1107,7 @@ app.post('/api/tashkeel/seed', authRequired, adminOnly, asyncRoute(async (req, r
   } finally { client.release(); }
 }));
 
+// ✅ نکته مهم: این مسیر باید قبل از /api/tashkeel/:id تعریف شود
 app.get('/api/tashkeel/stats/summary', authRequired, asyncRoute(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
   const params = []; let where = '';

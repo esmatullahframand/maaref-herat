@@ -73,7 +73,7 @@ function adminOnly(req, res, next) {
 const num = (v, def = 0) => (v === undefined || v === null || v === '' ? def : Number(v));
 const txt = (v) => (v === undefined || v === null || v === '' ? null : String(v));
 
-// ✅ تبدیل data به رشته JSON (مهم برای ذخیره درست)
+// ✅ تبدیل data به رشته JSON
 function stringifyData(data) {
   if (data === undefined || data === null) return null;
   if (typeof data === 'string') {
@@ -615,7 +615,7 @@ app.get('/api/check-jobcode', authRequired, asyncRoute(async (req, res) => {
     const params = [String(code).trim()];
     let sql = `SELECT r.id, r.userid, r.schoolname, r.data
                  FROM records r
-                WHERE r.data::json->>'jobCode' = $1`;
+                WHERE r.data::jsonb->>'jobCode' = $1`;
     if (excludeId) { params.push(Number(excludeId)); sql += ' AND r.id <> $2'; }
     const r = await q(sql, params);
     if (!r.rows[0]) return res.json({ exists: false });
@@ -641,7 +641,7 @@ app.get('/api/check-etazkira', authRequired, asyncRoute(async (req, res) => {
     const params = [String(code).trim()];
     let sql = `SELECT r.id, r.userid, r.schoolname, r.data
                  FROM records r
-                WHERE r.data::json->>'eTazkira' = $1`;
+                WHERE r.data::jsonb->>'eTazkira' = $1`;
     if (excludeId) { params.push(Number(excludeId)); sql += ' AND r.id <> $2'; }
     const r = await q(sql, params);
     if (!r.rows[0]) return res.json({ exists: false });
@@ -671,32 +671,60 @@ const SALARY_NUM_COLS = [
   'total_deductions','net_pay'
 ];
 
+// ✅ GET همه معاشات (با جوین نام کارمند)
 app.get('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   const { year, month } = req.query;
   const isAdmin = req.user.role === 'admin';
   const params = []; const conds = [];
-  if (!isAdmin) { params.push(req.user.id); conds.push(`userid=$${params.length}`); }
-  if (year)  { params.push(String(year));  conds.push(`year=$${params.length}`); }
-  if (month) { params.push(String(month)); conds.push(`month=$${params.length}`); }
+
+  if (!isAdmin) { params.push(req.user.id); conds.push(`s.userid=$${params.length}`); }
+  if (year)  { params.push(String(year));  conds.push(`s.year=$${params.length}`); }
+  if (month) { params.push(String(month)); conds.push(`s.month=$${params.length}`); }
   const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
-  const r = await q(`SELECT * FROM salaries ${where} ORDER BY createdat DESC LIMIT 1000`, params);
+
+  const r = await q(
+    `SELECT s.*,
+            COALESCE(NULLIF(s.first_name, ''), r.data::jsonb->>'firstName', 'نامشخص') AS first_name,
+            COALESCE(NULLIF(s.last_name, ''),  r.data::jsonb->>'lastName', '')         AS last_name,
+            COALESCE(NULLIF(s.job_code, ''),   r.data::jsonb->>'jobCode', '')          AS job_code,
+            COALESCE(NULLIF(s.job_title, ''),  r.data::jsonb->>'jobTitle', '')         AS job_title
+       FROM salaries s
+       LEFT JOIN records r ON r.id = s.record_id
+       ${where}
+       ORDER BY s.createdat DESC
+       LIMIT 1000`,
+    params
+  );
+
   res.json({ salaries: r.rows });
 }));
 
+// ✅ GET یک معاش (با جوین نام کارمند)
 app.get('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
-  const r = await q('SELECT * FROM salaries WHERE id=$1', [Number(req.params.id)]);
+  const r = await q(
+    `SELECT s.*,
+            COALESCE(NULLIF(s.first_name, ''), r.data::jsonb->>'firstName', 'نامشخص') AS first_name,
+            COALESCE(NULLIF(s.last_name, ''),  r.data::jsonb->>'lastName', '')         AS last_name,
+            COALESCE(NULLIF(s.job_code, ''),   r.data::jsonb->>'jobCode', '')          AS job_code,
+            COALESCE(NULLIF(s.job_title, ''),  r.data::jsonb->>'jobTitle', '')         AS job_title
+       FROM salaries s
+       LEFT JOIN records r ON r.id = s.record_id
+      WHERE s.id = $1`,
+    [Number(req.params.id)]
+  );
+
   const s = r.rows[0];
   if (!s) return res.status(404).json({ error: 'یافت نشد' });
   if (req.user.role !== 'admin' && s.userid !== req.user.id)
     return res.status(403).json({ error: 'دسترسی ندارید' });
+
   res.json({ salary: s });
 }));
 
-// ✅ POST /api/salaries — نسخهٔ اصلاح‌شده و مقاوم در برابر خطا
+// ✅ POST معاش (مدیریت خطا و تکراری)
 app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   const b = req.body || {};
 
-  // --- اعتبارسنجی فیلدهای الزامی ---
   const recordId = Number(b.record_id);
   const year  = b.year  === undefined || b.year  === null ? '' : String(b.year).trim();
   const month = b.month === undefined || b.month === null ? '' : String(b.month).trim();
@@ -742,7 +770,6 @@ app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
     });
 
   } catch (e) {
-    // --- نقض قید یکتایی: قبلاً معاش برای این کارمند در همین ماه/سال ثبت شده ---
     if (e && e.code === '23505') {
       const constraint = String(e.constraint || '');
       const detail     = String(e.detail || '');
@@ -759,7 +786,6 @@ app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
       }
     }
 
-    // --- نقض کلید خارجی: کارمند معتبر نیست ---
     if (e && e.code === '23503') {
       return res.status(400).json({
         success: false,
@@ -768,7 +794,6 @@ app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
       });
     }
 
-    // --- نقض قید CHECK پایگاه‌داده ---
     if (e && e.code === '23514') {
       return res.status(400).json({
         success: false,
@@ -955,6 +980,18 @@ app.put('/api/evaluation-permission', authRequired, adminOnly, asyncRoute(async 
 // ============================================================
 // TASHKEEL
 // ============================================================
+// ✅ این مسیر باید قبل از /api/tashkeel/:id باشد تا stats به عنوان id تفسیر نشود
+app.get('/api/tashkeel/stats/summary', authRequired, asyncRoute(async (req, res) => {
+  const isAdmin = req.user.role === 'admin';
+  const params = []; let where = '';
+  if (!isAdmin) { params.push(req.user.id); where = 'WHERE (userid = $1 OR userid IS NULL)'; }
+  const bySection = await q(`SELECT section, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY section ORDER BY section`, params);
+  const byAmariat = await q(`SELECT amariat, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY amariat ORDER BY count DESC`, params);
+  const byPlace = await q(`SELECT place, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY place ORDER BY count DESC LIMIT 100`, params);
+  const total = await q(`SELECT COUNT(*)::int AS c FROM tashkeel ${where}`, params);
+  res.json({ total: total.rows[0].c, by_section: bySection.rows, by_amariat: byAmariat.rows, by_place: byPlace.rows });
+}));
+
 app.get('/api/tashkeel', authRequired, asyncRoute(async (req, res) => {
   const { section, place, amariat, q: search, mine } = req.query;
   const isAdmin = req.user.role === 'admin';
@@ -1105,18 +1142,6 @@ app.post('/api/tashkeel/seed', authRequired, adminOnly, asyncRoute(async (req, r
     await client.query('ROLLBACK');
     throw e;
   } finally { client.release(); }
-}));
-
-// ✅ نکته مهم: این مسیر باید قبل از /api/tashkeel/:id تعریف شود
-app.get('/api/tashkeel/stats/summary', authRequired, asyncRoute(async (req, res) => {
-  const isAdmin = req.user.role === 'admin';
-  const params = []; let where = '';
-  if (!isAdmin) { params.push(req.user.id); where = 'WHERE (userid = $1 OR userid IS NULL)'; }
-  const bySection = await q(`SELECT section, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY section ORDER BY section`, params);
-  const byAmariat = await q(`SELECT amariat, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY amariat ORDER BY count DESC`, params);
-  const byPlace = await q(`SELECT place, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY place ORDER BY count DESC LIMIT 100`, params);
-  const total = await q(`SELECT COUNT(*)::int AS c FROM tashkeel ${where}`, params);
-  res.json({ total: total.rows[0].c, by_section: bySection.rows, by_amariat: byAmariat.rows, by_place: byPlace.rows });
 }));
 
 // ============================================================

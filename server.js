@@ -73,7 +73,6 @@ function adminOnly(req, res, next) {
 const num = (v, def = 0) => (v === undefined || v === null || v === '' ? def : Number(v));
 const txt = (v) => (v === undefined || v === null || v === '' ? null : String(v));
 
-// ✅ تبدیل data به رشته JSON
 function stringifyData(data) {
   if (data === undefined || data === null) return null;
   if (typeof data === 'string') {
@@ -671,7 +670,7 @@ const SALARY_NUM_COLS = [
   'total_deductions','net_pay'
 ];
 
-// ✅ GET همه معاشات (با جوین نام کارمند)
+// ✅ 1. GET همه معاشات (با جوین نام کارمند)
 app.get('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   const { year, month } = req.query;
   const isAdmin = req.user.role === 'admin';
@@ -699,29 +698,7 @@ app.get('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   res.json({ salaries: r.rows });
 }));
 
-// ✅ GET یک معاش (با جوین نام کارمند)
-app.get('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
-  const r = await q(
-    `SELECT s.*,
-            COALESCE(NULLIF(s.first_name, ''), r.data::jsonb->>'firstName', 'نامشخص') AS first_name,
-            COALESCE(NULLIF(s.last_name, ''),  r.data::jsonb->>'lastName', '')         AS last_name,
-            COALESCE(NULLIF(s.job_code, ''),   r.data::jsonb->>'jobCode', '')          AS job_code,
-            COALESCE(NULLIF(s.job_title, ''),  r.data::jsonb->>'jobTitle', '')         AS job_title
-       FROM salaries s
-       LEFT JOIN records r ON r.id = s.record_id
-      WHERE s.id = $1`,
-    [Number(req.params.id)]
-  );
-
-  const s = r.rows[0];
-  if (!s) return res.status(404).json({ error: 'یافت نشد' });
-  if (req.user.role !== 'admin' && s.userid !== req.user.id)
-    return res.status(403).json({ error: 'دسترسی ندارید' });
-
-  res.json({ salary: s });
-}));
-
-// ✅ POST معاش (مدیریت خطا و تکراری)
+// ✅ 2. POST ثبت معاش جدید (مدیریت خطا و تکراری)
 app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   const b = req.body || {};
 
@@ -812,6 +789,50 @@ app.post('/api/salaries', authRequired, asyncRoute(async (req, res) => {
   }
 }));
 
+// ✅ 3. مسیرهای تایید و لغو تایید (باید قبل از /:id قرار گیرند)
+app.post('/api/salaries/:id/approve', authRequired, adminOnly, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const r = await q(
+    `UPDATE salaries SET status = 'approved', updatedat = NOW() WHERE id = $1 RETURNING *`,
+    [id]
+  );
+  if (!r.rows[0]) return res.status(404).json({ error: 'معاش یافت نشد' });
+  res.json({ success: true, salary: r.rows[0] });
+}));
+
+app.post('/api/salaries/:id/unapprove', authRequired, adminOnly, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const r = await q(
+    `UPDATE salaries SET status = 'draft', updatedat = NOW() WHERE id = $1 RETURNING *`,
+    [id]
+  );
+  if (!r.rows[0]) return res.status(404).json({ error: 'معاش یافت نشد' });
+  res.json({ success: true, salary: r.rows[0] });
+}));
+
+// ✅ 4. GET یک معاش (با جوین نام کارمند)
+app.get('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
+  const r = await q(
+    `SELECT s.*,
+            COALESCE(NULLIF(s.first_name, ''), r.data::jsonb->>'firstName', 'نامشخص') AS first_name,
+            COALESCE(NULLIF(s.last_name, ''),  r.data::jsonb->>'lastName', '')         AS last_name,
+            COALESCE(NULLIF(s.job_code, ''),   r.data::jsonb->>'jobCode', '')          AS job_code,
+            COALESCE(NULLIF(s.job_title, ''),  r.data::jsonb->>'jobTitle', '')         AS job_title
+       FROM salaries s
+       LEFT JOIN records r ON r.id = s.record_id
+      WHERE s.id = $1`,
+    [Number(req.params.id)]
+  );
+
+  const s = r.rows[0];
+  if (!s) return res.status(404).json({ error: 'یافت نشد' });
+  if (req.user.role !== 'admin' && s.userid !== req.user.id)
+    return res.status(403).json({ error: 'دسترسی ندارید' });
+
+  res.json({ salary: s });
+}));
+
+// ✅ 5. PUT به‌روزرسانی معاش
 app.put('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const r0 = await q('SELECT * FROM salaries WHERE id=$1', [id]);
@@ -833,6 +854,7 @@ app.put('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   res.json({ salary: r.rows[0] });
 }));
 
+// ✅ 6. DELETE حذف معاش
 app.delete('/api/salaries/:id', authRequired, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const r0 = await q('SELECT * FROM salaries WHERE id=$1', [id]);

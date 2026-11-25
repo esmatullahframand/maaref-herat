@@ -29,7 +29,7 @@ body {
   box-shadow: 0 8px 25px rgba(76,29,149,.22);
   position: relative; overflow: hidden;
 }
-.topbar::before { content: ""; position: absolute; width: 220px; height: 220px; left: -70px; top: -130px; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; }
+.topbar::before { content: ""; position: absolute; width: 220px; height: 220px; left: -70px; top: -130px; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; pointer-events: none; }
 .topbar h5 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: .2px; }
 .nav-tabs-custom {
   display: flex; gap: 7px; background: rgba(255,255,255,.94);
@@ -85,8 +85,6 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
 .table tbody td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid #f0edf7; }
 .table tbody tr:nth-child(even) { background: #fcfbff; }
 .table tbody tr:hover { background: #f5f0ff; }
-.badge-pending { background: #fef3c7; color: #92400e; padding: 6px 11px; border-radius: 30px; font-size: 12px; font-weight: bold; }
-.badge-approved { background: #d1fae5; color: #065f46; padding: 6px 11px; border-radius: 30px; font-size: 12px; font-weight: bold; }
 .btn-action { padding: 6px 11px; font-size: 12px; font-weight: bold; border-radius: 7px; border: none; cursor: pointer; margin: 2px; transition: all .2s ease; }
 .btn-action:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 4px 10px rgba(15,23,42,.13); }
 .btn-delete-row { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
@@ -134,14 +132,6 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
 .result-badge-excellent { background: #dcfce7; color: #15803d; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: bold; }
 .result-badge-good { background: #dbeafe; color: #1e40af; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: bold; }
 .result-badge-weak { background: #fee2e2; color: #b91c1c; padding: 5px 12px; border-radius: 30px; font-size: 12px; font-weight: bold; }
-.toggle-switch {
-  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
-  user-select: none; padding: 9px 14px; background: #f5f3ff;
-  border-radius: 9px; border: 1px solid #ddd6fe; font-weight: bold;
-  font-size: 13px; transition: all .2s ease;
-}
-.toggle-switch:hover { background: #ede9fe; }
-.toggle-switch input { width: 18px; height: 18px; cursor: pointer; accent-color: #7c3aed; }
 .eval-table-hidden { display: none !important; }
 @keyframes premiumFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .card-custom, .stat-card { animation: premiumFade .35s ease both; }
@@ -184,7 +174,9 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
     <h5>🎛️ پنل ادمین — ارزیابی</h5>
     <small>مدیریت و کنترل ارزیابی کارمندان مکاتب</small>
   </div>
-  <button class="btn btn-light btn-sm text-danger fw-bold px-3" onclick="logout()">🚪 خروج</button>
+  <!-- ✅ دکمه خروج با onclick مستقیم (بدون نیاز به تابع logout) -->
+  <button class="btn btn-light btn-sm text-danger fw-bold px-3"
+          onclick="localStorage.clear(); window.location.replace('/');">🚪 خروج</button>
 </div>
 
 <div class="nav-tabs-custom" id="adminTabs">
@@ -264,13 +256,32 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // ═══════════════════════════════════════════════════════════
-  // بررسی امنیتی و توابع پایه
+  // ۱. توابع پایه — اول از همه تعریف شوند
+  // ═══════════════════════════════════════════════════════════
+  function logout() {
+    try {
+      localStorage.removeItem('hr_token');
+      localStorage.removeItem('hr_user');
+    } catch (e) {}
+    window.location.replace('/');
+  }
+  window.logout = logout;
+
+  // ═══════════════════════════════════════════════════════════
+  // ۲. بررسی امنیتی
   // ═══════════════════════════════════════════════════════════
   (function() {
     const token = localStorage.getItem('hr_token');
     const user = JSON.parse(localStorage.getItem('hr_user') || '{}');
-    if (!token || token === 'undefined' || token === 'null') { localStorage.clear(); window.location.href = '/'; return; }
-    if (user.role !== 'admin') { window.location.href = '/school-settings.html'; return; }
+    if (!token || token === 'undefined' || token === 'null') {
+      localStorage.clear();
+      window.location.href = '/';
+      return;
+    }
+    if (user.role !== 'admin') {
+      window.location.href = '/school-settings.html';
+      return;
+    }
   })();
 
   const token = localStorage.getItem('hr_token');
@@ -281,10 +292,12 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
   let evalAllowed = false;
   let evalListVisible = false;
 
-  function logout() { localStorage.clear(); window.location.href = '/'; }
-  window.logout = logout;
-
-  function openTashkeelPanel() { window.location.href = 'admin-tashkeel.html'; }
+  // ═══════════════════════════════════════════════════════════
+  // ۳. ابزارهای کمکی
+  // ═══════════════════════════════════════════════════════════
+  function openTashkeelPanel() {
+    window.location.href = 'admin-tashkeel.html';
+  }
   window.openTashkeelPanel = openTashkeelPanel;
 
   function showToast(msg, isError = false) {
@@ -295,6 +308,7 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
     clearTimeout(t._timer);
     t._timer = setTimeout(() => { t.style.display = 'none'; }, 3500);
   }
+  window.showToast = showToast;
 
   function escapeHtml(s) {
     if (s === null || s === undefined) return '';
@@ -322,29 +336,37 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
   }
 
   // ═══════════════════════════════════════════════════════════
-  // مجوز ارزیابی — اصلاح‌شده: خواندن permission از پاسخ
+  // ۴. مجوز ارزیابی — اصلاح‌شده
   // ═══════════════════════════════════════════════════════════
   async function loadEvaluationPermission() {
     try {
-      const res = await fetch('/api/evaluation-permission', { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch('/api/evaluation-permission', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
       const data = await res.json();
+      console.log('🔍 پاسخ /api/evaluation-permission:', data);
       // پاسخ بک‌اند: { permission: { allowed: 0|1 } }
       const perm = data.permission || data;
       evalAllowed = !!(perm.allowed);
       updatePermissionUI();
-    } catch (e) { console.error('loadEvaluationPermission error:', e); }
+    } catch (e) {
+      console.error('loadEvaluationPermission error:', e);
+    }
   }
   window.loadEvaluationPermission = loadEvaluationPermission;
 
   function updatePermissionUI() {
-    const box = document.getElementById('evalPermissionBox'),
-          status = document.getElementById('evalPermissionStatus'),
-          btnYes = document.getElementById('btnAllowYes'),
-          btnNo = document.getElementById('btnAllowNo');
+    const box = document.getElementById('evalPermissionBox');
+    const status = document.getElementById('evalPermissionStatus');
+    const btnYes = document.getElementById('btnAllowYes');
+    const btnNo = document.getElementById('btnAllowNo');
+    if (!box || !status || !btnYes || !btnNo) return;
+
     btnYes.classList.remove('active-yes', 'active-no');
     btnNo.classList.remove('active-yes', 'active-no');
     box.classList.remove('allowed', 'denied');
     status.classList.remove('allowed', 'denied');
+
     if (evalAllowed) {
       box.classList.add('allowed');
       status.classList.add('allowed');
@@ -357,24 +379,50 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
       btnNo.classList.add('active-no');
     }
   }
+  window.updatePermissionUI = updatePermissionUI;
 
-  // ✅ اصلاح‌شده: PUT به جای POST
   async function setEvaluationPermission(allowed) {
+    const btnYes = document.getElementById('btnAllowYes');
+    const btnNo = document.getElementById('btnAllowNo');
+    if (btnYes) btnYes.disabled = true;
+    if (btnNo) btnNo.disabled = true;
+
     try {
-      const res = await fetch('/api/evaluation-permission', {
+      // ابتدا با PUT (طبق بک‌اند)
+      let res = await fetch('/api/evaluation-permission', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ allowed: allowed ? 1 : 0 })
       });
+
+      // اگر PUT پشتیبانی نشد، با POST تلاش کن
+      if (res.status === 404 || res.status === 405) {
+        console.warn('PUT not supported, trying POST...');
+        res = await fetch('/api/evaluation-permission', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ allowed: allowed ? 1 : 0 })
+        });
+      }
+
       if (res.ok) {
         evalAllowed = allowed;
         updatePermissionUI();
         showToast(allowed ? '✅ فعال شد' : '❌ غیرفعال شد');
+        // اطمینان از ذخیره شدن
+        setTimeout(loadEvaluationPermission, 400);
       } else {
-        const d = await res.json().catch(() => ({}));
-        showToast('خطا در تغییر مجوز: ' + (d.error || res.status), true);
+        const errText = await res.text();
+        console.error('خطا در تغییر مجوز:', res.status, errText);
+        showToast('خطا در تغییر مجوز (HTTP ' + res.status + ')', true);
       }
-    } catch (e) { showToast('ارتباط برقرار نشد', true); }
+    } catch (e) {
+      console.error('setEvaluationPermission error:', e);
+      showToast('ارتباط با سرور برقرار نشد', true);
+    } finally {
+      if (btnYes) btnYes.disabled = false;
+      if (btnNo) btnNo.disabled = false;
+    }
   }
   window.setEvaluationPermission = setEvaluationPermission;
 
@@ -394,14 +442,19 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
   }
   window.toggleEvalList = toggleEvalList;
 
-  // ✅ اصلاح‌شده: خواندن evaluations از پاسخ { evaluations: [...] }
+  // ═══════════════════════════════════════════════════════════
+  // ۵. بارگذاری ارزیابی‌ها — اصلاح‌شده
+  // ═══════════════════════════════════════════════════════════
   async function loadAdminEvaluations() {
     const tbody = document.getElementById('evalAdminTableBody');
     tbody.innerHTML = '<tr><td colspan="10" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
     try {
-      const res = await fetch('/api/evaluations', { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch('/api/evaluations', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
       const raw = await res.json();
       console.log('🔍 پاسخ /api/evaluations:', raw);
+      // پاسخ بک‌اند: { evaluations: [...] } یا آرایه مستقیم
       cachedEvaluations = Array.isArray(raw) ? raw : (Array.isArray(raw.evaluations) ? raw.evaluations : []);
       console.log('🔍 تعداد ارزیابی‌ها:', cachedEvaluations.length);
       populateEvalSchoolDropdown();
@@ -508,7 +561,7 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
   window.deleteEvalAdmin = deleteEvalAdmin;
 
   // ═══════════════════════════════════════════════════════════
-  // پرینت و اکسل توحیدی (بدون تغییر)
+  // ۶. پرینت و اکسل توحیدی
   // ═══════════════════════════════════════════════════════════
   async function getUnifiedEvaluationData() {
     const res = await fetch('/api/records', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -626,7 +679,10 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
   }
 
   async function printEvalAdmin() {
-    if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true); return; }
+    if (!filteredEvaluations || filteredEvaluations.length === 0) {
+      showToast('❌ هیچ ارزیابی ثبت شده‌ای برای پرینت وجود ندارد.', true);
+      return;
+    }
     try {
       const { recordsMap } = await getUnifiedEvaluationData();
       const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
@@ -648,7 +704,10 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
   window.printEvalAdmin = printEvalAdmin;
 
   async function exportEvalAdminExcel() {
-    if (!filteredEvaluations || filteredEvaluations.length === 0) { showToast('❌ هیچ ارزیابی ثبت شده‌ای برای خروجی اکسل وجود ندارد.', true); return; }
+    if (!filteredEvaluations || filteredEvaluations.length === 0) {
+      showToast('❌ هیچ ارزیابی ثبت شده‌ای برای خروجی اکسل وجود ندارد.', true);
+      return;
+    }
     try {
       const { recordsMap } = await getUnifiedEvaluationData();
       const rows = unifiedEvaluationRows(filteredEvaluations, recordsMap);
@@ -717,7 +776,7 @@ label { color: #475569; font-weight: 700; margin-bottom: 7px; }
   window.printHtmlDocument = printHtmlDocument;
 
   // ═══════════════════════════════════════════════════════════
-  // شروع
+  // ۷. شروع
   // ═══════════════════════════════════════════════════════════
   (async function init() {
     await loadEvaluationPermission();

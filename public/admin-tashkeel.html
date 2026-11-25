@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -97,6 +96,7 @@ label{color:#334155;font-weight:700;margin-bottom:6px}
 .badge-madaris{background:#fce4ec;color:#c2185b;padding:4px 10px;border-radius:30px;font-size:11px;font-weight:800}
 .badge-filled{background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:30px;font-size:11px;font-weight:800}
 .badge-empty{background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:30px;font-size:11px;font-weight:800}
+.badge-assigned{background:#e0e7ff;color:#312e81;padding:4px 10px;border-radius:30px;font-size:11px;font-weight:800}
 .employee-info{text-align:right;line-height:1.6;font-size:12px;padding:2px 0}
 .employee-info .name{color:#1e40af;font-weight:800;margin-bottom:4px;font-size:13px}
 .employee-info .detail{color:#334155;margin-bottom:2px}
@@ -216,19 +216,20 @@ label{color:#334155;font-weight:700;margin-bottom:6px}
         <thead>
           <tr>
             <th>#</th><th>عنوان وظیفه / مشخصات کارمند</th><th>کد بست</th>
-            <th>محل</th><th>بخش</th><th>وضعیت</th><th>عملیات</th>
+            <th>محل</th><th>مکتب تخصیص‌یافته</th><th>بخش</th><th>وضعیت</th><th>عملیات</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
+          <tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
+<!-- Modal: Add/Edit -->
 <div class="modal fade" id="editModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="editModalTitle">افزودن رکورد</h5>
@@ -240,12 +241,21 @@ label{color:#334155;font-weight:700;margin-bottom:6px}
         <div class="mb-2"><label>محل *</label><input id="editPlace" class="form-control" placeholder="مثلاً: لیسه مختلط تورغندی"></div>
         <div class="mb-2"><label>کد *</label><input id="editCode" class="form-control" placeholder="27-32-02-12563" style="direction:ltr;text-align:left"></div>
         <div class="mb-2"><label>نمبر عمومی</label><input id="editPub" class="form-control" style="direction:ltr;text-align:left"></div>
-        <div class="mt-2">
+        <div class="mb-2">
           <label>بخش</label>
           <select id="editSection" class="form-select">
             <option value="amariat">🏫 مکاتب</option>
             <option value="madaris">🏫 مدارس</option>
           </select>
+        </div>
+        <div class="mb-2">
+          <label>🏫 تخصیص به مکتب (مهم: برای اینکه مکتب بتواند این کد را ببیند)</label>
+          <select id="editUserId" class="form-select">
+            <option value="">— بدون تخصیص (عمومی) —</option>
+          </select>
+          <small style="color:#64748b;font-size:11px;display:block;margin-top:4px;">
+            ⚠️ اگر مکتب را انتخاب نکنید، کد فقط توسط ادمین قابل مشاهده است و مدرسه نمی‌تواند آن را ثبت کند.
+          </small>
         </div>
       </div>
       <div class="modal-footer">
@@ -262,7 +272,7 @@ label{color:#334155;font-weight:700;margin-bottom:6px}
 
 <script>
 /* ============================================================
-   ۱. احراز هویت و متغیرهای سراسری
+   ۱. احراز هویت
    ============================================================ */
 const token = localStorage.getItem('hr_token');
 const currentUser = JSON.parse(localStorage.getItem('hr_user') || '{}');
@@ -325,7 +335,6 @@ window.debouncedLoad = debouncedLoad;
 function extractArray(payload) {
   if (Array.isArray(payload)) return payload;
   if (!payload || typeof payload !== 'object') return [];
-
   const keys = ['tashkeel','data','items','records','results','list','rows'];
   for (const key of keys) {
     if (Array.isArray(payload[key])) return payload[key];
@@ -334,7 +343,32 @@ function extractArray(payload) {
 }
 
 /* ============================================================
-   ۴. بارگذاری آمار
+   ۴. بارگذاری لیست مکاتب برای Dropdown
+   ============================================================ */
+let schoolsCache = [];
+async function loadSchoolsForDropdown() {
+  try {
+    const r = await fetch('/api/users', { headers: { Authorization: 'Bearer ' + token } });
+    if (!r.ok) return;
+    const users = await r.json();
+    const list = Array.isArray(users) ? users : [];
+    schoolsCache = list.filter(u => u.role === 'school');
+    
+    const sel = document.getElementById('editUserId');
+    sel.innerHTML = '<option value="">— بدون تخصیص (عمومی) —</option>';
+    schoolsCache.forEach(u => {
+      const o = document.createElement('option');
+      o.value = u.id;
+      o.textContent = (u.schoolname || u.username) + ' (' + u.username + ')';
+      sel.appendChild(o);
+    });
+  } catch (e) {
+    console.error('[loadSchoolsForDropdown]', e);
+  }
+}
+
+/* ============================================================
+   ۵. بارگذاری آمار
    ============================================================ */
 async function loadStats() {
   try {
@@ -372,10 +406,8 @@ async function loadStats() {
 }
 
 /* ============================================================
-   ۵. ابزارهای استخراج معلومات کارمندان
+   ۶. ابزارهای استخراج معلومات کارمندان
    ============================================================ */
-
-/* تبدیل ارقام فارسی و عربی به انگلیسی و یکسان‌سازی کد */
 function normalizeAdminCode(value) {
   return String(value ?? '')
     .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
@@ -385,21 +417,14 @@ function normalizeAdminCode(value) {
     .toLowerCase();
 }
 
-/* خواندن کد بست از ساختارهای مختلف رکورد تشکیل */
 function getAdminTashkeelCode(row) {
   if (!row || typeof row !== 'object') return '';
-
-  const directKeys = [
-    'code','jobCode','job_code','postCode','post_code',
-    'kod','kodNumber','kod_number','کد بست','کود نمبر'
-  ];
-
+  const directKeys = ['code','jobCode','job_code','postCode','post_code','kod','kodNumber','kod_number','کد بست','کود نمبر'];
   for (const key of directKeys) {
     if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
       return row[key];
     }
   }
-
   const nested = [row.data,row.employee,row.position,row.post];
   for (const obj of nested) {
     if (!obj || typeof obj !== 'object') continue;
@@ -409,11 +434,9 @@ function getAdminTashkeelCode(row) {
       }
     }
   }
-
   return '';
 }
 
-/* تبدیل JSON متنی به Object */
 function parseAdminObject(value) {
   if (!value) return {};
   if (typeof value === 'object' && !Array.isArray(value)) return value;
@@ -421,25 +444,19 @@ function parseAdminObject(value) {
     try {
       const parsed = JSON.parse(value);
       return parsed && typeof parsed === 'object' ? parsed : {};
-    } catch (e) {
-      return {};
-    }
+    } catch (e) { return {}; }
   }
   return {};
 }
 
-/* رکورد اصلی و اطلاعات داخلی آن */
 function adminInfo(rec) {
   if (!rec || typeof rec !== 'object') return {};
-
   const inner = parseAdminObject(rec.data || rec.employee || rec.profile || {});
   return Object.assign({}, rec, inner);
 }
 
-/* خواندن اولین مقدار معتبر از کلیدهای مشخص */
 function adminValue(obj, keys, fallback = '') {
   if (!obj || typeof obj !== 'object') return fallback;
-
   for (const key of keys) {
     const value = obj[key];
     if (value !== undefined && value !== null && String(value).trim() !== '') {
@@ -449,18 +466,14 @@ function adminValue(obj, keys, fallback = '') {
   return fallback;
 }
 
-/* جستجوی بازگشتی برای فیلدهایی که در ساختار تو در تو هستند */
 function deepFind(obj, keys, depth = 0) {
   if (!obj || typeof obj !== 'object' || depth > 5) return '';
-
   for (const key of keys) {
     const value = obj[key];
-    if (value !== undefined && value !== null &&
-        typeof value !== 'object' && String(value).trim() !== '') {
+    if (value !== undefined && value !== null && typeof value !== 'object' && String(value).trim() !== '') {
       return value;
     }
   }
-
   for (const key of Object.keys(obj)) {
     const child = obj[key];
     if (child && typeof child === 'object') {
@@ -471,7 +484,6 @@ function deepFind(obj, keys, depth = 0) {
   return '';
 }
 
-/* مقدار مستقیم اولویت دارد؛ جستجوی تودرتو فقط در صورت خالی بودن */
 function adminValueDeep(obj, keys, fallback = '') {
   const direct = adminValue(obj, keys, '');
   if (direct !== '') return direct;
@@ -480,172 +492,58 @@ function adminValueDeep(obj, keys, fallback = '') {
 }
 
 /* ============================================================
-   ۶. استخراج کامل مشخصات کارمند
+   ۷. استخراج مشخصات کارمند
    ============================================================ */
 function employeeDetails(rec) {
   const d = adminInfo(rec);
-
   return {
-    firstName: adminValueDeep(d, [
-      'firstName','firstname','name','اسم','نام'
-    ]),
-
-    lastName: adminValueDeep(d, [
-      'lastName','lastname','surname','takhallos','تخلص'
-    ]),
-
-    fatherName: adminValueDeep(d, [
-      'fatherName','fathername','father_name','walid','ولد','نام پدر'
-    ]),
-
-    grandfatherName: adminValueDeep(d, [
-      'grandfatherName','grandfather_name','grandFatherName','نام پدرکلان'
-    ]),
-
-    jobTitle: adminValueDeep(d, [
-      'jobTitle','job_title','job','title','position','عنوان وظیفه','عنوان بست'
-    ]),
-
-    jobCode: adminValueDeep(d, [
-      'jobCode','jobcode','job_code','code','postCode','post_code','کود نمبر','کد بست'
-    ]),
-
-    school: adminValueDeep(d, [
-      'serviceSchool','school','schoolName','schoolname','school_name',
-      'maktab','place','مکتب','نام مکتب'
-    ]),
-
-    phone: adminValueDeep(d, [
-      'phone','mobile','contact','phoneNumber','phone_number','شماره تماس','تماس'
-    ]),
-
-    gender: adminValueDeep(d, [
-      'gender','sex','جنسیت'
-    ]),
-
-    education: adminValueDeep(d, [
-      'degree','education','درجه تحصیل'
-    ]),
-
-    field: adminValueDeep(d, [
-      'major','field','رشته تحصیل'
-    ]),
-
-    teachingField: adminValueDeep(d, [
-      'teachingField','teaching_field','رشته تدریس'
-    ]),
-
-    /*
-      نگاشت فیلدهای اصلی دیتابیس:
-      bust = بست
-      grade = قدم
-      این دو فیلد عمداً با هم جابه‌جا نمی‌شوند.
-    */
-    grade: adminValueDeep(d, [
-      'bust','bast','jobGrade','job_grade','gradeLevel','grade_level',
-      'رتبه','بست','بست وظیفه'
-    ]),
-
-    step: adminValueDeep(d, [
-      'grade','step','qadam','jobStep','job_step','stepNo','step_no',
-      'stepNumber','step_number','قدم','قدم وظیفه'
-    ]),
-
-    /*
-      تاریخ تقرر فعلی از currentPositionDate خوانده می‌شود.
-      تاریخ تقرر ابتدایی فقط در صورت نبود تاریخ فعلی استفاده می‌شود.
-    */
-    appointmentDate: adminValueDeep(d, [
-      'currentPositionDate','current_position_date',
-      'currentAppointmentDate','current_appointment_date',
-      'appointmentDate','appointment_date',
-      'dateOfAppointment','date_of_appointment',
-      'firstAppointmentDate','first_appointment_date',
-      'تاریخ تقرر فعلی','تاریخ تقرر','تقرر'
-    ]),
-
-    firstAppointmentDate: adminValueDeep(d, [
-      'firstAppointmentDate','first_appointment_date'
-    ]),
-
-    birthDate: adminValueDeep(d, [
-      'birthDate','birth_date','dateOfBirth','date_of_birth','dob','تاریخ تولد'
-    ]),
-
-    /*
-      تذکره برقی؛ eTazkira اولویت دارد.
-      تذکره کاغذی جایگزین تذکره برقی نمی‌شود.
-    */
-    tazkira: adminValueDeep(d, [
-      'eTazkira','e_tazkira','etazkira',
-      'electronicTazkira','electronic_tazkira',
-      'etazkiraNumber','etazkira_number',
-      'tazkiraElectronic','tazkira_electronic',
-      'نمبر تذکره برقی','شماره تذکره برقی','تذکره برقی'
-    ]),
-
-    paperTazkira: adminValueDeep(d, [
-      'paperTazkira','paper_tazkira','تذکره کاغذی'
-    ]),
-
-    ethnicity: adminValueDeep(d, [
-      'ethnicity','قومیت'
-    ])
+    firstName: adminValueDeep(d, ['firstName','firstname','name','اسم','نام']),
+    lastName: adminValueDeep(d, ['lastName','lastname','surname','takhallos','تخلص']),
+    fatherName: adminValueDeep(d, ['fatherName','fathername','father_name','walid','ولد','نام پدر']),
+    grandfatherName: adminValueDeep(d, ['grandfatherName','grandfather_name','grandFatherName','نام پدرکلان']),
+    jobTitle: adminValueDeep(d, ['jobTitle','job_title','job','title','position','عنوان وظیفه','عنوان بست']),
+    jobCode: adminValueDeep(d, ['jobCode','jobcode','job_code','code','postCode','post_code','کود نمبر','کد بست']),
+    school: adminValueDeep(d, ['serviceSchool','school','schoolName','schoolname','school_name','maktab','place','مکتب','نام مکتب']),
+    phone: adminValueDeep(d, ['phone','mobile','contact','phoneNumber','phone_number','شماره تماس','تماس']),
+    gender: adminValueDeep(d, ['gender','sex','جنسیت']),
+    education: adminValueDeep(d, ['degree','education','درجه تحصیل']),
+    field: adminValueDeep(d, ['major','field','رشته تحصیل']),
+    teachingField: adminValueDeep(d, ['teachingField','teaching_field','رشته تدریس']),
+    grade: adminValueDeep(d, ['bust','bast','jobGrade','job_grade','gradeLevel','grade_level','رتبه','بست','بست وظیفه']),
+    step: adminValueDeep(d, ['grade','step','qadam','jobStep','job_step','stepNo','step_no','stepNumber','step_number','قدم','قدم وظیفه']),
+    appointmentDate: adminValueDeep(d, ['currentPositionDate','current_position_date','currentAppointmentDate','current_appointment_date','appointmentDate','appointment_date','dateOfAppointment','date_of_appointment','firstAppointmentDate','first_appointment_date','تاریخ تقرر فعلی','تاریخ تقرر','تقرر']),
+    firstAppointmentDate: adminValueDeep(d, ['firstAppointmentDate','first_appointment_date']),
+    birthDate: adminValueDeep(d, ['birthDate','birth_date','dateOfBirth','date_of_birth','dob','تاریخ تولد']),
+    tazkira: adminValueDeep(d, ['eTazkira','e_tazkira','etazkira','electronicTazkira','electronic_tazkira','etazkiraNumber','etazkira_number','tazkiraElectronic','tazkira_electronic','نمبر تذکره برقی','شماره تذکره برقی','تذکره برقی']),
+    paperTazkira: adminValueDeep(d, ['paperTazkira','paper_tazkira','تذکره کاغذی']),
+    ethnicity: adminValueDeep(d, ['ethnicity','قومیت'])
   };
 }
 
 /* ============================================================
-   ۷. بارگذاری کارمندان و اتصال به کد بست تشکیل
+   ۸. بارگذاری کارمندان
    ============================================================ */
 async function loadRegisteredCodes() {
   try {
-    const r = await fetch('/api/records', {
-      headers: { Authorization: 'Bearer ' + token }
-    });
-
-    if (r.status === 401 || r.status === 403) {
-      logout();
-      return;
-    }
+    const r = await fetch('/api/records', { headers: { Authorization: 'Bearer ' + token } });
+    if (r.status === 401 || r.status === 403) { logout(); return; }
     if (!r.ok) throw new Error('خطا در دریافت کارمندان: ' + r.status);
 
     const payload = await r.json();
     const list = extractArray(payload);
-
     registeredDataMap = new Map();
-
     list.forEach(rec => {
       const employee = employeeDetails(rec);
       const code = normalizeAdminCode(employee.jobCode);
-
-      if (code) {
-        registeredDataMap.set(code, employee);
-      }
+      if (code) registeredDataMap.set(code, employee);
     });
-
     console.log('✅ تعداد کارمندان دارای کد بست:', registeredDataMap.size);
-
-    if (list.length > 0) {
-      const firstRecord = list[0];
-      const rawData = parseAdminObject(firstRecord.data || {});
-      const employee = employeeDetails(firstRecord);
-
-      console.log('🔍 کلیدهای معلومات کارمند:', Object.keys(rawData));
-      console.log('🔍 معلومات اصلی کارمند:', JSON.stringify(rawData, null, 2));
-      console.log('🔍 کد بست کارمند:', employee.jobCode);
-      console.log('🔍 بست استخراج‌شده:', employee.grade);
-      console.log('🔍 قدم استخراج‌شده:', employee.step);
-      console.log('🔍 تاریخ تقرر فعلی:', employee.appointmentDate);
-      console.log('🔍 تذکره برقی:', employee.tazkira);
-    }
-
   } catch (e) {
     console.error('[loadRegisteredCodes]', e);
     showToast('خطا در بارگذاری معلومات کارمندان', true);
   }
 }
 
-/* دریافت کارمند مطابق کد بست */
 function adminEmployeeFor(code) {
   const normalized = normalizeAdminCode(code);
   if (!normalized) return null;
@@ -653,33 +551,19 @@ function adminEmployeeFor(code) {
 }
 
 /* ============================================================
-   ۸. آماده‌سازی ردیف‌های چاپ و اکسل
+   ۹. آماده‌سازی ردیف‌های چاپ و اکسل
    ============================================================ */
 function adminExportRow(r, e, i) {
   e = e || {};
-
   return [
-    i + 1,
-    r.priv || '',
-    e.firstName || '',
-    e.fatherName || '',
-    e.grandfatherName || '',
-    e.lastName || '',
+    i + 1, r.priv || '',
+    e.firstName || '', e.fatherName || '', e.grandfatherName || '', e.lastName || '',
     e.jobTitle || r.title || '',
-    e.education || '',
-    e.field || '',
-    e.teachingField || '',
-    e.grade || '',
-    e.step || '',
-    e.appointmentDate || '',
-    e.birthDate || '',
-    e.tazkira || '',
-    e.gender || '',
-    e.ethnicity || '',
-    getAdminTashkeelCode(r),
-    e.school || r.place || '',
-    r.amariat || 'آمریت معارف کشک رباط سنگی',
-    ''
+    e.education || '', e.field || '', e.teachingField || '',
+    e.grade || '', e.step || '', e.appointmentDate || '', e.birthDate || '', e.tazkira || '',
+    e.gender || '', e.ethnicity || '',
+    getAdminTashkeelCode(r), e.school || r.place || '',
+    r.amariat || 'آمریت معارف کشک رباط سنگی', ''
   ];
 }
 
@@ -691,41 +575,22 @@ function adminExportRows(rows) {
 }
 
 /* ============================================================
-   ۹. ساخت فایل اکسل
+   ۱۰. ساخت فایل اکسل
    ============================================================ */
 function adminDownloadExcel(rows, filename) {
-  const h = [
-    'نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص',
-    'عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس',
-    'بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره',
-    'جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'
-  ];
-
-  const gh = [
-    'نمبر عمومی','نمبر خصوصی','مشخصات وظیفوی','','','','',
-    'درجه تحصیل','رشته تحصیل','رشته تدریس','رتبه','',
-    'تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت',
-    'کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'
-  ];
-
-  const sh = [
-    '','','اسم','ولد','ولدیت','تخلص','','','','',
-    'بست','قدم','','','','','','','','',''
-  ];
-
+  const h = ['نمبر عمومی','نمبر خصوصی','اسم','ولد','ولدیت','تخلص','عنوان وظیفه','درجه تحصیل','رشته تحصیل','رشته تدریس','بست','قدم','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];
+  const gh = ['نمبر عمومی','نمبر خصوصی','مشخصات وظیفوی','','','','','درجه تحصیل','رشته تحصیل','رشته تدریس','رتبه','','تاریخ تقرر','تاریخ تولد','نمبر تذکره','جنسیت','قومیت','کود نمبر','محل وظیفه','آمریت معارف','ملاحظات'];
+  const sh = ['','','اسم','ولد','ولدیت','تخلص','','','','','بست','قدم','','','','','','','','',''];
   const data = [
     ['امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی'],
     ['جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف'],
-    gh,
-    sh,
+    gh, sh,
     ['پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی'],
-    h,
-    ...rows
+    h, ...rows
   ];
 
   if (window.XLSX) {
     const ws = XLSX.utils.aoa_to_sheet(data);
-
     ws['!merges'] = [
       {s:{r:0,c:0},e:{r:0,c:20}},
       {s:{r:1,c:0},e:{r:1,c:20}},
@@ -733,41 +598,26 @@ function adminDownloadExcel(rows, filename) {
       {s:{r:2,c:10},e:{r:2,c:11}},
       {s:{r:4,c:0},e:{r:4,c:20}}
     ];
-
     ws['!cols'] = h.map(() => ({wch:16}));
-    ws['!cols'][2] = {wch:18};
-    ws['!cols'][6] = {wch:24};
-    ws['!cols'][12] = {wch:18};
-    ws['!cols'][14] = {wch:22};
-    ws['!cols'][17] = {wch:20};
-    ws['!cols'][18] = {wch:25};
-
+    ws['!cols'][2] = {wch:18}; ws['!cols'][6] = {wch:24};
+    ws['!cols'][12] = {wch:18}; ws['!cols'][14] = {wch:22};
+    ws['!cols'][17] = {wch:20}; ws['!cols'][18] = {wch:25};
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'تشکیل');
     XLSX.writeFile(wb, filename);
-
   } else {
     const csv = '\uFEFF' + data.map(row =>
-      h.map((_, i) =>
-        '"' + String(row[i] ?? '').replace(/"/g, '""') + '"'
-      ).join(',')
+      h.map((_, i) => '"' + String(row[i] ?? '').replace(/"/g, '""') + '"').join(',')
     ).join('\n');
-
-    const u = URL.createObjectURL(new Blob([csv], {
-      type:'text/csv;charset=utf-8'
-    }));
-
+    const u = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
     const a = document.createElement('a');
-    a.href = u;
-    a.download = filename.replace(/\.xlsx$/i, '.csv');
-    a.click();
-
+    a.href = u; a.download = filename.replace(/\.xlsx$/i, '.csv'); a.click();
     setTimeout(() => URL.revokeObjectURL(u), 1000);
   }
 }
 
 /* ============================================================
-   ۱۰. بارگذاری لیست تشکیل
+   ۱۱. بارگذاری لیست
    ============================================================ */
 async function loadList() {
   const search = document.getElementById('searchInput').value.trim();
@@ -781,20 +631,14 @@ async function loadList() {
   if (place) params.set('place', place);
 
   const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
 
   try {
     await loadRegisteredCodes();
-
     const r = await fetch('/api/tashkeel?' + params.toString(), {
       headers: { Authorization: 'Bearer ' + token }
     });
-
-    if (r.status === 401 || r.status === 403) {
-      logout();
-      return;
-    }
-
+    if (r.status === 401 || r.status === 403) { logout(); return; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
 
     const payload = await r.json();
@@ -810,25 +654,22 @@ async function loadList() {
     filteredRows = rows;
     currentPage = 1;
     renderTable();
-
   } catch (e) {
     console.error('[loadList]', e);
-    tbody.innerHTML =
-      '<tr><td colspan="7" class="text-center p-4 text-danger">خطا: ' +
-      escapeHtml(e.message) + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-danger">خطا: ' + escapeHtml(e.message) + '</td></tr>';
   }
 }
 window.loadList = loadList;
 
 /* ============================================================
-   ۱۱. نمایش جدول
+   ۱۲. نمایش جدول
    ============================================================ */
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   document.getElementById('resultCount').textContent = filteredRows.length + ' رکورد';
 
   if (!filteredRows.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">هیچ رکوردی یافت نشد</td></tr>';
     document.getElementById('pagination').innerHTML = '';
     return;
   }
@@ -838,7 +679,6 @@ function renderTable() {
   const pageRows = filteredRows.slice(start, end);
 
   let html = '';
-
   pageRows.forEach((r, idx) => {
     const globalIdx = start + idx + 1;
     const rowCode = getAdminTashkeelCode(r);
@@ -853,10 +693,15 @@ function renderTable() {
       ? '<span class="badge-filled">✅ پر</span>'
       : '<span class="badge-empty">❌ خالی</span>';
 
-    let titleCell =
-      '<div style="text-align:right;direction:rtl"><strong>' +
-      escapeHtml(r.title || '—') + '</strong></div>';
+    // نمایش مکتب تخصیص‌یافته
+    const assignedSchool = r.userid
+      ? (schoolsCache.find(s => Number(s.id) === Number(r.userid))?.schoolname || 'userid=' + r.userid)
+      : '—';
+    const assignedBadge = r.userid
+      ? '<span class="badge-assigned">🏫 ' + escapeHtml(assignedSchool) + '</span>'
+      : '<span style="color:#94a3b8;font-size:11px;">عمومی</span>';
 
+    let titleCell = '<div style="text-align:right;direction:rtl"><strong>' + escapeHtml(r.title || '—') + '</strong></div>';
     if (isFilled) {
       titleCell = `
         <div class="employee-info" style="text-align:right;direction:rtl">
@@ -873,6 +718,7 @@ function renderTable() {
       '<td style="text-align:right;direction:rtl">' + titleCell + '</td>' +
       '<td dir="ltr" style="text-align:center;white-space:nowrap">' + escapeHtml(rowCode || '—') + '</td>' +
       '<td style="text-align:right">' + escapeHtml(r.place || '—') + '</td>' +
+      '<td>' + assignedBadge + '</td>' +
       '<td>' + sectionBadge + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '<td>' +
@@ -887,20 +733,17 @@ function renderTable() {
 }
 
 /* ============================================================
-   ۱۲. صفحه‌بندی
+   ۱۳. صفحه‌بندی
    ============================================================ */
 function renderPagination() {
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
   const pag = document.getElementById('pagination');
-
   if (totalPages <= 1) {
     pag.innerHTML = '<span class="page-info">نمایش ' + filteredRows.length + ' رکورد</span>';
     return;
   }
-
   const start = (currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(currentPage * PAGE_SIZE, filteredRows.length);
-
   let html = '';
   html += '<span class="page-info">نمایش ' + start + ' تا ' + end + ' از ' + filteredRows.length + '</span>';
   html += '<button onclick="goPage(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>⏮️ اول</button>';
@@ -908,30 +751,24 @@ function renderPagination() {
   html += '<span class="page-badge">صفحه ' + currentPage + ' از ' + totalPages + '</span>';
   html += '<button onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>بعدی ▶️</button>';
   html += '<button onclick="goPage(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>آخر ⏭️</button>';
-
   pag.innerHTML = html;
 }
 
 function goPage(p) {
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
   if (p < 1 || p > totalPages) return;
-
   currentPage = p;
   renderTable();
-
   const tableWrapper = document.querySelector('.table-responsive');
   if (tableWrapper) tableWrapper.scrollTop = 0;
 }
 window.goPage = goPage;
 
 /* ============================================================
-   ۱۳. مودال افزودن و ویرایش
+   ۱۴. مودال افزودن و ویرایش
    ============================================================ */
 function showAddModal() {
-  if (!editModal) {
-    editModal = new bootstrap.Modal(document.getElementById('editModal'));
-  }
-
+  if (!editModal) editModal = new bootstrap.Modal(document.getElementById('editModal'));
   document.getElementById('editModalTitle').textContent = 'افزودن رکورد جدید';
   document.getElementById('editId').value = '';
   document.getElementById('editTitle').value = '';
@@ -939,7 +776,7 @@ function showAddModal() {
   document.getElementById('editCode').value = '27-32-02-';
   document.getElementById('editPub').value = '';
   document.getElementById('editSection').value = 'amariat';
-
+  document.getElementById('editUserId').value = '';
   editModal.show();
 }
 window.showAddModal = showAddModal;
@@ -947,11 +784,7 @@ window.showAddModal = showAddModal;
 function editRecord(id) {
   const r = allRows.find(x => String(x.id) === String(id));
   if (!r) return;
-
-  if (!editModal) {
-    editModal = new bootstrap.Modal(document.getElementById('editModal'));
-  }
-
+  if (!editModal) editModal = new bootstrap.Modal(document.getElementById('editModal'));
   document.getElementById('editModalTitle').textContent = 'ویرایش رکورد #' + id;
   document.getElementById('editId').value = r.id;
   document.getElementById('editTitle').value = r.title || '';
@@ -959,7 +792,7 @@ function editRecord(id) {
   document.getElementById('editCode').value = getAdminTashkeelCode(r);
   document.getElementById('editPub').value = r.pub || r.priv || '';
   document.getElementById('editSection').value = r.section || 'amariat';
-
+  document.getElementById('editUserId').value = r.userid || '';
   editModal.show();
 }
 window.editRecord = editRecord;
@@ -971,6 +804,7 @@ async function saveRecord() {
   const code = document.getElementById('editCode').value.trim();
   const pub = document.getElementById('editPub').value.trim();
   const section = document.getElementById('editSection').value;
+  const userId = document.getElementById('editUserId').value;
 
   if (!title || !place || !code) {
     showToast('عنوان، محل و کد الزامی است', true);
@@ -982,7 +816,8 @@ async function saveRecord() {
     place,
     code,
     pub: pub || null,
-    section
+    section,
+    userid: userId ? Number(userId) : null
   };
 
   try {
@@ -1016,17 +851,15 @@ async function saveRecord() {
 window.saveRecord = saveRecord;
 
 /* ============================================================
-   ۱۴. حذف رکورد
+   ۱۵. حذف رکورد
    ============================================================ */
 async function deleteRecord(id) {
   if (!confirm('آیا از حذف این رکورد مطمئن هستید؟')) return;
-
   try {
     const r = await fetch('/api/tashkeel/' + id, {
       method: 'DELETE',
       headers: { Authorization: 'Bearer ' + token }
     });
-
     if (r.ok) {
       showToast('🗑️ حذف شد');
       await loadList();
@@ -1043,124 +876,73 @@ async function deleteRecord(id) {
 window.deleteRecord = deleteRecord;
 
 /* ============================================================
-   ۱۵. چاپ
+   ۱۶. چاپ
    ============================================================ */
 function printTable() {
   if (!filteredRows.length) {
     showToast('رکوردی برای پرینت وجود ندارد', true);
     return;
   }
-
   const rows = adminExportRows(filteredRows);
-
   const table = `
     <table>
       <thead>
         <tr>
-          <th rowspan="2">نمبر عمومی</th>
-          <th rowspan="2">نمبر خصوصی</th>
+          <th rowspan="2">نمبر عمومی</th><th rowspan="2">نمبر خصوصی</th>
           <th colspan="4">مشخصات وظیفوی</th>
-          <th rowspan="2">عنوان وظیفه</th>
-          <th rowspan="2">درجه تحصیل</th>
-          <th rowspan="2">رشته تحصیل</th>
-          <th rowspan="2">رشته تدریس</th>
+          <th rowspan="2">عنوان وظیفه</th><th rowspan="2">درجه تحصیل</th>
+          <th rowspan="2">رشته تحصیل</th><th rowspan="2">رشته تدریس</th>
           <th colspan="2">رتبه</th>
-          <th rowspan="2">تاریخ تقرر</th>
-          <th rowspan="2">تاریخ تولد</th>
-          <th rowspan="2">نمبر تذکره</th>
-          <th rowspan="2">جنسیت</th>
-          <th rowspan="2">قومیت</th>
-          <th rowspan="2">کود نمبر</th>
-          <th rowspan="2">محل وظیفه</th>
-          <th rowspan="2">آمریت معارف</th>
+          <th rowspan="2">تاریخ تقرر</th><th rowspan="2">تاریخ تولد</th>
+          <th rowspan="2">نمبر تذکره</th><th rowspan="2">جنسیت</th>
+          <th rowspan="2">قومیت</th><th rowspan="2">کود نمبر</th>
+          <th rowspan="2">محل وظیفه</th><th rowspan="2">آمریت معارف</th>
           <th rowspan="2">ملاحظات</th>
         </tr>
-        <tr>
-          <th>اسم</th><th>ولد</th><th>ولدیت</th><th>تخلص</th>
-          <th>بست</th><th>قدم</th>
-        </tr>
+        <tr><th>اسم</th><th>ولد</th><th>ولدیت</th><th>تخلص</th><th>بست</th><th>قدم</th></tr>
       </thead>
       <tbody>
         <tr><th colspan="21">پرسونل هسته ی مرکزی آمریت معارف کشک رباط سنگی</th></tr>
-        ${rows.map(row =>
-          '<tr>' + row.map(value =>
-            '<td>' + escapeHtml(value ?? '') + '</td>'
-          ).join('') + '</tr>'
-        ).join('')}
+        ${rows.map(row => '<tr>' + row.map(value => '<td>' + escapeHtml(value ?? '') + '</td>').join('') + '</tr>').join('')}
       </tbody>
     </table>
   `;
-
   const w = window.open('', '_blank');
-  if (!w) {
-    showToast('اجازه بازشدن پنجره چاپ را بدهید', true);
-    return;
-  }
-
+  if (!w) { showToast('اجازه بازشدن پنجره چاپ را بدهید', true); return; }
   w.document.write(`
-    <!doctype html>
-    <html lang="fa" dir="rtl">
-    <head>
-      <meta charset="UTF-8">
-      <title>جدول شهرت پرسونل</title>
-      <style>
-        @page{size:A3 landscape;margin:8mm}
-        body{font-family:Tahoma,Arial,sans-serif}
-        h2,h3{text-align:center;white-space:pre-line}
-        table{border-collapse:collapse;width:100%;font-size:8px}
-        th,td{border:1px solid #222;padding:4px;text-align:center;white-space:normal}
-        th{background:#eee}
-        tr{break-inside:avoid}
-      </style>
-    </head>
-    <body>
-      <h2>امارت اسلامی افغانستان
-وزارت معارف
-ریاست معارف ولایت هرات
-آمریت معارف کشک رباط سنگی
-مدیریت عمومی اداری و اجرائیوی</h2>
+    <!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>جدول شهرت پرسونل</title>
+    <style>@page{size:A3 landscape;margin:8mm}body{font-family:Tahoma,Arial,sans-serif}h2,h3{text-align:center;white-space:pre-line}
+    table{border-collapse:collapse;width:100%;font-size:8px}th,td{border:1px solid #222;padding:4px;text-align:center;white-space:normal}
+    th{background:#eee}tr{break-inside:avoid}</style></head><body>
+      <h2>امارت اسلامی افغانستان\nوزارت معارف\nریاست معارف ولایت هرات\nآمریت معارف کشک رباط سنگی\nمدیریت عمومی اداری و اجرائیوی</h2>
       <h3>جدول شهرت پرسونل برحال مکاتب آمریت معارف کشک رباط سنگی از بابت سال تعلیمی 1405 مطابق 1448 برویت سیستم تشکیلاتی وزارت معارف</h3>
       ${table}
-      <script>
-        window.onload = () => setTimeout(() => window.print(), 400);
-      <\/script>
-    </body>
-    </html>
+      <script>window.onload = () => setTimeout(() => window.print(), 400);<\/script>
+    </body></html>
   `);
-
   w.document.close();
 }
 window.printTable = printTable;
 
 /* ============================================================
-   ۱۶. خروجی اکسل
+   ۱۷. خروجی اکسل
    ============================================================ */
 async function exportCSV() {
-  if (!filteredRows.length) {
-    showToast('رکوردی برای خروجی وجود ندارد', true);
-    return;
-  }
-
-  /*
-    قبل از خروجی، معلومات کارمندان دوباره دریافت می‌شود
-    تا اطلاعات چاپ و اکسل تازه باشد.
-  */
+  if (!filteredRows.length) { showToast('رکوردی برای خروجی وجود ندارد', true); return; }
   await loadRegisteredCodes();
-
-  adminDownloadExcel(
-    adminExportRows(filteredRows),
-    'تشکیلات_' + new Date().toISOString().slice(0,10) + '.xlsx'
-  );
-
+  adminDownloadExcel(adminExportRows(filteredRows), 'تشکیلات_' + new Date().toISOString().slice(0,10) + '.xlsx');
   showToast('✅ خروجی تشکیل آماده شد (' + filteredRows.length + ' رکورد)');
 }
 window.exportCSV = exportCSV;
 
 /* ============================================================
-   ۱۷. شروع برنامه
+   ۱۸. شروع برنامه
    ============================================================ */
-loadStats();
-loadList();
+(async function init() {
+  await loadSchoolsForDropdown();
+  loadStats();
+  loadList();
+})();
 </script>
 </body>
 </html>

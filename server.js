@@ -1036,6 +1036,27 @@ app.put('/api/evaluation-permission', authRequired, adminOnly, asyncRoute(async 
   });
 }));
 
+// ============================================================
+// GET ALL TASHKEEL — دریافت تشکیلات برای ثبت کارمند
+// ============================================================
+app.get('/api/tashkeel', authRequired, asyncRoute(async (req, res) => {
+  const isAdmin = req.user.role === 'admin';
+
+  const r = await q(
+    isAdmin
+      ? `SELECT id, userid, pub, priv, title, place, code, section, amariat
+           FROM tashkeel
+          ORDER BY id`
+      : `SELECT id, userid, pub, priv, title, place, code, section, amariat
+           FROM tashkeel
+          WHERE userid = $1 OR userid IS NULL
+          ORDER BY id`,
+    isAdmin ? [] : [req.user.id]
+  );
+
+  res.json(r.rows);
+}));
+
 app.get('/api/tashkeel/:id', authRequired, asyncRoute(async (req, res) => {
   const r = await q('SELECT * FROM tashkeel WHERE id=$1', [Number(req.params.id)]);
   const t = r.rows[0];

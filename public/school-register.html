@@ -305,9 +305,6 @@ const SCHOOL_NAME_TO_PLACE = {
   'ابتدائیه نسوان حقابه': 'ابتدائیه مختلط حقابه',
   'ابتدائیه عبدالله ابن عمر': 'مدیریت ابتدائیه عبدالله ابن عمر',
   'ابتدائیه چاه گل بای': 'مدیریت ابتدائیه  ذکور چاه گل بای',
-  'ابتدائیه چاه گلی': 'مدیریت ابتدائیه  ذکور چاه گل بای',
-  'ابتدائیه چاه گلبای': 'مدیریت ابتدائیه  ذکور چاه گل بای',
-  'ابتدائیه چاه گلاب': 'مدیریت ابتدائیه  ذکور چاه گل بای',
   'ابتدائیه نور آباد': 'مدیریت ابتدائیه مختلط نورآباد',
   'ابتدائیه تهانه بغل': 'ابتدائیه تهانه بغل',
   'ابتدائیه شاه غلام': 'مدیریت ابتدائیه مختلط شاه غلام',
@@ -394,7 +391,7 @@ function isInAnyAllowedRange(n) {
 })();
 
 // ============================================================
-// 7. LOAD TASHKEEL (اصلاح‌شده: تطبیق با userid و نام)
+// 7. LOAD TASHKEEL
 // ============================================================
 async function loadSchoolTashkeel() {
   try {
@@ -413,36 +410,7 @@ async function loadSchoolTashkeel() {
       }
     });
 
-    console.log('🔍 تعداد کل کدهای تشکیلات:', all.length);
-    console.log('🔍 user.id:', user.id, '| user.schoolname:', user.schoolname);
-
-    // ✅ ۱. کدهایی که مستقیماً با userid به این مدرسه تخصیص یافته‌اند
-    const myUserId = Number(user.id);
-    const safeMyPlace = String(myPlaceName).trim();
-    const safeMySchool = String(mySchoolName).trim();
-
-    schoolTashkeel = all.filter(t => {
-      // شرط الف: تخصیص با userid
-      if (t.userid && Number(t.userid) === myUserId) return true;
-      // شرط ب: تطبیق با نام مکتب
-      const p = String(t.place || '').trim();
-      if (p === safeMyPlace || p === safeMySchool) return true;
-      // شرط ج: تطبیق انعطاف‌پذیر (fuzzy)
-      const normalize = (s) => String(s || '')
-        .replace(/[()（）]/g, ' ')
-        .replace(/[آأإا]/g, 'ا')
-        .replace(/[یي]/g, 'ی')
-        .replace(/[کك]/g, 'ک')
-        .replace(/[ۀهة]/g, 'ه')
-        .replace(/\s+/g, ' ')
-        .trim();
-      const pn = normalize(p);
-      const mn1 = normalize(safeMyPlace);
-      const mn2 = normalize(safeMySchool);
-      if (pn && (pn === mn1 || pn === mn2)) return true;
-      return false;
-    });
-
+    schoolTashkeel = all.filter(t => t.place && String(t.place).trim() === myPlaceName);
     mySchoolCodes = new Set(schoolTashkeel.map(t => String(t.code || '').trim()));
 
     managerCodes = {};
@@ -455,8 +423,6 @@ async function loadSchoolTashkeel() {
     });
 
     tashkeelReady = true;
-    console.log('✅ کدهای مکتب شما:', [...mySchoolCodes]);
-    console.log('✅ تعداد کدهای مجاز:', mySchoolCodes.size);
   } catch (e) {
     console.error('loadSchoolTashkeel error:', e);
     tashkeelReady = false;
@@ -805,7 +771,7 @@ attachJobCodeValidation();
 attachETazkiraValidation();
 
 // ============================================================
-// 15. SUBMIT
+// 15. SUBMIT — اصلاح‌شده (ارسال در data)
 // ============================================================
 document.getElementById('recordForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -813,6 +779,7 @@ document.getElementById('recordForm').addEventListener('submit', async (e) => {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.innerText = '⏳ در حال ذخیره...';
 
+  // ✅ فیلدهای کارمند را داخل data قرار می‌دهیم
   const body = {
     schoolname: user.schoolname || '',
     district: user.district || '',

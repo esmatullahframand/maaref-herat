@@ -370,38 +370,65 @@ async function loadSchoolsForDropdown() {
 /* ============================================================
    ۵. بارگذاری آمار
    ============================================================ */
+
 async function loadStats() {
   try {
-    const r = await fetch('/api/tashkeel/stats/summary', {
-      headers: { Authorization: 'Bearer ' + token }
+    const r = await fetch('/api/tashkeel', {
+      headers: { Authorization: 'Bearer ' + token },
+      cache: 'no-store'
     });
-    if (!r.ok) return;
 
-    const d = await r.json();
-    document.getElementById('sTotal').textContent = d.total || 0;
+    if (r.status === 401 || r.status === 403) {
+      logout();
+      return;
+    }
 
-    const sec = {};
-    (d.by_section || []).forEach(s => sec[s.section] = s.count);
+    if (!r.ok) {
+      throw new Error('خطا در دریافت تشکیل: HTTP ' + r.status);
+    }
 
-    document.getElementById('sMakatib').textContent = sec.amariat || 0;
-    document.getElementById('sMadaris').textContent = sec.madaris || 0;
-    document.getElementById('sPlaces').textContent = (d.by_place || []).length;
+    const payload = await r.json();
+    const rows = extractArray(payload);
+
+    if (!Array.isArray(rows)) {
+      throw new Error('ساختار اطلاعات تشکیل معتبر نیست');
+    }
+
+    const total = rows.length;
+    const makatib = rows.filter(r => String(r.section || '').trim().toLowerCase() === 'amariat').length;
+    const madaris = rows.filter(r => String(r.section || '').trim().toLowerCase() === 'madaris').length;
+
+    const places = [...new Set(
+      rows.map(r => String(r.place || '').trim()).filter(Boolean)
+    )];
+
+    document.getElementById('sTotal').textContent = total.toLocaleString('fa-IR');
+    document.getElementById('sMakatib').textContent = makatib.toLocaleString('fa-IR');
+    document.getElementById('sMadaris').textContent = madaris.toLocaleString('fa-IR');
+    document.getElementById('sPlaces').textContent = places.length.toLocaleString('fa-IR');
 
     const placeSel = document.getElementById('placeFilter');
     const selectedPlace = placeSel.value;
 
-    if (Array.isArray(d.by_place)) {
-      placeSel.innerHTML = '<option value="">📋 همه محل‌ها</option>';
-      d.by_place.forEach(p => {
-        const o = document.createElement('option');
-        o.value = p.place;
-        o.textContent = p.place + ' (' + p.count + ')';
-        placeSel.appendChild(o);
-      });
-      placeSel.value = selectedPlace;
-    }
+    placeSel.innerHTML = '<option value="">📋 همه محل‌ها</option>';
+
+    places.sort((a, b) => a.localeCompare(b, 'fa')).forEach(place => {
+      const count = rows.filter(r => String(r.place || '').trim() === place).length;
+      const option = document.createElement('option');
+      option.value = place;
+      option.textContent = place + ' (' + count.toLocaleString('fa-IR') + ')';
+      placeSel.appendChild(option);
+    });
+
+    placeSel.value = places.includes(selectedPlace) ? selectedPlace : '';
+
+    console.log('آمار تشکیل بارگذاری شد:', {
+      total, makatib, madaris, places: places.length
+    });
+
   } catch (e) {
     console.error('[loadStats]', e);
+    showToast('خطا در بارگذاری آمار تشکیل: ' + e.message, true);
   }
 }
 

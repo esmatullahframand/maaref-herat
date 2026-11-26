@@ -982,66 +982,58 @@ app.delete('/api/evaluations/:id', authRequired, asyncRoute(async (req, res) => 
 }));
 
 // ============================================================
+// ============================================================
 // EVALUATION PERMISSION
 // ============================================================
-app.get('/api/evaluation-permission', asyncRoute(async (_req, res) => {
-  const r = await q('SELECT * FROM evaluation_permission ORDER BY id LIMIT 1');
-  res.json({ permission: r.rows[0] || { allowed: 0 } });
+
+// دریافت اجازه ارزیابی برای صفحه مکتب
+app.get('/api/evaluation-permission', authRequired, asyncRoute(async (req, res) => {
+  const r = await q(
+    'SELECT allowed FROM evaluation_permission ORDER BY id LIMIT 1'
+  );
+
+  const allowed = r.rows.length
+    ? Number(r.rows[0].allowed) === 1
+    : false;
+
+  res.json({
+    allowed,
+    permission: { allowed: allowed ? 1 : 0 }
+  });
 }));
+
+// فعال یا غیرفعال کردن اجازه ارزیابی توسط مدیر
 app.put('/api/evaluation-permission', authRequired, adminOnly, asyncRoute(async (req, res) => {
   const allowed = num(req.body?.allowed, 0) ? 1 : 0;
-  const existing = await q('SELECT id FROM evaluation_permission ORDER BY id LIMIT 1');
-  if (existing.rows[0]) {
-    const r = await q(`UPDATE evaluation_permission SET allowed=$1, updated_at=NOW() WHERE id=$2 RETURNING *`, [allowed, existing.rows[0].id]);
-    return res.json({ permission: r.rows[0] });
-  }
-  const r = await q('INSERT INTO evaluation_permission (allowed) VALUES ($1) RETURNING *', [allowed]);
-  res.json({ permission: r.rows[0] });
-}));
 
-// ============================================================
-// TASHKEEL
-// ============================================================
-// ✅ این مسیر باید قبل از /api/tashkeel/:id باشد تا stats به عنوان id تفسیر نشود
-app.get('/api/tashkeel/stats/summary', authRequired, asyncRoute(async (req, res) => {
-  const isAdmin = req.user.role === 'admin';
-  const params = []; let where = '';
-  if (!isAdmin) { params.push(req.user.id); where = 'WHERE (userid = $1 OR userid IS NULL)'; }
-  const bySection = await q(`SELECT section, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY section ORDER BY section`, params);
-  const byAmariat = await q(`SELECT amariat, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY amariat ORDER BY count DESC`, params);
-  const byPlace = await q(`SELECT place, COUNT(*)::int AS count FROM tashkeel ${where} GROUP BY place ORDER BY count DESC LIMIT 100`, params);
-  const total = await q(`SELECT COUNT(*)::int AS c FROM tashkeel ${where}`, params);
-  res.json({ total: total.rows[0].c, by_section: bySection.rows, by_amariat: byAmariat.rows, by_place: byPlace.rows });
-}));
-
-app.get('/api/tashkeel', authRequired, asyncRoute(async (req, res) => {
-  const { section, place, amariat, q: search, mine } = req.query;
-  const isAdmin = req.user.role === 'admin';
-  const conds = []; const params = [];
-
-  if (!isAdmin && mine === '1') {
-    params.push(req.user.id);
-    conds.push(`userid = $${params.length}`);
-  }
-  if (section)  { params.push(String(section));  conds.push(`section = $${params.length}`); }
-  if (place)    { params.push(String(place));    conds.push(`place = $${params.length}`); }
-  if (amariat)  { params.push(String(amariat));  conds.push(`amariat = $${params.length}`); }
-  if (search) {
-    params.push(`%${String(search).trim()}%`);
-    conds.push(`(title ILIKE $${params.length} OR place ILIKE $${params.length} OR code ILIKE $${params.length})`);
-  }
-  const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
-  const r = await q(
-    `SELECT id, userid, pub, priv, title, place, code, section, amariat, created_at
-       FROM tashkeel
-       ${where}
-       ORDER BY section, place,
-                NULLIF(priv,'')::int NULLS LAST,
-                NULLIF(pub,'')::int
-       LIMIT 5000`,
-    params
+  const existing = await q(
+    'SELECT id FROM evaluation_permission ORDER BY id LIMIT 1'
   );
-  res.json({ tashkeel: r.rows, count: r.rows.length });
+
+  let result;
+
+  if (existing.rows[0]) {
+    result = await q(
+      `UPDATE evaluation_permission
+       SET allowed = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING allowed`,
+      [allowed, existing.rows[0].id]
+    );
+  } else {
+    result = await q(
+      `INSERT INTO evaluation_permission (allowed)
+       VALUES ($1)
+       RETURNING allowed`,
+      [allowed]
+    );
+  }
+
+  res.json({
+    success: true,
+    allowed: Number(result.rows[0].allowed) === 1,
+    permission: result.rows[0]
+  });
 }));
 
 app.get('/api/tashkeel/:id', authRequired, asyncRoute(async (req, res) => {

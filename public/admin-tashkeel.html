@@ -464,6 +464,112 @@ function getAdminTashkeelCode(row) {
   return '';
 }
 
+/* ============================================================
+   ۱۱. بارگذاری لیست — نسخه اصلاح‌شده با جستجوی داخلی
+   ============================================================ */
+
+function normalizeSearchText(value) {
+  return String(value ?? '')
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/ي/g, 'ی')
+    .replace(/ك/g, 'ک')
+    .replace(/[\u200c\u200f\u200e]/g, '')
+    .trim()
+    .toLowerCase();
+}
+
+async function loadList() {
+  const search = normalizeSearchText(
+    document.getElementById('searchInput').value
+  );
+
+  const section = document.getElementById('sectionFilter').value;
+  const place = document.getElementById('placeFilter').value;
+  const status = document.getElementById('statusFilter').value;
+
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML =
+    '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
+
+  try {
+    await loadRegisteredCodes();
+
+    // تمام رکوردها را بدون فیلتر جستجو از سرور دریافت کن
+    const r = await fetch('/api/tashkeel', {
+      headers: { Authorization: 'Bearer ' + token },
+      cache: 'no-store'
+    });
+
+    if (r.status === 401 || r.status === 403) {
+      logout();
+      return;
+    }
+
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+
+    const payload = await r.json();
+    const rows = extractArray(payload);
+
+    // فیلتر محلی روی تمام رکوردها
+    let result = rows.filter(t => {
+      if (section && String(t.section || '') !== section) return false;
+
+      if (place && String(t.place || '').trim() !== place) return false;
+
+      if (search) {
+        const searchable = [
+          t.code,
+          t.title,
+          t.place,
+          t.pub,
+          t.priv,
+          t.section,
+          t.amariat,
+          t.id
+        ].map(normalizeSearchText);
+
+        if (!searchable.some(value => value.includes(search))) {
+          return false;
+        }
+      }
+
+      if (status === 'filled' &&
+          !adminEmployeeFor(getAdminTashkeelCode(t))) return false;
+
+      if (status === 'empty' &&
+          adminEmployeeFor(getAdminTashkeelCode(t))) return false;
+
+      return true;
+    });
+
+    allRows = rows;
+    filteredRows = result;
+
+    // پس از جستجو همیشه از صفحه اول نتایج شروع کن
+    currentPage = 1;
+
+    renderTable();
+
+    console.log('جستجوی تشکیل:', {
+      total: rows.length,
+      results: filteredRows.length,
+      search,
+      section,
+      place,
+      status
+    });
+
+  } catch (e) {
+    console.error('[loadList]', e);
+    tbody.innerHTML =
+      '<tr><td colspan="8" class="text-center p-4 text-danger">خطا: ' +
+      escapeHtml(e.message) + '</td></tr>';
+  }
+}
+
+window.loadList = loadList;
+
 function parseAdminObject(value) {
   if (!value) return {};
   if (typeof value === 'object' && !Array.isArray(value)) return value;
@@ -642,53 +748,6 @@ function adminDownloadExcel(rows, filename) {
     setTimeout(() => URL.revokeObjectURL(u), 1000);
   }
 }
-
-/* ============================================================
-   ۱۱. بارگذاری لیست
-   ============================================================ */
-async function loadList() {
-  const search = document.getElementById('searchInput').value.trim();
-  const section = document.getElementById('sectionFilter').value;
-  const place = document.getElementById('placeFilter').value;
-  const status = document.getElementById('statusFilter').value;
-
-  const params = new URLSearchParams();
-  if (search) params.set('q', search);
-  if (section) params.set('section', section);
-  if (place) params.set('place', place);
-
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">در حال بارگذاری...</td></tr>';
-
-  try {
-    await loadRegisteredCodes();
-    const r = await fetch('/api/tashkeel?' + params.toString(), {
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    if (r.status === 401 || r.status === 403) { logout(); return; }
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-
-    const payload = await r.json();
-    let rows = extractArray(payload);
-
-    if (status === 'filled') {
-      rows = rows.filter(t => !!adminEmployeeFor(getAdminTashkeelCode(t)));
-    } else if (status === 'empty') {
-      rows = rows.filter(t => !adminEmployeeFor(getAdminTashkeelCode(t)));
-    }
-
-    allRows = rows;
-    filteredRows = rows;
-    currentPage = 1;
-    renderTable();
-  } catch (e) {
-    console.error('[loadList]', e);
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-danger">خطا: ' + escapeHtml(e.message) + '</td></tr>';
-  }
-}
-window.loadList = loadList;
-
-/* ============================================================
    ۱۲. نمایش جدول
    ============================================================ */
 function renderTable() {
